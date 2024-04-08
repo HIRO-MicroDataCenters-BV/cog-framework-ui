@@ -1,1 +1,2 @@
-# cog-framework-ui
+nvm use 18.20
+ng serve
