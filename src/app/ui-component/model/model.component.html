@@ -3,79 +3,84 @@
 <!-- ============================================================== -->
 
 <div class="row">
-  <!-- Card column -->
-  <div class="col-12">
-    <mat-card>
-      <mat-card-content>
-        <mat-card-title>Search Models</mat-card-title>
-      </mat-card-content>
+    <!-- Card column -->
+    <div class="col-12">
+        <mat-card>
+            <mat-card-content style="padding: 8px">
+                <mat-card-title>Search Models</mat-card-title>
+            </mat-card-content>
 
-      <form>
-        <mat-form-field class="input-search">
-          <mat-label>Model Name</mat-label>
-          <input matInput placeholder="Model Name">
-        </mat-form-field>
+            <form>
+                <mat-form-field class="input-search">
+                    <mat-label>Model Name</mat-label>
+                    <input matInput placeholder="Model Name">
+                </mat-form-field>
 
-        <mat-form-field class="input-search">
-          <mat-label>Model Id</mat-label>
-          <input matInput placeholder="Model Id">
-        </mat-form-field>
+                <mat-form-field class="input-search">
+                    <mat-label>Model Id</mat-label>
+                    <input matInput placeholder="Model Id">
+                </mat-form-field>
 
-      </form>
+            </form>
 
-      <div class="input-button-search">
-        <button mat-raised-button color="primary">Search</button>
-      </div>
-    </mat-card>
+            <div class="input-button-search">
+                <button mat-raised-button color="primary">Search</button>
+            </div>
+        </mat-card>
 
-  </div>
+    </div>
 
 
 </div>
 
 <mat-card>
-  <mat-card-content>
-    <mat-card-title>Model Search Result List</mat-card-title>
-  </mat-card-content>
+    <mat-card-content style="padding: 8px">
+        <mat-card-title>Model Search Result List</mat-card-title>
+    </mat-card-content>
 
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
 
-    <!--- Note that these columns can be defined in any order.
-          The actual rendered columns are set as a property on the row definition" -->
+        <!--- Note that these columns can be defined in any order.
+              The actual rendered columns are set as a property on the row definition" -->
 
-    <!-- Position Column -->
-    <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef> Model Id</th>
-      <td mat-cell *matCellDef="let element"> {{ element.id }}</td>
-    </ng-container>
+        <!-- Position Column -->
+        <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef> Model Id</th>
+            <td mat-cell *matCellDef="let element"> {{ element.id }}</td>
+        </ng-container>
 
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef> Name</th>
-      <td mat-cell *matCellDef="let element"> {{ element.name }}</td>
-    </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Name</th>
+            <td mat-cell *matCellDef="let element"> {{ element.name }}</td>
+        </ng-container>
 
-    <!-- Weight Column -->
-    <ng-container matColumnDef="creationTime">
-      <th mat-header-cell *matHeaderCellDef> Creation Time</th>
-      <td mat-cell *matCellDef="let element"> {{ element.creationTime }}</td>
-    </ng-container>
+        <!-- Weight Column -->
+        <ng-container matColumnDef="creationTime">
+            <th mat-header-cell *matHeaderCellDef> Creation Time</th>
+            <td mat-cell *matCellDef="let element"> {{ element.creationTime }}</td>
+        </ng-container>
 
-    <!-- Symbol Column -->
-    <ng-container matColumnDef="author">
-      <th mat-header-cell *matHeaderCellDef> Author</th>
-      <td mat-cell *matCellDef="let element"> {{ element.author }}</td>
-    </ng-container>
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="author">
+            <th mat-header-cell *matHeaderCellDef> Author</th>
+            <td mat-cell *matCellDef="let element"> {{ element.author }}</td>
+        </ng-container>
 
-    <!-- Symbol Column -->
-    <ng-container matColumnDef="action">
-      <th mat-header-cell *matHeaderCellDef> Action</th>
-      <td mat-cell *matCellDef="let element"> Open</td>
-    </ng-container>
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef> Action</th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-icon-button matTooltip="Open" class="iconbutton"
+                        color="primary" (click)="open(element)">
+                    <mat-icon style="font-size: 14px;">open_in_new</mat-icon>
+                </button>
+            </td>
+        </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  </table>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
 
 </mat-card>
