@@ -41,7 +41,8 @@ export class ModelComponent {
     displayedColumns: string[] = ['id', 'name', 'creationTime', 'author', 'action'];
     dataSource = ELEMENT_DATA;
     appURL = environment.appURL;
-    modelName = "test";
+    modelName = "Federated Learning";
+    modelId = "1";
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService) {
     }
@@ -51,10 +52,39 @@ export class ModelComponent {
     }
 
     search(): void {
+        this.searchByID();
+    }
+
+    searchByID(): void {
         this.loading = true;
         console.log("search model with name " + this.modelName)
-        const response = this.cogFrameworkApiService.getModel();
+        const response = this.cogFrameworkApiService.getModelById(this.modelId);
 
+        response.subscribe({
+            next: (v) => {
+                console.log("----")
+                console.log(v)
+                console.log(v)
+                console.log("----")
+                const model = [];
+                model.push(v.data);
+                this.dataSource = model;
+            },
+            error: (e) => {
+                console.error(e)
+                this.loading = false;
+            },
+            complete: () => {
+                this.loading = false;
+                console.info('complete')
+            }
+        })
+    }
+
+    searchByName(): void {
+        this.loading = true;
+        console.log("search model with name " + this.modelName)
+        const response = this.cogFrameworkApiService.getModelByName(this.modelName);
         response.subscribe({
             next: (v) => {
                 console.log("----")
@@ -73,5 +103,4 @@ export class ModelComponent {
             }
         })
     }
-
 }

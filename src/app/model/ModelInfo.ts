@@ -4,6 +4,14 @@ export interface ModelInfo {
     message: string;
     success: boolean;
 }
+
+export interface ModelInfoById {
+    data: Model;
+    errors?: any;
+    message: string;
+    success: boolean;
+}
+
 export interface Model {
     id: number;
     last_modified_time: string;
