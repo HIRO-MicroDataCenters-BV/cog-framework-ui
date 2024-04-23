@@ -1,7 +1,6 @@
 <!-- ============================================================== -->
 <!-- row -->
 <!-- ============================================================== -->
-
 <div class="row">
     <!-- Card column -->
     <div class="col-12">
@@ -10,21 +9,26 @@
                 <mat-card-title>Search Datasets</mat-card-title>
             </mat-card-content>
 
-            <form>
-                <mat-form-field class="input-search">
-                    <mat-label>Dataset Name</mat-label>
-                    <input matInput placeholder="Dataset Name">
-                </mat-form-field>
+            <div class="row">
 
-                <mat-form-field class="input-search">
-                    <mat-label>Dataset Id</mat-label>
-                    <input matInput placeholder="Dataset Id">
-                </mat-form-field>
+                <form>
+                    <mat-form-field class="input-search" appearance="outline">
+                        <mat-label>Dataset Name</mat-label>
+                        <input matInput placeholder="Dataset Name" [(ngModel)]="datasetName" name="modelName"
+                               [disabled]="datasetId.length>0">
+                    </mat-form-field>
+                    <small style="padding-left: 18px; font-weight: bold">Or</small>
+                    <mat-form-field class="input-search" appearance="outline">
+                        <mat-label>Dataset Id</mat-label>
+                        <input matInput placeholder="Model Id" [(ngModel)]="datasetId" name="modelId"
+                               [disabled]="datasetName.length>0">
+                    </mat-form-field>
 
-            </form>
+                </form>
 
-            <div class="input-button-search">
-                <button mat-raised-button color="primary">Search</button>
+                <div class="input-button-search">
+                    <button mat-raised-button color="primary" (click)="search()">Search</button>
+                </div>
             </div>
         </mat-card>
 
@@ -34,48 +38,57 @@
 </div>
 
 <mat-card>
-    <mat-card-content style="padding: 8px">
+    <div class="progress-bar">
+        <mat-progress-bar mode="indeterminate" color='warn' *ngIf="loading" class="progress-bar">
+        </mat-progress-bar>
+    </div>
+    <mat-card-content style="padding: 5px">
         <mat-card-title>Dataset Search Result List</mat-card-title>
     </mat-card-content>
+    <div class="density-settings">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
 
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
+            <!--- Note that these columns can be defined in any order.
+                  The actual rendered columns are set as a property on the row definition" -->
 
-        <!--- Note that these columns can be defined in any order.
-              The actual rendered columns are set as a property on the row definition" -->
+            <!-- Position Column -->
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> Model Id</th>
+                <td mat-cell *matCellDef="let element"> {{ element.id }}</td>
+            </ng-container>
 
-        <!-- Position Column -->
-        <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> Dataset Id</th>
-            <td mat-cell *matCellDef="let element"> {{ element.id }}</td>
-        </ng-container>
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef> Name</th>
+                <td mat-cell *matCellDef="let element"> {{ element.name }}</td>
+            </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Dataset Name</th>
-            <td mat-cell *matCellDef="let element"> {{ element.name }}</td>
-        </ng-container>
+            <!-- Weight Column -->
+            <ng-container matColumnDef="creationTime">
+                <th mat-header-cell *matHeaderCellDef> Creation Time</th>
+                <td mat-cell *matCellDef="let element"> {{ element.register_date| date: 'dd-MMM-yyyy hh:mm' }}</td>
+            </ng-container>
 
-        <!-- Weight Column -->
-        <ng-container matColumnDef="creationTime">
-            <th mat-header-cell *matHeaderCellDef> Creation Time</th>
-            <td mat-cell *matCellDef="let element"> {{ element.creationTime }}</td>
-        </ng-container>
+            <!-- Symbol Column -->
+            <ng-container matColumnDef="author">
+                <th mat-header-cell *matHeaderCellDef> Author</th>
+                <td mat-cell *matCellDef="let element"> {{ element.register_user_id }}</td>
+            </ng-container>
 
-        <!-- Symbol Column -->
-        <ng-container matColumnDef="author">
-            <th mat-header-cell *matHeaderCellDef> Author</th>
-            <td mat-cell *matCellDef="let element"> {{ element.author }}</td>
-        </ng-container>
+            <!-- Symbol Column -->
+            <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef> Action</th>
+                <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button matTooltip="Open" class="iconbutton"
+                            color="primary" (click)="open(element)">
+                        <mat-icon style="font-size: 14px;">open_in_new</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
 
-        <!-- Symbol Column -->
-        <ng-container matColumnDef="action">
-            <th mat-header-cell *matHeaderCellDef> Action</th>
-            <td mat-cell *matCellDef="let element"> Open</td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </div>
 
 </mat-card>

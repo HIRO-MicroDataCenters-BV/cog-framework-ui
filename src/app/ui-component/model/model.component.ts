@@ -12,6 +12,7 @@ import {CogFrameworkApiService} from "../../service/cog-framework-api.service";
 import {Model} from 'src/app/model/ModelInfo';
 import {DatePipe, NgIf} from "@angular/common";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {Router} from "@angular/router";
 
 
 const ELEMENT_DATA: Model[] = [];
@@ -42,17 +43,27 @@ export class ModelComponent {
     dataSource = ELEMENT_DATA;
     appURL = environment.appURL;
     modelName = "Federated Learning";
-    modelId = "1";
+    modelId = "";
 
-    constructor(private cogFrameworkApiService: CogFrameworkApiService) {
+    constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router) {
     }
 
     open(item: any): void {
-        console.log("add open")
+        console.log("opening open " + item.id)
+        this.router.navigate(['/model-detail'], {queryParams: {id: item.id}})
+            .then(r => {
+                console.log("redirected to other component")
+            });
     }
 
     search(): void {
-        this.searchByID();
+        if (this.modelId.length > 0) {
+            console.log("Search by ID")
+            this.searchByID();
+        } else {
+            console.log("Search by Name")
+            this.searchByName();
+        }
     }
 
     searchByID(): void {
@@ -63,7 +74,6 @@ export class ModelComponent {
         response.subscribe({
             next: (v) => {
                 console.log("----")
-                console.log(v)
                 console.log(v)
                 console.log("----")
                 const model = [];
