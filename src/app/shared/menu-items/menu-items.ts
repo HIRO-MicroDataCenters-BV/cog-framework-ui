@@ -14,6 +14,7 @@ const MENUITEMS = [
   { state: 'dataset1', type: 'link', name: 'Model Training', icon: 'all_inclusive' },
   { state: 'dataset2', type: 'link', name: 'Model Deployment', icon: 'assistant' },
   { state: 'dataset3', type: 'link', name: 'Model Serving', icon: 'developer_mode' },
+  { state: 'model-validation', type: 'link', name: 'Model Validation', icon: 'av_timer' },
 
 ];
 

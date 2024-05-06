@@ -5,6 +5,7 @@ import {ModelComponent} from "./model/model.component";
 import {DatasetComponent} from "./dataset/dataset.component";
 import {ModelDetailComponent} from "./model-detail/model-detail.component";
 import {DatasetDetailComponent} from "./dataset-detail/dataset-detail.component";
+import {ModelValidationComponent} from "./model-validation/model-validation.component";
 
 export const MaterialRoutes: Routes = [
     {
@@ -22,5 +23,9 @@ export const MaterialRoutes: Routes = [
     {
         path: 'dataset-detail',
         component: DatasetDetailComponent
+    },
+    {
+        path: 'model-validation',
+        component: ModelValidationComponent
     }
 ];
