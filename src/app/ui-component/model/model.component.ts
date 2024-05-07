@@ -68,14 +68,10 @@ export class ModelComponent {
 
     searchByID(): void {
         this.loading = true;
-        console.log("search model with name " + this.modelName)
         const response = this.cogFrameworkApiService.getModelById(this.modelId);
 
         response.subscribe({
             next: (v) => {
-                console.log("----")
-                console.log(v)
-                console.log("----")
                 const model = [];
                 model.push(v.data);
                 this.dataSource = model;

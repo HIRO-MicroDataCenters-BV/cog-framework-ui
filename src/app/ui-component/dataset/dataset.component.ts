@@ -6,15 +6,14 @@ import {MatInputModule} from "@angular/material/input";
 import {MatTableModule} from "@angular/material/table";
 import {environment} from "../../../environments/environment.development";
 import {CogFrameworkApiService} from "../../service/cog-framework-api.service";
-import {Model} from "../../model/ModelInfo";
 import {DatePipe, NgIf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {MatIconModule} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {Dataset, DatasetInfo} from "../../model/DatasetInfo";
+import {DataSetData} from "../../model/DatasetInfo";
 
-const ELEMENT_DATA: Dataset[] = [];
+const ELEMENT_DATA: DataSetData[] = [];
 
 @Component({
     selector: 'app-dataset',
@@ -68,7 +67,8 @@ export class DatasetComponent {
 
         response.subscribe({
             next: (v) => {
-                const model: Dataset[] = [];
+                console.log(v)
+                const model = [];
                 model.push(v.data);
                 this.dataSource = model;
             },

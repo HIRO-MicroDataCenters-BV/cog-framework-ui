@@ -66,13 +66,17 @@
             <!-- Weight Column -->
             <ng-container matColumnDef="creationTime">
                 <th mat-header-cell *matHeaderCellDef> Creation Time</th>
-                <td mat-cell *matCellDef="let element"> {{ element.register_date| date: 'dd-MMM-yyyy hh:mm' }}</td>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.register_date_time| date: 'dd-MMM-yyyy hh:mm' }}
+                </td>
             </ng-container>
 
             <!-- Symbol Column -->
             <ng-container matColumnDef="author">
                 <th mat-header-cell *matHeaderCellDef> Author</th>
-                <td mat-cell *matCellDef="let element"> {{ element.register_user_id }}</td>
+                <td mat-cell *matCellDef="let element">
+                    {{ element.user_id }}
+                </td>
             </ng-container>
 
             <!-- Symbol Column -->
