@@ -1,0 +1,28 @@
+@use '@angular/material' as mat;
+
+.density-settings {
+  @include mat.all-component-densities(-3)
+}
+
+.tbl-btn {
+  font-size: 12px;
+  color: #343dff !important;
+  direction: rtl
+}
+
+.example-card {
+  max-width: 480px;
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+.img-container {
+  height: 100%;
+  width: 100%;
+  background-size: cover;
+}
+
+.mat-mdc-card-xl-image {
+  width: 440px;
+  height: 260px;
+}
