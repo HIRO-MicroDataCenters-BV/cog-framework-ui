@@ -37,11 +37,9 @@ const ELEMENT_DATA: Model[] = [];
     styleUrl: './model.component.scss'
 })
 export class ModelComponent {
-
     loading = false;
     displayedColumns: string[] = ['id', 'name', 'creationTime', 'author', 'action'];
     dataSource = ELEMENT_DATA;
-    appURL = environment.appURL;
     modelName = "Federated Learning";
     modelId = "";
 
@@ -49,7 +47,6 @@ export class ModelComponent {
     }
 
     open(item: any): void {
-        console.log("opening open " + item.id)
         this.router.navigate(['/model-detail'], {queryParams: {id: item.id}})
             .then(r => {
                 console.log("redirected to other component")
@@ -89,14 +86,9 @@ export class ModelComponent {
 
     searchByName(): void {
         this.loading = true;
-        console.log("search model with name " + this.modelName)
         const response = this.cogFrameworkApiService.getModelByName(this.modelName);
         response.subscribe({
             next: (v) => {
-                console.log("----")
-                console.log(v)
-                console.log(v.data)
-                console.log("----")
                 this.dataSource = v.data;
             },
             error: (e) => {

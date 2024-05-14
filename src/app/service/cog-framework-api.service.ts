@@ -3,7 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {environment} from "../../environments/environment";
 import {ModelInfo, ModelInfoById} from "../model/ModelInfo";
-import {DatasetById, DatasetInfo} from "../model/DatasetInfo";
+import {DatasetById, DatasetInfo, DatasetByName} from "../model/DatasetInfo";
 import {ModelDetailInfo} from "../model/ModelDetails";
 import {ModelValidation} from "../model/ModelValidation";
 import {DataSetDetailInfo} from "../model/DataSetDetailInfo";
@@ -38,6 +38,11 @@ export class CogFrameworkApiService {
         return this.httpClient.get<DataSetDetailInfo>(url);
     }
 
+    getDataSetDetailByName(name: string): Observable<DatasetByName> {
+        const url = this.modeAPIURL + '/dataset/' + name
+        return this.httpClient.get<DatasetByName>(url);
+    }
+
     getModes(name: string): Observable<ModelInfo> {
         const url = this.modeAPIURL + '/models'
         return this.httpClient.get<ModelInfo>(url);
@@ -59,6 +64,11 @@ export class CogFrameworkApiService {
         const obj = JSON.parse('{"roc_curve_plot" : "https://cog-ui-test.s3.eu-west-3.amazonaws.com/confusion_matrix.png",' +
             '"precision_recall_curve_plot":"https://cog-ui-test.s3.eu-west-3.amazonaws.com/precision_recall_curve_plot.png"}');
         return obj;
+    }
+
+    getModelValidationImgv2(): Observable<any> {
+        const url = 'http://127.0.0.1:5000/s/get_image?img=s3://mlflow/Screenshot_2024-04-09_at_14.51.19.png';
+        return this.httpClient.get<any>(url);
     }
 }
 

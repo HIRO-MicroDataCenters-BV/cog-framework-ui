@@ -41,7 +41,8 @@ export class DatasetDetailComponent {
     dataSetRelatedModelsDataSource: RelatedModel[] = [];
     errMsg = undefined;
 
-    constructor(private cogFrameworkApiService: CogFrameworkApiService, private activatedRoute: ActivatedRoute,
+    constructor(private cogFrameworkApiService: CogFrameworkApiService,
+                private activatedRoute: ActivatedRoute,
                 private router: Router) {
         if (this.activatedRoute.snapshot.queryParams['id']) {
             this.modelId = this.activatedRoute.snapshot.queryParams['id'];

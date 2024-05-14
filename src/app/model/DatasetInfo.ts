@@ -5,6 +5,13 @@ export interface DatasetInfo {
     success: boolean
 }
 
+export interface DatasetByName {
+    data: DataSetData[];
+    errors?: any;
+    message: string;
+    success: boolean;
+}
+
 export interface DatasetById {
     data: Dataset;
     errors?: any;

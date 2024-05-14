@@ -12,6 +12,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {DataSetData} from "../../model/DatasetInfo";
+import {Router} from "@angular/router";
 
 const ELEMENT_DATA: DataSetData[] = [];
 
@@ -40,14 +41,17 @@ export class DatasetComponent {
     displayedColumns: string[] = ['id', 'name', 'creationTime', 'author', 'action'];
     dataSource = ELEMENT_DATA;
     appURL = environment.appURL;
-    datasetName = "";
-    datasetId = "1";
+    datasetName = "demo";
+    datasetId = "";
 
-    constructor(private cogFrameworkApiService: CogFrameworkApiService) {
+    constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router) {
     }
 
     open(item: any): void {
-        console.log("add open")
+        this.router.navigate(['/dataset-detail'], {queryParams: {id: item.id}})
+            .then(r => {
+                console.log("redirected to other component")
+            });
     }
 
     search(): void {
@@ -62,7 +66,6 @@ export class DatasetComponent {
 
     searchByID(): void {
         this.loading = true;
-        console.log("search dataset with name " + this.datasetName)
         const response = this.cogFrameworkApiService.getDatasetById(this.datasetId);
 
         response.subscribe({
@@ -85,15 +88,12 @@ export class DatasetComponent {
 
     searchByName(): void {
         this.loading = true;
-        console.log("search model with name " + this.datasetName)
-        const response = this.cogFrameworkApiService.getModelByName(this.datasetName);
+        console.log("search dataset with name " + this.datasetName)
+        const response = this.cogFrameworkApiService.getDataSetDetailByName(this.datasetName);
         response.subscribe({
             next: (v) => {
-                // console.log("----")
-                // console.log(v)
-                // console.log(v.data)
-                // console.log("----")
-                //  this.dataSource = v.data;
+                console.log(v)
+                this.dataSource = v.data;
             },
             error: (e) => {
                 console.error(e)

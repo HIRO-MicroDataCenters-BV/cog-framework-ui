@@ -5,6 +5,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTableModule} from "@angular/material/table";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {DemoMaterialModule} from "../../demo-material-module";
+import {NgOptimizedImage} from "@angular/common";
 
 interface ModelValidationTable {
     name: String;
@@ -19,14 +20,16 @@ interface ModelValidationTable {
         MatIconModule,
         MatTableModule,
         MatTooltipModule,
-        DemoMaterialModule
+        DemoMaterialModule,
+        NgOptimizedImage
     ],
     templateUrl: './model-validation.component.html',
     styleUrl: './model-validation.component.scss'
 })
 export class ModelValidationComponent {
 
-    imageUrl = "https://cog-ui-test.s3.eu-west-3.amazonaws.com/confusion_matrix.png";
+    imageUrl0 = "http://127.0.0.1:5000/s/get_image?img=s3://mlflow/Screenshot_2024-04-09_at_14.51.19.png";
+    imageUrl = "http://127.0.0.1:9000/mlflow/Screenshot 2024-04-23 at 02.15.46.png";
     imageUrl2 = "https://cog-ui-test.s3.eu-west-3.amazonaws.com/precision_recall_curve_plot.png";
     modelValidationScoreTableSource: ModelValidationTable[] = [];
     displayedColumns: string[] = ['name', 'value'];
@@ -49,7 +52,18 @@ export class ModelValidationComponent {
     }
 
     modeValidationImg(): void {
-        const data = this.cogFrameworkApiService.getModelValidationImg();
+        const response = this.cogFrameworkApiService.getModelValidationImgv2();
+        response.subscribe({
+            next: (v) => {
+                console.log(v)
+            },
+            error: (e) => {
+                console.error(e)
+            },
+            complete: () => {
+                console.info('complete')
+            }
+        })
     }
 
 }

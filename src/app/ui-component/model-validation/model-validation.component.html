@@ -41,8 +41,11 @@
                         <mat-card-title>Confusion Matrix</mat-card-title>
                     </mat-card-title-group>
                 </mat-card-header>
+                test
                 <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image src="https://cog-ui-test.s3.eu-west-3.amazonaws.com/confusion_matrix.png">
+                    <img mat-card-xl-image src="https://cog-ui-test.s3.eu-west-3.amazonaws.com/confusion_matrix.png" alt="">
+                    <img mat-card-xl-image [src]="imageUrl"
+                         alt="">
                 </mat-card-content>
             </mat-card>
 
