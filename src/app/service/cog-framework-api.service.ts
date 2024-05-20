@@ -3,7 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {environment} from "../../environments/environment";
 import {ModelInfo, ModelInfoById} from "../model/ModelInfo";
-import {DatasetById, DatasetInfo, DatasetByName} from "../model/DatasetInfo";
+import {DatasetInfo, DatasetByName} from "../model/DatasetInfo";
 import {ModelDetailInfo} from "../model/ModelDetails";
 import {ModelValidation} from "../model/ModelValidation";
 import {DataSetDetailInfo} from "../model/DataSetDetailInfo";
