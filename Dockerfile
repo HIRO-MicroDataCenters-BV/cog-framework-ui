@@ -17,6 +17,6 @@ FROM nginx:1.26.0-alpine
 
 
 COPY --from=build /app/dist/cog-framework-ui/ /usr/share/nginx/html
-#COPY nginx.conf /etc/nginx/nginx.conf
+COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
