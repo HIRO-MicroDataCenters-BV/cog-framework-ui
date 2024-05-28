@@ -10,6 +10,8 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { MaterialRoutes } from './component.routing';
+import { ModelValidationSearchComponent } from './model-validation-search/model-validation-search.component';
+import { ModelValidationArtifactsComponent } from './model-validation-artifacts/model-validation-artifacts.component';
 
 @NgModule({
   imports: [
@@ -23,5 +25,9 @@ import { MaterialRoutes } from './component.routing';
 
   ],
   providers: [],
+  declarations: [
+    ModelValidationSearchComponent,
+    ModelValidationArtifactsComponent
+  ],
 })
 export class MaterialComponentsModule {}

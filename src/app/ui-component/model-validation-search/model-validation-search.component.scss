@@ -10,23 +10,6 @@
   direction: rtl
 }
 
-.img-card {
-  max-width: 480px;
-  margin-left: 10px;
-  margin-top: 10px;
-}
-
-.img-container {
-  height: 100%;
-  width: 100%;
-  background-size: cover;
-}
-
-.mat-mdc-card-xl-image {
-  width: 440px;
-  height: 260px;
-}
-
 .input-search {
   //height: 60px !important;
   margin-left: 25px;
@@ -42,4 +25,8 @@
   display: block;
   width: 100%;
   overflow-x: auto;
+}
+
+.progress-bar {
+  height: 1px
 }
