@@ -19,3 +19,17 @@ export interface ValidationMetricsData {
     roc_auc: number
     score: number
 }
+
+export interface ModelValidationMetricTableModel {
+    registered_date_time: string;
+    dataset_id: Number
+    id: Number
+    accuracy_score: Number
+    example_count: Number
+    f1_score: Number
+    log_loss: Number
+    precision_score: Number
+    recall_score: Number
+    roc_auc: Number
+    score: Number
+}

@@ -1,11 +1,14 @@
+import {ValidationArtifacts} from "./ValidationArtifacts";
+import {ValidationMetricsData} from "./ValidationMetrics";
+
 export interface ModelDetailInfo {
-    data: Data
+    data: ModelDetailData[]
     errors: any
     message: string
     success: boolean
 }
 
-export interface Data {
+export interface ModelDetailData {
     datasets: DatasetInfo[]
     model_files: ModelFileInfo[]
     model_id: string
@@ -13,7 +16,13 @@ export interface Data {
     model_description: string
     author: string
     register_date: string
+    validation_artifacts: ValidationArtifact[]
+    validation_metrics: ValidationMetricsData[]
+}
 
+export interface ValidationArtifact {
+    dataset_id: number
+    validation_artifacts: ValidationArtifacts
 }
 
 export interface DatasetInfo {
@@ -24,4 +33,10 @@ export interface DatasetInfo {
 export interface ModelFileInfo {
     file_id: string,
     file_name: string,
+}
+
+export interface ModelValidationTableModel {
+    id: Number,
+    dataset_id: Number
+    model_id: Number
 }

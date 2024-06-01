@@ -4,48 +4,15 @@ import {CogFrameworkApiService} from "../../service/cog-framework-api.service";
 import {
     ValidationArtifactsResponse
 } from "../../model/ValidationArtifacts";
-import {ValidationMetricsData} from "../../model/ValidationMetrics";
+import {ModelValidationMetricTableModel, ValidationMetricsData} from "../../model/ValidationMetrics";
 import {Router} from "@angular/router";
 import {ModelValidationService} from "../../service/model-validation.service";
+import {ModelValidationTableModel} from "../../model/ModelDetails";
 
-interface ModelValidationMetricTableModel {
-    registered_date_time: string;
-    dataset_id: Number
-    id: Number
-    accuracy_score: Number
-    example_count: Number
-    f1_score: Number
-    log_loss: Number
-    precision_score: Number
-    recall_score: Number
-    roc_auc: Number
-    score: Number
-}
 
 interface ModelValidationTable {
     name: String;
     value: Number;
-}
-
-interface ModelValidationTableModel {
-    id: Number,
-    dataset_id: Number
-    model_id: Number
-}
-
-interface ModelValidationMetricTable {
-    positive_class: Number;
-    true_negatives: Number;
-    false_positives: Number;
-    false_negatives: Number;
-    true_positives: Number;
-    example_count: Number;
-    accuracy_score: Number;
-    recall_score: Number;
-    precision_score: Number;
-    f1_score: Number;
-    roc_auc: Number;
-    precision_recall_auc: Number;
 }
 
 @Component({
@@ -73,7 +40,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
     modelValidationMetricTableDisplayedColumns: string[] = ['id', 'dataset_id', 'accuracy_score', 'example_count', 'f1_score', 'log_loss', 'precision_score', 'recall_score', 'roc_auc', 'score'];
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router, private modelValidationService: ModelValidationService) {
-       // this.getModelValidationArtifactByID();
+        // this.getModelValidationArtifactByID();
     }
 
     open(item: any): void {
