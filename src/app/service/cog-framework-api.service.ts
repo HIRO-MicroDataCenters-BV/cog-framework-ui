@@ -57,28 +57,28 @@ export class CogFrameworkApiService {
     }
 
     getModelValidationArtifactById(modelId: string): Observable<ValidationArtifactsResponse> {
-        const url = this.modeAPIURL + '/validation/artifact/' + modelId
+        const url = this.modeAPIURL + '/validation/artifact/model_id/' + modelId
         return this.httpClient.get<ValidationArtifactsResponse>(url);
     }
 
     getModelValidationArtifactByName(modelName: string): Observable<ValidationArtifactsResponse> {
-        const url = this.modeAPIURL + '/validation/artifact/' + modelName
+        const url = this.modeAPIURL + '/validation/artifact/model_name/' + modelName
         return this.httpClient.get<ValidationArtifactsResponse>(url);
     }
 
     getModelValidationMetricsById(modelId: string): Observable<ValidationMetricsResponse> {
-        const url = this.modeAPIURL + '/validation/metrics/' + modelId
+        const url = this.modeAPIURL + '/validation/metrics/model_id/' + modelId
         return this.httpClient.get<ValidationMetricsResponse>(url);
     }
 
     getModelValidationMetricsByName(modelName: string): Observable<ValidationMetricsResponse> {
-        const url = this.modeAPIURL + '/validation/metrics/' + modelName
+        const url = this.modeAPIURL + '/validation/metrics/model_name/' + modelName
         return this.httpClient.get<ValidationMetricsResponse>(url);
     }
 
     //s3://mlflow/per_class_metrics.csv
     getModelValidationCSV(csvFile: string): Observable<any> {
-        const url = this.modeAPIURL + '/s/get_image?url=' + csvFile;
+        const url = this.modeAPIURL + '/s3/get_image?url=' + csvFile;
         return this.httpClient.get<any>(url, {responseType: 'text' as any});
     }
 

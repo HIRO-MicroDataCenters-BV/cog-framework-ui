@@ -29,7 +29,7 @@ export class ModelValidationArtifactsComponent implements OnInit {
 
     data: ValidationArtifactsData | undefined;
 
-    baseURL = environment.appURL + '/s/get_image?url=';
+    baseURL = environment.appURL + '/s3/get_image?url=';
     confusion_matrix: any;
     //per_class_metrics: any
     precision_recall_curve_plot: any
