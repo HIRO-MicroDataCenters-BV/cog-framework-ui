@@ -55,7 +55,7 @@ interface ModelValidationMetricTable {
 })
 export class ModelValidationSearchComponent implements OnInit, OnDestroy {
 
-    modelValidationName = "Federated Learning";
+    modelValidationName = "";
     modelValidationId = "";
 
     validationMetricsData: ValidationMetricsData | undefined;
