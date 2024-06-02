@@ -9,7 +9,6 @@ import {Router} from "@angular/router";
 import {ModelValidationService} from "../../service/model-validation.service";
 import {ModelValidationTableModel} from "../../model/ModelDetails";
 
-
 interface ModelValidationTable {
     name: String;
     value: Number;
@@ -49,19 +48,17 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
                 this.modelValidationService.modelValidationArtifactsData = res;
             }
         })
+        this.modelValidationService.previousComponentUrl = '/model-validation';
         this.router.navigate(['/model-validation-artifacts'], {queryParams: {id: item.id}})
             .then(r => {
-                console.log("redirected to other component")
             });
     }
 
     search(): void {
         if (this.modelValidationId.length > 0) {
-            console.log("Search by ID")
             this.getModelValidationArtifactByID();
             this.getModeValidationMetricsById();
         } else {
-            console.log("Search by Name")
             this.getModelValidationArtifactByName();
             this.getModeValidationMetricsByName();
         }

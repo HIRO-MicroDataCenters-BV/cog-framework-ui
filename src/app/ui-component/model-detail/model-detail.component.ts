@@ -15,6 +15,7 @@ import {DemoMaterialModule} from "../../demo-material-module";
 import {NgIf} from "@angular/common";
 import {ModelValidationService} from "../../service/model-validation.service";
 import {ModelValidationMetricTableModel, ValidationMetricsData} from "../../model/ValidationMetrics";
+import {ValidationArtifactsData, ValidationArtifactsResponse} from "../../model/ValidationArtifacts";
 
 
 @Component({
@@ -32,7 +33,7 @@ import {ModelValidationMetricTableModel, ValidationMetricsData} from "../../mode
 })
 export class ModelDetailComponent {
 
-    modelId = "1";
+    modelId = "";
     modelDetail: ModelDetailInfo | undefined;
     modelDetailData: ModelDetailData | undefined;
 
@@ -41,7 +42,8 @@ export class ModelDetailComponent {
     modelFileDataSource: ModelFileInfo[] = [];
     errMsg = undefined;
 
-    validation_artifacts: ValidationArtifact[] = [];
+    validationArtifactsResponse: ValidationArtifactsResponse | undefined;
+    validation_artifacts: ValidationArtifactsData   [] = [];
     modelValidationTableDataSource: ModelValidationTableModel[] = [];
     displayedColumnsModelValidationTable: string[] = ['id', 'dataset_id', 'model_id', 'action']
 
@@ -50,7 +52,6 @@ export class ModelDetailComponent {
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private activatedRoute: ActivatedRoute,
                 private router: Router, private modelValidationService: ModelValidationService) {
-        console.log(this.activatedRoute.snapshot.queryParams['id'])
         if (this.activatedRoute.snapshot.queryParams['id']) {
             this.modelId = this.activatedRoute.snapshot.queryParams['id'];
         }
@@ -58,27 +59,21 @@ export class ModelDetailComponent {
     }
 
     modeDetails(): void {
-        console.log("search model with name " + this.modelId)
         const response = this.cogFrameworkApiService.getModelDetailById(this.modelId);
 
         response.subscribe({
             next: (v) => {
-                //console.log(v)
-                // temp
-                console.log(v.data[0])
                 this.modelDetailData = v.data[0]
                 this.modelDetail = v;
                 this.dataSetDataSource = v.data[0].datasets;
                 this.modelFileDataSource = v.data[0].model_files
                 this.errMsg = undefined;
-
                 this.validation_artifacts = v.data[0].validation_artifacts;
                 this.buildModelValidationArtifacts(this.validation_artifacts);
                 this.buildModelValidationMetrics(v.data[0].validation_metrics);
 
             },
             error: (e) => {
-                console.log('error----->')
                 console.error(e)
                 console.error(e.status)
                 console.error(e.error.error)
@@ -101,28 +96,22 @@ export class ModelDetailComponent {
     }
 
     open(item: any): void {
-        // this.validationArtifactsResponse?.data.forEach(res => {
-        //     if (item.id === res.id) {
-        //         this.modelValidationService.modelValidationArtifactsData = res;
-        //     }
-        // })
-
-        this.validation_artifacts.forEach(res => {
-            // if (item.id === res.id) {
-            //     this.modelValidationService.modelValidationArtifactsData = res;
-            // }
-        })
-
+        this.validation_artifacts?.forEach(res => {
+            if (item.id === res.id) {
+                this.modelValidationService.modelValidationArtifactsData = res;
+            }
+        });
         this.router.navigate(['/model-validation-artifacts'])
             .then(r => {
-                console.log("redirected to other component")
+                this.modelValidationService.previousComponentUrl = '/model-detail';
+                this.modelValidationService.previousComponentUrlQuery = this.activatedRoute.snapshot.queryParams['id'];
             });
     }
 
     buildModelValidationArtifacts(validationArtifacts: ValidationArtifact[]): void {
         validationArtifacts.forEach(data => {
             const dd: ModelValidationTableModel = {
-                id: 1,
+                id: data.id,
                 dataset_id: data.dataset_id,
                 // @ts-ignore
                 model_id: this.modelDetailData?.model_id

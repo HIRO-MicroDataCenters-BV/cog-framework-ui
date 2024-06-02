@@ -1,4 +1,4 @@
-import {ValidationArtifacts} from "./ValidationArtifacts";
+import {ValidationArtifacts, ValidationArtifactsData} from "./ValidationArtifacts";
 import {ValidationMetricsData} from "./ValidationMetrics";
 
 export interface ModelDetailInfo {
@@ -16,12 +16,13 @@ export interface ModelDetailData {
     model_description: string
     author: string
     register_date: string
-    validation_artifacts: ValidationArtifact[]
+    validation_artifacts: ValidationArtifactsData[]
     validation_metrics: ValidationMetricsData[]
 }
 
 export interface ValidationArtifact {
     dataset_id: number
+    id: number
     validation_artifacts: ValidationArtifacts
 }
 
