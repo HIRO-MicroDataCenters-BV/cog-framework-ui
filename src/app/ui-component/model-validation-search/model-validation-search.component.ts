@@ -33,21 +33,6 @@ interface ModelValidationTableModel {
     model_id: Number
 }
 
-interface ModelValidationMetricTable {
-    positive_class: Number;
-    true_negatives: Number;
-    false_positives: Number;
-    false_negatives: Number;
-    true_positives: Number;
-    example_count: Number;
-    accuracy_score: Number;
-    recall_score: Number;
-    precision_score: Number;
-    f1_score: Number;
-    roc_auc: Number;
-    precision_recall_auc: Number;
-}
-
 @Component({
     selector: 'app-model-validation-search',
     templateUrl: './model-validation-search.component.html',
@@ -73,7 +58,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
     modelValidationMetricTableDisplayedColumns: string[] = ['id', 'dataset_id', 'accuracy_score', 'example_count', 'f1_score', 'log_loss', 'precision_score', 'recall_score', 'roc_auc', 'score'];
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router, private modelValidationService: ModelValidationService) {
-       // this.getModelValidationArtifactByID();
+        this.search()
     }
 
     open(item: any): void {
@@ -119,7 +104,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
             },
             error: (e) => {
                 console.error(e)
-
+                this.loading = false;
             },
             complete: () => {
                 console.info('complete')
@@ -147,6 +132,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
             },
             error: (e) => {
                 console.error(e)
+                this.loading = false;
             },
             complete: () => {
                 this.loading = false;
@@ -161,14 +147,14 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
         response.subscribe({
             next: (v) => {
                 this.validationMetricsData = v.data[0];
-                this.buildModelValidationMetrics(this.validationMetricsData)
-                this.buildModelValidationMetricsV2(v.data);
+                this.buildModelValidationMetrics(v.data);
             },
             error: (e) => {
                 console.error(e)
-
+                this.loading = false;
             },
             complete: () => {
+                this.loading = false;
             }
         })
     }
@@ -179,19 +165,20 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
         response.subscribe({
             next: (v) => {
                 this.validationMetricsData = v.data[0];
-                this.buildModelValidationMetrics(this.validationMetricsData)
-                this.buildModelValidationMetricsV2(v.data);
+                this.buildModelValidationMetrics(v.data);
             },
             error: (e) => {
                 console.error(e)
+                this.loading = false;
 
             },
             complete: () => {
+                this.loading = false;
             }
         })
     }
 
-    buildModelValidationMetricsV2(validationMetricsData: ValidationMetricsData[]): void {
+    buildModelValidationMetrics(validationMetricsData: ValidationMetricsData[]): void {
         validationMetricsData.forEach(data => {
             const d: ModelValidationMetricTableModel = {
                 registered_date_time: data.registered_date_time,
@@ -208,44 +195,6 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
             }
             this.modelValidationMetricTableDataSource.push(d);
         })
-    }
-
-    buildModelValidationMetrics(validationMetricsData: ValidationMetricsData): void {
-        this.modelValidationScoreTableSource.push({
-            "name": "accuracy_score",
-            "value": validationMetricsData.accuracy_score
-        });
-        this.modelValidationScoreTableSource.push({
-            "name": "example_count",
-            "value": validationMetricsData.example_count
-        });
-
-        this.modelValidationScoreTableSource.push({
-            "name": "f1_score",
-            "value": validationMetricsData.f1_score
-        });
-
-        this.modelValidationScoreTableSource.push({
-            "name": "log_loss",
-            "value": validationMetricsData.log_loss
-        });
-
-        this.modelValidationScoreTableSource.push({
-            "name": "precision_score",
-            "value": validationMetricsData.precision_score
-        });
-
-        this.modelValidationScoreTableSource.push({
-            "name": "recall_score",
-            "value": validationMetricsData.recall_score
-        });
-
-        this.modelValidationScoreTableSource.push({
-            "name": "roc_auc",
-            "value": validationMetricsData.roc_auc
-        });
-
-        this.modelValidationScoreTableSource.push({"name": "score", "value": validationMetricsData.score});
     }
 
     ngOnInit(): void {
