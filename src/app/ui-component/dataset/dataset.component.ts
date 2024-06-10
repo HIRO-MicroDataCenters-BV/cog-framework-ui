@@ -41,7 +41,7 @@ export class DatasetComponent {
     displayedColumns: string[] = ['id', 'name', 'creationTime', 'author', 'action'];
     dataSource = ELEMENT_DATA;
     appURL = environment.appURL;
-    datasetName = "demo";
+    datasetName = "";
     datasetId = "";
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router) {

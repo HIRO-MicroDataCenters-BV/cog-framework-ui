@@ -40,7 +40,7 @@ export class ModelComponent {
     loading = false;
     displayedColumns: string[] = ['id', 'name', 'creationTime', 'author', 'action'];
     dataSource = ELEMENT_DATA;
-    modelName = "Federated Learning";
+    modelName = "";
     modelId = "";
 
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router) {
