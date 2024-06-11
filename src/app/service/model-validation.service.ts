@@ -7,7 +7,8 @@ import {ValidationArtifactsData} from "../model/ValidationArtifacts";
 export class ModelValidationService {
 
     modelValidationArtifactsData: ValidationArtifactsData | undefined;
-    csvData: any | undefined;
+    previousComponentUrl: any;
+    previousComponentUrlQuery: any;
 
     constructor() {
     }
