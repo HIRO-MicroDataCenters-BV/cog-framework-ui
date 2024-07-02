@@ -107,11 +107,11 @@ export class ModelValidationComponent {
             next: (v) => {
                 this.validationArtifactsResponse = v;
                 this.validationArtifactsData = v.data[0];
+                console.log(this.validationArtifactsResponse);
                 this.buildImgURL(this.validationArtifactsData);
             },
             error: (e) => {
                 console.error(e)
-
             },
             complete: () => {
                 console.info('complete')
@@ -259,6 +259,7 @@ export class ModelValidationComponent {
     buildImgURL(validationArtifactsData: ValidationArtifactsData): void {
 
         this.confusion_matrix = this.baseURL + validationArtifactsData.validation_artifacts.confusion_matrix.uri;
+        console.log(this.confusion_matrix)
         this.per_class_metrics = this.baseURL + validationArtifactsData.validation_artifacts.per_class_metrics.uri;
 
         this.precision_recall_curve_plot = this.baseURL + validationArtifactsData.validation_artifacts.precision_recall_curve_plot.uri;

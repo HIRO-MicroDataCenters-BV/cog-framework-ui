@@ -14,7 +14,11 @@ import {MatTableModule} from "@angular/material/table";
 import {DemoMaterialModule} from "../../demo-material-module";
 import {NgIf} from "@angular/common";
 import {ModelValidationService} from "../../service/model-validation.service";
-import {ModelValidationMetricTableModel, ValidationMetricsData} from "../../model/ValidationMetrics";
+import {
+    ModelPipelineTableModel,
+    ModelValidationMetricTableModel,
+    ValidationMetricsData
+} from "../../model/ValidationMetrics";
 import {ValidationArtifactsData, ValidationArtifactsResponse} from "../../model/ValidationArtifacts";
 
 
@@ -50,6 +54,9 @@ export class ModelDetailComponent {
     modelValidationMetricTableDataSource: ModelValidationMetricTableModel[] = [];
     modelValidationMetricTableDisplayedColumns: string[] = ['id', 'dataset_id', 'accuracy_score', 'example_count', 'f1_score', 'log_loss', 'precision_score', 'recall_score', 'roc_auc', 'score'];
 
+    modelPipelineTableTableDataSource: ModelPipelineTableModel[] = [];
+    displayedColumnsModelPipeLineTable: string[] = ['name', 'description']
+
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private activatedRoute: ActivatedRoute,
                 private router: Router, private modelValidationService: ModelValidationService) {
         if (this.activatedRoute.snapshot.queryParams['id']) {
@@ -71,6 +78,7 @@ export class ModelDetailComponent {
                 this.validation_artifacts = v.data[0].validation_artifacts;
                 this.buildModelValidationArtifacts(this.validation_artifacts);
                 this.buildModelValidationMetrics(v.data[0].validation_metrics);
+                this.buildModelPipelineDataSource();
 
             },
             error: (e) => {
@@ -113,7 +121,7 @@ export class ModelDetailComponent {
             const dd: ModelValidationTableModel = {
                 id: data.id,
                 dataset_id: data.dataset_id,
-                // @ts-ignore
+                //@ts-ignore
                 model_id: this.modelDetailData?.model_id
             }
             this.modelValidationTableDataSource.push(dd)
@@ -138,4 +146,14 @@ export class ModelDetailComponent {
             this.modelValidationMetricTableDataSource.push(d);
         })
     }
+
+    buildModelPipelineDataSource(): void {
+        const data: ModelPipelineTableModel = {
+            name: 'pipeline.name',
+            description: 'pipeline.description',
+            uploadAt: 'pipeline.createdAt_in_sec',
+        }
+        this.modelPipelineTableTableDataSource.push(data);
+    }
+
 }
