@@ -302,6 +302,15 @@
                             </td>
                         </ng-container>
 
+
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="created_at">
+                            <th mat-header-cell *matHeaderCellDef>Created At</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.createdAt| date: 'dd-MMM-yyyy hh:mm' }}
+                            </td>
+                        </ng-container>
+
                         <tr mat-header-row *matHeaderRowDef="displayedColumnsModelPipeLineTable"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumnsModelPipeLineTable;"></tr>
                     </table>

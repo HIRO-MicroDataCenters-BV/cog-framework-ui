@@ -22,14 +22,27 @@ export interface ValidationMetricsData {
 
 export interface ModelValidationMetricTableModel {
     registered_date_time: string;
-    dataset_id: Number
-    id: Number
-    accuracy_score: Number
-    example_count: Number
-    f1_score: Number
-    log_loss: Number
-    precision_score: Number
-    recall_score: Number
-    roc_auc: Number
-    score: Number
+    dataset_id: number
+    id: number
+    accuracy_score: number
+    example_count: number
+    f1_score: number
+    log_loss: number
+    precision_score: number
+    recall_score: number
+    roc_auc: number
+    score: number
+}
+
+export interface ModelPipelineTableModel {
+    name: string,
+    description: string,
+    createdAt: string,
+}
+
+export interface Pipeline {
+    name: string
+    uuid: string
+    description: string
+    created_at: string
 }
