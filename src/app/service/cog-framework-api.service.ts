@@ -15,71 +15,70 @@ import {ValidationMetricsResponse} from "../model/ValidationMetrics";
 })
 export class CogFrameworkApiService {
 
-    modeAPIURL = environment.appURL;
+    private baseURL: string = environment.appURL;
 
+    
     constructor(private httpClient: HttpClient,) {
     }
 
     getModelByName(name: string): Observable<ModelInfo> {
-        const url = this.modeAPIURL + '/models/' + name
-        return this.httpClient.get<ModelInfo>(url);
+        return this.httpClient.get<ModelInfo>(`${this.baseURL}/models/${name}`);
     }
 
     getModelById(id: string): Observable<ModelInfoById> {
-        const url = this.modeAPIURL + '/models/' + id
-        return this.httpClient.get<ModelInfoById>(url);
+        return this.httpClient.get<ModelInfoById>(`${this.baseURL}/models/${id}`);
     }
 
     getModelDetailById(id: string): Observable<ModelDetailInfo> {
-        const url = this.modeAPIURL + '/model_details?id=' + id
-        return this.httpClient.get<ModelDetailInfo>(url);
+        return this.httpClient.get<ModelDetailInfo>(`${this.baseURL}/model_details?id=${id}`);
     }
 
     getDataSetDetailById(id: string): Observable<DataSetDetailInfo> {
-        const url = this.modeAPIURL + '/dataset/details?id=' + id
-        return this.httpClient.get<DataSetDetailInfo>(url);
+        return this.httpClient.get<DataSetDetailInfo>(`${this.baseURL}/dataset/details?id=${id}`);
     }
 
     getDataSetDetailByName(name: string): Observable<DatasetByName> {
-        const url = this.modeAPIURL + '/dataset/' + name
-        return this.httpClient.get<DatasetByName>(url);
+        return this.httpClient.get<DatasetByName>(`${this.baseURL}/dataset/${name}`);
     }
 
     getModes(name: string): Observable<ModelInfo> {
-        const url = this.modeAPIURL + '/models'
-        return this.httpClient.get<ModelInfo>(url);
+        return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`);
     }
 
     // dataset apis
     getDatasetById(id: string): Observable<DatasetInfo> {
-        const url = this.modeAPIURL + '/dataset/' + id
-        return this.httpClient.get<DatasetInfo>(url);
+        return this.httpClient.get<DatasetInfo>(`${this.baseURL}/dataset/${id}`);
     }
 
     getModelValidationArtifactById(modelId: string): Observable<ValidationArtifactsResponse> {
-        const url = this.modeAPIURL + '/validation/artifact/model_id/' + modelId
-        return this.httpClient.get<ValidationArtifactsResponse>(url);
+        return this.httpClient.get<ValidationArtifactsResponse>(`${this.baseURL}/validation/artifact/model_id/${modelId}`);
     }
 
     getModelValidationArtifactByName(modelName: string): Observable<ValidationArtifactsResponse> {
-        const url = this.modeAPIURL + '/validation/artifact/model_name/' + modelName
-        return this.httpClient.get<ValidationArtifactsResponse>(url);
+        return this.httpClient.get<ValidationArtifactsResponse>(`${this.baseURL}/validation/artifact/model_name/${modelName}`);
     }
 
     getModelValidationMetricsById(modelId: string): Observable<ValidationMetricsResponse> {
-        const url = this.modeAPIURL + '/validation/metrics/model_id/' + modelId
-        return this.httpClient.get<ValidationMetricsResponse>(url);
+        return this.httpClient.get<ValidationMetricsResponse>(`${this.baseURL}/validation/metrics/model_id/${modelId}`);
     }
 
     getModelValidationMetricsByName(modelName: string): Observable<ValidationMetricsResponse> {
-        const url = this.modeAPIURL + '/validation/metrics/model_name/' + modelName
-        return this.httpClient.get<ValidationMetricsResponse>(url);
+        return this.httpClient.get<ValidationMetricsResponse>(`${this.baseURL}/validation/metrics/model_name/${modelName}`);
     }
 
     //s3://mlflow/per_class_metrics.csv
     getModelValidationCSV(csvFile: string): Observable<any> {
-        const url = this.modeAPIURL + '/s3/get_image?url=' + csvFile;
-        return this.httpClient.get<any>(url, {responseType: 'text' as any});
+        return this.httpClient.get<any>(`${this.baseURL}/s3/get_image?url=${csvFile}`, {responseType: 'text' as any});
+    }
+
+    uploadDataset({file, user_id, name, type, description}: {file: File, user_id: string, name: string, type: string, description: string}): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('user_id', user_id);
+        formData.append('name', name);
+        formData.append('type', type);
+        formData.append('description', description);
+        return this.httpClient.post(`${this.baseURL}/dataset`, formData);
     }
 
 }
