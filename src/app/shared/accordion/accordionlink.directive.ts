@@ -4,19 +4,19 @@ import {
   Inject,
   Input,
   OnInit,
-  OnDestroy
-} from '@angular/core';
+  OnDestroy,
+} from "@angular/core";
 
-import { AccordionDirective } from './accordion.directive';
+import { AccordionDirective } from "./accordion.directive";
 
 @Directive({
-  selector: '[appAccordionLink]'
+  selector: "[appAccordionLink]",
 })
 export class AccordionLinkDirective implements OnInit, OnDestroy {
   @Input()
   public group: any;
 
-  @HostBinding('class.selected')
+  @HostBinding("class.selected")
   @Input()
   get selected(): boolean {
     return this._selected;
@@ -29,7 +29,7 @@ export class AccordionLinkDirective implements OnInit, OnDestroy {
     }
   }
 
-  protected _selected: boolean=false;
+  protected _selected: boolean = false;
   protected nav: AccordionDirective;
 
   constructor(@Inject(AccordionDirective) nav: AccordionDirective) {

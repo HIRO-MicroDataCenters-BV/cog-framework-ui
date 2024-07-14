@@ -1,13 +1,17 @@
-import { MediaMatcher } from '@angular/cdk/layout';
-import {ChangeDetectorRef, Component,OnDestroy,AfterViewInit} from '@angular/core';
-import { MenuItems } from '../../shared/menu-items/menu-items';
-
+import { MediaMatcher } from "@angular/cdk/layout";
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  AfterViewInit,
+} from "@angular/core";
+import { MenuItems } from "../../shared/menu-items/menu-items";
 
 /** @title Responsive sidenav */
 @Component({
-  selector: 'app-full-layout',
-  templateUrl: 'full.component.html',
-  styleUrls: []
+  selector: "app-full-layout",
+  templateUrl: "full.component.html",
+  styleUrls: [],
 })
 export class FullComponent implements OnDestroy, AfterViewInit {
   mobileQuery: MediaQueryList;
@@ -17,9 +21,9 @@ export class FullComponent implements OnDestroy, AfterViewInit {
   constructor(
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher,
-    public menuItems: MenuItems
+    public menuItems: MenuItems,
   ) {
-    this.mobileQuery = media.matchMedia('(min-width: 1024px)');
+    this.mobileQuery = media.matchMedia("(min-width: 1024px)");
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
   }
