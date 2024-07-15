@@ -1,0 +1,9 @@
+<div class="file-input">
+    <input #fileInput id="fileInput" class="file-input__file" type="file" [accept]="accept" [disabled]="disabled"
+        (change)="onUploadFile()">
+    <input class="file-input__field" readonly [disabled]="disabled" [value]="displayedValue"
+        (click)="onClickToUploadFile()">
+    <button mat-icon-button class="file-input__exit-icon" mat-icon-button (click)="handleIconClick()">
+        <mat-icon style="font-size: 14px">Delete</mat-icon>
+    </button>
+</div> 
