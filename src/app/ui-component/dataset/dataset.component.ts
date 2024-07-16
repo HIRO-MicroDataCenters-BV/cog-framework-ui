@@ -14,6 +14,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { DataSetData } from "../../model/DatasetInfo";
 import { Router } from "@angular/router";
 
+import { UploadDatasetComponent } from "../dataset-upload/dataset-upload.component";
+
 const ELEMENT_DATA: DataSetData[] = [];
 
 @Component({
@@ -31,6 +33,7 @@ const ELEMENT_DATA: DataSetData[] = [];
     MatProgressBarModule,
     MatTooltipModule,
     NgIf,
+    UploadDatasetComponent,
   ],
   templateUrl: "./dataset.component.html",
   styleUrl: "./dataset.component.scss",

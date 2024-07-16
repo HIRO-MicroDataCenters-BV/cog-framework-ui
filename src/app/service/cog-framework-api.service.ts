@@ -16,7 +16,7 @@ import { ValidationMetricsResponse } from "../model/ValidationMetrics";
 export class CogFrameworkApiService {
   private baseURL: string = environment.appURL;
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: HttpClient) { }
 
   getModelByName(name: string): Observable<ModelInfo> {
     return this.httpClient.get<ModelInfo>(`${this.baseURL}/models/${name}`);
@@ -112,6 +112,6 @@ export class CogFrameworkApiService {
     formData.append("name", name);
     formData.append("type", type);
     formData.append("description", description);
-    return this.httpClient.post(`${this.baseURL}/dataset`, formData);
+    return this.httpClient.post(`${this.baseURL}/dataset`, formData, { headers: { 'Content-Type': 'multipart/form-data' }});
   }
 }

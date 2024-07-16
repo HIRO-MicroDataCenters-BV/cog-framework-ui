@@ -49,4 +49,4 @@ import { SpinnerComponent } from "./shared/spinner.component";
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

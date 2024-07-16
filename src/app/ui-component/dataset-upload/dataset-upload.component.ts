@@ -9,10 +9,8 @@ import { FormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { DataSetData } from "../../model/DatasetInfo";
 import { FileInputComponent } from "../file-input/file-input.component";
-
-const ELEMENT_DATA: DataSetData[] = [];
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
     selector: 'upload-dataset',
@@ -28,16 +26,44 @@ const ELEMENT_DATA: DataSetData[] = [];
         MatProgressBarModule,
         MatTooltipModule,
         NgIf,
-        FileInputComponent
+        FileInputComponent,
+        MatButtonModule
     ],
     templateUrl: './dataset-upload.component.html',
     styleUrl: './dataset-upload.component.scss',
 })
 export class UploadDatasetComponent {
 
+    file: File | null = null;
+    userId: string = "";
+    datasetName: string = "";
+    datasetDescription: string = "";
+    datasetType: string = "0";
+
+    constructor(
+        private cogFrameworkApiService: CogFrameworkApiService,
+    ) { }
 
     handleFileInput(file: File) {
-        console.log(file);
+        if (file) {
+            this.file = file;
+            return;
+        }
+        this.file = null;
+        this.userId = "";
+        this.datasetName = "";
+        this.datasetDescription = "";
+        this.datasetType = "0";
+    }
+
+    uploadFile(): void {
+        if (!this.file || !this.userId || !this.datasetName || !this.datasetDescription || !this.datasetType) {
+            return;
+        }
+       
+        this.cogFrameworkApiService.uploadDataset({ file: this.file, user_id: this.userId, name: this.datasetName, type: this.datasetType, description: this.datasetDescription }).subscribe((response) => {
+            console.log(response);
+        });
     }
 
 

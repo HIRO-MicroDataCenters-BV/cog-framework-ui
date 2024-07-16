@@ -1,12 +1,21 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from "@angular/material/button";
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+
+
 
 @Component({
     selector: 'app-file-input',
     standalone: true,
     templateUrl: './file-input.component.html',
-    styleUrls: ['./file-input.component.scss'],
-    imports: [MatIconModule]
+    styleUrl: './file-input.component.scss',
+    imports: [MatIconModule,
+        MatButtonModule,
+        MatInputModule,
+        MatFormFieldModule
+    ]
 })
 export class FileInputComponent {
     @Input() disabled: boolean = false;
@@ -16,14 +25,14 @@ export class FileInputComponent {
     @ViewChild('fileInput') fileInput!: ElementRef;
     file: File | null = null;
 
-    constructor() {}
+    constructor() { }
 
     get displayedValue(): string {
         return this.file ? this.file.name : '';
     }
 
     get icon(): string {
-        return this.file ? 'icons/exit-cross' : 'icons/folder';
+        return this.file ? 'close' : 'upload_file';
     }
 
     onClickToUploadFile(): void {
