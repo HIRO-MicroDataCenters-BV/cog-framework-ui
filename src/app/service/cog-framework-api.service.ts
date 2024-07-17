@@ -107,14 +107,14 @@ export class CogFrameworkApiService {
     description: string;
   }): Observable<any> {
     const formData = new FormData();
-    console.log(
-      `uploadDataset: file=${file}, user_id=${user_id}, name=${name}, type=${type}, description=${description}`,
-    );
     formData.append("file", file);
-    formData.append("user_id", user_id);
-    formData.append("name", name);
-    formData.append("type", type);
-    formData.append("description", description);
-    return this.httpClient.post(`${this.baseURL}/dataset`, formData);
+    const params = encodeURI(new HttpParams()
+    .set('user_id', user_id)
+    .set('dataset_name', name)
+    .set('dataset_type', type)
+    .set('description', description)
+    .toString());
+    const url = `${this.baseURL}/dataset?${params}`;
+    return this.httpClient.post(url, formData);
   }
 }

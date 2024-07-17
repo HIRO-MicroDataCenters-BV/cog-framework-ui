@@ -4,9 +4,14 @@
     position: relative;
     width: 100%;
     margin-left: 4px;
+    
 
     .file-input__file {
         display: none;
+    }
+
+    .file-input__text-field {
+        cursor: pointer;
     }
 
 }

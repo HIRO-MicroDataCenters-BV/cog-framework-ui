@@ -57,7 +57,7 @@ export class UploadDatasetComponent {
     }
 
     uploadFile(): void {
-        if (!this.file || !this.userId || !this.datasetName || !this.datasetDescription || !this.datasetType) {
+        if (!this.file || !this.userId || !this.datasetName || !this.datasetDescription) {
             return;
         }
        
