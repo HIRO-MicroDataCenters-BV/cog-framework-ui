@@ -34,3 +34,16 @@ export interface DataSetData {
   train_and_inference_type: number;
   user_id: number;
 }
+
+export interface UploadedDataset {
+  data: DataSetData | undefined;
+  errors: undefined | UploadDatasetError;
+  message: string;
+  success: boolean;
+}
+
+export interface UploadDatasetError {
+  date: string;
+  error_code: string;
+  error_message: [string];
+}

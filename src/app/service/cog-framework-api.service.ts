@@ -3,7 +3,11 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
 import { ModelInfo, ModelInfoById } from "../model/ModelInfo";
-import { DatasetInfo, DatasetByName } from "../model/DatasetInfo";
+import {
+  DatasetInfo,
+  DatasetByName,
+  UploadedDataset,
+} from "../model/DatasetInfo";
 import { ModelDetailInfo } from "../model/ModelDetails";
 import { DataSetDetailInfo } from "../model/DataSetDetailInfo";
 import { ValidationArtifactsResponse } from "../model/ValidationArtifacts";
@@ -105,16 +109,18 @@ export class CogFrameworkApiService {
     name: string;
     type: string;
     description: string;
-  }): Observable<any> {
+  }): Observable<UploadedDataset> {
     const formData = new FormData();
     formData.append("file", file);
-    const params = encodeURI(new HttpParams()
-    .set('user_id', user_id)
-    .set('dataset_name', name)
-    .set('dataset_type', type)
-    .set('description', description)
-    .toString());
+    const params = encodeURI(
+      new HttpParams()
+        .set("user_id", user_id)
+        .set("dataset_name", name)
+        .set("dataset_type", type)
+        .set("description", description)
+        .toString(),
+    );
     const url = `${this.baseURL}/dataset?${params}`;
-    return this.httpClient.post(url, formData);
+    return this.httpClient.post<UploadedDataset>(url, formData);
   }
 }
