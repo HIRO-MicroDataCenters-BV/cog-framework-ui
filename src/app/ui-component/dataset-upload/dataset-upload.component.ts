@@ -39,6 +39,8 @@ export class UploadDatasetComponent {
   datasetDescription: string = "";
   datasetType: string = "0";
 
+  loading = false;
+
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
   handleFileInput(file: File) {
@@ -63,7 +65,7 @@ export class UploadDatasetComponent {
     ) {
       return;
     }
-
+    this.loading = true;
     this.cogFrameworkApiService
       .uploadDataset({
         file: this.file,
@@ -72,8 +74,18 @@ export class UploadDatasetComponent {
         type: this.datasetType,
         description: this.datasetDescription,
       })
-      .subscribe((response) => {
-        console.log(response);
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.log(error);
+          this.loading = false;
+        },
+        complete: () => {
+          this.loading = false;
+        },
       });
   }
 }

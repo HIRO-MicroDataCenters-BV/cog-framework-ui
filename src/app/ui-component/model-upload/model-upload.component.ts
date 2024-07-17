@@ -39,6 +39,8 @@ export class ModelUploadComponent {
   modelDescription: string = "";
   modelType: string = "0";
 
+  loading = false;
+
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
   handleFileInput(file: File) {
@@ -72,8 +74,18 @@ export class ModelUploadComponent {
         model_file_type: this.modelType,
         model_file_description: this.modelDescription,
       })
-      .subscribe((response) => {
-        console.log(response);
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.log(error);
+          this.loading = false;
+        },
+        complete: () => {
+          this.loading = false;
+        },
       });
   }
 }
