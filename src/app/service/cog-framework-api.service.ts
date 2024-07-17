@@ -1,13 +1,12 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {environment} from "../../environments/environment";
 import {ModelInfo, ModelInfoById} from "../model/ModelInfo";
-import {DatasetInfo, DatasetByName} from "../model/DatasetInfo";
+import {DatasetByName, DatasetInfo} from "../model/DatasetInfo";
 import {ModelDetailInfo} from "../model/ModelDetails";
 import {DataSetDetailInfo} from "../model/DataSetDetailInfo";
 import {ValidationArtifactsResponse} from "../model/ValidationArtifacts";
-import {S3Request} from "../model/S3Request";
 import {ValidationMetricsResponse} from "../model/ValidationMetrics";
 
 @Injectable({
@@ -45,9 +44,9 @@ export class CogFrameworkApiService {
         return this.httpClient.get<DatasetByName>(url);
     }
 
-    getModes(name: string): Observable<ModelInfo> {
-        const url = this.modeAPIURL + '/models'
-        return this.httpClient.get<ModelInfo>(url);
+    getPipelineByModelID(id: string): Observable<any> {
+        const url = this.modeAPIURL + '/pipeline/'+ id
+        return this.httpClient.get<any>(url);
     }
 
     // dataset apis

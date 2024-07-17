@@ -277,6 +277,46 @@
 
             </div>
 
+            <hr>
+            <mat-card-header>
+                <mat-card-title>Model Pipeline</mat-card-title>
+            </mat-card-header>
+            <div class="col-12" style=" display: flex;">
+                <div class="density-settings table-responsive">
+                    <table mat-table [dataSource]="modelPipelineTableTableDataSource" class="mat-elevation-z0"
+                           *ngIf="modelPipelineTableTableDataSource.length>0">
+
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef>Name</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.name }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="description">
+                            <th mat-header-cell *matHeaderCellDef>Description</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.description }}
+                            </td>
+                        </ng-container>
+
+
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="created_at">
+                            <th mat-header-cell *matHeaderCellDef>Created At</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.createdAt| date: 'dd-MMM-yyyy hh:mm' }}
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsModelPipeLineTable"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsModelPipeLineTable;"></tr>
+                    </table>
+                </div>
+            </div>
+            <br/>
             <div class="col-3">
                 <button mat-flat-button color="primary" (click)="back()">
                     Back
