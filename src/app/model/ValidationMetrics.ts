@@ -33,3 +33,16 @@ export interface ModelValidationMetricTableModel {
   roc_auc: number;
   score: number;
 }
+
+export interface ModelPipelineTableModel {
+  name: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface Pipeline {
+  name: string;
+  uuid: string;
+  description: string;
+  created_at: string;
+}

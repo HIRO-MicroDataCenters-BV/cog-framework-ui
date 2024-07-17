@@ -2,7 +2,7 @@ import {
   ValidationArtifacts,
   ValidationArtifactsData,
 } from "./ValidationArtifacts";
-import { ValidationMetricsData } from "./ValidationMetrics";
+import { Pipeline, ValidationMetricsData } from "./ValidationMetrics";
 
 export interface ModelDetailInfo {
   data: ModelDetailData[];
@@ -21,6 +21,7 @@ export interface ModelDetailData {
   register_date: string;
   validation_artifacts: ValidationArtifactsData[];
   validation_metrics: ValidationMetricsData[];
+  pipelines: Pipeline[];
 }
 
 export interface ValidationArtifact {

@@ -44,8 +44,9 @@ export class CogFrameworkApiService {
     );
   }
 
-  getModes(name: string): Observable<ModelInfo> {
-    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`);
+  getPipelineByModelID(id: string): Observable<any> {
+    const url = this.modeAPIURL + "/pipeline/" + id;
+    return this.httpClient.get<any>(url);
   }
 
   // dataset apis
