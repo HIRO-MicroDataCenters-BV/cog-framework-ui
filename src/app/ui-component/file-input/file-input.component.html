@@ -1,8 +1,26 @@
 <mat-form-field class="file-input" appearance="outline">
-    <input #fileInput id="fileInput" class="file-input__file" type="file" [accept]="accept" [disabled]="disabled"
-        (change)="onUploadFile()">
-    <input matInput readonly [disabled]="disabled" [value]="displayedValue" (click)="onClickToUploadFile()">
-    <button class="file-input__exit-icon" mat-icon-button matSuffix (click)="handleIconClick()">
-        <mat-icon >{{icon}}</mat-icon>
-    </button>
+  <input
+    #fileInput
+    id="fileInput"
+    class="file-input__file"
+    type="file"
+    [accept]="accept"
+    [disabled]="disabled"
+    (change)="onUploadFile()"
+  />
+  <input
+    matInput
+    readonly
+    [disabled]="disabled"
+    [value]="displayedValue"
+    (click)="onClickToUploadFile()"
+  />
+  <button
+    class="file-input__exit-icon"
+    mat-icon-button
+    matSuffix
+    (click)="handleIconClick()"
+  >
+    <mat-icon>{{ icon }}</mat-icon>
+  </button>
 </mat-form-field>
