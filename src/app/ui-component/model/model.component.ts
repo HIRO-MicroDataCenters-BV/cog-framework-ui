@@ -14,6 +14,8 @@ import { DatePipe, NgIf } from "@angular/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { Router } from "@angular/router";
 
+import { ModelUploadComponent } from "../model-upload/model-upload.component";
+
 const ELEMENT_DATA: Model[] = [];
 
 @Component({
@@ -31,6 +33,7 @@ const ELEMENT_DATA: Model[] = [];
     NgIf,
     DatePipe,
     MatProgressBarModule,
+    ModelUploadComponent,
   ],
   templateUrl: "./model.component.html",
   styleUrl: "./model.component.scss",

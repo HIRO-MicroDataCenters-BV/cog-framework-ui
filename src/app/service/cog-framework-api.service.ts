@@ -123,4 +123,30 @@ export class CogFrameworkApiService {
     const url = `${this.baseURL}/dataset?${params}`;
     return this.httpClient.post<UploadedDataset>(url, formData);
   }
+  uploadModel({
+    file,
+    user_id,
+    model_id,
+    model_file_type,
+    model_file_description,
+  }: {
+    file: File;
+    user_id: string;
+    model_id: string;
+    model_file_type: string;
+    model_file_description: string;
+  }): Observable<UploadedDataset> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const params = encodeURI(
+      new HttpParams()
+        .set("user_id", user_id)
+        .set("model_id", model_id)
+        .set("model_file_type", model_file_type)
+        .set("model_file_description", model_file_description)
+        .toString(),
+    );
+    const url = `${this.baseURL}/models/upload?${params}`;
+    return this.httpClient.post<UploadedDataset>(url, formData);
+  }
 }

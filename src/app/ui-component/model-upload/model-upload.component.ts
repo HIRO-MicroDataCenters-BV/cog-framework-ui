@@ -13,7 +13,7 @@ import { FileInputComponent } from "../file-input/file-input.component";
 import { MatButtonModule } from "@angular/material/button";
 
 @Component({
-  selector: "app-upload-dataset",
+  selector: "app-upload-model",
   standalone: true,
   imports: [
     MatCardModule,
@@ -29,15 +29,15 @@ import { MatButtonModule } from "@angular/material/button";
     FileInputComponent,
     MatButtonModule,
   ],
-  templateUrl: "./dataset-upload.component.html",
-  styleUrl: "./dataset-upload.component.scss",
+  templateUrl: "./model-upload.component.html",
+  styleUrl: "./model-upload.component.scss",
 })
-export class UploadDatasetComponent {
+export class ModelUploadComponent {
   file: File | null = null;
   userId: string = "";
-  datasetName: string = "";
-  datasetDescription: string = "";
-  datasetType: string = "0";
+  modelId: string = "";
+  modelDescription: string = "";
+  modelType: string = "0";
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
@@ -48,29 +48,29 @@ export class UploadDatasetComponent {
     }
     this.file = null;
     this.userId = "";
-    this.datasetName = "";
-    this.datasetDescription = "";
-    this.datasetType = "0";
+    this.modelId = "";
+    this.modelDescription = "";
+    this.modelType = "0";
   }
 
   uploadFile(): void {
     if (
       !this.file ||
       !this.userId ||
-      !this.datasetName ||
-      !this.datasetDescription ||
-      !this.datasetType
+      !this.modelId ||
+      !this.modelDescription ||
+      !this.modelType
     ) {
       return;
     }
 
     this.cogFrameworkApiService
-      .uploadDataset({
+      .uploadModel({
         file: this.file,
         user_id: this.userId,
-        name: this.datasetName,
-        type: this.datasetType,
-        description: this.datasetDescription,
+        model_id: this.modelId,
+        model_file_type: this.modelType,
+        model_file_description: this.modelDescription,
       })
       .subscribe((response) => {
         console.log(response);
