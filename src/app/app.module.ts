@@ -2,7 +2,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
-import { HttpClientModule, HttpClient } from "@angular/common/http";
+import { HttpClientModule } from "@angular/common/http";
 import {
   LocationStrategy,
   PathLocationStrategy,
@@ -17,8 +17,6 @@ import { AppSidebarComponent } from "./layouts/full/sidebar/sidebar.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DemoMaterialModule } from "./demo-material-module";
 
-import { SharedModule } from "./shared/shared.module";
-import { SpinnerComponent } from "./shared/spinner.component";
 import { SharedModule } from "./shared/shared.module";
 import { SpinnerComponent } from "./shared/spinner.component";
 
@@ -51,4 +49,4 @@ import { SpinnerComponent } from "./shared/spinner.component";
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
