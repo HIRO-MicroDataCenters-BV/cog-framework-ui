@@ -16,7 +16,7 @@ import { ValidationMetricsResponse } from "../model/ValidationMetrics";
 export class CogFrameworkApiService {
   private baseURL: string = environment.appURL;
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient) {}
 
   getModelByName(name: string): Observable<ModelInfo> {
     return this.httpClient.get<ModelInfo>(`${this.baseURL}/models/${name}`);
@@ -44,8 +44,8 @@ export class CogFrameworkApiService {
     );
   }
 
-  getModes(name: string): Observable<ModelInfo> {
-    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`);
+  getPipelineByModelID(id: string): Observable<any> {
+    return this.httpClient.get<any>(`${this.baseURL}/pipeline/${id}`);
   }
 
   // dataset apis

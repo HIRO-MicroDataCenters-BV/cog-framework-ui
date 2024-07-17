@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
@@ -10,62 +10,70 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { FileInputComponent } from "../file-input/file-input.component";
-import { MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
-    selector: 'upload-dataset',
-    standalone: true,
-    imports: [
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatTableModule,
-        DatePipe,
-        FormsModule,
-        MatIconModule,
-        MatProgressBarModule,
-        MatTooltipModule,
-        NgIf,
-        FileInputComponent,
-        MatButtonModule
-    ],
-    templateUrl: './dataset-upload.component.html',
-    styleUrl: './dataset-upload.component.scss',
+  selector: "app-upload-dataset",
+  standalone: true,
+  imports: [
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTableModule,
+    DatePipe,
+    FormsModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTooltipModule,
+    NgIf,
+    FileInputComponent,
+    MatButtonModule,
+  ],
+  templateUrl: "./dataset-upload.component.html",
+  styleUrl: "./dataset-upload.component.scss",
 })
 export class UploadDatasetComponent {
+  file: File | null = null;
+  userId: string = "";
+  datasetName: string = "";
+  datasetDescription: string = "";
+  datasetType: string = "0";
 
-    file: File | null = null;
-    userId: string = "";
-    datasetName: string = "";
-    datasetDescription: string = "";
-    datasetType: string = "0";
+  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
-    constructor(
-        private cogFrameworkApiService: CogFrameworkApiService,
-    ) { }
+  handleFileInput(file: File) {
+    if (file) {
+      this.file = file;
+      return;
+    }
+    this.file = null;
+    this.userId = "";
+    this.datasetName = "";
+    this.datasetDescription = "";
+    this.datasetType = "0";
+  }
 
-    handleFileInput(file: File) {
-        if (file) {
-            this.file = file;
-            return;
-        }
-        this.file = null;
-        this.userId = "";
-        this.datasetName = "";
-        this.datasetDescription = "";
-        this.datasetType = "0";
+  uploadFile(): void {
+    if (
+      !this.file ||
+      !this.userId ||
+      !this.datasetName ||
+      !this.datasetDescription ||
+      !this.datasetType
+    ) {
+      return;
     }
 
-    uploadFile(): void {
-        if (!this.file || !this.userId || !this.datasetName || !this.datasetDescription) {
-            return;
-        }
-       
-        this.cogFrameworkApiService.uploadDataset({ file: this.file, user_id: this.userId, name: this.datasetName, type: this.datasetType, description: this.datasetDescription }).subscribe((response) => {
-            console.log(response);
-        });
-    }
-
-
-
+    this.cogFrameworkApiService
+      .uploadDataset({
+        file: this.file,
+        user_id: this.userId,
+        name: this.datasetName,
+        type: this.datasetType,
+        description: this.datasetDescription,
+      })
+      .subscribe((response) => {
+        console.log(response);
+      });
+  }
 }

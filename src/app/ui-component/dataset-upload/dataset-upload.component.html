@@ -1,31 +1,50 @@
 <div class="row">
-    <div class="col-3">
-        <mat-card>
-            <mat-card-title class="dataset-upload__header">Upload Dataset</mat-card-title>
-            <app-file-input (changeEvent)="handleFileInput($event)"></app-file-input>
-        </mat-card>
-        <mat-card *ngIf="file">
-            <form style="margin-left: 4px">
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="userId" [ngModelOptions]="{standalone: true}" type="text"
-                        placeholder="User ID" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="datasetName" [ngModelOptions]="{standalone: true}" type="text"
-                        placeholder="Dataset name" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="datasetDescription" [ngModelOptions]="{standalone: true}" type="text"
-                        placeholder="Description" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="datasetType" [ngModelOptions]="{standalone: true}" type="number"
-                        placeholder="Dataset Type" />
-                </mat-form-field>
-                <button mat-raised-button color="primary" (click)="uploadFile()">Upload</button>
-            </form>
-
-
-        </mat-card>
-    </div>
+  <div class="col-3">
+    <mat-card>
+      <app-file-input (changeEvent)="handleFileInput($event)"></app-file-input>
+    </mat-card>
+    <mat-card *ngIf="file">
+      <form>
+        <mat-form-field>
+          <input
+            matInput
+            [(ngModel)]="userId"
+            [ngModelOptions]="{ standalone: true }"
+            type="text"
+            placeholder="User ID"
+          />
+        </mat-form-field>
+        <mat-form-field>
+          <input
+            matInput
+            [(ngModel)]="datasetName"
+            [ngModelOptions]="{ standalone: true }"
+            type="text"
+            placeholder="Dataset name"
+          />
+        </mat-form-field>
+        <mat-form-field>
+          <input
+            matInput
+            [(ngModel)]="datasetDescription"
+            [ngModelOptions]="{ standalone: true }"
+            type="text"
+            placeholder="Description"
+          />
+        </mat-form-field>
+        <mat-form-field>
+          <input
+            matInput
+            [(ngModel)]="datasetType"
+            [ngModelOptions]="{ standalone: true }"
+            type="number"
+            placeholder="Dataset Type"
+          />
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="uploadFile()">
+          Upload
+        </button>
+      </form>
+    </mat-card>
+  </div>
 </div>

@@ -13,10 +13,12 @@ import {
 } from "../../model/ModelDetails";
 import { MatTableModule } from "@angular/material/table";
 import { DemoMaterialModule } from "../../demo-material-module";
-import { NgIf } from "@angular/common";
+import { DatePipe, NgIf } from "@angular/common";
 import { ModelValidationService } from "../../service/model-validation.service";
 import {
+  ModelPipelineTableModel,
   ModelValidationMetricTableModel,
+  Pipeline,
   ValidationMetricsData,
 } from "../../model/ValidationMetrics";
 import {
@@ -33,6 +35,7 @@ import {
     MatTableModule,
     DemoMaterialModule,
     NgIf,
+    DatePipe,
   ],
   templateUrl: "./model-detail.component.html",
   styleUrl: "./model-detail.component.scss",
@@ -47,7 +50,6 @@ export class ModelDetailComponent {
   modelFileDataSource: ModelFileInfo[] = [];
   errMsg = undefined;
 
-  validationArtifactsResponse: ValidationArtifactsResponse | undefined;
   validation_artifacts: ValidationArtifactsData[] = [];
   modelValidationTableDataSource: ModelValidationTableModel[] = [];
   displayedColumnsModelValidationTable: string[] = [
@@ -69,6 +71,13 @@ export class ModelDetailComponent {
     "recall_score",
     "roc_auc",
     "score",
+  ];
+
+  modelPipelineTableTableDataSource: ModelPipelineTableModel[] = [];
+  displayedColumnsModelPipeLineTable: string[] = [
+    "name",
+    "description",
+    "created_at",
   ];
 
   constructor(
@@ -98,11 +107,12 @@ export class ModelDetailComponent {
         this.validation_artifacts = v.data[0].validation_artifacts;
         this.buildModelValidationArtifacts(this.validation_artifacts);
         this.buildModelValidationMetrics(v.data[0].validation_metrics);
+        if (v.data[0].pipelines) {
+          this.buildModelPipelineDataSource(v.data[0].pipelines);
+        }
       },
       error: (e) => {
         console.error(e);
-        console.error(e.status);
-        console.error(e.error.error);
         if (e.status === 404) {
           this.errMsg = e.error.error;
         }
@@ -139,7 +149,7 @@ export class ModelDetailComponent {
       const dd: ModelValidationTableModel = {
         id: data.id,
         dataset_id: data.dataset_id,
-        // @ts-ignore
+        //@ts-ignore
         model_id: this.modelDetailData?.model_id,
       };
       this.modelValidationTableDataSource.push(dd);
@@ -164,6 +174,17 @@ export class ModelDetailComponent {
         score: data.score,
       };
       this.modelValidationMetricTableDataSource.push(d);
+    });
+  }
+
+  buildModelPipelineDataSource(pipelines: Pipeline[]): void {
+    pipelines.forEach((pipeline) => {
+      const data: ModelPipelineTableModel = {
+        name: pipeline.name,
+        description: pipeline.description,
+        createdAt: pipeline.created_at,
+      };
+      this.modelPipelineTableTableDataSource.push(data);
     });
   }
 }
