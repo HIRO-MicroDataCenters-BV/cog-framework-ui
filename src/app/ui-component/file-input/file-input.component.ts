@@ -21,6 +21,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 export class FileInputComponent {
   @Input() disabled: boolean = false;
   @Input() accept: string = "";
+  @Input() label: string = "";
   @Output() changeEvent = new EventEmitter<File>();
 
   @ViewChild("fileInput") fileInput!: ElementRef;

@@ -33,6 +33,7 @@ import { MatButtonModule } from "@angular/material/button";
   styleUrl: "./dataset-upload.component.scss",
 })
 export class UploadDatasetComponent {
+  dev = true;
   file: File | null = null;
   userId: string = "";
   datasetName: string = "";

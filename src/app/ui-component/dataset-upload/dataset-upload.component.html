@@ -1,38 +1,66 @@
 <div class="row">
-  <div class="col-3">
+  <div class="col-12">
     <mat-card>
-      <app-file-input (changeEvent)="handleFileInput($event)"></app-file-input>
+      <mat-card-title class="dataset-upload__header"
+        >Upload Dataset</mat-card-title
+      >
+
+      <app-file-input
+        class="col-4"
+        label="Dataset file"
+        (changeEvent)="handleFileInput($event)"
+      ></app-file-input>
     </mat-card>
-    <mat-card *ngIf="file">
-      <form>
-        <mat-form-field>
+    <mat-card *ngIf="file" class="row-2">
+      <form class="row-12 dataset-upload__form">
+        <mat-form-field
+          appearance="outline"
+          class="col-4"
+          style="margin-bottom: 5px"
+        >
+          <mat-label>User ID</mat-label>
           <input
             matInput
             [(ngModel)]="userId"
             [ngModelOptions]="{ standalone: true }"
             type="text"
-            placeholder="User ID"
           />
+          <mat-hint align="start">Insert user ID - temporary</mat-hint>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="col-4"
+          style="margin-bottom: 5px"
+        >
+          <mat-label>Dataset Name</mat-label>
           <input
             matInput
             [(ngModel)]="datasetName"
             [ngModelOptions]="{ standalone: true }"
             type="text"
-            placeholder="Dataset name"
           />
+          <mat-hint align="start">Insert Dataset name</mat-hint>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="col-4"
+          style="margin-bottom: 5px"
+        >
+          <mat-label>Dataset Description</mat-label>
           <input
             matInput
             [(ngModel)]="datasetDescription"
             [ngModelOptions]="{ standalone: true }"
             type="text"
-            placeholder="Description"
           />
+          <mat-hint align="start">Insert Dataset description</mat-hint>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="col-4"
+          style="margin-bottom: 5px"
+        >
+          <mat-label>Dataset Type</mat-label>
           <input
             matInput
             [(ngModel)]="datasetType"
@@ -40,10 +68,13 @@
             type="number"
             placeholder="Dataset Type"
           />
+          <mat-hint align="start">Insert Dataset type - 0 or 1</mat-hint>
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="uploadFile()">
-          Upload
-        </button>
+        <div class="col-1 dataset-upload__button-wrapper">
+          <button mat-raised-button color="primary" (click)="uploadFile()">
+            <span>Upload</span>
+          </button>
+        </div>
       </form>
     </mat-card>
   </div>
