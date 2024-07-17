@@ -17,19 +17,19 @@ const MENUITEMS = [
     icon: "border_horizontal",
   },
   {
-    state: "dataset1",
+    state: "model-training",
     type: "link",
     name: "Model Training",
     icon: "all_inclusive",
   },
   {
-    state: "dataset2",
+    state: "model-deployment",
     type: "link",
     name: "Model Deployment",
     icon: "assistant",
   },
   {
-    state: "dataset3",
+    state: "model-serving",
     type: "link",
     name: "Model Serving",
     icon: "developer_mode",

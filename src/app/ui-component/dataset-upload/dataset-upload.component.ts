@@ -39,7 +39,7 @@ export class UploadDatasetComponent {
   datasetDescription: string = "";
   datasetType: string = "0";
 
-  loading = false;
+  loading = true;
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
