@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import { Component, ViewChild, OnInit } from "@angular/core";
 import {
   ApexChart,
   ChartComponent,
@@ -29,9 +29,9 @@ export interface VisitorChartOptions {
   selector: "app-our-visiter",
   standalone: true,
   imports: [NgApexchartsModule, DemoMaterialModule],
-  templateUrl: "./our-visiter.component.html"
+  templateUrl: "./our-visiter.component.html",
 })
-export class OurVisiterComponent {
+export class OurVisiterComponent implements OnInit {
   @ViewChild("visitor-chart") chart2: ChartComponent = Object.create(null);
   public VisitorChartOptions: Partial<VisitorChartOptions>;
 
@@ -77,5 +77,5 @@ export class OurVisiterComponent {
     };
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 }

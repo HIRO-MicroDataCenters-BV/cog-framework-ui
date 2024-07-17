@@ -2,8 +2,18 @@
 <!-- Profile - style you can find in header.scss -->
 <!-- ============================================================== -->
 
-<button [matMenuTriggerFor]="profile" mat-icon-button class="m-r-5 p-0 d-flex jc-c align-items-center"
-        *ngIf="true" style="background-color: #7460ee; width:32px; height: 32px;line-height:32px;">
+<button
+  [matMenuTriggerFor]="profile"
+  mat-icon-button
+  class="m-r-5 p-0 d-flex jc-c align-items-center"
+  *ngIf="true"
+  style="
+    background-color: #7460ee;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+  "
+>
   <span style="font-size: small">R</span>
 </button>
 
@@ -21,4 +31,3 @@
     Sign Out
   </button>
 </mat-menu>
-

@@ -12,7 +12,7 @@ import {
   ApexFill,
   ApexTooltip,
   ApexGrid,
-  NgApexchartsModule
+  NgApexchartsModule,
 } from "ng-apexcharts";
 import { DemoMaterialModule } from "src/app/demo-material-module";
 
@@ -34,7 +34,7 @@ export interface ChartOptions {
   selector: "app-sales-overview",
   standalone: true,
   imports: [NgApexchartsModule, DemoMaterialModule],
-  templateUrl: "./sales-overview.component.html"
+  templateUrl: "./sales-overview.component.html",
 })
 export class SalesOverviewComponent implements OnInit {
   @ViewChild("chart") chart: ChartComponent = Object.create(null);
@@ -92,5 +92,5 @@ export class SalesOverviewComponent implements OnInit {
     };
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 }

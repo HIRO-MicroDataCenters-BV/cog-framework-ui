@@ -1,215 +1,223 @@
 <mat-card>
+  <mat-card-header class="card-header">
+    <mat-card-title-group>
+      <mat-card-title>Model Validation file</mat-card-title>
+    </mat-card-title-group>
+  </mat-card-header>
+  <div class="col-12">
+    <div class="density-settings table-responsive">
+      <table
+        mat-table
+        [dataSource]="modelValidationMetricTableSource"
+        class="mat-elevation-z0"
+        *ngIf="csvData"
+      >
+        <!-- Position Column -->
+        <ng-container matColumnDef="positive_class">
+          <th mat-header-cell *matHeaderCellDef>positive_class</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.positive_class }}
+          </td>
+        </ng-container>
 
-    <mat-card-header class="card-header">
-        <mat-card-title-group>
-            <mat-card-title>Model Validation file</mat-card-title>
-        </mat-card-title-group>
-    </mat-card-header>
-    <div class="col-12">
-        <div class="density-settings table-responsive">
-            <table mat-table [dataSource]="modelValidationMetricTableSource" class="mat-elevation-z0"
-                   *ngIf="csvData">
+        <ng-container matColumnDef="true_negatives">
+          <th mat-header-cell *matHeaderCellDef>true_negatives</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.true_negatives | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <!-- Position Column -->
-                <ng-container matColumnDef="positive_class">
-                    <th mat-header-cell *matHeaderCellDef> positive_class</th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.positive_class }}
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="false_positives">
+          <th mat-header-cell *matHeaderCellDef>false_positives</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.false_positives | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="true_negatives">
-                    <th mat-header-cell *matHeaderCellDef> true_negatives</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.true_negatives | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="false_negatives">
+          <th mat-header-cell *matHeaderCellDef>false_negatives</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.false_negatives | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="false_positives">
-                    <th mat-header-cell *matHeaderCellDef> false_positives</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.false_positives | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="true_positives">
+          <th mat-header-cell *matHeaderCellDef>true_positives</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.true_positives | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="false_negatives">
-                    <th mat-header-cell *matHeaderCellDef> false_negatives</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.false_negatives | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="example_count">
+          <th mat-header-cell *matHeaderCellDef>example_count</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.example_count | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="true_positives">
-                    <th mat-header-cell *matHeaderCellDef> true_positives</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.true_positives | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="accuracy_score">
+          <th mat-header-cell *matHeaderCellDef>accuracy_score</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.accuracy_score | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="example_count">
-                    <th mat-header-cell *matHeaderCellDef> example_count</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.example_count | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="recall_score">
+          <th mat-header-cell *matHeaderCellDef>recall_score</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.recall_score | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="accuracy_score">
-                    <th mat-header-cell *matHeaderCellDef> accuracy_score</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.accuracy_score | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="precision_score">
+          <th mat-header-cell *matHeaderCellDef>precision_score</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.precision_score | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
+        <ng-container matColumnDef="f1_score">
+          <th mat-header-cell *matHeaderCellDef>f1_score</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.f1_score | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="recall_score">
-                    <th mat-header-cell *matHeaderCellDef> recall_score</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.recall_score | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
+        <ng-container matColumnDef="roc_auc">
+          <th mat-header-cell *matHeaderCellDef>roc_auc</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.roc_auc | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
+        <ng-container matColumnDef="precision_recall_auc">
+          <th mat-header-cell *matHeaderCellDef>precision_recall_auc</th>
+          <td mat-cell *matCellDef="let element">
+            <span style="font-size: 12px; font-weight: 500">
+              {{ element.precision_recall_auc | number: "1.2" }}
+            </span>
+          </td>
+        </ng-container>
 
-                <ng-container matColumnDef="precision_score">
-                    <th mat-header-cell *matHeaderCellDef> precision_score</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.precision_score | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="f1_score">
-                    <th mat-header-cell *matHeaderCellDef> f1_score</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.f1_score | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
-
-
-                <ng-container matColumnDef="roc_auc">
-                    <th mat-header-cell *matHeaderCellDef> roc_auc</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.roc_auc | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="precision_recall_auc">
-                    <th mat-header-cell *matHeaderCellDef> precision_recall_auc</th>
-                    <td mat-cell *matCellDef="let element">
-                            <span style="font-size: 12px; font-weight: 500">
-                            {{ element.precision_recall_auc | number : '1.2' }}
-                            </span>
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumnsMetricsTable"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumnsMetricsTable;"></tr>
-            </table>
-        </div>
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsMetricsTable"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumnsMetricsTable"
+        ></tr>
+      </table>
     </div>
+  </div>
 </mat-card>
 
 <mat-card>
-    <mat-card-header class="card-header">
-        <mat-card-title-group>
-            <mat-card-title>Model Validation Artifacts</mat-card-title>
-        </mat-card-title-group>
+  <mat-card-header class="card-header">
+    <mat-card-title-group>
+      <mat-card-title>Model Validation Artifacts</mat-card-title>
+    </mat-card-title-group>
+  </mat-card-header>
 
-    </mat-card-header>
+  <div class="col-12">
+    <div class="row">
+      <mat-card class="img-card" *ngIf="confusion_matrix">
+        <mat-card-header class="card-header">
+          <span class="card-head">Normalised Confusion Matrix</span>
+        </mat-card-header>
 
-    <div class="col-12">
+        <mat-card-content style="padding: 4px">
+          <img
+            mat-card-xl-image
+            [src]="confusion_matrix"
+            alt="confusion_matrix"
+          />
+        </mat-card-content>
+      </mat-card>
 
-        <div class="row">
-            <mat-card class="img-card" *ngIf="confusion_matrix">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Normalised Confusion Matrix</span>
-                </mat-card-header>
+      <mat-card class="img-card" *ngIf="precision_recall_curve_plot">
+        <mat-card-header class="card-header">
+          <span class="card-head">Precision Recall Curve</span>
+        </mat-card-header>
+        <mat-card-content style="padding: 4px">
+          <img
+            mat-card-xl-image
+            [src]="precision_recall_curve_plot"
+            alt="precision_recall_curve_plot"
+          />
+        </mat-card-content>
+      </mat-card>
 
-                <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image
-                         [src]=confusion_matrix
-                         alt="confusion_matrix">
-                </mat-card-content>
-            </mat-card>
+      <mat-card class="img-card" *ngIf="roc_curve_plot">
+        <mat-card-header class="card-header">
+          <span class="card-head">Roc Curve</span>
+        </mat-card-header>
+        <mat-card-content style="padding: 4px">
+          <img mat-card-xl-image [src]="roc_curve_plot" alt="roc_curve_plot" />
+        </mat-card-content>
+      </mat-card>
 
-            <mat-card class="img-card" *ngIf="precision_recall_curve_plot">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Precision Recall Curve</span>
-                </mat-card-header>
-                <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image
-                         [src]=precision_recall_curve_plot
-                         alt="precision_recall_curve_plot">
-                </mat-card-content>
-            </mat-card>
+      <mat-card class="img-card" *ngIf="shap_beeswarm_plot">
+        <mat-card-header class="card-header">
+          <span class="card-head">Shap Value</span>
+        </mat-card-header>
+        <img
+          mat-card-xl-image
+          [src]="shap_beeswarm_plot"
+          alt="shap_beeswarm_plot"
+        />
+      </mat-card>
 
-            <mat-card class="img-card" *ngIf="roc_curve_plot">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Roc Curve</span>
-                </mat-card-header>
-                <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image
-                         [src]=roc_curve_plot
-                         alt="roc_curve_plot">
-                </mat-card-content>
-            </mat-card>
+      <mat-card class="img-card" *ngIf="shap_summary_plot">
+        <mat-card-header class="card-header">
+          <span class="card-head">Mean(Shap Value)</span>
+        </mat-card-header>
+        <mat-card-content style="padding: 4px">
+          <img
+            mat-card-xl-image
+            [src]="shap_summary_plot"
+            alt="shap_summary_plot"
+          />
+        </mat-card-content>
+      </mat-card>
 
-            <mat-card class="img-card" *ngIf="shap_beeswarm_plot">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Shap Value</span>
-                </mat-card-header>
-                <img mat-card-xl-image
-                     [src]=shap_beeswarm_plot
-                     alt="shap_beeswarm_plot">
-            </mat-card>
-
-            <mat-card class="img-card" *ngIf="shap_summary_plot">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Mean(Shap Value)</span>
-                </mat-card-header>
-                <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image
-                         [src]=shap_summary_plot
-                         alt="shap_summary_plot">
-                </mat-card-content>
-            </mat-card>
-
-            <mat-card class="img-card" *ngIf="shap_feature_importance_plot">
-                <mat-card-header class="card-header">
-                    <span class="card-head">Shap Summary</span>
-                </mat-card-header>
-                <mat-card-content style="padding: 4px;">
-                    <img mat-card-xl-image
-                         [src]=shap_feature_importance_plot
-                         alt="shap_feature_importance_plot">
-                </mat-card-content>
-            </mat-card>
-        </div>
+      <mat-card class="img-card" *ngIf="shap_feature_importance_plot">
+        <mat-card-header class="card-header">
+          <span class="card-head">Shap Summary</span>
+        </mat-card-header>
+        <mat-card-content style="padding: 4px">
+          <img
+            mat-card-xl-image
+            [src]="shap_feature_importance_plot"
+            alt="shap_feature_importance_plot"
+          />
+        </mat-card-content>
+      </mat-card>
     </div>
+  </div>
 
-    <hr>
-    <div class="col-3">
-        <button mat-flat-button color="primary" (click)="back()">
-            Back
-            <mat-icon>keyboard_backspace</mat-icon>
-        </button>
-    </div>
+  <hr />
+  <div class="col-3">
+    <button mat-flat-button color="primary" (click)="back()">
+      Back
+      <mat-icon>keyboard_backspace</mat-icon>
+    </button>
+  </div>
 </mat-card>
