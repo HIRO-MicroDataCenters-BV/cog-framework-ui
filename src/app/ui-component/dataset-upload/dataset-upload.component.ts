@@ -11,6 +11,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { FileInputComponent } from "../file-input/file-input.component";
 import { MatButtonModule } from "@angular/material/button";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-upload-dataset",
@@ -28,6 +29,7 @@ import { MatButtonModule } from "@angular/material/button";
     NgIf,
     FileInputComponent,
     MatButtonModule,
+    MatSnackBarModule,
   ],
   templateUrl: "./dataset-upload.component.html",
   styleUrl: "./dataset-upload.component.scss",
@@ -41,7 +43,10 @@ export class UploadDatasetComponent {
 
   loading = false;
 
-  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
+  constructor(
+    private cogFrameworkApiService: CogFrameworkApiService,
+    private _snackBar: MatSnackBar,
+  ) {}
 
   handleFileInput(file: File) {
     if (file) {
@@ -53,6 +58,14 @@ export class UploadDatasetComponent {
     this.datasetName = "";
     this.datasetDescription = "";
     this.datasetType = "0";
+  }
+
+  openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action, {
+      duration: 3000,
+      horizontalPosition: "right",
+      politeness: "assertive",
+    });
   }
 
   uploadFile(): void {
@@ -81,9 +94,11 @@ export class UploadDatasetComponent {
         },
         error: (error) => {
           console.log(error);
+          this.openSnackBar("Upload failed", "Close");
           this.loading = false;
         },
         complete: () => {
+          this.openSnackBar("Upload success!", "Close");
           this.loading = false;
         },
       });

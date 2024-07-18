@@ -11,6 +11,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { FileInputComponent } from "../file-input/file-input.component";
 import { MatButtonModule } from "@angular/material/button";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-upload-model",
@@ -28,6 +29,7 @@ import { MatButtonModule } from "@angular/material/button";
     NgIf,
     FileInputComponent,
     MatButtonModule,
+    MatSnackBarModule,
   ],
   templateUrl: "./model-upload.component.html",
   styleUrl: "./model-upload.component.scss",
@@ -41,7 +43,18 @@ export class ModelUploadComponent {
 
   loading = false;
 
-  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
+  constructor(
+    private cogFrameworkApiService: CogFrameworkApiService,
+    private _snackBar: MatSnackBar,
+  ) {}
+
+  openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action, {
+      duration: 3000,
+      horizontalPosition: "right",
+      politeness: "assertive",
+    });
+  }
 
   handleFileInput(file: File) {
     if (file) {
@@ -66,6 +79,7 @@ export class ModelUploadComponent {
       return;
     }
 
+    this.loading = true;
     this.cogFrameworkApiService
       .uploadModel({
         file: this.file,
@@ -81,9 +95,11 @@ export class ModelUploadComponent {
         },
         error: (error) => {
           console.log(error);
+          this.openSnackBar("Upload failed", "Close");
           this.loading = false;
         },
         complete: () => {
+          this.openSnackBar("Upload success!", "Close");
           this.loading = false;
         },
       });
