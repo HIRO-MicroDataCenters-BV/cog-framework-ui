@@ -1,8 +1,8 @@
-import { Component } from "@angular/core";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { ActivatedRoute, Router } from "@angular/router";
-import { MatCardModule } from "@angular/material/card";
-import { MatListModule } from "@angular/material/list";
+import { Component } from '@angular/core';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
 import {
   DatasetInfo,
   ModelDetailData,
@@ -10,24 +10,24 @@ import {
   ModelFileInfo,
   ModelValidationTableModel,
   ValidationArtifact,
-} from "../../model/ModelDetails";
-import { MatTableModule } from "@angular/material/table";
-import { DemoMaterialModule } from "../../demo-material-module";
-import { DatePipe, NgIf } from "@angular/common";
-import { ModelValidationService } from "../../service/model-validation.service";
+} from '../../model/ModelDetails';
+import { MatTableModule } from '@angular/material/table';
+import { DemoMaterialModule } from '../../demo-material-module';
+import { DatePipe, NgIf } from '@angular/common';
+import { ModelValidationService } from '../../service/model-validation.service';
 import {
   ModelPipelineTableModel,
   ModelValidationMetricTableModel,
   Pipeline,
   ValidationMetricsData,
-} from "../../model/ValidationMetrics";
+} from '../../model/ValidationMetrics';
 import {
   ValidationArtifactsData,
   ValidationArtifactsResponse,
-} from "../../model/ValidationArtifacts";
+} from '../../model/ValidationArtifacts';
 
 @Component({
-  selector: "app-model-detail",
+  selector: 'app-model-detail',
   standalone: true,
   imports: [
     MatCardModule,
@@ -37,15 +37,15 @@ import {
     NgIf,
     DatePipe,
   ],
-  templateUrl: "./model-detail.component.html",
-  styleUrl: "./model-detail.component.scss",
+  templateUrl: './model-detail.component.html',
+  styleUrl: './model-detail.component.scss',
 })
 export class ModelDetailComponent {
-  modelId = "";
+  modelId = '';
   modelDetail: ModelDetailInfo | undefined;
   modelDetailData: ModelDetailData | undefined;
 
-  displayedColumns: string[] = ["id", "action"];
+  displayedColumns: string[] = ['id', 'action'];
   dataSetDataSource: DatasetInfo[] = [];
   modelFileDataSource: ModelFileInfo[] = [];
   errMsg = undefined;
@@ -53,31 +53,31 @@ export class ModelDetailComponent {
   validation_artifacts: ValidationArtifactsData[] = [];
   modelValidationTableDataSource: ModelValidationTableModel[] = [];
   displayedColumnsModelValidationTable: string[] = [
-    "id",
-    "dataset_id",
-    "model_id",
-    "action",
+    'id',
+    'dataset_id',
+    'model_id',
+    'action',
   ];
 
   modelValidationMetricTableDataSource: ModelValidationMetricTableModel[] = [];
   modelValidationMetricTableDisplayedColumns: string[] = [
-    "id",
-    "dataset_id",
-    "accuracy_score",
-    "example_count",
-    "f1_score",
-    "log_loss",
-    "precision_score",
-    "recall_score",
-    "roc_auc",
-    "score",
+    'id',
+    'dataset_id',
+    'accuracy_score',
+    'example_count',
+    'f1_score',
+    'log_loss',
+    'precision_score',
+    'recall_score',
+    'roc_auc',
+    'score',
   ];
 
   modelPipelineTableTableDataSource: ModelPipelineTableModel[] = [];
   displayedColumnsModelPipeLineTable: string[] = [
-    "name",
-    "description",
-    "created_at",
+    'name',
+    'description',
+    'created_at',
   ];
 
   constructor(
@@ -86,8 +86,8 @@ export class ModelDetailComponent {
     private router: Router,
     private modelValidationService: ModelValidationService,
   ) {
-    if (this.activatedRoute.snapshot.queryParams["id"]) {
-      this.modelId = this.activatedRoute.snapshot.queryParams["id"];
+    if (this.activatedRoute.snapshot.queryParams['id']) {
+      this.modelId = this.activatedRoute.snapshot.queryParams['id'];
     }
     this.modeDetails();
   }
@@ -120,13 +120,13 @@ export class ModelDetailComponent {
       },
       complete: () => {
         //this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
 
   back(): void {
-    this.router.navigate(["/model"]).then((r) => {});
+    this.router.navigate(['/model']).then((r) => {});
   }
 
   open(item: any): void {
@@ -135,10 +135,10 @@ export class ModelDetailComponent {
         this.modelValidationService.modelValidationArtifactsData = res;
       }
     });
-    this.router.navigate(["/model-validation-artifacts"]).then((r) => {
-      this.modelValidationService.previousComponentUrl = "/model-detail";
+    this.router.navigate(['/model-validation-artifacts']).then((r) => {
+      this.modelValidationService.previousComponentUrl = '/model-detail';
       this.modelValidationService.previousComponentUrlQuery =
-        this.activatedRoute.snapshot.queryParams["id"];
+        this.activatedRoute.snapshot.queryParams['id'];
     });
   }
 

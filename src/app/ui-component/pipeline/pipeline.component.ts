@@ -1,6 +1,6 @@
-import { Component, OnInit } from "@angular/core";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { Pipeline } from "../../model/PipeLine";
+import { Component, OnInit } from '@angular/core';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { Pipeline } from '../../model/PipeLine';
 
 interface PipeLineTableModel {
   name: string;
@@ -9,16 +9,16 @@ interface PipeLineTableModel {
 }
 
 @Component({
-  selector: "app-pipeline",
-  templateUrl: "./pipeline.component.html",
-  styleUrls: ["./pipeline.component.scss"],
+  selector: 'app-pipeline',
+  templateUrl: './pipeline.component.html',
+  styleUrls: ['./pipeline.component.scss'],
 })
 export class PipelineComponent implements OnInit {
-  modelName = "";
-  modelId = "1";
+  modelName = '';
+  modelId = '1';
 
   pipeLineTableModelDataSource: PipeLineTableModel[] = [];
-  displayedColumnsPipeLineTableModel: string[] = ["name", "des", "createdAt"];
+  displayedColumnsPipeLineTableModel: string[] = ['name', 'des', 'createdAt'];
   loading = false;
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
@@ -42,14 +42,14 @@ export class PipelineComponent implements OnInit {
         this.buildPipeLineTableModelId(v.data[0]);
       },
       error: (e) => {
-        console.log("error----->");
+        console.log('error----->');
         console.error(e);
         console.error(e.status);
         console.error(e.error.error);
       },
       complete: () => {
         //this.loading = false;
-        console.info("complete");
+        console.info('complete');
         this.loading = false;
       },
     });

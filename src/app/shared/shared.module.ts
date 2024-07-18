@@ -1,11 +1,11 @@
-import { NgModule } from "@angular/core";
+import { NgModule } from '@angular/core';
 
-import { MenuItems } from "./menu-items/menu-items";
+import { MenuItems } from './menu-items/menu-items';
 import {
   AccordionAnchorDirective,
   AccordionLinkDirective,
   AccordionDirective,
-} from "./accordion";
+} from './accordion';
 
 @NgModule({
   declarations: [

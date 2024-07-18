@@ -1,7 +1,7 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 .density-settings {
-  @include mat.all-component-densities(-3)
+  @include mat.all-component-densities(-3);
 }
 
 table {
@@ -18,11 +18,9 @@ table {
   margin-bottom: 10px;
 }
 
-
 .progress-bar {
-  height: 1px
+  height: 1px;
 }
-
 
 .mat-card-model {
   display: flex;

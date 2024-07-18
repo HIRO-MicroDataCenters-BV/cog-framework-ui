@@ -1,13 +1,13 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 .density-settings {
-  @include mat.all-component-densities(-3)
+  @include mat.all-component-densities(-3);
 }
 
 .tbl-btn {
   font-size: 12px;
   color: #343dff !important;
-  direction: rtl
+  direction: rtl;
 }
 
 .img-card {

@@ -1,25 +1,25 @@
-import { Component } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatTabsModule } from "@angular/material/tabs";
-import { MatInputModule } from "@angular/material/input";
-import { MatButtonModule } from "@angular/material/button";
-import { MatTableModule } from "@angular/material/table";
-import { MatIconModule } from "@angular/material/icon";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { environment } from "../../../environments/environment.development";
-import { FormsModule } from "@angular/forms";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { Model } from "src/app/model/ModelInfo";
-import { DatePipe, NgIf } from "@angular/common";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { Router } from "@angular/router";
+import { Component } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { environment } from '../../../environments/environment.development';
+import { FormsModule } from '@angular/forms';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { Model } from 'src/app/model/ModelInfo';
+import { DatePipe, NgIf } from '@angular/common';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
 
-import { ModelUploadComponent } from "../model-upload/model-upload.component";
+import { ModelUploadComponent } from '../model-upload/model-upload.component';
 
 const ELEMENT_DATA: Model[] = [];
 
 @Component({
-  selector: "app-model",
+  selector: 'app-model',
   standalone: true,
   imports: [
     MatCardModule,
@@ -35,21 +35,21 @@ const ELEMENT_DATA: Model[] = [];
     MatProgressBarModule,
     ModelUploadComponent,
   ],
-  templateUrl: "./model.component.html",
-  styleUrl: "./model.component.scss",
+  templateUrl: './model.component.html',
+  styleUrl: './model.component.scss',
 })
 export class ModelComponent {
   loading = false;
   displayedColumns: string[] = [
-    "id",
-    "name",
-    "creationTime",
-    "author",
-    "action",
+    'id',
+    'name',
+    'creationTime',
+    'author',
+    'action',
   ];
   dataSource = ELEMENT_DATA;
-  modelName = "";
-  modelId = "";
+  modelName = '';
+  modelId = '';
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
@@ -58,18 +58,18 @@ export class ModelComponent {
 
   open(item: any): void {
     this.router
-      .navigate(["/model-detail"], { queryParams: { id: item.id } })
+      .navigate(['/model-detail'], { queryParams: { id: item.id } })
       .then((r) => {
-        console.log("redirected to other component");
+        console.log('redirected to other component');
       });
   }
 
   search(): void {
     if (this.modelId.length > 0) {
-      console.log("Search by ID");
+      console.log('Search by ID');
       this.searchByID();
     } else {
-      console.log("Search by Name");
+      console.log('Search by Name');
       this.searchByName();
     }
   }
@@ -90,7 +90,7 @@ export class ModelComponent {
       },
       complete: () => {
         this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -108,7 +108,7 @@ export class ModelComponent {
       },
       complete: () => {
         this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }

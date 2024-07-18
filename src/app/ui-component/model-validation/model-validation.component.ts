@@ -1,19 +1,19 @@
-import { Component } from "@angular/core";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatTableModule } from "@angular/material/table";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { DemoMaterialModule } from "../../demo-material-module";
-import { DecimalPipe, NgIf, NgOptimizedImage } from "@angular/common";
+import { Component } from '@angular/core';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DemoMaterialModule } from '../../demo-material-module';
+import { DecimalPipe, NgIf, NgOptimizedImage } from '@angular/common';
 
 import {
   ValidationArtifactsData,
   ValidationArtifactsResponse,
-} from "../../model/ValidationArtifacts";
-import { ValidationMetricsData } from "../../model/ValidationMetrics";
-import { environment } from "../../../environments/environment";
-import { FormsModule } from "@angular/forms";
+} from '../../model/ValidationArtifacts';
+import { ValidationMetricsData } from '../../model/ValidationMetrics';
+import { environment } from '../../../environments/environment';
+import { FormsModule } from '@angular/forms';
 
 interface ModelValidationTable {
   name: string;
@@ -36,7 +36,7 @@ interface ModelValidationMetricTable {
 }
 
 @Component({
-  selector: "app-model-validation",
+  selector: 'app-model-validation',
   standalone: true,
   imports: [
     MatButtonModule,
@@ -49,19 +49,19 @@ interface ModelValidationMetricTable {
     DecimalPipe,
     FormsModule,
   ],
-  templateUrl: "./model-validation.component.html",
-  styleUrl: "./model-validation.component.scss",
+  templateUrl: './model-validation.component.html',
+  styleUrl: './model-validation.component.scss',
 })
 export class ModelValidationComponent {
-  modelValidationName = "";
-  modelValidationId = "1";
+  modelValidationName = '';
+  modelValidationId = '1';
 
   csvData: any | undefined;
   validationMetricsData: ValidationMetricsData | undefined;
   validationArtifactsResponse: ValidationArtifactsResponse | undefined;
   validationArtifactsData: ValidationArtifactsData | undefined;
 
-  baseURL = environment.appURL + "/s/get_image?url=";
+  baseURL = environment.appURL + '/s/get_image?url=';
   confusion_matrix: any;
   per_class_metrics: any;
   precision_recall_curve_plot: any;
@@ -73,34 +73,34 @@ export class ModelValidationComponent {
   image: any;
   loading = false;
   modelValidationScoreTableSource: ModelValidationTable[] = [];
-  displayedColumns: string[] = ["name", "value"];
+  displayedColumns: string[] = ['name', 'value'];
 
   modelValidationMetricTableSource: ModelValidationMetricTable[] = [];
 
   displayedColumnsMetricsTable: string[] = [
-    "positive_class",
-    "true_negatives",
-    "false_positives",
-    "false_negatives",
-    "true_positives",
-    "example_count",
-    "accuracy_score",
-    "recall_score",
-    "precision_score",
-    "f1_score",
-    "roc_auc",
-    "precision_recall_auc",
+    'positive_class',
+    'true_negatives',
+    'false_positives',
+    'false_negatives',
+    'true_positives',
+    'example_count',
+    'accuracy_score',
+    'recall_score',
+    'precision_score',
+    'f1_score',
+    'roc_auc',
+    'precision_recall_auc',
   ];
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
   search(): void {
     if (this.modelValidationId.length > 0) {
-      console.log("Search by ID");
+      console.log('Search by ID');
       this.getModelValidationArtifactByID();
       this.getModeValidationMetricsById();
     } else {
-      console.log("Search by Name");
+      console.log('Search by Name');
       this.getModelValidationArtifactByName();
       this.getModeValidationMetricsByName();
     }
@@ -124,7 +124,7 @@ export class ModelValidationComponent {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -145,7 +145,7 @@ export class ModelValidationComponent {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -164,7 +164,7 @@ export class ModelValidationComponent {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -184,7 +184,7 @@ export class ModelValidationComponent {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -195,10 +195,10 @@ export class ModelValidationComponent {
     response.subscribe({
       next: (data) => {
         this.csvData = data;
-        const lst = data.split("\n");
+        const lst = data.split('\n');
         lst.forEach((e: any) => {
-          const csvData = e.split(",");
-          if (csvData[1] != undefined && csvData[0] != "positive_class") {
+          const csvData = e.split(',');
+          if (csvData[1] != undefined && csvData[0] != 'positive_class') {
             const d: ModelValidationMetricTable = {
               positive_class: csvData[0],
               true_negatives: csvData[1],
@@ -223,7 +223,7 @@ export class ModelValidationComponent {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -232,41 +232,41 @@ export class ModelValidationComponent {
     validationMetricsData: ValidationMetricsData,
   ): void {
     this.modelValidationScoreTableSource.push({
-      name: "accuracy_score",
+      name: 'accuracy_score',
       value: validationMetricsData.accuracy_score,
     });
     this.modelValidationScoreTableSource.push({
-      name: "example_count",
+      name: 'example_count',
       value: validationMetricsData.example_count,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "f1_score",
+      name: 'f1_score',
       value: validationMetricsData.f1_score,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "log_loss",
+      name: 'log_loss',
       value: validationMetricsData.log_loss,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "precision_score",
+      name: 'precision_score',
       value: validationMetricsData.precision_score,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "recall_score",
+      name: 'recall_score',
       value: validationMetricsData.recall_score,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "roc_auc",
+      name: 'roc_auc',
       value: validationMetricsData.roc_auc,
     });
 
     this.modelValidationScoreTableSource.push({
-      name: "score",
+      name: 'score',
       value: validationMetricsData.score,
     });
   }

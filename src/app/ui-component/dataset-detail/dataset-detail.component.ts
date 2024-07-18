@@ -1,22 +1,22 @@
-import { Component } from "@angular/core";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { ActivatedRoute, Router } from "@angular/router";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
-import { MatTableModule } from "@angular/material/table";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { NgIf } from "@angular/common";
+import { Component } from '@angular/core';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgIf } from '@angular/common';
 import {
   DatasetData,
   DatasetFiles,
   DatasetFilesInfo,
   File,
   RelatedModel,
-} from "../../model/DataSetDetailInfo";
+} from '../../model/DataSetDetailInfo';
 
 @Component({
-  selector: "app-dataset-detail",
+  selector: 'app-dataset-detail',
   standalone: true,
   imports: [
     MatButtonModule,
@@ -26,15 +26,15 @@ import {
     MatTooltipModule,
     NgIf,
   ],
-  templateUrl: "./dataset-detail.component.html",
-  styleUrl: "./dataset-detail.component.scss",
+  templateUrl: './dataset-detail.component.html',
+  styleUrl: './dataset-detail.component.scss',
 })
 export class DatasetDetailComponent {
-  modelId = "1";
+  modelId = '1';
   dataSetDetail: DatasetData | undefined;
 
-  dataSetFileDisplayedColumns: string[] = ["id", "name", "action"];
-  displayedColumns: string[] = ["id", "action"];
+  dataSetFileDisplayedColumns: string[] = ['id', 'name', 'action'];
+  displayedColumns: string[] = ['id', 'action'];
   dataSetFileDataSource: DatasetFilesInfo[] = [];
 
   dataSetRelatedModelsDataSource: RelatedModel[] = [];
@@ -45,14 +45,14 @@ export class DatasetDetailComponent {
     private activatedRoute: ActivatedRoute,
     private router: Router,
   ) {
-    if (this.activatedRoute.snapshot.queryParams["id"]) {
-      this.modelId = this.activatedRoute.snapshot.queryParams["id"];
+    if (this.activatedRoute.snapshot.queryParams['id']) {
+      this.modelId = this.activatedRoute.snapshot.queryParams['id'];
     }
     this.dataSetDetails();
   }
 
   dataSetDetails(): void {
-    console.log("search dataSetDetails with id " + this.modelId);
+    console.log('search dataSetDetails with id ' + this.modelId);
     const response = this.cogFrameworkApiService.getDataSetDetailById(
       this.modelId,
     );
@@ -68,7 +68,7 @@ export class DatasetDetailComponent {
         this.dataSetRelatedModelsDataSource = v.data.related_model;
       },
       error: (e) => {
-        console.log("error----->");
+        console.log('error----->');
         console.error(e);
         console.error(e.status);
         console.error(e.error.error);
@@ -79,7 +79,7 @@ export class DatasetDetailComponent {
       },
       complete: () => {
         //this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
@@ -104,6 +104,6 @@ export class DatasetDetailComponent {
   }
 
   back(): void {
-    this.router.navigate(["/dataset"]).then((r) => {});
+    this.router.navigate(['/dataset']).then((r) => {});
   }
 }

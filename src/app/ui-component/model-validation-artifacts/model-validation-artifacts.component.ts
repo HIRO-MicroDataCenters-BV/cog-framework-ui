@@ -1,9 +1,9 @@
-import { Component, Input, OnInit } from "@angular/core";
-import { ModelValidationService } from "../../service/model-validation.service";
-import { ValidationArtifactsData } from "../../model/ValidationArtifacts";
-import { environment } from "../../../environments/environment";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { Router } from "@angular/router";
+import { Component, Input, OnInit } from '@angular/core';
+import { ModelValidationService } from '../../service/model-validation.service';
+import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
+import { environment } from '../../../environments/environment';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { Router } from '@angular/router';
 
 interface ModelValidationMetricTable {
   positive_class: number;
@@ -21,14 +21,14 @@ interface ModelValidationMetricTable {
 }
 
 @Component({
-  selector: "app-model-validation-artifacts",
-  templateUrl: "./model-validation-artifacts.component.html",
-  styleUrls: ["./model-validation-artifacts.component.scss"],
+  selector: 'app-model-validation-artifacts',
+  templateUrl: './model-validation-artifacts.component.html',
+  styleUrls: ['./model-validation-artifacts.component.scss'],
 })
 export class ModelValidationArtifactsComponent implements OnInit {
   data: ValidationArtifactsData | undefined;
 
-  baseURL = environment.appURL + "/s3/get_image?url=";
+  baseURL = environment.appURL + '/s3/get_image?url=';
   confusion_matrix: any;
   //per_class_metrics: any
   precision_recall_curve_plot: any;
@@ -41,18 +41,18 @@ export class ModelValidationArtifactsComponent implements OnInit {
 
   csvData: any | undefined;
   displayedColumnsMetricsTable: string[] = [
-    "positive_class",
-    "true_negatives",
-    "false_positives",
-    "false_negatives",
-    "true_positives",
-    "example_count",
-    "accuracy_score",
-    "recall_score",
-    "precision_score",
-    "f1_score",
-    "roc_auc",
-    "precision_recall_auc",
+    'positive_class',
+    'true_negatives',
+    'false_positives',
+    'false_negatives',
+    'true_positives',
+    'example_count',
+    'accuracy_score',
+    'recall_score',
+    'precision_score',
+    'f1_score',
+    'roc_auc',
+    'precision_recall_auc',
   ];
 
   backURL: any;
@@ -106,10 +106,10 @@ export class ModelValidationArtifactsComponent implements OnInit {
       next: (data) => {
         this.csvData = data;
         this.modelValidationService = data;
-        const lst = data.split("\n");
+        const lst = data.split('\n');
         lst.forEach((e: any) => {
-          const csvData = e.split(",");
-          if (csvData[1] != undefined && csvData[0] != "positive_class") {
+          const csvData = e.split(',');
+          if (csvData[1] != undefined && csvData[0] != 'positive_class') {
             const d: ModelValidationMetricTable = {
               positive_class: csvData[0],
               true_negatives: csvData[1],
@@ -132,13 +132,13 @@ export class ModelValidationArtifactsComponent implements OnInit {
         console.error(e);
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
 
   back(): void {
-    if (this.backURL === "/model-detail") {
+    if (this.backURL === '/model-detail') {
       this.router
         .navigate([this.backURL], { queryParams: { id: this.backURLQuery } })
         .then((r) => {});

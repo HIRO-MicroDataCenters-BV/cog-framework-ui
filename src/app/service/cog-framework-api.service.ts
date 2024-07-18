@@ -1,21 +1,21 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { environment } from "../../environments/environment";
-import { ModelInfo, ModelInfoById } from "../model/ModelInfo";
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { ModelInfo, ModelInfoById } from '../model/ModelInfo';
 import {
   DatasetInfo,
   DatasetByName,
   UploadedDataset,
-} from "../model/DatasetInfo";
-import { ModelDetailInfo } from "../model/ModelDetails";
-import { DataSetDetailInfo } from "../model/DataSetDetailInfo";
-import { ValidationArtifactsResponse } from "../model/ValidationArtifacts";
-import { S3Request } from "../model/S3Request";
-import { ValidationMetricsResponse } from "../model/ValidationMetrics";
+} from '../model/DatasetInfo';
+import { ModelDetailInfo } from '../model/ModelDetails';
+import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
+import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
+import { S3Request } from '../model/S3Request';
+import { ValidationMetricsResponse } from '../model/ValidationMetrics';
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class CogFrameworkApiService {
   private baseURL: string = environment.appURL;
@@ -93,7 +93,7 @@ export class CogFrameworkApiService {
   getModelValidationCSV(csvFile: string): Observable<any> {
     return this.httpClient.get<any>(
       `${this.baseURL}/s3/get_image?url=${csvFile}`,
-      { responseType: "text" as any },
+      { responseType: 'text' as any },
     );
   }
 
@@ -111,13 +111,13 @@ export class CogFrameworkApiService {
     description: string;
   }): Observable<UploadedDataset> {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
     const params = encodeURI(
       new HttpParams()
-        .set("user_id", user_id)
-        .set("dataset_name", name)
-        .set("dataset_type", type)
-        .set("description", description)
+        .set('user_id', user_id)
+        .set('dataset_name', name)
+        .set('dataset_type', type)
+        .set('description', description)
         .toString(),
     );
     const url = `${this.baseURL}/dataset?${params}`;
@@ -137,13 +137,13 @@ export class CogFrameworkApiService {
     model_file_description: string;
   }): Observable<UploadedDataset> {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
     const params = encodeURI(
       new HttpParams()
-        .set("user_id", user_id)
-        .set("model_id", model_id)
-        .set("model_file_type", model_file_type)
-        .set("model_file_description", model_file_description)
+        .set('user_id', user_id)
+        .set('model_id', model_id)
+        .set('model_file_type', model_file_type)
+        .set('model_file_description', model_file_description)
         .toString(),
     );
     const url = `${this.baseURL}/models/upload?${params}`;

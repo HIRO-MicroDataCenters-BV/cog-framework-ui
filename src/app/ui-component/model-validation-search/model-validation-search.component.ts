@@ -1,10 +1,10 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 
-import { ValidationArtifactsResponse } from "../../model/ValidationArtifacts";
-import { ValidationMetricsData } from "../../model/ValidationMetrics";
-import { Router } from "@angular/router";
-import { ModelValidationService } from "../../service/model-validation.service";
+import { ValidationArtifactsResponse } from '../../model/ValidationArtifacts';
+import { ValidationMetricsData } from '../../model/ValidationMetrics';
+import { Router } from '@angular/router';
+import { ModelValidationService } from '../../service/model-validation.service';
 
 interface ModelValidationMetricTableModel {
   registered_date_time: string;
@@ -32,13 +32,13 @@ interface ModelValidationTableModel {
 }
 
 @Component({
-  selector: "app-model-validation-search",
-  templateUrl: "./model-validation-search.component.html",
-  styleUrls: ["./model-validation-search.component.scss"],
+  selector: 'app-model-validation-search',
+  templateUrl: './model-validation-search.component.html',
+  styleUrls: ['./model-validation-search.component.scss'],
 })
 export class ModelValidationSearchComponent implements OnInit, OnDestroy {
-  modelValidationName = "";
-  modelValidationId = "";
+  modelValidationName = '';
+  modelValidationId = '';
 
   validationMetricsData: ValidationMetricsData | undefined;
   validationArtifactsResponse: ValidationArtifactsResponse | undefined;
@@ -47,27 +47,27 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
 
   modelValidationTableDataSource: ModelValidationTableModel[] = [];
   displayedColumnsModelValidationTable: string[] = [
-    "id",
-    "dataset_id",
-    "model_id",
-    "action",
+    'id',
+    'dataset_id',
+    'model_id',
+    'action',
   ];
 
   modelValidationScoreTableSource: ModelValidationTable[] = [];
-  displayedColumns: string[] = ["name", "value"];
+  displayedColumns: string[] = ['name', 'value'];
 
   modelValidationMetricTableDataSource: ModelValidationMetricTableModel[] = [];
   modelValidationMetricTableDisplayedColumns: string[] = [
-    "id",
-    "dataset_id",
-    "accuracy_score",
-    "example_count",
-    "f1_score",
-    "log_loss",
-    "precision_score",
-    "recall_score",
-    "roc_auc",
-    "score",
+    'id',
+    'dataset_id',
+    'accuracy_score',
+    'example_count',
+    'f1_score',
+    'log_loss',
+    'precision_score',
+    'recall_score',
+    'roc_auc',
+    'score',
   ];
 
   constructor(
@@ -85,21 +85,21 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
       }
     });
     this.router
-      .navigate(["/model-validation-artifacts"], {
+      .navigate(['/model-validation-artifacts'], {
         queryParams: { id: item.id },
       })
       .then((r) => {
-        console.log("redirected to other component");
+        console.log('redirected to other component');
       });
   }
 
   search(): void {
     if (this.modelValidationId.length > 0) {
-      console.log("Search by ID");
+      console.log('Search by ID');
       this.getModelValidationArtifactByID();
       this.getModeValidationMetricsById();
     } else {
-      console.log("Search by Name");
+      console.log('Search by Name');
       this.getModelValidationArtifactByName();
       this.getModeValidationMetricsByName();
     }
@@ -128,7 +128,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       complete: () => {
-        console.info("complete");
+        console.info('complete');
         this.loading = false;
       },
     });

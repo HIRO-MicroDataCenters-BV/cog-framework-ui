@@ -1,25 +1,25 @@
-import { Component } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatTableModule } from "@angular/material/table";
-import { environment } from "../../../environments/environment.development";
-import { CogFrameworkApiService } from "../../service/cog-framework-api.service";
-import { DatePipe, NgIf } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { MatIconModule } from "@angular/material/icon";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { DataSetData } from "../../model/DatasetInfo";
-import { Router } from "@angular/router";
+import { Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatTableModule } from '@angular/material/table';
+import { environment } from '../../../environments/environment.development';
+import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
+import { DatePipe, NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DataSetData } from '../../model/DatasetInfo';
+import { Router } from '@angular/router';
 
-import { UploadDatasetComponent } from "../dataset-upload/dataset-upload.component";
+import { UploadDatasetComponent } from '../dataset-upload/dataset-upload.component';
 
 const ELEMENT_DATA: DataSetData[] = [];
 
 @Component({
-  selector: "app-dataset",
+  selector: 'app-dataset',
   standalone: true,
   imports: [
     MatButtonModule,
@@ -35,22 +35,22 @@ const ELEMENT_DATA: DataSetData[] = [];
     NgIf,
     UploadDatasetComponent,
   ],
-  templateUrl: "./dataset.component.html",
-  styleUrl: "./dataset.component.scss",
+  templateUrl: './dataset.component.html',
+  styleUrl: './dataset.component.scss',
 })
 export class DatasetComponent {
   loading = false;
   displayedColumns: string[] = [
-    "id",
-    "name",
-    "creationTime",
-    "author",
-    "action",
+    'id',
+    'name',
+    'creationTime',
+    'author',
+    'action',
   ];
   dataSource = ELEMENT_DATA;
   appURL = environment.appURL;
-  datasetName = "";
-  datasetId = "";
+  datasetName = '';
+  datasetId = '';
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
@@ -59,18 +59,18 @@ export class DatasetComponent {
 
   open(item: any): void {
     this.router
-      .navigate(["/dataset-detail"], { queryParams: { id: item.id } })
+      .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
       .then((r) => {
-        console.log("redirected to other component");
+        console.log('redirected to other component');
       });
   }
 
   search(): void {
     if (this.datasetId.length > 0) {
-      console.log("Search by ID");
+      console.log('Search by ID');
       this.searchByID();
     } else {
-      console.log("Search by Name");
+      console.log('Search by Name');
       this.searchByName();
     }
   }
@@ -92,14 +92,14 @@ export class DatasetComponent {
       },
       complete: () => {
         this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }
 
   searchByName(): void {
     this.loading = true;
-    console.log("search dataset with name " + this.datasetName);
+    console.log('search dataset with name ' + this.datasetName);
     const response = this.cogFrameworkApiService.getDataSetDetailByName(
       this.datasetName,
     );
@@ -114,7 +114,7 @@ export class DatasetComponent {
       },
       complete: () => {
         this.loading = false;
-        console.info("complete");
+        console.info('complete');
       },
     });
   }

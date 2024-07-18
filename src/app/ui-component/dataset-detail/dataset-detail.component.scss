@@ -1,7 +1,7 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 .density-settings {
-  @include mat.all-component-densities(-3)
+  @include mat.all-component-densities(-3);
 }
 
 .content {
@@ -11,9 +11,8 @@
 .title {
   font-size: 12px;
   font-weight: 500;
-  padding-right: 10px
+  padding-right: 10px;
 }
-
 
 .box {
   // display: flex;
@@ -22,12 +21,11 @@
   justify-content: space-evenly;
 }
 
-
 .list-item {
   min-width: 120px;
   display: inline-block;
 }
 
 .error {
-  color: red
+  color: red;
 }

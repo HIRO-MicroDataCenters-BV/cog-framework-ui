@@ -1,8 +1,8 @@
 import {
   ValidationArtifacts,
   ValidationArtifactsData,
-} from "./ValidationArtifacts";
-import { Pipeline, ValidationMetricsData } from "./ValidationMetrics";
+} from './ValidationArtifacts';
+import { Pipeline, ValidationMetricsData } from './ValidationMetrics';
 
 export interface ModelDetailInfo {
   data: ModelDetailData[];

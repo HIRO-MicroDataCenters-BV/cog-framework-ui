@@ -1,11 +1,11 @@
-import { Directive, AfterContentChecked } from "@angular/core";
-import { Router, NavigationEnd } from "@angular/router";
+import { Directive, AfterContentChecked } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 
-import { AccordionLinkDirective } from "./accordionlink.directive";
-import { filter } from "rxjs/operators";
+import { AccordionLinkDirective } from './accordionlink.directive';
+import { filter } from 'rxjs/operators';
 
 @Directive({
-  selector: "[appAccordion]",
+  selector: '[appAccordion]',
 })
 export class AccordionDirective implements AfterContentChecked {
   protected navlinks: Array<AccordionLinkDirective> = [];
@@ -33,7 +33,7 @@ export class AccordionDirective implements AfterContentChecked {
     this.navlinks.forEach((link: AccordionLinkDirective) => {
       if (link.group) {
         const routeUrl = this.router.url;
-        const currentUrl = routeUrl.split("/");
+        const currentUrl = routeUrl.split('/');
         if (currentUrl.indexOf(link.group) > 0) {
           link.selected = true;
           this.closeOtherLinks(link);

@@ -1,19 +1,18 @@
-@use '@angular/material' as mat;
-
+@use "@angular/material" as mat;
 
 .dataset-upload__header {
-    padding: 8px;
+  padding: 8px;
 }
 
 .dataset-upload__form {
-    margin: 4px;
-    padding-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  margin: 4px;
+  padding-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .dataset-upload__button-wrapper {
-    display: flex;
-    padding-right: 15px;
+  display: flex;
+  padding-right: 15px;
 }
