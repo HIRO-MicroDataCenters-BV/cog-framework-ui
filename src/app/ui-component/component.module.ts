@@ -26,7 +26,6 @@ import { ModelServingComponent } from './model-serving/model-serving.component';
     FormsModule,
     ReactiveFormsModule,
     CdkTableModule,
-
   ],
   providers: [],
   declarations: [
@@ -35,7 +34,7 @@ import { ModelServingComponent } from './model-serving/model-serving.component';
     PipelineComponent,
     ModelTrainingComponent,
     ModelDeploymentComponent,
-    ModelServingComponent
+    ModelServingComponent,
   ],
 })
 export class MaterialComponentsModule {}

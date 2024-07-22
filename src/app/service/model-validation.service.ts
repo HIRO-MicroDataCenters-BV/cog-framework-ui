@@ -1,15 +1,13 @@
-import {Injectable} from '@angular/core';
-import {ValidationArtifactsData} from "../model/ValidationArtifacts";
+import { Injectable } from '@angular/core';
+import { ValidationArtifactsData } from '../model/ValidationArtifacts';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class ModelValidationService {
+  modelValidationArtifactsData: ValidationArtifactsData | undefined;
+  previousComponentUrl: any;
+  previousComponentUrlQuery: any;
 
-    modelValidationArtifactsData: ValidationArtifactsData | undefined;
-    previousComponentUrl: any;
-    previousComponentUrlQuery: any;
-
-    constructor() {
-    }
+  constructor() {}
 }

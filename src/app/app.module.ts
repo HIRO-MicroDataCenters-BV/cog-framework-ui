@@ -1,10 +1,13 @@
-
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import {
+  LocationStrategy,
+  PathLocationStrategy,
+  APP_BASE_HREF,
+} from '@angular/common';
 import { AppRoutes } from './app.routing';
 import { AppComponent } from './app.component';
 
@@ -23,7 +26,6 @@ import { SpinnerComponent } from './shared/spinner.component';
     FullComponent,
     AppHeaderComponent,
     SpinnerComponent,
-    
   ],
   imports: [
     BrowserModule,
@@ -33,14 +35,18 @@ import { SpinnerComponent } from './shared/spinner.component';
     HttpClientModule,
     SharedModule,
     RouterModule.forRoot(AppRoutes),
-    AppSidebarComponent
+    AppSidebarComponent,
   ],
   providers: [
     {
       provide: LocationStrategy,
-      useClass: PathLocationStrategy
-    }
+      useClass: PathLocationStrategy,
+    },
+    {
+      provide: APP_BASE_HREF,
+      useValue: '/cogui/',
+    },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
 export const environment = {
-    production: true,
-    appURL: "/cogapi"
+  production: true,
+  appURL: '/cogapi',
 };

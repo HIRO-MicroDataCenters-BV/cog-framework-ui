@@ -8,9 +8,16 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports:[DemoMaterialModule, NgFor, NgIf, RouterModule, CommonModule, MatIconModule],
+  imports: [
+    DemoMaterialModule,
+    NgFor,
+    NgIf,
+    RouterModule,
+    CommonModule,
+    MatIconModule,
+  ],
   templateUrl: './sidebar.component.html',
-  styleUrls: []
+  styleUrls: [],
 })
 export class AppSidebarComponent implements OnDestroy {
   mobileQuery: MediaQueryList;
@@ -20,7 +27,7 @@ export class AppSidebarComponent implements OnDestroy {
   constructor(
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher,
-    public menuItems: MenuItems
+    public menuItems: MenuItems,
   ) {
     this.mobileQuery = media.matchMedia('(min-width: 768px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();

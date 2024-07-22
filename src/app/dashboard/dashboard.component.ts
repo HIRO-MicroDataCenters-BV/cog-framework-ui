@@ -3,13 +3,11 @@ import { SalesOverviewComponent } from './dashboard-components/sales-overview/sa
 import { OurVisiterComponent } from './dashboard-components/our-visiter/our-visiter.component';
 
 @Component({
-	selector: 'app-dashboard',
-	standalone: true,
-	imports: [SalesOverviewComponent, OurVisiterComponent],
-	templateUrl: './dashboard.component.html'
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [SalesOverviewComponent, OurVisiterComponent],
+  templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements AfterViewInit {
-
-	ngAfterViewInit() { }
-
+  ngAfterViewInit() {}
 }

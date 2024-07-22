@@ -10,17 +10,20 @@ export const AppRoutes: Routes = [
       {
         path: '',
         redirectTo: '/dashboard',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: '',
-        loadChildren:
-          () => import('./ui-component/component.module').then(m => m.MaterialComponentsModule)
+        loadChildren: () =>
+          import('./ui-component/component.module').then(
+            (m) => m.MaterialComponentsModule,
+          ),
       },
       {
         path: 'dashboard',
-        loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule)
-      }
-    ]
-  }
+        loadChildren: () =>
+          import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
+      },
+    ],
+  },
 ];

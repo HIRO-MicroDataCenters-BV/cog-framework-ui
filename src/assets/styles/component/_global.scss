@@ -115,7 +115,8 @@ code {
   // color: $white;
 }
 
-.mat-mdc-fab.mat-accent, .mat-mdc-mini-fab.mat-accent {
+.mat-mdc-fab.mat-accent,
+.mat-mdc-mini-fab.mat-accent {
   color: $white;
 }
 
@@ -147,7 +148,6 @@ html body {
   }
 
   .jc-c {
-
     justify-content: center;
   }
 
