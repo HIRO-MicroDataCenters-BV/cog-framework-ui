@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import {MatCardModule} from '@angular/material/card';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatInputModule} from '@angular/material/input';
@@ -17,6 +17,8 @@ import {ModelUploadComponent} from '../model-upload/model-upload.component';
 import {MatDialog} from "@angular/material/dialog";
 import {ModelDeleteConfirmationComponent} from "./model-delete-confirmation/model-delete-confirmation.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
+import {MatSelectModule} from "@angular/material/select";
 
 const ELEMENT_DATA: Model[] = [];
 
@@ -36,11 +38,13 @@ const ELEMENT_DATA: Model[] = [];
         DatePipe,
         MatProgressBarModule,
         ModelUploadComponent,
+        MatPaginatorModule,
+        MatSelectModule
     ],
     templateUrl: './model.component.html',
     styleUrl: './model.component.scss',
 })
-export class ModelComponent {
+export class ModelComponent implements AfterViewInit {
     loading = false;
     displayedColumns: string[] = [
         'id',
@@ -49,13 +53,23 @@ export class ModelComponent {
         'author',
         'action',
     ];
-    dataSource = ELEMENT_DATA;
+    // dataSource = ELEMENT_DATA;
+    dataSource = new MatTableDataSource<Model>(ELEMENT_DATA);
     ttDataSource = new MatTableDataSource<Model>([]);
     modelName = '';
     modelId = '';
 
+
+    @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+
     constructor(private cogFrameworkApiService: CogFrameworkApiService, private router: Router,
                 private dialog: MatDialog, private snackBar: MatSnackBar) {
+
+    }
+
+    ngAfterViewInit() {
+        // @ts-ignore
+        this.dataSource.paginator = this.paginator;
     }
 
     open(item: any): void {
@@ -84,7 +98,7 @@ export class ModelComponent {
             next: (v) => {
                 const model = [];
                 model.push(v.data);
-                this.dataSource = model;
+                this.dataSource.data = model;
                 this.ttDataSource.data = model;
             },
             error: (e) => {
@@ -103,7 +117,7 @@ export class ModelComponent {
         const response = this.cogFrameworkApiService.getModelByName(this.modelName);
         response.subscribe({
             next: (v) => {
-                this.dataSource = v.data;
+                this.dataSource.data = v.data;
             },
             error: (e) => {
                 console.error(e);
@@ -163,11 +177,11 @@ export class ModelComponent {
 
     private deleteModelFromTable(id: number): void {
         const remaining = [];
-        for (const i in this.dataSource) {
-            if (id !== this.dataSource[i].id) {
-                remaining.push(this.dataSource[i]);
-            }
-        }
-        this.dataSource = remaining;
+        // for (const i in this.dataSource) {
+        //     if (id !== this.dataSource[i].id) {
+        //         remaining.push(this.dataSource[i]);
+        //     }
+        // }
+        // this.dataSource = remaining;
     }
 }
