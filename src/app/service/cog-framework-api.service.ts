@@ -48,6 +48,10 @@ export class CogFrameworkApiService {
     );
   }
 
+  deleteDataSetDetailById(id: number): Observable<any> {
+    return this.httpClient.delete<any>(`${this.baseURL}/dataset/${id}`);
+  }
+
   getDataSetDetailByName(name: string): Observable<DatasetByName> {
     return this.httpClient.get<DatasetByName>(
       `${this.baseURL}/dataset/${name}`,

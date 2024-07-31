@@ -55,7 +55,6 @@ export class ModelComponent implements AfterViewInit {
   ];
   // dataSource = ELEMENT_DATA;
   dataSource = new MatTableDataSource<Model>(ELEMENT_DATA);
-  ttDataSource = new MatTableDataSource<Model>([]);
   modelName = '';
   modelId = '';
 
@@ -102,7 +101,6 @@ export class ModelComponent implements AfterViewInit {
         const model = [];
         model.push(v.data);
         this.dataSource.data = model;
-        this.ttDataSource.data = model;
       },
       error: (e) => {
         console.error(e);
@@ -135,17 +133,13 @@ export class ModelComponent implements AfterViewInit {
 
   // trade table function
   openModelDialog(model: Model): void {
-    console.log(model);
     const dialogRef = this.dialog.open(ModelDeleteConfirmationComponent, {
       //width: '25vw',
       //height: '20vh',
       data: model,
     });
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('after close');
       if (result) {
-        console.log(result);
-        console.log(result.data);
         this.deleteModelById(result.data.id);
       }
     });
