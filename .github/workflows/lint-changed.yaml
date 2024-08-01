@@ -1,0 +1,42 @@
+name: Lint Changed Files
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get changed files
+        id: changed-files
+        with:
+          files: 'src/**/*.{ts,html}'
+          separator: ' '
+        uses: tj-actions/changed-files@v44
+
+      - name: Lint changed files
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          if [ -n "${CHANGED_FILES}" ]; then
+            npx eslint ${CHANGED_FILES} --fix --ignore-path .gitignore
+          else
+            echo "No files changed"
+          fi
