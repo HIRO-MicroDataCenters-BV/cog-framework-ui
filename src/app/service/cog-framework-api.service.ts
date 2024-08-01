@@ -11,8 +11,8 @@ import {
 import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
-import { S3Request } from '../model/S3Request';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
+import { DataSetData } from '../model/DeleteResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +36,8 @@ export class CogFrameworkApiService {
     );
   }
 
-  deleteModelById(id: number): Observable<any> {
-    return this.httpClient.delete<any>(
+  deleteModelById(id: number): Observable<DataSetData> {
+    return this.httpClient.delete<DataSetData>(
       `${this.baseURL}/delete_model_details?model_id=${id}`,
     );
   }

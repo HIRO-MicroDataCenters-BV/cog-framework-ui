@@ -133,19 +133,13 @@ export class ModelComponent implements AfterViewInit {
     });
   }
 
-  // trade table function
   openModelDialog(model: Model): void {
     console.log(model);
     const dialogRef = this.dialog.open(ModelDeleteConfirmationComponent, {
-      //width: '25vw',
-      //height: '20vh',
       data: model,
     });
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('after close');
       if (result) {
-        console.log(result);
-        console.log(result.data);
         this.deleteModelById(result.data.id);
       }
     });
