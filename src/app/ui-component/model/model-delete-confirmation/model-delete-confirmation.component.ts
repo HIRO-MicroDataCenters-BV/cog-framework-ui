@@ -13,13 +13,15 @@ export class ModelDeleteConfirmationComponent implements OnInit {
     public dialogRef: MatDialogRef<ModelDeleteConfirmationComponent>,
   ) {}
 
-  ngOnInit(): void {}
-
   deleteModel(): void {
     this.dialogRef.close({ data: this.model });
   }
 
   closeDialog(): void {
     this.dialogRef.close();
+  }
+
+  ngOnInit(): void {
+    console.log('ngOnInit');
   }
 }
