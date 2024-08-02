@@ -1,15 +1,13 @@
 @use "@angular/material" as mat;
 
+@import "../../../assets/styles/variable.scss";
+
+
 .density-settings {
   @include mat.all-component-densities(-3);
 }
 
-table {
-  width: 100%;
-}
-
 .input-search {
-  //height: 60px !important;
   margin-left: 25px;
 }
 
@@ -29,9 +27,9 @@ table {
 }
 
 .delete_button {
-  color: #c12a01;
+  color: $danger;
 }
 
-.icon{
+.icon {
   font-size: 14px
 }
