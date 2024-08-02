@@ -167,12 +167,8 @@ export class ModelComponent implements AfterViewInit {
   }
 
   private deleteModelFromTable(id: number): void {
-    const remaining = [];
-    for (const i in this.dataSource.data) {
-      if (id !== this.dataSource.data[i].id) {
-        remaining.push(this.dataSource.data[i]);
-      }
-    }
-    this.dataSource.data = remaining;
+    this.dataSource.data = this.dataSource.data.filter(
+      (item) => item.id !== id,
+    );
   }
 }
