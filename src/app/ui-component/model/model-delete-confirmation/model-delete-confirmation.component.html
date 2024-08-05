@@ -1,0 +1,17 @@
+<div class="dialog-container">
+  <p><span class="dialog-heading">Confirm Delete Model ? </span><b> </b></p>
+
+  <hr />
+  <span class="table-text"> {{ model.name }}</span>
+  <hr />
+  <span class="text-danger note"
+    >Note: it will delete all <strong>pipelines</strong> and unlink
+    <strong>datasets</strong> linked to this model</span
+  >
+  <div align="end" class="pt-3" mat-dialog-actions>
+    <button (click)="deleteModel()" color="warn" mat-button mat-flat-button>
+      Ok
+    </button>
+    <button (click)="closeDialog()" mat-button>Cancel</button>
+  </div>
+</div>

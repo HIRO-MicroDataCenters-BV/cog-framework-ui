@@ -16,6 +16,7 @@ import { PipelineComponent } from './pipeline/pipeline.component';
 import { ModelTrainingComponent } from './model-training/model-training.component';
 import { ModelDeploymentComponent } from './model-deployment/model-deployment.component';
 import { ModelServingComponent } from './model-serving/model-serving.component';
+import { ModelDeleteConfirmationComponent } from './model/model-delete-confirmation/model-delete-confirmation.component';
 
 @NgModule({
   imports: [
@@ -35,6 +36,7 @@ import { ModelServingComponent } from './model-serving/model-serving.component';
     ModelTrainingComponent,
     ModelDeploymentComponent,
     ModelServingComponent,
+    ModelDeleteConfirmationComponent,
   ],
 })
 export class MaterialComponentsModule {}

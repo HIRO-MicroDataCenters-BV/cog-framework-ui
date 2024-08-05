@@ -2,6 +2,11 @@ npm install
 nvm use 18.20
 ng serve
 
+## Run linter and formater
+```sh
+ng lint --fix
+```
+
 ## Local Docker deployment
 
 docker build --platform=linux/amd64 . -t cog
