@@ -9,6 +9,11 @@ Ensure you have the following software installed on your machine:
 
 - [Node.js](https://nodejs.org/en) (v18.20.0 or higher)
 - [Angular CLI](https://v17.angular.io/cli) (v17.3.2 or higher)
+
+
+## Managing Node version
+
+It is highly recommended to install nvm (node package manager) and use to manage node version
 - [nvm](https://github.com/nvm-sh/nvm) (0.39.0 or higher)
 
 ## How to run it locally
@@ -21,20 +26,20 @@ Ensure you have the following software installed on your machine:
 git clone https://github.com/HIRO-MicroDataCenters-BV/cog-framework-ui
 ```
 
-2. Navigate to the project directory and switch node version using nvm
+2. Navigate to the project directory and switch node version using nvm. 
+   node version is defined in .nvmrc file
 
 ```sh
 cd cog-framework-ui
-nvm use 18.20
+nvm use
 ```
 
-3. Run `npm install` inside the cloned dir.
-   
-   Install the `npm` packages described in the `package.json` and verify that it works:
+3. Run `npm install` inside the cloned dir to install the packages described in package.json:
 
 ```sh
 npm install
 ```
+This will ensure all dependencies are correctly installed and verified.
 
 ### Running the Project
 
@@ -62,7 +67,7 @@ Ensure you have [Docker](https://www.docker.com/) installed on your machine.
 1. Building the Docker Image
 
 ```sh
-docker build --platform=linux/amd64 . -t cog
+docker build . -t cog
 ```
 
 2. Running the Docker Container
