@@ -8,8 +8,6 @@ This application allows users to track, train, and experiment with different mod
 Ensure you have the following software installed on your machine:
 
 - [Node.js](https://nodejs.org/en) (v18.20.0 or higher)
-- [Angular CLI](https://v17.angular.io/cli) (v17.3.2 or higher)
-
 
 ## Managing Node version
 
