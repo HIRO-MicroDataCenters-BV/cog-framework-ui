@@ -11,8 +11,9 @@ import {
 import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
-import { S3Request } from '../model/S3Request';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
+import { DataSetData } from '../model/DeleteResponse';
+import { PipelineResponse } from '../model/PipeLine';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +37,8 @@ export class CogFrameworkApiService {
     );
   }
 
-  deleteModelById(id: number): Observable<any> {
-    return this.httpClient.delete<any>(
+  deleteModelById(id: number): Observable<DataSetData> {
+    return this.httpClient.delete<DataSetData>(
       `${this.baseURL}/delete_model_details?model_id=${id}`,
     );
   }
@@ -58,8 +59,10 @@ export class CogFrameworkApiService {
     );
   }
 
-  getPipelineByModelID(id: string): Observable<any> {
-    return this.httpClient.get<any>(`${this.baseURL}/pipeline/${id}`);
+  getPipelineByModelID(id: string): Observable<PipelineResponse> {
+    return this.httpClient.get<PipelineResponse>(
+      `${this.baseURL}/pipeline/${id}`,
+    );
   }
 
   // dataset apis
@@ -100,10 +103,10 @@ export class CogFrameworkApiService {
   }
 
   //s3://mlflow/per_class_metrics.csv
-  getModelValidationCSV(csvFile: string): Observable<any> {
-    return this.httpClient.get<any>(
+  getModelValidationCSV(csvFile: string): Observable<string> {
+    return this.httpClient.get<string>(
       `${this.baseURL}/s3/get_image?url=${csvFile}`,
-      { responseType: 'text' as any },
+      { responseType: 'text' as never },
     );
   }
 

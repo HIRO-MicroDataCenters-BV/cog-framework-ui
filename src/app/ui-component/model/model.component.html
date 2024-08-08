@@ -101,16 +101,15 @@
             color="primary"
             (click)="open(element)"
           >
-            <mat-icon style="font-size: 14px">open_in_browser</mat-icon>
+            <mat-icon class="icon">open_in_browser</mat-icon>
           </button>
           <button
             mat-icon-button
             matTooltip="Delete"
-            style=""
             class="delete_button"
             (click)="openModelDialog(element)"
           >
-            <mat-icon style="font-size: 14px">delete_outline</mat-icon>
+            <mat-icon class="icon">delete_outline</mat-icon>
           </button>
         </td>
       </ng-container>
@@ -121,7 +120,7 @@
     <mat-paginator
       [pageSizeOptions]="[5, 10, 20]"
       showFirstLastButtons
-      aria-label="Select page of periodic elements"
+      aria-label="Select page of models"
     >
     </mat-paginator>
   </div>
