@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -14,13 +14,11 @@ import { Dataset } from '../../../model/DatasetInfo';
   templateUrl: './dataset-delete-confirmation.component.html',
   styleUrl: './dataset-delete-confirmation.component.scss',
 })
-export class DatasetDeleteConfirmationComponent implements OnInit {
+export class DatasetDeleteConfirmationComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public dataSetData: Dataset,
     public dialogRef: MatDialogRef<DatasetDeleteConfirmationComponent>,
   ) {}
-
-  ngOnInit(): void {}
 
   deleteModel(): void {
     this.dialogRef.close({ data: this.dataSetData });

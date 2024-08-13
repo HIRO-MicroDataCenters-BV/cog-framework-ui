@@ -4,7 +4,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { environment } from '../../../environments/environment.development';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { DatePipe, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -52,9 +51,8 @@ export class DatasetComponent implements AfterViewInit {
     'author',
     'action',
   ];
-  //dataSource = ELEMENT_DATA;
+
   dataSource = new MatTableDataSource<DataSetData>(ELEMENT_DATA);
-  appURL = environment.appURL;
   datasetName = '';
   datasetId = '';
 
@@ -82,18 +80,12 @@ export class DatasetComponent implements AfterViewInit {
   }
 
   openModelDialog(dataset: Dataset): void {
-    console.log('openModelDialog');
-    console.log(dataset);
     const dialogRef = this.dialog.open(DatasetDeleteConfirmationComponent, {
       width: '25vw',
-      //height: '20vh',
       data: dataset,
     });
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('after close');
       if (result) {
-        console.log(result);
-        console.log(result.data);
         this.deleteDataSetById(result.data.id);
       }
     });
@@ -102,8 +94,7 @@ export class DatasetComponent implements AfterViewInit {
   deleteDataSetById(id: number): void {
     const response = this.cogFrameworkApiService.deleteDataSetDetailById(id);
     response.subscribe({
-      next: (v) => {
-        console.log(v);
+      next: () => {
         this.openSnackBar('DataSet deleted', 'Close');
         this.deleteDataSetFromTable(id);
       },
@@ -118,10 +109,8 @@ export class DatasetComponent implements AfterViewInit {
 
   search(): void {
     if (this.datasetId.length > 0) {
-      console.log('Search by ID');
       this.searchByID();
     } else {
-      console.log('Search by Name');
       this.searchByName();
     }
   }
@@ -132,7 +121,6 @@ export class DatasetComponent implements AfterViewInit {
 
     response.subscribe({
       next: (v) => {
-        console.log(v);
         const model = [];
         model.push(v.data);
         this.dataSource.data = model;
@@ -143,20 +131,17 @@ export class DatasetComponent implements AfterViewInit {
       },
       complete: () => {
         this.loading = false;
-        console.info('complete');
       },
     });
   }
 
   searchByName(): void {
     this.loading = true;
-    console.log('search dataset with name ' + this.datasetName);
     const response = this.cogFrameworkApiService.getDataSetDetailByName(
       this.datasetName,
     );
     response.subscribe({
       next: (v) => {
-        console.log(v);
         this.dataSource.data = v.data;
       },
       error: (e) => {
@@ -165,9 +150,14 @@ export class DatasetComponent implements AfterViewInit {
       },
       complete: () => {
         this.loading = false;
-        console.info('complete');
       },
     });
+  }
+
+  private deleteDataSetFromTable(id: number): void {
+    this.dataSource.data = this.dataSource.data.filter(
+      (item) => item.id !== id,
+    );
   }
 
   private openSnackBar(message: string, action: string): void {
@@ -176,15 +166,5 @@ export class DatasetComponent implements AfterViewInit {
       horizontalPosition: 'end',
       verticalPosition: 'bottom',
     });
-  }
-
-  private deleteDataSetFromTable(id: number): void {
-    const remaining = [];
-    for (const i in this.dataSource.data) {
-      if (id !== this.dataSource.data[i].id) {
-        remaining.push(this.dataSource.data[i]);
-      }
-    }
-    this.dataSource.data = remaining;
   }
 }

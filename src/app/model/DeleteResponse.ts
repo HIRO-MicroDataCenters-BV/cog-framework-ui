@@ -1,3 +1,3 @@
-export interface DataSetData {
+export interface DeleteResponse {
   message: string;
 }
