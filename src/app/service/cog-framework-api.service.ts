@@ -12,7 +12,7 @@ import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
-import { DataSetData } from '../model/DeleteResponse';
+import { DeleteResponse } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
 
 @Injectable({
@@ -37,8 +37,8 @@ export class CogFrameworkApiService {
     );
   }
 
-  deleteModelById(id: number): Observable<DataSetData> {
-    return this.httpClient.delete<DataSetData>(
+  deleteModelById(id: number): Observable<DeleteResponse> {
+    return this.httpClient.delete<DeleteResponse>(
       `${this.baseURL}/delete_model_details?model_id=${id}`,
     );
   }
@@ -46,6 +46,12 @@ export class CogFrameworkApiService {
   getDataSetDetailById(id: string): Observable<DataSetDetailInfo> {
     return this.httpClient.get<DataSetDetailInfo>(
       `${this.baseURL}/dataset/details?id=${id}`,
+    );
+  }
+
+  deleteDataSetDetailById(id: number): Observable<DeleteResponse> {
+    return this.httpClient.delete<DeleteResponse>(
+      `${this.baseURL}/dataset/${id}`,
     );
   }
 
