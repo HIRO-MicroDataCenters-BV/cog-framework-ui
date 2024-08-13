@@ -44,7 +44,7 @@ import { SpinnerComponent } from './shared/spinner.component';
     },
     {
       provide: APP_BASE_HREF,
-      useValue: '/cogui/',
+      useValue: '/cogui',
     },
   ],
   bootstrap: [AppComponent],
