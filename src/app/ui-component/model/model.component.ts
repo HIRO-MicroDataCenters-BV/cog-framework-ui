@@ -20,7 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 
-const ELEMENT_DATA: Model[] = [];
+const MODEL_DATA: Model[] = [];
 
 @Component({
   selector: 'app-model',
@@ -53,7 +53,7 @@ export class ModelComponent implements AfterViewInit {
     'author',
     'action',
   ];
-  dataSource = new MatTableDataSource<Model>(ELEMENT_DATA);
+  dataSource = new MatTableDataSource<Model>(MODEL_DATA);
   modelName = '';
   modelId = '';
 
