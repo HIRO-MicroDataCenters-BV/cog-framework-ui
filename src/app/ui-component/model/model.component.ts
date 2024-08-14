@@ -93,13 +93,13 @@ export class ModelComponent implements AfterViewInit {
 
   searchByID(): void {
     this.loading = true;
-    const response = this.cogFrameworkApiService.getModelById(this.modelId);
+    const response = this.cogFrameworkApiService.getModel({
+      id: this.modelId,
+    });
 
     response.subscribe({
       next: (v) => {
-        const model = [];
-        model.push(v.data);
-        this.dataSource.data = model;
+        this.dataSource.data = v.data;
       },
       error: (e) => {
         console.error(e);
@@ -114,7 +114,9 @@ export class ModelComponent implements AfterViewInit {
 
   searchByName(): void {
     this.loading = true;
-    const response = this.cogFrameworkApiService.getModelByName(this.modelName);
+    const response = this.cogFrameworkApiService.getModel({
+      name: this.modelName,
+    });
     response.subscribe({
       next: (v) => {
         this.dataSource.data = v.data;

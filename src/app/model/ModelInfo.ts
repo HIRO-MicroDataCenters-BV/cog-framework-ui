@@ -1,13 +1,6 @@
 export interface ModelInfo {
   data: Model[];
-  errors?: any;
-  message: string;
-  success: boolean;
-}
-
-export interface ModelInfoById {
-  data: Model;
-  errors?: any;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }
@@ -22,3 +15,8 @@ export interface Model {
   type: string;
   version: string;
 }
+
+export type GetModelParams = {
+  id?: string;
+  name?: string;
+};

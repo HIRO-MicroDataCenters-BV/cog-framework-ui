@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ModelInfo, ModelInfoById } from '../model/ModelInfo';
+import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  DatasetInfo,
   DatasetByName,
+  DatasetInfo,
   UploadedDataset,
 } from '../model/DatasetInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
@@ -23,12 +23,12 @@ export class CogFrameworkApiService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getModelByName(name: string): Observable<ModelInfo> {
-    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models/${name}`);
-  }
-
-  getModelById(id: string): Observable<ModelInfoById> {
-    return this.httpClient.get<ModelInfoById>(`${this.baseURL}/models/${id}`);
+  getModel(getModelParams: GetModelParams): Observable<ModelInfo> {
+    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`, {
+      params: {
+        ...getModelParams,
+      },
+    });
   }
 
   getModelDetailById(id: string): Observable<ModelDetailInfo> {
