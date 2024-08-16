@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,11 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Dataset, DataSetData } from '../../model/DatasetInfo';
+import {
+  Dataset,
+  DataSetData,
+  GetDatasetParams,
+} from '../../model/DatasetInfo';
 import { Router } from '@angular/router';
 
 import { UploadDatasetComponent } from '../dataset-upload/dataset-upload.component';
@@ -42,7 +46,7 @@ const ELEMENT_DATA: DataSetData[] = [];
   templateUrl: './dataset.component.html',
   styleUrl: './dataset.component.scss',
 })
-export class DatasetComponent implements AfterViewInit {
+export class DatasetComponent implements OnInit, AfterViewInit {
   loading = false;
   displayedColumns: string[] = [
     'id',
@@ -64,6 +68,12 @@ export class DatasetComponent implements AfterViewInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
   ) {}
+
+  ngOnInit(): void {
+    // TODO: With current API, we can't get all datasets, uncomment after API update
+    // this.getDatasets();
+    return;
+  }
 
   ngAfterViewInit() {
     if (this.paginator) {
@@ -107,14 +117,24 @@ export class DatasetComponent implements AfterViewInit {
     });
   }
 
-  search(): void {
-    if (this.datasetId.length > 0) {
-      this.searchByID();
-    } else {
-      this.searchByName();
-    }
+  getDatasets(params: GetDatasetParams = ''): void {
+    this.loading = true;
+    const response = this.cogFrameworkApiService.getDataset(params);
+    response.subscribe({
+      next: (v) => {
+        this.dataSource.data = v.data;
+      },
+      error: (e) => {
+        this.openSnackBar(e.error.message, 'Close');
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
   }
 
+  // TODO: Remove after API update, like in models
   searchByID(): void {
     this.loading = true;
     const response = this.cogFrameworkApiService.getDatasetById(this.datasetId);
@@ -126,7 +146,7 @@ export class DatasetComponent implements AfterViewInit {
         this.dataSource.data = model;
       },
       error: (e) => {
-        console.error(e);
+        this.openSnackBar(e.error.message, 'Close');
         this.loading = false;
       },
       complete: () => {
@@ -135,23 +155,12 @@ export class DatasetComponent implements AfterViewInit {
     });
   }
 
-  searchByName(): void {
-    this.loading = true;
-    const response = this.cogFrameworkApiService.getDataSetDetailByName(
-      this.datasetName,
-    );
-    response.subscribe({
-      next: (v) => {
-        this.dataSource.data = v.data;
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
+  search(): void {
+    if (this.datasetId.length > 0) {
+      this.searchByID();
+    } else {
+      this.getDatasets(this.datasetName);
+    }
   }
 
   private deleteDataSetFromTable(id: number): void {
@@ -163,7 +172,7 @@ export class DatasetComponent implements AfterViewInit {
   private openSnackBar(message: string, action: string): void {
     this.snackBar.open(message, action, {
       duration: 3000,
-      horizontalPosition: 'end',
+      horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
   }

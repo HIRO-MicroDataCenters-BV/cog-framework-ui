@@ -4,8 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  DatasetByName,
+  DatasetById,
   DatasetInfo,
+  GetDatasetParams,
   UploadedDataset,
 } from '../model/DatasetInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
@@ -53,12 +54,6 @@ export class CogFrameworkApiService {
     );
   }
 
-  getDataSetDetailByName(name: string): Observable<DatasetByName> {
-    return this.httpClient.get<DatasetByName>(
-      `${this.baseURL}/dataset/${name}`,
-    );
-  }
-
   getPipelineByModelID(id: string): Observable<PipelineResponse> {
     return this.httpClient.get<PipelineResponse>(
       `${this.baseURL}/pipeline/${id}`,
@@ -66,8 +61,14 @@ export class CogFrameworkApiService {
   }
 
   // dataset apis
-  getDatasetById(id: string): Observable<DatasetInfo> {
-    return this.httpClient.get<DatasetInfo>(`${this.baseURL}/dataset/${id}`);
+  getDatasetById(id: string): Observable<DatasetById> {
+    return this.httpClient.get<DatasetById>(`${this.baseURL}/dataset/${id}`);
+  }
+
+  getDataset(params: GetDatasetParams = ''): Observable<DatasetInfo> {
+    return this.httpClient.get<DatasetInfo>(
+      `${this.baseURL}/dataset/${params}`,
+    );
   }
 
   getModelValidationArtifactById(
