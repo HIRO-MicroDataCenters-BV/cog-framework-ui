@@ -23,7 +23,7 @@ export class CogFrameworkApiService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getModel(params: GetModelParams): Observable<ModelInfo> {
+  getModel(params: GetModelParams = {}): Observable<ModelInfo> {
     return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`, {
       params,
     });
