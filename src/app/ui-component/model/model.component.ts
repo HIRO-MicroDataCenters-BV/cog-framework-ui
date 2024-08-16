@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatInputModule } from '@angular/material/input';
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { Model } from 'src/app/model/ModelInfo';
+import { GetModelParams, Model } from 'src/app/model/ModelInfo';
 import { DatePipe, NgIf } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
@@ -44,7 +44,7 @@ const MODEL_DATA: Model[] = [];
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
 })
-export class ModelComponent implements AfterViewInit {
+export class ModelComponent implements OnInit, AfterViewInit {
   loading = false;
   displayedColumns: string[] = [
     'id',
@@ -66,6 +66,10 @@ export class ModelComponent implements AfterViewInit {
     private snackBar: MatSnackBar,
   ) {}
 
+  ngOnInit(): void {
+    this.getModels();
+  }
+
   ngAfterViewInit() {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
@@ -81,55 +85,29 @@ export class ModelComponent implements AfterViewInit {
       });
   }
 
+  getModels(params: GetModelParams = {}): void {
+    this.loading = true;
+    const response = this.cogFrameworkApiService.getModel(params);
+    response.subscribe({
+      next: (v) => {
+        this.dataSource.data = v.data;
+      },
+      error: (e) => {
+        this.openSnackBar(e.error.message, 'Close');
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+
   search(): void {
     if (this.modelId.length > 0) {
-      console.log('Search by ID');
-      this.searchByID();
+      this.getModels({ id: this.modelId });
     } else {
-      console.log('Search by Name');
-      this.searchByName();
+      this.getModels({ name: this.modelName });
     }
-  }
-
-  searchByID(): void {
-    this.loading = true;
-    const response = this.cogFrameworkApiService.getModel({
-      id: this.modelId,
-    });
-
-    response.subscribe({
-      next: (v) => {
-        this.dataSource.data = v.data;
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-        console.info('complete');
-      },
-    });
-  }
-
-  searchByName(): void {
-    this.loading = true;
-    const response = this.cogFrameworkApiService.getModel({
-      name: this.modelName,
-    });
-    response.subscribe({
-      next: (v) => {
-        this.dataSource.data = v.data;
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-        console.info('complete');
-      },
-    });
   }
 
   openModelDialog(model: Model): void {
@@ -163,7 +141,7 @@ export class ModelComponent implements AfterViewInit {
   private openSnackBar(message: string, action: string): void {
     this.snackBar.open(message, action, {
       duration: 3000,
-      horizontalPosition: 'end',
+      horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
   }

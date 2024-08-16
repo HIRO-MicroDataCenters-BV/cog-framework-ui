@@ -1,23 +1,18 @@
 export interface DatasetInfo {
-  data: DataSetData;
-  errors: any;
-  message: string;
-  success: boolean;
-}
-
-export interface DatasetByName {
   data: DataSetData[];
-  errors?: any;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }
 
 export interface DatasetById {
-  data: Dataset;
-  errors?: any;
+  data: DataSetData;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }
+
+export type GetDatasetParams = string;
 
 export interface Dataset {
   dataset_id: number;
