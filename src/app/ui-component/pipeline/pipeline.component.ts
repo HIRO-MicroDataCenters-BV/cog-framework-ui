@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { Pipeline } from '../../model/PipeLine';
 
@@ -13,7 +13,7 @@ interface PipeLineTableModel {
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.scss'],
 })
-export class PipelineComponent implements OnInit {
+export class PipelineComponent {
   modelName = '';
   modelId = '1';
 
@@ -22,8 +22,6 @@ export class PipelineComponent implements OnInit {
   loading = false;
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
-
-  ngOnInit(): void {}
 
   search(): void {
     this.getPipeLineByID();

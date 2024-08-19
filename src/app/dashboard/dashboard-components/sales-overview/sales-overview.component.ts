@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -13,21 +13,22 @@ import {
   ApexTooltip,
   ApexGrid,
   NgApexchartsModule,
+  ApexNonAxisChartSeries,
 } from 'ng-apexcharts';
 import { DemoMaterialModule } from 'src/app/demo-material-module';
 
 export interface ChartOptions {
-  series: ApexAxisChartSeries | any;
-  chart: ApexChart | any;
-  dataLabels: ApexDataLabels | any;
-  plotOptions: ApexPlotOptions | any;
-  yaxis: ApexYAxis | any;
-  xaxis: ApexXAxis | any;
-  fill: ApexFill | any;
-  tooltip: ApexTooltip | any;
-  stroke: ApexStroke | any;
-  legend: ApexLegend | any;
-  grid: ApexGrid | any;
+  series: ApexAxisChartSeries | ApexNonAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis;
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  tooltip: ApexTooltip;
+  stroke: ApexStroke;
+  legend: ApexLegend;
+  grid: ApexGrid;
 }
 
 @Component({
@@ -36,9 +37,9 @@ export interface ChartOptions {
   imports: [NgApexchartsModule, DemoMaterialModule],
   templateUrl: './sales-overview.component.html',
 })
-export class SalesOverviewComponent implements OnInit {
+export class SalesOverviewComponent {
   @ViewChild('chart') chart: ChartComponent = Object.create(null);
-  public chartOptions: Partial<ChartOptions>;
+  public chartOptions: ChartOptions;
 
   constructor() {
     this.chartOptions = {
@@ -75,6 +76,7 @@ export class SalesOverviewComponent implements OnInit {
         width: 2,
         colors: ['transparent'],
       },
+      yaxis: {},
       xaxis: {
         categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
       },
@@ -91,6 +93,4 @@ export class SalesOverviewComponent implements OnInit {
       },
     };
   }
-
-  ngOnInit(): void {}
 }

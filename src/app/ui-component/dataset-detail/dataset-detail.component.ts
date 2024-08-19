@@ -13,6 +13,7 @@ import {
   DatasetFilesInfo,
   File,
   RelatedModel,
+  Table,
 } from '../../model/DataSetDetailInfo';
 
 @Component({
@@ -88,7 +89,7 @@ export class DatasetDetailComponent {
     const datasetFilesInfo: DatasetFilesInfo[] = [];
     console.log(datasetFiles);
     const files: File[] = datasetFiles.files;
-    const tables: any[] = datasetFiles.tables;
+    const tables: Table[] = datasetFiles.tables;
 
     files.forEach(function (file) {
       const d: DatasetFilesInfo = { id: file.file_id, name: file.file_name };
@@ -104,6 +105,6 @@ export class DatasetDetailComponent {
   }
 
   back(): void {
-    this.router.navigate(['/dataset']).then((r) => {});
+    this.router.navigate(['/dataset']).then(() => {});
   }
 }
