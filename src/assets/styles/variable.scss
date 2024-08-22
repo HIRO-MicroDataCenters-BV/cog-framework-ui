@@ -7,7 +7,6 @@ File: scss
 // Variables
 
 @use "@angular/material" as mat;
-
 @include mat.core();
 
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700");
@@ -48,16 +47,16 @@ $mat-warn: (
 
 /*Material Theme Colors*/
 
-$primary: mat.define-palette($mat-primary, 500);
-$accent: mat.define-palette($mat-secondary, 500);
-$warn: mat.define-palette($mat-warn, 500);
+$primary: mat.m2-define-palette($mat-primary, 500);
+$accent: mat.m2-define-palette($mat-secondary, 500);
+$warn: mat.m2-define-palette($mat-warn, 500);
 
 // $theme: mat-light-theme($primary, $accent, $warn);
 
 // $background: map-get($theme, background);
 // $foreground: map-get($theme, foreground);
 
-$cyantheme: mat.define-light-theme(
+$cyantheme: mat.m2-define-light-theme(
   (
     color: (
       primary: $primary,
@@ -65,7 +64,7 @@ $cyantheme: mat.define-light-theme(
       warn: $warn,
     ),
     typography:
-      mat.define-typography-config(
+      mat.m2-define-typography-config(
         $font-family: "Poppins",
       ),
   )
