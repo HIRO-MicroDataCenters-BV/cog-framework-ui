@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   ApexChart,
   ChartComponent,
@@ -6,23 +6,25 @@ import {
   ApexPlotOptions,
   ApexLegend,
   ApexTooltip,
-  ApexNonAxisChartSeries,
   ApexResponsive,
   NgApexchartsModule,
+  ApexStroke,
+  ApexAxisChartSeries,
+  ApexNonAxisChartSeries,
 } from 'ng-apexcharts';
 import { DemoMaterialModule } from 'src/app/demo-material-module';
 
 export interface VisitorChartOptions {
-  series: ApexNonAxisChartSeries | any;
-  chart: ApexChart | any;
-  responsive: ApexResponsive[] | any;
-  labels: any;
-  tooltip: ApexTooltip | any;
-  legend: ApexLegend | any;
-  colors: string[] | any;
-  stroke: any;
-  dataLabels: ApexDataLabels | any;
-  plotOptions: ApexPlotOptions | any;
+  series: ApexAxisChartSeries | ApexNonAxisChartSeries;
+  chart: ApexChart;
+  responsive: ApexResponsive[];
+  labels: string[];
+  tooltip: ApexTooltip;
+  legend: ApexLegend;
+  colors: string[];
+  stroke: ApexStroke;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
 }
 
 @Component({
@@ -31,9 +33,9 @@ export interface VisitorChartOptions {
   imports: [NgApexchartsModule, DemoMaterialModule],
   templateUrl: './our-visiter.component.html',
 })
-export class OurVisiterComponent implements OnInit {
+export class OurVisiterComponent {
   @ViewChild('visitor-chart') chart2: ChartComponent = Object.create(null);
-  public VisitorChartOptions: Partial<VisitorChartOptions>;
+  public VisitorChartOptions: VisitorChartOptions;
 
   constructor() {
     this.VisitorChartOptions = {
@@ -76,6 +78,4 @@ export class OurVisiterComponent implements OnInit {
       ],
     };
   }
-
-  ngOnInit(): void {}
 }

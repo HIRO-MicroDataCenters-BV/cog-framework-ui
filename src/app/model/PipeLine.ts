@@ -1,6 +1,6 @@
 export interface PipelineResponse {
   data: Pipeline[];
-  errors: string;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }

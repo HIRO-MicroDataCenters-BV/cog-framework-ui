@@ -56,21 +56,21 @@ export class ModelValidationComponent {
   modelValidationName = '';
   modelValidationId = '1';
 
-  csvData: any | undefined;
+  csvData: string | undefined;
   validationMetricsData: ValidationMetricsData | undefined;
   validationArtifactsResponse: ValidationArtifactsResponse | undefined;
   validationArtifactsData: ValidationArtifactsData | undefined;
 
   baseURL = environment.appURL + '/s/get_image?url=';
-  confusion_matrix: any;
-  per_class_metrics: any;
-  precision_recall_curve_plot: any;
-  roc_curve_plot: any;
-  shap_beeswarm_plot: any;
-  shap_feature_importance_plot: any;
-  shap_summary_plot: any;
+  confusion_matrix: string | undefined;
+  per_class_metrics: string | undefined;
+  precision_recall_curve_plot: string | undefined;
+  roc_curve_plot: string | undefined;
+  shap_beeswarm_plot: string | undefined;
+  shap_feature_importance_plot: string | undefined;
+  shap_summary_plot: string | undefined;
 
-  image: any;
+  image: string | undefined;
   loading = false;
   modelValidationScoreTableSource: ModelValidationTable[] = [];
   displayedColumns: string[] = ['name', 'value'];
@@ -196,22 +196,23 @@ export class ModelValidationComponent {
       next: (data) => {
         this.csvData = data;
         const lst = data.split('\n');
-        lst.forEach((e: any) => {
+        lst.forEach((e: string) => {
           const csvData = e.split(',');
           if (csvData[1] != undefined && csvData[0] != 'positive_class') {
+            const row = csvData.map((row: string) => parseFloat(row));
             const d: ModelValidationMetricTable = {
-              positive_class: csvData[0],
-              true_negatives: csvData[1],
-              false_positives: csvData[1],
-              false_negatives: csvData[1],
-              true_positives: csvData[1],
-              example_count: csvData[1],
-              accuracy_score: csvData[1],
-              recall_score: csvData[1],
-              precision_score: csvData[1],
-              f1_score: csvData[1],
-              roc_auc: csvData[1],
-              precision_recall_auc: csvData[1],
+              positive_class: row[0],
+              true_negatives: row[1],
+              false_positives: row[1],
+              false_negatives: row[1],
+              true_positives: row[1],
+              example_count: row[1],
+              accuracy_score: row[1],
+              recall_score: row[1],
+              precision_score: row[1],
+              f1_score: row[1],
+              roc_auc: row[1],
+              precision_recall_auc: row[1],
             };
             this.modelValidationMetricTableSource.push(d);
           }

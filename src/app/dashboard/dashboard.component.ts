@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SalesOverviewComponent } from './dashboard-components/sales-overview/sales-overview.component';
 import { OurVisiterComponent } from './dashboard-components/our-visiter/our-visiter.component';
 
@@ -8,6 +8,4 @@ import { OurVisiterComponent } from './dashboard-components/our-visiter/our-visi
   imports: [SalesOverviewComponent, OurVisiterComponent],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements AfterViewInit {
-  ngAfterViewInit() {}
-}
+export class DashboardComponent {}

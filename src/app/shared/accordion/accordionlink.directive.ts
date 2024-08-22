@@ -14,7 +14,7 @@ import { AccordionDirective } from './accordion.directive';
 })
 export class AccordionLinkDirective implements OnInit, OnDestroy {
   @Input()
-  public group: any;
+  public group: string | undefined;
 
   @HostBinding('class.selected')
   @Input()
@@ -36,15 +36,15 @@ export class AccordionLinkDirective implements OnInit, OnDestroy {
     this.nav = nav;
   }
 
-  ngOnInit(): any {
+  ngOnInit(): void {
     this.nav.addLink(this);
   }
 
-  ngOnDestroy(): any {
+  ngOnDestroy(): void {
     this.nav.removeGroup(this);
   }
 
-  toggle(): any {
+  toggle(): void {
     this.selected = !this.selected;
   }
 }

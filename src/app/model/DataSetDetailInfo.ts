@@ -1,6 +1,6 @@
 export interface DataSetDetailInfo {
   data: Data;
-  errors: any;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }

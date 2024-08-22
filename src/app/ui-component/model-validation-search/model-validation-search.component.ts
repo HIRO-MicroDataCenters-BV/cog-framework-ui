@@ -1,7 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 
-import { ValidationArtifactsResponse } from '../../model/ValidationArtifacts';
+import {
+  ValidationArtifactsData,
+  ValidationArtifactsResponse,
+} from '../../model/ValidationArtifacts';
 import { ValidationMetricsData } from '../../model/ValidationMetrics';
 import { Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
@@ -36,7 +39,7 @@ interface ModelValidationTableModel {
   templateUrl: './model-validation-search.component.html',
   styleUrls: ['./model-validation-search.component.scss'],
 })
-export class ModelValidationSearchComponent implements OnInit, OnDestroy {
+export class ModelValidationSearchComponent {
   modelValidationName = '';
   modelValidationId = '';
 
@@ -78,7 +81,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
     this.search();
   }
 
-  open(item: any): void {
+  open(item: ValidationArtifactsData): void {
     this.validationArtifactsResponse?.data.forEach((res) => {
       if (item.id === res.id) {
         this.modelValidationService.modelValidationArtifactsData = res;
@@ -88,7 +91,7 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
       .navigate(['/model-validation-artifacts'], {
         queryParams: { id: item.id },
       })
-      .then((r) => {
+      .then(() => {
         console.log('redirected to other component');
       });
   }
@@ -224,8 +227,4 @@ export class ModelValidationSearchComponent implements OnInit, OnDestroy {
       this.modelValidationMetricTableDataSource.push(d);
     });
   }
-
-  ngOnInit(): void {}
-
-  ngOnDestroy(): void {}
 }
