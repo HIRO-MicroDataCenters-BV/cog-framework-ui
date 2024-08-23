@@ -1,20 +1,27 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
-import { environment } from '../../../environments/environment.development';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { DatePipe, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DataSetData } from '../../model/DatasetInfo';
+import {
+  Dataset,
+  DataSetData,
+  GetDatasetParams,
+} from '../../model/DatasetInfo';
 import { Router } from '@angular/router';
 
 import { UploadDatasetComponent } from '../dataset-upload/dataset-upload.component';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmation/dataset-delete-confirmation.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 const ELEMENT_DATA: DataSetData[] = [];
 
@@ -34,11 +41,12 @@ const ELEMENT_DATA: DataSetData[] = [];
     MatTooltipModule,
     NgIf,
     UploadDatasetComponent,
+    MatPaginatorModule,
   ],
   templateUrl: './dataset.component.html',
   styleUrl: './dataset.component.scss',
 })
-export class DatasetComponent {
+export class DatasetComponent implements OnInit, AfterViewInit {
   loading = false;
   displayedColumns: string[] = [
     'id',
@@ -47,75 +55,125 @@ export class DatasetComponent {
     'author',
     'action',
   ];
-  dataSource = ELEMENT_DATA;
-  appURL = environment.appURL;
+
+  dataSource = new MatTableDataSource<DataSetData>(ELEMENT_DATA);
   datasetName = '';
   datasetId = '';
+
+  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {}
 
-  open(item: any): void {
-    this.router
-      .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
-      .then((r) => {
-        console.log('redirected to other component');
-      });
+  ngOnInit(): void {
+    // TODO: With current API, we can't get all datasets, uncomment after API update
+    // this.getDatasets();
+    return;
   }
 
-  search(): void {
-    if (this.datasetId.length > 0) {
-      console.log('Search by ID');
-      this.searchByID();
-    } else {
-      console.log('Search by Name');
-      this.searchByName();
+  ngAfterViewInit() {
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
     }
   }
 
+  open(item: DataSetData): void {
+    this.router
+      .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
+      .then((r) => {
+        console.log('redirected to other component', r);
+      });
+  }
+
+  openModelDialog(dataset: Dataset): void {
+    const dialogRef = this.dialog.open(DatasetDeleteConfirmationComponent, {
+      width: '25vw',
+      data: dataset,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.deleteDataSetById(result.data.id);
+      }
+    });
+  }
+
+  deleteDataSetById(id: number): void {
+    const response = this.cogFrameworkApiService.deleteDataSetDetailById(id);
+    response.subscribe({
+      next: () => {
+        this.openSnackBar('DataSet deleted', 'Close');
+        this.deleteDataSetFromTable(id);
+      },
+      error: (e) => {
+        console.error(e);
+      },
+      complete: () => {
+        console.info('complete');
+      },
+    });
+  }
+
+  getDatasets(params: GetDatasetParams = ''): void {
+    this.loading = true;
+    const response = this.cogFrameworkApiService.getDataset(params);
+    response.subscribe({
+      next: (v) => {
+        this.dataSource.data = v.data;
+      },
+      error: (e) => {
+        this.openSnackBar(e.error.message, 'Close');
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  // TODO: Remove after API update, like in models
   searchByID(): void {
     this.loading = true;
     const response = this.cogFrameworkApiService.getDatasetById(this.datasetId);
 
     response.subscribe({
       next: (v) => {
-        console.log(v);
         const model = [];
         model.push(v.data);
-        this.dataSource = model;
+        this.dataSource.data = model;
       },
       error: (e) => {
-        console.error(e);
+        this.openSnackBar(e.error.message, 'Close');
         this.loading = false;
       },
       complete: () => {
         this.loading = false;
-        console.info('complete');
       },
     });
   }
 
-  searchByName(): void {
-    this.loading = true;
-    console.log('search dataset with name ' + this.datasetName);
-    const response = this.cogFrameworkApiService.getDataSetDetailByName(
-      this.datasetName,
+  search(): void {
+    if (this.datasetId.length > 0) {
+      this.searchByID();
+    } else {
+      this.getDatasets(this.datasetName);
+    }
+  }
+
+  private deleteDataSetFromTable(id: number): void {
+    this.dataSource.data = this.dataSource.data.filter(
+      (item) => item.id !== id,
     );
-    response.subscribe({
-      next: (v) => {
-        console.log(v);
-        this.dataSource = v.data;
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-        console.info('complete');
-      },
+  }
+
+  private openSnackBar(message: string, action: string): void {
+    this.snackBar.open(message, action, {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
     });
   }
 }

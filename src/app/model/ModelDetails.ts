@@ -6,7 +6,7 @@ import { Pipeline, ValidationMetricsData } from './ValidationMetrics';
 
 export interface ModelDetailInfo {
   data: ModelDetailData[];
-  errors: any;
+  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
 }
@@ -14,7 +14,7 @@ export interface ModelDetailInfo {
 export interface ModelDetailData {
   datasets: DatasetInfo[];
   model_files: ModelFileInfo[];
-  model_id: string;
+  model_id: number;
   model_name: string;
   model_description: string;
   author: string;

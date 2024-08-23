@@ -2,17 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ModelInfo, ModelInfoById } from '../model/ModelInfo';
+import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
+  DatasetById,
   DatasetInfo,
-  DatasetByName,
+  GetDatasetParams,
   UploadedDataset,
 } from '../model/DatasetInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
-import { DataSetData } from '../model/DeleteResponse';
+import { DeleteResponse } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
 import { ModelServe } from '../model/ModelServe';
 import { ModelServeResponse } from '../model/ModelServeResponse';
@@ -25,16 +26,10 @@ export class CogFrameworkApiService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getModelByName(name: string): Observable<ModelInfo> {
-    return this.httpClient.get<ModelInfo>(
-      `${this.baseURL}/models?name=${name}`,
-    );
-  }
-
-  getModelById(id: string): Observable<ModelInfoById> {
-    return this.httpClient.get<ModelInfoById>(
-      `${this.baseURL}/models?id=${id}`,
-    );
+  getModel(params: GetModelParams = {}): Observable<ModelInfo> {
+    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`, {
+      params,
+    });
   }
 
   getModelDetailById(id: string): Observable<ModelDetailInfo> {
@@ -55,9 +50,9 @@ export class CogFrameworkApiService {
     );
   }
 
-  getDataSetDetailByName(name: string): Observable<DatasetByName> {
-    return this.httpClient.get<DatasetByName>(
-      `${this.baseURL}/dataset/${name}`,
+  deleteDataSetDetailById(id: number): Observable<DeleteResponse> {
+    return this.httpClient.delete<DeleteResponse>(
+      `${this.baseURL}/dataset/${id}`,
     );
   }
 
@@ -68,8 +63,14 @@ export class CogFrameworkApiService {
   }
 
   // dataset apis
-  getDatasetById(id: string): Observable<DatasetInfo> {
-    return this.httpClient.get<DatasetInfo>(`${this.baseURL}/dataset/${id}`);
+  getDatasetById(id: string): Observable<DatasetById> {
+    return this.httpClient.get<DatasetById>(`${this.baseURL}/dataset/${id}`);
+  }
+
+  getDataset(params: GetDatasetParams = ''): Observable<DatasetInfo> {
+    return this.httpClient.get<DatasetInfo>(
+      `${this.baseURL}/dataset/${params}`,
+    );
   }
 
   getModelValidationArtifactById(

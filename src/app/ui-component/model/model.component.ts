@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatInputModule } from '@angular/material/input';
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { Model } from 'src/app/model/ModelInfo';
+import { GetModelParams, Model } from 'src/app/model/ModelInfo';
 import { DatePipe, NgIf } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
@@ -19,10 +19,8 @@ import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/mo
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { ModelServeComponent } from './model-serve/model-serve.component';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-const ELEMENT_DATA: Model[] = [];
+const MODEL_DATA: Model[] = [];
 
 @Component({
   selector: 'app-model',
@@ -42,12 +40,11 @@ const ELEMENT_DATA: Model[] = [];
     ModelUploadComponent,
     MatPaginatorModule,
     MatSelectModule,
-    MatProgressSpinnerModule,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
 })
-export class ModelComponent implements AfterViewInit {
+export class ModelComponent implements OnInit, AfterViewInit {
   loading = false;
   displayedColumns: string[] = [
     'id',
@@ -56,7 +53,7 @@ export class ModelComponent implements AfterViewInit {
     'author',
     'action',
   ];
-  dataSource = new MatTableDataSource<Model>(ELEMENT_DATA);
+  dataSource = new MatTableDataSource<Model>(MODEL_DATA);
   modelName = '';
   modelId = '';
 
@@ -69,6 +66,10 @@ export class ModelComponent implements AfterViewInit {
     private snackBar: MatSnackBar,
   ) {}
 
+  ngOnInit(): void {
+    this.getModels();
+  }
+
   ngAfterViewInit() {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
@@ -78,59 +79,35 @@ export class ModelComponent implements AfterViewInit {
   open(item: Model): void {
     this.router
       .navigate(['/model-detail'], { queryParams: { id: item.id } })
-      .then(() => {
+      .then((r) => {
+        console.log(r);
         console.log('redirected to other component');
       });
   }
 
-  search(): void {
-    if (this.modelId.length > 0) {
-      console.log('Search by ID');
-      this.searchByID();
-    } else {
-      console.log('Search by Name');
-      this.searchByName();
-    }
-  }
-
-  searchByID(): void {
+  getModels(params: GetModelParams = {}): void {
     this.loading = true;
-    const response = this.cogFrameworkApiService.getModelById(this.modelId);
-
-    response.subscribe({
-      next: (v) => {
-        const model = [];
-        model.push(v.data);
-        this.dataSource.data = model;
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  searchByName(): void {
-    this.loading = true;
-    const response = this.cogFrameworkApiService.getModelByName(this.modelName);
+    const response = this.cogFrameworkApiService.getModel(params);
     response.subscribe({
       next: (v) => {
         this.dataSource.data = v.data;
-        this.dataSource.data.forEach((f) => {
-          f.isDeployed = false;
-        });
       },
       error: (e) => {
-        console.error(e);
+        this.openSnackBar(e.error.message, 'Close');
         this.loading = false;
       },
       complete: () => {
         this.loading = false;
       },
     });
+  }
+
+  search(): void {
+    if (this.modelId.length > 0) {
+      this.getModels({ id: this.modelId });
+    } else {
+      this.getModels({ name: this.modelName });
+    }
   }
 
   openModelDialog(model: Model): void {
@@ -188,7 +165,7 @@ export class ModelComponent implements AfterViewInit {
   private openSnackBar(message: string, action: string): void {
     this.snackBar.open(message, action, {
       duration: 3000,
-      horizontalPosition: 'end',
+      horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
   }

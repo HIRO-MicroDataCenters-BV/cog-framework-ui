@@ -21,10 +21,7 @@ import {
   Pipeline,
   ValidationMetricsData,
 } from '../../model/ValidationMetrics';
-import {
-  ValidationArtifactsData,
-  ValidationArtifactsResponse,
-} from '../../model/ValidationArtifacts';
+import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
 
 @Component({
   selector: 'app-model-detail',
@@ -126,16 +123,17 @@ export class ModelDetailComponent {
   }
 
   back(): void {
-    this.router.navigate(['/model']).then((r) => {});
+    this.router.navigate(['/model']).then(() => {});
   }
 
-  open(item: any): void {
+  open(item: ValidationArtifactsData): void {
+    console.log('item', item);
     this.validation_artifacts?.forEach((res) => {
       if (item.id === res.id) {
         this.modelValidationService.modelValidationArtifactsData = res;
       }
     });
-    this.router.navigate(['/model-validation-artifacts']).then((r) => {
+    this.router.navigate(['/model-validation-artifacts']).then(() => {
       this.modelValidationService.previousComponentUrl = '/model-detail';
       this.modelValidationService.previousComponentUrlQuery =
         this.activatedRoute.snapshot.queryParams['id'];
@@ -149,8 +147,7 @@ export class ModelDetailComponent {
       const dd: ModelValidationTableModel = {
         id: data.id,
         dataset_id: data.dataset_id,
-        //@ts-ignore
-        model_id: this.modelDetailData?.model_id,
+        model_id: this.modelDetailData?.model_id as number,
       };
       this.modelValidationTableDataSource.push(dd);
     });
