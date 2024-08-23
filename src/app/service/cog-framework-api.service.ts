@@ -14,6 +14,8 @@ import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
 import { DataSetData } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
+import { ModelServe } from '../model/ModelServe';
+import { ModelServeResponse } from '../model/ModelServeResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -24,11 +26,15 @@ export class CogFrameworkApiService {
   constructor(private httpClient: HttpClient) {}
 
   getModelByName(name: string): Observable<ModelInfo> {
-    return this.httpClient.get<ModelInfo>(`${this.baseURL}/models/${name}`);
+    return this.httpClient.get<ModelInfo>(
+      `${this.baseURL}/models?name=${name}`,
+    );
   }
 
   getModelById(id: string): Observable<ModelInfoById> {
-    return this.httpClient.get<ModelInfoById>(`${this.baseURL}/models/${id}`);
+    return this.httpClient.get<ModelInfoById>(
+      `${this.baseURL}/models?id=${id}`,
+    );
   }
 
   getModelDetailById(id: string): Observable<ModelDetailInfo> {
@@ -103,6 +109,13 @@ export class CogFrameworkApiService {
     return this.httpClient.get<string>(
       `${this.baseURL}/s3/get_image?url=${csvFile}`,
       { responseType: 'text' as never },
+    );
+  }
+
+  serveModel(modelServe: ModelServe): Observable<ModelServeResponse> {
+    return this.httpClient.post<ModelServeResponse>(
+      `${this.baseURL}/models/deploy`,
+      modelServe,
     );
   }
 

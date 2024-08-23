@@ -19,6 +19,8 @@ import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/mo
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { ModelServeComponent } from './model-serve/model-serve.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const ELEMENT_DATA: Model[] = [];
 
@@ -40,6 +42,7 @@ const ELEMENT_DATA: Model[] = [];
     ModelUploadComponent,
     MatPaginatorModule,
     MatSelectModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
@@ -75,8 +78,7 @@ export class ModelComponent implements AfterViewInit {
   open(item: Model): void {
     this.router
       .navigate(['/model-detail'], { queryParams: { id: item.id } })
-      .then((r) => {
-        console.log(r);
+      .then(() => {
         console.log('redirected to other component');
       });
   }
@@ -107,7 +109,6 @@ export class ModelComponent implements AfterViewInit {
       },
       complete: () => {
         this.loading = false;
-        console.info('complete');
       },
     });
   }
@@ -118,6 +119,9 @@ export class ModelComponent implements AfterViewInit {
     response.subscribe({
       next: (v) => {
         this.dataSource.data = v.data;
+        this.dataSource.data.forEach((f) => {
+          f.isDeployed = false;
+        });
       },
       error: (e) => {
         console.error(e);
@@ -125,7 +129,6 @@ export class ModelComponent implements AfterViewInit {
       },
       complete: () => {
         this.loading = false;
-        console.info('complete');
       },
     });
   }
@@ -141,19 +144,43 @@ export class ModelComponent implements AfterViewInit {
     });
   }
 
+  modelServe(model: Model): void {
+    const dialogRef = this.dialog.open(ModelServeComponent, {
+      data: model,
+      minWidth: '25%',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        result.model.isDeployed = true;
+        const response = this.cogFrameworkApiService.serveModel(
+          result.modelServeData,
+        );
+        response.subscribe({
+          next: () => {
+            this.openSnackBar('Model deployment starting...', 'Close');
+          },
+          error: (e) => {
+            this.openSnackBar(e.error.errors[0].error_message, 'Close');
+            result.model.isDeployed = false;
+          },
+          complete: () => {
+            result.model.isDeployed = false;
+          },
+        });
+      }
+    });
+  }
+
   deleteModelById(id: number): void {
     const response = this.cogFrameworkApiService.deleteModelById(id);
     response.subscribe({
-      next: (v) => {
-        console.log(v);
+      next: () => {
         this.openSnackBar('Model deleted', 'Close');
         this.deleteModelFromTable(id);
       },
       error: (e) => {
         console.error(e);
-      },
-      complete: () => {
-        console.info('complete');
       },
     });
   }
