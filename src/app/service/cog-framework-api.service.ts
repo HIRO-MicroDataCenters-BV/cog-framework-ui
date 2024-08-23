@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  DatasetById,
+  DatasetById, DataSetData,
   DatasetInfo,
   GetDatasetParams,
   UploadedDataset,
