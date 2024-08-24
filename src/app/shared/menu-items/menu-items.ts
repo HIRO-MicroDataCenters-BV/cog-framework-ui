@@ -23,12 +23,6 @@ const MENUITEMS = [
     icon: 'all_inclusive',
   },
   {
-    state: 'model-deployment',
-    type: 'link',
-    name: 'Model Deployment',
-    icon: 'assistant',
-  },
-  {
     state: 'model-serving',
     type: 'link',
     name: 'Model Serving',

@@ -14,6 +14,7 @@ export interface Model {
   register_user_id: number;
   type: string;
   version: string;
+  isDeployed: boolean;
 }
 
 export type GetModelParams = {

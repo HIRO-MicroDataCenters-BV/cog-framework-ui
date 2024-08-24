@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
   DatasetById,
+  DataSetData,
   DatasetInfo,
   GetDatasetParams,
   UploadedDataset,
@@ -15,6 +16,8 @@ import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
 import { ValidationMetricsResponse } from '../model/ValidationMetrics';
 import { DeleteResponse } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
+import { ModelServe } from '../model/ModelServe';
+import { ModelServeResponse } from '../model/ModelServeResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -36,8 +39,8 @@ export class CogFrameworkApiService {
     );
   }
 
-  deleteModelById(id: number): Observable<DeleteResponse> {
-    return this.httpClient.delete<DeleteResponse>(
+  deleteModelById(id: number): Observable<DataSetData> {
+    return this.httpClient.delete<DataSetData>(
       `${this.baseURL}/delete_model_details?model_id=${id}`,
     );
   }
@@ -108,6 +111,13 @@ export class CogFrameworkApiService {
     return this.httpClient.get<string>(
       `${this.baseURL}/s3/get_image?url=${csvFile}`,
       { responseType: 'text' as never },
+    );
+  }
+
+  serveModel(modelServe: ModelServe): Observable<ModelServeResponse> {
+    return this.httpClient.post<ModelServeResponse>(
+      `${this.baseURL}/models/deploy`,
+      modelServe,
     );
   }
 

@@ -19,6 +19,8 @@ import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/mo
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { ModelServeComponent } from './model-serve/model-serve.component';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 const MODEL_DATA: Model[] = [];
 
@@ -40,6 +42,7 @@ const MODEL_DATA: Model[] = [];
     ModelUploadComponent,
     MatPaginatorModule,
     MatSelectModule,
+    MatProgressSpinner,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
@@ -121,19 +124,43 @@ export class ModelComponent implements OnInit, AfterViewInit {
     });
   }
 
+  modelServe(model: Model): void {
+    const dialogRef = this.dialog.open(ModelServeComponent, {
+      data: model,
+      minWidth: '25%',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        result.model.isDeployed = true;
+        const response = this.cogFrameworkApiService.serveModel(
+          result.modelServeData,
+        );
+        response.subscribe({
+          next: () => {
+            this.openSnackBar('Model deployment starting...', 'Close');
+          },
+          error: (e) => {
+            this.openSnackBar(e.error.errors[0].error_message, 'Close');
+            result.model.isDeployed = false;
+          },
+          complete: () => {
+            result.model.isDeployed = false;
+          },
+        });
+      }
+    });
+  }
+
   deleteModelById(id: number): void {
     const response = this.cogFrameworkApiService.deleteModelById(id);
     response.subscribe({
-      next: (v) => {
-        console.log(v);
+      next: () => {
         this.openSnackBar('Model deleted', 'Close');
         this.deleteModelFromTable(id);
       },
       error: (e) => {
         console.error(e);
-      },
-      complete: () => {
-        console.info('complete');
       },
     });
   }
