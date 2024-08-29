@@ -1,0 +1,36 @@
+@import '../../../../assets/styles/variable.scss';
+
+::ng-deep {
+  #snav {
+    box-shadow: 0 4px 11px rgba(0, 0, 0, 0.25);
+    .menu-list {
+      .mat-mdc-list-item {
+        .mdc-list-item__content a {
+          color: $secondary;
+          padding-left: 54px;
+          padding-right: 54px;
+          border-radius: 0;
+          mat-icon {
+            color: $secondary;
+          }
+        }
+        &.selected,
+        &:hover {
+          .mdc-list-item__content {
+            a {
+              transition:
+                background-color 0.7s,
+                color 0.7s;
+
+              background-color: $primary;
+              color: $primary-contrast;
+              mat-icon {
+                color: inherit;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

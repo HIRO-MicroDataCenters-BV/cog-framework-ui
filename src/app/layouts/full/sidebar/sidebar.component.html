@@ -2,19 +2,19 @@
 <!-- sidebar -->
 <!-- ============================================================== -->
 
-<mat-nav-list appAccordion>
+<mat-nav-list appAccordion class="menu-list">
   <mat-list-item
     appAccordionLink
     *ngFor="let menuitem of menuItems.getMenuitem()"
     routerLinkActive="selected"
+    class="p-0"
   >
     <a
-      class=""
       appAccordionToggle
       [routerLink]="['/', menuitem.state]"
       *ngIf="menuitem.type === 'link'"
     >
-      <mat-icon>{{ menuitem.icon }}</mat-icon>
+      <mat-icon class="icon">{{ menuitem.icon }}</mat-icon>
       <span>{{ menuitem.name }}</span>
       <span fxFlex></span>
     </a>

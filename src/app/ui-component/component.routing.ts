@@ -49,7 +49,7 @@ export const MaterialRoutes: Routes = [
     component: ModelValidationArtifactsComponent,
   },
   {
-    path: 'pipeline',
+    path: 'runs',
     component: PipelineComponent,
   },
 ];

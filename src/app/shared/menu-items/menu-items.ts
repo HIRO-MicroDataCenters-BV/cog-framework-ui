@@ -34,6 +34,12 @@ const MENUITEMS = [
     name: 'Model Validation',
     icon: 'av_timer',
   },
+  {
+    state: 'runs',
+    type: 'link',
+    name: 'Runs',
+    icon: 'directions_run',
+  },
 ];
 
 @Injectable()
