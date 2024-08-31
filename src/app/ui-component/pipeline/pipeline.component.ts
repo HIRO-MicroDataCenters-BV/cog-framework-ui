@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { Pipeline } from '../../model/PipeLine';
-
 interface PipeLineTableModel {
   name: string;
   description: string;

@@ -17,6 +17,7 @@ import { ModelTrainingComponent } from './model-training/model-training.componen
 import { ModelDeploymentComponent } from './model-deployment/model-deployment.component';
 import { ModelServingComponent } from './model-serving/model-serving.component';
 import { ModelDeleteConfirmationComponent } from './model/model-delete-confirmation/model-delete-confirmation.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [
@@ -27,6 +28,7 @@ import { ModelDeleteConfirmationComponent } from './model/model-delete-confirmat
     FormsModule,
     ReactiveFormsModule,
     CdkTableModule,
+    SharedModule,
   ],
   providers: [],
   declarations: [

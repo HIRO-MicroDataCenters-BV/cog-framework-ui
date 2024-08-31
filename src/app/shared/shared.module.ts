@@ -6,6 +6,7 @@ import {
   AccordionLinkDirective,
   AccordionDirective,
 } from './accordion';
+import { AppDataHeaderComponent } from './data-header/data-header.component';
 
 @NgModule({
   declarations: [
@@ -13,10 +14,12 @@ import {
     AccordionLinkDirective,
     AccordionDirective,
   ],
+  imports: [AppDataHeaderComponent],
   exports: [
     AccordionAnchorDirective,
     AccordionLinkDirective,
     AccordionDirective,
+    AppDataHeaderComponent,
   ],
   providers: [MenuItems],
 })
