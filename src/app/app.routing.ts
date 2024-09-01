@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 
-import { FullComponent } from './layouts/full/full.component';
+import { MainLayoutComponent } from './layouts/main/main.component';
 
 export const AppRoutes: Routes = [
   {
     path: '',
-    component: FullComponent,
+    component: MainLayoutComponent,
     children: [
       {
         path: '',

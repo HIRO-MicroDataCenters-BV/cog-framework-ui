@@ -11,8 +11,8 @@ File: scss
 
 @import url('https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700');
 
-$bodyfont: 'Poppins', sans-serif;
-$headingfont: 'Poppins', sans-serif;
+$bodyfont: 'Inter', sans-serif;
+$headingfont: 'Inter', sans-serif;
 
 $mat-primary: (
   100: #359357,
@@ -46,18 +46,37 @@ $mat-warn: (
 );
 
 /*Material Theme Colors*/
-
+/*
 $primary: mat.m2-define-palette($mat-primary, 500);
 $secondary: mat.m2-define-palette($mat-secondary, 500);
 $accent: mat.m2-define-palette($mat-secondary, 500);
 $warn: mat.m2-define-palette($mat-warn, 500);
 $success: mat.m2-define-palette($mat-primary, 500);
 
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$violet-palette,
+    ),
+    typography: (
+      brand-family: 'Comic Sans',
+      bold-weight: 900,
+    ),
+    density: (
+      scale: -1,
+    ),
+  )
+);
+@include mat.all-component-themes($theme);
+*/
+
 // $theme: mat-light-theme($primary, $accent, $warn);
 
 // $background: map-get($theme, background);
 // $foreground: map-get($theme, foreground);
 
+/*
 $cyantheme: mat.m2-define-light-theme(
   (
     color: (
@@ -75,6 +94,7 @@ $cyantheme: mat.m2-define-light-theme(
 );
 
 @include mat.all-component-themes($cyantheme);
+*/
 
 // $custom-typography: mat-typography-config(
 //   $font-family: 'Poppins, sans-serif'
@@ -157,3 +177,6 @@ $card-brd: #d7dfe3;
 $dark-text: #848a96;
 $radius: 4px;
 $form-brd: #d9d9d9;
+
+/*Props */
+$main-toolbar-height: 105px;

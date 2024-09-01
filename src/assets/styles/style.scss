@@ -1,8 +1,12 @@
+@use '@angular/material' as mat;
+@use './theme/main';
+@include mat.core();
 /* ---------------------------------------------
 Author: Rahul Sharma
 Email: rahul.sharma@hiro-microdatacenters.nl
 File: scss
 /* --------------------------------------------- */
+/*
 @import 'variable';
 
 @import 'mixins/spacing';
@@ -23,3 +27,14 @@ File: scss
 @import 'responsive';
 
 @import '../styles/icons/material-design-iconic-font/css/materialdesignicons.min.css';
+*/
+
+html {
+  @include mat.all-component-themes(main.$theme);
+}
+body {
+  margin: 0;
+  font-family: sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
