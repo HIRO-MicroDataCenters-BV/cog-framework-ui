@@ -15,10 +15,10 @@
 <mat-sidenav-container class="main-container">
   <mat-sidenav
     class="main-sidebar"
-    [mode]="mobileQuery.matches ? 'side' : 'over'"
+    [mode]="!mobileQuery.matches ? 'side' : 'over'"
     fixedTopGap="0"
-    [opened]="(isSidebarOpen && !mobileQuery.matches) || mobileQuery.matches"
-    [disableClose]="mobileQuery.matches"
+    [opened]="isSidebarOpen || !mobileQuery.matches"
+    [disableClose]="!mobileQuery.matches"
   >
     <app-sidebar></app-sidebar>
   </mat-sidenav>
