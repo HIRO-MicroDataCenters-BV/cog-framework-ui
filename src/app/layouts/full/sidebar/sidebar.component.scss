@@ -25,11 +25,11 @@
       }
       &.selected,
       &:hover {
-        background-color: mat.get-theme-color(main.$theme, primary, 100);
+        background-color: mat.get-theme-color(main.$theme, primary, 40);
         .mat-mdc-list-item {
           &-title,
           &-icon {
-            color: mat.get-theme-color(main.$theme, neutral, 100);
+            color: mat.get-theme-color(main.$theme, neutral, 40);
           }
         }
       }
