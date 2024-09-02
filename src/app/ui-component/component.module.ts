@@ -18,6 +18,8 @@ import { ModelDeploymentComponent } from './model-deployment/model-deployment.co
 import { ModelServingComponent } from './model-serving/model-serving.component';
 import { ModelDeleteConfirmationComponent } from './model/model-delete-confirmation/model-delete-confirmation.component';
 import { SharedModule } from '../shared/shared.module';
+import { LottieComponent } from 'ngx-lottie';
+import { AppLottieComponent } from './lottie/lottie.component';
 
 @NgModule({
   imports: [
@@ -29,6 +31,8 @@ import { SharedModule } from '../shared/shared.module';
     ReactiveFormsModule,
     CdkTableModule,
     SharedModule,
+    LottieComponent,
+    AppLottieComponent,
   ],
   providers: [],
   declarations: [

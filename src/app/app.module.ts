@@ -22,6 +22,7 @@ import { DemoMaterialModule } from './demo-material-module';
 
 import { SharedModule } from './shared/shared.module';
 import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolbar.component';
+import { provideLottieOptions } from 'ngx-lottie';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,9 @@ import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolba
     AppSidebarComponent,
   ],
   providers: [
+    provideLottieOptions({
+      player: () => import('lottie-web'),
+    }),
     {
       provide: LocationStrategy,
       useClass: PathLocationStrategy,
