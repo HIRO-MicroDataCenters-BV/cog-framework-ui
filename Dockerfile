@@ -46,7 +46,7 @@ RUN npm run build
 ################################################################################
 FROM nginx:stable-alpine AS nginx
 
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+COPY --from=build /usr/src/app/dist/cog-framework-ui/browser /usr/share/nginx/html
 
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
 
