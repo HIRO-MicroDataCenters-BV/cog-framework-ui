@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use './theme/main';
 @include mat.core();
+
 /* ---------------------------------------------
 Author: Rahul Sharma
 Email: rahul.sharma@hiro-microdatacenters.nl
@@ -28,7 +29,6 @@ File: scss
 
 @import '../styles/icons/material-design-iconic-font/css/materialdesignicons.min.css';
 */
-
 html {
   @include mat.all-component-themes(main.$theme);
 }
@@ -37,4 +37,23 @@ body {
   font-family: sans-serif;
   height: 100vh;
   overflow: hidden;
+}
+
+.container {
+  .mat-mdc-card {
+    margin-bottom: 8px;
+  }
+}
+
+.mat {
+  &-mdc {
+    &-card {
+      &-header {
+        margin-bottom: 8px;
+        .mat-mdc-card-title {
+          font-size: 16px;
+        }
+      }
+    }
+  }
 }

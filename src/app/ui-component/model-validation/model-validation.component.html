@@ -1,46 +1,40 @@
 <div class="row">
   <div class="col-12">
     <mat-card>
-      <div class="row">
-        <span
-          style="
-            padding-left: 25px;
-            padding-top: 24px;
-            font-size: 14px;
-            font-weight: 400;
-          "
-          >Search Model Validation</span
-        >
-        <form style="padding-top: 10px">
-          <mat-form-field class="input-search" appearance="outline">
-            <mat-label>Model Name</mat-label>
-            <input
-              matInput
-              placeholder="Model Name"
-              [(ngModel)]="modelValidationName"
-              name="modelName"
-              [disabled]="modelValidationId.length > 0"
-            />
-          </mat-form-field>
-          <small style="padding-left: 18px; font-weight: bold">Or</small>
-          <mat-form-field class="input-search" appearance="outline">
-            <mat-label>Model Id</mat-label>
-            <input
-              matInput
-              placeholder="Model Id"
-              [(ngModel)]="modelValidationId"
-              name="modelId"
-              [disabled]="modelValidationName.length > 0"
-            />
-          </mat-form-field>
-        </form>
+      <mat-card-header>
+        <mat-card-title>Search Model Validation</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="row">
+          <form style="padding-top: 10px">
+            <mat-form-field class="input-search" appearance="outline">
+              <mat-label>Model Name</mat-label>
+              <input
+                matInput
+                placeholder="Model Name"
+                [(ngModel)]="modelValidationName"
+                name="modelName"
+                [disabled]="modelValidationId.length > 0"
+              />
+            </mat-form-field>
+            <small style="padding-left: 18px; font-weight: bold">Or</small>
+            <mat-form-field class="input-search" appearance="outline">
+              <mat-label>Model Id</mat-label>
+              <input
+                matInput
+                placeholder="Model Id"
+                [(ngModel)]="modelValidationId"
+                name="modelId"
+                [disabled]="modelValidationName.length > 0"
+              />
+            </mat-form-field>
+          </form>
 
-        <div class="input-button-search">
-          <button mat-raised-button color="primary" (click)="search()">
-            Search
-          </button>
+          <div class="input-button-search">
+            <button mat-flat-button (click)="search()">Search</button>
+          </div>
         </div>
-      </div>
+      </mat-card-content>
     </mat-card>
   </div>
 

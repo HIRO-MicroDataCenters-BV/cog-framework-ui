@@ -1,5 +1,5 @@
-@use "@angular/material" as mat;
-@import "../../../assets/styles/variable.scss";
+@use '@angular/material' as mat;
+@import '../../../assets/styles/variable.scss';
 
 .density-settings {
   @include mat.all-component-densities(-3);
@@ -7,15 +7,6 @@
 
 table {
   width: 100%;
-}
-
-.input-search {
-  margin-left: 25px;
-}
-
-.input-button-search {
-  margin-left: 25px;
-  margin-bottom: 10px;
 }
 
 .progress-bar {
@@ -33,5 +24,13 @@ table {
 }
 
 .icon {
-  font-size: 14px
+  font-size: 14px;
+}
+.form-dual {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  .divider {
+    margin-top: -16px;
+  }
 }

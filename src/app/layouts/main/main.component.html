@@ -23,9 +23,11 @@
     <app-sidebar></app-sidebar>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-    <router-outlet>
-      <app-spinner></app-spinner>
-    </router-outlet>
+  <mat-sidenav-content class="main-content">
+    <div class="container">
+      <router-outlet>
+        <app-spinner></app-spinner>
+      </router-outlet>
+    </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

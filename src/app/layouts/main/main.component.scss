@@ -31,10 +31,18 @@
   &-container {
     height: calc(100vh - $main-toolbar-height);
   }
+  &-content {
+    padding: 16px;
+    background-color: mat.get-theme-color(main.$theme, neutral, 40);
+  }
 }
 
 ::ng-deep {
-  button.mdc-icon-button {
-    color: mat.get-theme-color(main.$theme, neutral, 100);
+  .main {
+    &-toolbar.mat-toolbar {
+      button.mdc-icon-button {
+        color: mat.get-theme-color(main.$theme, neutral, 100);
+      }
+    }
   }
 }
