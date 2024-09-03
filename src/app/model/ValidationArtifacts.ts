@@ -13,39 +13,11 @@ export interface ValidationArtifactsData {
 }
 
 export interface ValidationArtifacts {
-  confusion_matrix: ConfusionMatrix;
-  per_class_metrics: PerClassMetrics;
-  precision_recall_curve_plot: PrecisionRecallCurvePlot;
-  roc_curve_plot: RocCurvePlot;
-  shap_beeswarm_plot: ShapBeeswarmPlot;
-  shap_feature_importance_plot: ShapFeatureImportancePlot;
-  shap_summary_plot: ShapSummaryPlot;
-}
-
-export interface ConfusionMatrix {
-  uri: string;
-}
-
-export interface PerClassMetrics {
-  uri: string;
-}
-
-export interface PrecisionRecallCurvePlot {
-  uri: string;
-}
-
-export interface RocCurvePlot {
-  uri: string;
-}
-
-export interface ShapBeeswarmPlot {
-  uri: string;
-}
-
-export interface ShapFeatureImportancePlot {
-  uri: string;
-}
-
-export interface ShapSummaryPlot {
-  uri: string;
+  confusion_matrix: string;
+  per_class_metrics: string;
+  precision_recall_curve_plot: string;
+  roc_curve_plot: string;
+  shap_beeswarm_plot: string;
+  shap_feature_importance_plot: string;
+  shap_summary_plot: string;
 }
