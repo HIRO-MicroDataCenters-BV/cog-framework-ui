@@ -273,7 +273,6 @@ export class ModelValidationComponent {
   }
 
   buildImgURL(validationArtifactsData: ValidationArtifactsData): void {
-    console.log(validationArtifactsData);
     this.confusion_matrix =
       this.baseURL +
       validationArtifactsData.validation_artifacts.confusion_matrix;

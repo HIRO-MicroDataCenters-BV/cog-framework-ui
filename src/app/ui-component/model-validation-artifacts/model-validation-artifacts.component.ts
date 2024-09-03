@@ -76,7 +76,6 @@ export class ModelValidationArtifactsComponent implements OnInit {
   }
 
   buildImgURL(validationArtifactsData: ValidationArtifactsData): void {
-    console.log(validationArtifactsData);
     this.confusion_matrix =
       this.baseURL +
       validationArtifactsData.validation_artifacts.confusion_matrix;
@@ -101,7 +100,6 @@ export class ModelValidationArtifactsComponent implements OnInit {
   }
 
   modeValidationCsv(csvFileS3Url: string): void {
-    console.log(csvFileS3Url);
     const response =
       this.cogFrameworkApiService.getModelValidationCSV(csvFileS3Url);
     response.subscribe({
