@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { ModelValidationService } from '../../service/model-validation.service';
 import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
 import { environment } from '../../../environments/environment';
@@ -62,6 +63,7 @@ export class ModelValidationArtifactsComponent implements OnInit {
     private modelValidationService: ModelValidationService,
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
+    private location: Location,
   ) {}
 
   ngOnInit(): void {
@@ -74,32 +76,32 @@ export class ModelValidationArtifactsComponent implements OnInit {
   }
 
   buildImgURL(validationArtifactsData: ValidationArtifactsData): void {
+    console.log(validationArtifactsData);
     this.confusion_matrix =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.confusion_matrix.uri;
+      validationArtifactsData.validation_artifacts.confusion_matrix;
     this.precision_recall_curve_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.precision_recall_curve_plot
-        .uri;
+      validationArtifactsData.validation_artifacts.precision_recall_curve_plot;
     this.roc_curve_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.roc_curve_plot.uri;
+      validationArtifactsData.validation_artifacts.roc_curve_plot;
     this.shap_beeswarm_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_beeswarm_plot.uri;
+      validationArtifactsData.validation_artifacts.shap_beeswarm_plot;
     this.shap_feature_importance_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_feature_importance_plot
-        .uri;
+      validationArtifactsData.validation_artifacts.shap_feature_importance_plot;
     this.shap_summary_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_summary_plot.uri;
+      validationArtifactsData.validation_artifacts.shap_summary_plot;
     this.modeValidationCsv(
-      validationArtifactsData.validation_artifacts.per_class_metrics.uri,
+      validationArtifactsData.validation_artifacts.per_class_metrics,
     );
   }
 
   modeValidationCsv(csvFileS3Url: string): void {
+    console.log(csvFileS3Url);
     const response =
       this.cogFrameworkApiService.getModelValidationCSV(csvFileS3Url);
     response.subscribe({
@@ -145,9 +147,7 @@ export class ModelValidationArtifactsComponent implements OnInit {
           console.log(r);
         });
     } else {
-      this.router.navigate([this.backURL]).then((r) => {
-        console.log(r);
-      });
+      this.location.back();
     }
   }
 }
