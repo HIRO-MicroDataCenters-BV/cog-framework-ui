@@ -1,4 +1,14 @@
 @use '@angular/material' as mat;
+@use '../../../../assets/styles/theme/main';
 @include mat.core();
 
-//@import '../../../../assets/styles/variable.scss';
+@import '../../../../assets/styles/variable.scss';
+
+.actions {
+  display: flex;
+  gap: 11px;
+  button {
+    @include mat.button-color(main.$theme, $color-variant: secondary);
+    --mdc-filled-button-container-height: 28px;
+  }
+}

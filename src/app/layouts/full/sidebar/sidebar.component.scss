@@ -23,7 +23,7 @@
           font-weight: 600;
         }
       }
-      &.selected,
+      &.active,
       &:hover {
         background-color: mat.get-theme-color(main.$theme, primary, 40);
         .mat-mdc-list-item {

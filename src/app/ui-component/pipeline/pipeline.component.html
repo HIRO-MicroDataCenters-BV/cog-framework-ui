@@ -1,10 +1,8 @@
-<app-data-header />
+<app-data-header [tabPanel]="tabPanel" />
 <div class="row">
   <div class="col-12">
-    <app-lottie path="icon-download.json" [width]="48" [height]="48" />
-    <app-lottie path="icon-model.json" [width]="48" [height]="48" />
-    <app-lottie path="icon-process.json" [width]="48" [height]="48" />
-    <app-lottie path="icon-serving.json" [width]="48" [height]="48" />
-    <app-lottie path="icon-training.json" [width]="48" [height]="48" />
+    <mat-tab-nav-panel #tabPanel>
+      <router-outlet></router-outlet>
+    </mat-tab-nav-panel>
   </div>
 </div>

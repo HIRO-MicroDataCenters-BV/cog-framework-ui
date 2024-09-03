@@ -9,7 +9,7 @@
       mat-list-item
       class="item"
       *ngFor="let menuitem of menuItems.getMenuitem()"
-      routerLinkActive="selected"
+      routerLinkActive="active"
       [routerLink]="['/', menuitem.state]"
     >
       <mat-icon matListItemIcon>{{ menuitem.icon }}</mat-icon>

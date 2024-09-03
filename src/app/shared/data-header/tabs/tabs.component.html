@@ -1,5 +1,13 @@
-<mat-tab-group>
-  <mat-tab label="First"></mat-tab>
-  <mat-tab label="Second"></mat-tab>
-  <mat-tab label="Third"></mat-tab>
-</mat-tab-group>
+<div class="tabs">
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel" [selectedIndex]="0">
+    <a
+      mat-tab-link
+      *ngFor="let item of items"
+      [routerLink]="['/', item.link]"
+      routerLinkActive="active"
+      (click)="activeLink = item.link"
+      [active]="activeLink === item.link"
+      >{{ item.label }}</a
+    >
+  </nav>
+</div>

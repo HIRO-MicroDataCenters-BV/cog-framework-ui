@@ -1,11 +1,16 @@
-<mat-grid-list cols="3" rowHeight="64">
-  <mat-grid-tile colspan="1" class="col col-tabs">
-    <app-tabs />
-  </mat-grid-tile>
-  <mat-grid-tile colspan="2" class="col col-actions">
-    <app-actions-bar />
-  </mat-grid-tile>
-  <mat-grid-tile colspan="3" class="col col-filters">
-    <app-filters />
-  </mat-grid-tile>
-</mat-grid-list>
+<mat-toolbar>
+  <mat-toolbar-row class="row">
+    <div class="col-tabs">
+      <app-tabs [items]="tabs" [tabPanel]="tabPanel" />
+    </div>
+    <div class="col-actions">
+      <app-actions-bar [items]="actions" />
+    </div>
+  </mat-toolbar-row>
+  <mat-toolbar-row class="divider"></mat-toolbar-row>
+  <mat-toolbar-row class="row">
+    <div class="col-filters">
+      <app-filters />
+    </div>
+  </mat-toolbar-row>
+</mat-toolbar>
