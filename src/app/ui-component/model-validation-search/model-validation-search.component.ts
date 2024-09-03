@@ -78,7 +78,8 @@ export class ModelValidationSearchComponent {
     private router: Router,
     private modelValidationService: ModelValidationService,
   ) {
-    this.search();
+    // TODO: I'm not sure what this is supposed to do, maybe it will work after api update
+    // this.search();
   }
 
   open(item: ValidationArtifactsData): void {

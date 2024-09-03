@@ -275,31 +275,29 @@ export class ModelValidationComponent {
   buildImgURL(validationArtifactsData: ValidationArtifactsData): void {
     this.confusion_matrix =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.confusion_matrix.uri;
+      validationArtifactsData.validation_artifacts.confusion_matrix;
     console.log(this.confusion_matrix);
     this.per_class_metrics =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.per_class_metrics.uri;
+      validationArtifactsData.validation_artifacts.per_class_metrics;
 
     this.precision_recall_curve_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.precision_recall_curve_plot
-        .uri;
+      validationArtifactsData.validation_artifacts.precision_recall_curve_plot;
     this.roc_curve_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.roc_curve_plot.uri;
+      validationArtifactsData.validation_artifacts.roc_curve_plot;
     this.shap_beeswarm_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_beeswarm_plot.uri;
+      validationArtifactsData.validation_artifacts.shap_beeswarm_plot;
     this.shap_feature_importance_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_feature_importance_plot
-        .uri;
+      validationArtifactsData.validation_artifacts.shap_feature_importance_plot;
     this.shap_summary_plot =
       this.baseURL +
-      validationArtifactsData.validation_artifacts.shap_summary_plot.uri;
+      validationArtifactsData.validation_artifacts.shap_summary_plot;
     this.modeValidationCsv(
-      validationArtifactsData.validation_artifacts.per_class_metrics.uri,
+      validationArtifactsData.validation_artifacts.per_class_metrics,
     );
   }
 }
