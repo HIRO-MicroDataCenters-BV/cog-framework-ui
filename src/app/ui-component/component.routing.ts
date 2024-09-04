@@ -48,8 +48,10 @@ export const MaterialRoutes: Routes = [
     path: 'model-validation-artifacts',
     component: ModelValidationArtifactsComponent,
   },
+  /*
   {
     path: 'runs',
     component: PipelineComponent,
   },
+  */
 ];
