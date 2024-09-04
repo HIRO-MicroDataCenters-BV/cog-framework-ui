@@ -1,0 +1,48 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+@import '../../../assets/styles/variable';
+
+.main {
+  &-toolbar.mat-toolbar {
+    height: $main-toolbar-height;
+    background-color: mat.get-theme-color(main.$theme, neutral, 0);
+    button {
+      color: mat.get-theme-color(main.$theme, neutral, 100);
+    }
+    .logo {
+      max-height: 100%;
+    }
+    .navbar {
+      &-brand {
+        display: flex;
+        height: 80px;
+        gap: 24px;
+      }
+      &-header {
+        flex: auto;
+      }
+    }
+  }
+  &-sidebar {
+    border-radius: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  &-container {
+    height: calc(100vh - $main-toolbar-height);
+  }
+  &-content {
+    padding: 16px;
+    background-color: mat.get-theme-color(main.$theme, neutral, 40);
+  }
+}
+
+::ng-deep {
+  .main {
+    &-toolbar.mat-toolbar {
+      button.mdc-icon-button {
+        color: mat.get-theme-color(main.$theme, neutral, 100);
+      }
+    }
+  }
+}

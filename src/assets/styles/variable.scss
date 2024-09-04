@@ -6,28 +6,28 @@ File: scss
 /* --------------------------------------------- */
 // Variables
 
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 @include mat.core();
 
-@import url("https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700");
+@import url('https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700');
 
-$bodyfont: "Poppins", sans-serif;
-$headingfont: "Poppins", sans-serif;
+$bodyfont: 'Inter', sans-serif;
+$headingfont: 'Inter', sans-serif;
 
 $mat-primary: (
-  100: #ebf9fa,
-  500: #1e88e5,
-  700: #1e88e5,
+  100: #359357,
+  500: #359357,
+  700: #359357,
   contrast: (
-    100: rgba(black, 0.87),
+    100: black,
     500: white,
     700: white,
   ),
 );
 $mat-secondary: (
-  100: #fff5f2,
-  500: #26c6da,
-  700: #26c6da,
+  100: black,
+  500: black,
+  700: black,
   contrast: (
     100: white,
     500: white,
@@ -35,9 +35,9 @@ $mat-secondary: (
   ),
 );
 $mat-warn: (
-  100: FDEDE8,
-  500: #e91e63,
-  700: #e91e63,
+  100: #9e1c14,
+  500: #9e1c14,
+  700: #9e1c14,
   contrast: (
     100: white,
     500: white,
@@ -46,31 +46,55 @@ $mat-warn: (
 );
 
 /*Material Theme Colors*/
-
+/*
 $primary: mat.m2-define-palette($mat-primary, 500);
+$secondary: mat.m2-define-palette($mat-secondary, 500);
 $accent: mat.m2-define-palette($mat-secondary, 500);
 $warn: mat.m2-define-palette($mat-warn, 500);
+$success: mat.m2-define-palette($mat-primary, 500);
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$violet-palette,
+    ),
+    typography: (
+      brand-family: 'Comic Sans',
+      bold-weight: 900,
+    ),
+    density: (
+      scale: -1,
+    ),
+  )
+);
+@include mat.all-component-themes($theme);
+*/
 
 // $theme: mat-light-theme($primary, $accent, $warn);
 
 // $background: map-get($theme, background);
 // $foreground: map-get($theme, foreground);
 
+/*
 $cyantheme: mat.m2-define-light-theme(
   (
     color: (
       primary: $primary,
+      secondary: $secondary,
       accent: $accent,
       warn: $warn,
+      success: $success,
     ),
     typography:
       mat.m2-define-typography-config(
-        $font-family: "Poppins",
+        $font-family: 'Inter',
       ),
   )
 );
 
 @include mat.all-component-themes($cyantheme);
+*/
 
 // $custom-typography: mat-typography-config(
 //   $font-family: 'Poppins, sans-serif'
@@ -86,13 +110,13 @@ $cyantheme: mat.m2-define-light-theme(
 
 /*Theme Colors*/
 
-$topbar: #2196f3;
+$topbar: black;
 $sidebar: #fff;
 $sidebar-white: #e5edef;
 $sidebar-alt: #f2f6f8;
-$bodycolor: #eef5f9;
+$bodycolor: white;
 $headingtext: #455a64;
-$bodytext: #67757c;
+$bodytext: black;
 $sidebar-text: #607d8b;
 $sidebar-icons: #99abb4;
 
@@ -104,17 +128,19 @@ $themecolor-alt: #26c6da;
 $themecolor-dark: #028ee1;
 
 /*bootstrap Color*/
-$danger: #fc4b6c;
-$success: #26c6da;
-$warning: #ffb22b;
-$primary: #7460ee;
+
+$primary: #359357;
+$primary-contrast: white;
+$success: $primary;
+$danger: #9e1c14;
+$warning: $danger;
 $info: #1e88e5;
 $inverse: #2f3d4a;
 $muted: #99abb4;
 $dark: #263238;
 $light: #f2f4f8;
 $extra-light: #ebf3f5;
-$secondary: #727b84;
+$secondary: black;
 
 /*Light colors*/
 $light-danger: #f9e7eb;
@@ -151,3 +177,6 @@ $card-brd: #d7dfe3;
 $dark-text: #848a96;
 $radius: 4px;
 $form-brd: #d9d9d9;
+
+/*Props */
+$main-toolbar-height: 105px;

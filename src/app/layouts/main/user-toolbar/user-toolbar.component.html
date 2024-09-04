@@ -1,0 +1,22 @@
+<!-- ============================================================== -->
+<!-- Profile - style you can find in header.scss -->
+<!-- ============================================================== -->
+
+<button [matMenuTriggerFor]="profile" mat-icon-button>
+  <mat-icon><svg-icon src="/assets/icons/icon-user.svg" /></mat-icon>
+</button>
+
+<mat-menu #profile="matMenu" class="mymegamenu">
+  <button mat-menu-item>
+    <mat-icon>settings</mat-icon>
+    Settings
+  </button>
+  <button mat-menu-item>
+    <mat-icon>account_box</mat-icon>
+    Profile
+  </button>
+  <button mat-menu-item>
+    <mat-icon>exit_to_app</mat-icon>
+    Sign Out
+  </button>
+</mat-menu>

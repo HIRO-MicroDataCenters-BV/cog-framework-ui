@@ -1,17 +1,7 @@
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 
 .density-settings {
   @include mat.all-component-densities(-3);
-}
-
-.content {
-  padding: 5px;
-}
-
-.title {
-  font-size: 12px;
-  font-weight: 500;
-  padding-right: 10px;
 }
 
 .box {
