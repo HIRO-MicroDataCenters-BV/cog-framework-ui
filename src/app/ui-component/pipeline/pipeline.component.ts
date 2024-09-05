@@ -25,15 +25,15 @@ export class PipelineComponent {
   tabs: ITabItem[] = [
     {
       label: 'Graph',
-      link: './graph',
+      link: '/runs/graph',
     },
     {
       label: 'Run outpost',
-      link: './run-outpost',
+      link: '/runs/run-outpost',
     },
     {
       label: 'Config',
-      link: './config',
+      link: '/runs/config',
     },
   ];
   actions: IActionItem[] = [

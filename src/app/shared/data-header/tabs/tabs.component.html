@@ -1,13 +1,12 @@
 <div class="tabs">
-  <nav mat-tab-nav-bar [tabPanel]="tabPanel" [selectedIndex]="0">
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel">
     <a
       mat-tab-link
       *ngFor="let item of items"
       [routerLink]="item.link"
-      routerLinkActive="active"
       (click)="activeLink = item.link"
       [active]="activeLink === item.link"
-      >{{ item.label }}</a
+      >{{ item.label }}{{ item.link }}</a
     >
   </nav>
 </div>

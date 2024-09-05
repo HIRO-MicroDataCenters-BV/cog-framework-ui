@@ -1,8 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { ITabItem } from '../types';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { NgForOf } from '@angular/common';
 import { MatTabNavPanel, MatTabsModule } from '@angular/material/tabs';
+import { filter } from 'rxjs/internal/operators/filter';
 
 @Component({
   selector: 'app-tabs',
@@ -12,7 +13,7 @@ import { MatTabNavPanel, MatTabsModule } from '@angular/material/tabs';
   styleUrl: './tabs.component.scss',
 })
 export class AppTabsComponent {
-  activeLink: string | undefined;
+  activeLink: string | string[] = '';
   @Input() tabPanel!: MatTabNavPanel;
   @Input()
   get items(): ITabItem[] {
@@ -22,4 +23,16 @@ export class AppTabsComponent {
     this._items = items;
   }
   _items: ITabItem[] = [];
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e: NavigationEnd) => {
+        this.activeLink = e?.urlAfterRedirects ?? e?.url;
+        this.cdr.detectChanges();
+      });
+    this.activeLink = this.router.url;
+  }
 }
