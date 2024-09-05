@@ -1,5 +1,5 @@
-import { BreakpointState, MediaMatcher } from '@angular/cdk/layout';
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { BreakpointState } from '@angular/cdk/layout';
+import { Component, OnDestroy } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MenuItems } from '../../shared/menu-items/menu-items';
 import { Subject } from 'rxjs';
@@ -17,8 +17,6 @@ export class MainLayoutComponent implements OnDestroy {
 
   constructor(
     breakpointObserver: BreakpointObserver,
-    changeDetectorRef: ChangeDetectorRef,
-    media: MediaMatcher,
     public menuItems: MenuItems,
   ) {
     const layoutChanges = breakpointObserver.observe(['(max-width: 1024px)']);
