@@ -1,8 +1,19 @@
-<app-data-header [tabPanel]="tabPanel" />
-<div class="row">
-  <div class="col-12">
-    <mat-tab-nav-panel #tabPanel>
-      <router-outlet></router-outlet>
-    </mat-tab-nav-panel>
-  </div>
-</div>
+<mat-card class="pipeline">
+  <mat-card-header>
+    <app-data-header
+      class="header-toolbar"
+      [tabPanel]="tabPanel"
+      [actions]="actions"
+      [tabs]="tabs"
+    />
+  </mat-card-header>
+  <mat-card-content>
+    <div class="row">
+      <div class="col-12">
+        <mat-tab-nav-panel #tabPanel>
+          <router-outlet></router-outlet>
+        </mat-tab-nav-panel>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

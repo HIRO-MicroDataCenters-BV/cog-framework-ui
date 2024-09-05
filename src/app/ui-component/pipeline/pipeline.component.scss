@@ -1,33 +1,8 @@
 @use '@angular/material' as mat;
-/*
-.density-settings {
-  @include mat.all-component-densities(-3);
+.pipeline {
+  .header {
+    &-toolbar {
+      width: 100%;
+    }
+  }
 }
-
-.tbl-btn {
-  font-size: 12px;
-  color: #343dff !important;
-  direction: rtl;
-}
-
-.input-search {
-  //height: 60px !important;
-  margin-left: 25px;
-}
-
-.input-button-search {
-  margin-left: 25px;
-  margin-bottom: 10px;
-  padding-top: 18px;
-}
-
-.table-responsive {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-}
-
-.progress-bar {
-  height: 1px;
-}
-*/

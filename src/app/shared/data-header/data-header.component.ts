@@ -22,45 +22,7 @@ import { MatTabNavPanel } from '@angular/material/tabs';
 })
 export class AppDataHeaderComponent {
   @Input() tabPanel!: MatTabNavPanel;
-  tabs: ITabItem[] = [
-    {
-      label: 'Graph',
-      link: 'graph',
-    },
-    {
-      label: 'Run outpost',
-      link: 'run-outpost',
-    },
-    {
-      label: 'Config',
-      link: 'config',
-    },
-  ];
-  actions: IActionItem[] = [
-    {
-      label: '+ Create run',
-      action: () => {},
-      disabled: false,
-    },
-    {
-      label: 'Compare runs',
-      action: () => {},
-      disabled: true,
-    },
-    {
-      label: 'Clone run',
-      action: () => {},
-      disabled: true,
-    },
-    {
-      label: 'Archive',
-      action: () => {},
-      disabled: true,
-    },
-    {
-      label: 'Refresh',
-      action: () => {},
-      disabled: false,
-    },
-  ];
+
+  @Input() tabs: ITabItem[] = [];
+  @Input() actions: IActionItem[] = [];
 }

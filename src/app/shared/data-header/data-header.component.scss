@@ -13,6 +13,8 @@
   &-actions {
     display: flex;
     flex-wrap: wrap;
+    overflow: hidden;
+    overflow-x: auto;
   }
   &-filters {
   }

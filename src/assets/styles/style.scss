@@ -57,3 +57,22 @@ body {
     }
   }
 }
+
+// Custom tiny scrollbar
+.scrollbar {
+  padding: 2px;
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: mat.get-theme-color(main.$theme, neutral, 40);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: mat.get-theme-color(main.$theme, neutral, 80);
+    border-radius: 8px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: mat.get-theme-color(main.$theme, primary, 40);
+  }
+}

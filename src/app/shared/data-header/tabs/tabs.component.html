@@ -3,7 +3,7 @@
     <a
       mat-tab-link
       *ngFor="let item of items"
-      [routerLink]="['/', item.link]"
+      [routerLink]="item.link"
       routerLinkActive="active"
       (click)="activeLink = item.link"
       [active]="activeLink === item.link"
