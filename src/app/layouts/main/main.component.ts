@@ -23,9 +23,7 @@ export class MainLayoutComponent implements OnDestroy {
 
     layoutChanges.subscribe((res) => {
       this.mobileQuery = res;
-      if (res.matches) {
-        this.isSidebarOpen = false;
-      }
+      this.isSidebarOpen = !res.matches;
     });
   }
 
