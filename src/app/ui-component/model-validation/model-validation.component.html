@@ -158,6 +158,13 @@
           mat-row
           *matRowDef="let row; columns: displayedColumnsMetricsTable"
         ></tr>
+        <ng-template matNoDataRow
+          ><tr>
+            <td [colSpan]="displayedColumns.length" class="no-data">
+              No data...
+            </td>
+          </tr></ng-template
+        >
       </table>
     </div>
   </div>
@@ -195,6 +202,13 @@
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          <ng-template matNoDataRow
+            ><tr>
+              <td [colSpan]="displayedColumns.length" class="no-data">
+                No data...
+              </td>
+            </tr></ng-template
+          >
         </table>
       </div>
     </div>

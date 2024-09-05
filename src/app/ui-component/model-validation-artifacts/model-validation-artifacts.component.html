@@ -124,6 +124,13 @@
           mat-row
           *matRowDef="let row; columns: displayedColumnsMetricsTable"
         ></tr>
+        <ng-template matNoDataRow
+          ><tr>
+            <td [colSpan]="displayedColumnsMetricsTable.length" class="no-data">
+              No data...
+            </td>
+          </tr></ng-template
+        >
       </table>
     </div>
   </div>

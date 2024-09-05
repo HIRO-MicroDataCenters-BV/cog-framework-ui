@@ -83,6 +83,13 @@
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <ng-template matNoDataRow
+                ><tr>
+                  <td [colSpan]="displayedColumns.length" class="no-data">
+                    No data...
+                  </td>
+                </tr></ng-template
+              >
             </table>
           </div>
 
@@ -140,6 +147,13 @@
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <ng-template matNoDataRow
+                ><tr>
+                  <td [colSpan]="displayedColumns.length" class="no-data">
+                    No data...
+                  </td>
+                </tr></ng-template
+              >
             </table>
           </div>
 
@@ -212,6 +226,13 @@
                   columns: displayedColumnsModelValidationTable
                 "
               ></tr>
+              <ng-template matNoDataRow
+                ><tr>
+                  <td [colSpan]="displayedColumns.length" class="no-data">
+                    No data...
+                  </td>
+                </tr></ng-template
+              >
             </table>
           </div>
 
@@ -323,6 +344,13 @@
                   columns: modelValidationMetricTableDisplayedColumns
                 "
               ></tr>
+              <ng-template matNoDataRow
+                ><tr>
+                  <td [colSpan]="displayedColumns.length" class="no-data">
+                    No data...
+                  </td>
+                </tr></ng-template
+              >
             </table>
           </div>
         </div>
@@ -376,6 +404,13 @@
                   columns: displayedColumnsModelPipeLineTable
                 "
               ></tr>
+              <ng-template matNoDataRow
+                ><tr>
+                  <td [colSpan]="displayedColumns.length" class="no-data">
+                    No data...
+                  </td>
+                </tr></ng-template
+              >
             </table>
           </div>
         </div>
