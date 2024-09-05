@@ -13,11 +13,11 @@ $color-array: (
 );
 
 @each $color-name, $color-value in $color-array {
-  .text-#{"" + $color-name} {
+  .text-#{'' + $color-name} {
     color: $color-value;
   }
 
-  .bg-#{"" + $color-name} {
+  .bg-#{'' + $color-name} {
     background-color: $color-value;
   }
 }

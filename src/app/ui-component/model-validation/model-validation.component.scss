@@ -1,4 +1,4 @@
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 
 .density-settings {
   @include mat.all-component-densities(-3);
@@ -25,17 +25,6 @@
 .mat-mdc-card-xl-image {
   width: 440px;
   height: 260px;
-}
-
-.input-search {
-  //height: 60px !important;
-  margin-left: 25px;
-}
-
-.input-button-search {
-  margin-left: 25px;
-  margin-bottom: 10px;
-  padding-top: 18px;
 }
 
 .table-responsive {

@@ -1,0 +1,26 @@
+@use '@angular/material' as mat;
+@include mat.core();
+
+@import '../../../assets/styles/variable.scss';
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+.col {
+  &-tabs {
+  }
+  &-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  &-filters {
+  }
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  border-bottom: 1px solid #eee;
+  margin-top: -8px;
+}

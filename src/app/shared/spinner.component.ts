@@ -12,10 +12,12 @@ import {
   NavigationCancel,
   NavigationError,
 } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-spinner',
+  imports: [NgIf],
+  standalone: true,
   template: `<div class="preloader" *ngIf="isSpinnerVisible">
     <div class="spinner">
       <div class="double-bounce1"></div>
@@ -24,7 +26,7 @@ import { DOCUMENT } from '@angular/common';
   </div>`,
   encapsulation: ViewEncapsulation.None,
 })
-export class SpinnerComponent implements OnDestroy {
+export class AppSpinnerComponent implements OnDestroy {
   public isSpinnerVisible = true;
 
   @Input()

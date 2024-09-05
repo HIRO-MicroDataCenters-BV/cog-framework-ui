@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { AngularSvgIconModule } from 'angular-svg-icon';
+
 import {
   LocationStrategy,
   PathLocationStrategy,
@@ -11,21 +13,24 @@ import {
 import { AppRoutes } from './app.routing';
 import { AppComponent } from './app.component';
 
-import { FullComponent } from './layouts/full/full.component';
+//import { FullComponent } from './layouts/full/full.component';
+import { MainLayoutComponent } from './layouts/main/main.component';
 import { AppHeaderComponent } from './layouts/full/header/header.component';
 import { AppSidebarComponent } from './layouts/full/sidebar/sidebar.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DemoMaterialModule } from './demo-material-module';
 
 import { SharedModule } from './shared/shared.module';
-import { SpinnerComponent } from './shared/spinner.component';
+import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolbar.component';
+import { provideLottieOptions } from 'ngx-lottie';
 
 @NgModule({
   declarations: [
     AppComponent,
-    FullComponent,
+    //FullComponent,
+    MainLayoutComponent,
     AppHeaderComponent,
-    SpinnerComponent,
+    AppUserToolbarComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,9 +40,13 @@ import { SpinnerComponent } from './shared/spinner.component';
     HttpClientModule,
     SharedModule,
     RouterModule.forRoot(AppRoutes),
+    AngularSvgIconModule.forRoot(),
     AppSidebarComponent,
   ],
   providers: [
+    provideLottieOptions({
+      player: () => import('lottie-web'),
+    }),
     {
       provide: LocationStrategy,
       useClass: PathLocationStrategy,

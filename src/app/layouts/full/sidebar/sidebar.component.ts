@@ -17,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatIconModule,
   ],
   templateUrl: './sidebar.component.html',
-  styleUrls: [],
+  styleUrl: './sidebar.component.scss',
 })
 export class AppSidebarComponent implements OnDestroy {
   mobileQuery: MediaQueryList;

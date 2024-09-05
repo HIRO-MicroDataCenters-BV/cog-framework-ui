@@ -5,7 +5,7 @@
   <!-- ============================================================== -->
   <!-- Topbar - style you can find in header.scss -->
   <!-- ============================================================== -->
-  <mat-toolbar color="primary" class="topbar telative">
+  <mat-toolbar color="accent" class="topbar telative">
     <!-- ============================================================== -->
     <!-- sidebar toggle -->
     <!-- ============================================================== -->
@@ -18,21 +18,9 @@
     <!-- ============================================================== -->
     <div class="navbar-header">
       <a class="navbar-brand" href="index.html">
-        <!-- Logo icon --><b>
-          <!-- Dark Logo icon -->
-          <img
-            src="assets/images/hiro-logo.svg"
-            alt="homepage"
-            class="dark-logo"
-          />
-          <!-- Light Logo icon -->
-          <img
-            src="assets/images/hiro-logo-dark.svg"
-            alt="homepage"
-            class="light-logo"
-            height="50"
-          />
-        </b>
+        <!-- Logo icon -->
+        <img src="assets/images/logo-cog.png" class="logo" alt="homepage" />
+        <img src="assets/images/hiro-logo.svg" class="logo" alt="homepage" />
         <!--End Logo icon -->
       </a>
     </div>
@@ -40,13 +28,12 @@
     <!-- ============================================================== -->
     <!-- app header component - style you can find in header.scss / header.component.ts-->
     <!-- ============================================================== -->
-    <app-header class="d-flex align-items-center ml-auto"></app-header>
   </mat-toolbar>
   <!-- ============================================================== -->
   <!-- End Topbar - style you can find in pages.scss -->
   <!-- ============================================================== -->
   <mat-sidenav-container
-    class="example-sidenav-container"
+    id="scontainer"
     [style.marginTop.px]="mobileQuery.matches ? 0 : 0"
   >
     <!-- ============================================================== -->
@@ -55,7 +42,8 @@
     <mat-sidenav
       #snav
       id="snav"
-      class="dark-sidebar pl-xs"
+      class=""
+      eval
       [mode]="mobileQuery.matches ? 'side' : 'over'"
       fixedTopGap="0"
       [opened]="mobileQuery.matches"
