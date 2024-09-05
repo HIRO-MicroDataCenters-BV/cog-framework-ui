@@ -17,9 +17,9 @@ import { DatePipe, NgIf } from '@angular/common';
 import { ModelValidationService } from '../../service/model-validation.service';
 import {
   ModelPipelineTableModel,
-  ModelValidationMetricTableModel,
   Pipeline,
   ValidationMetricsData,
+  ValidationMetricTableData,
 } from '../../model/ValidationMetrics';
 import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
 
@@ -56,7 +56,7 @@ export class ModelDetailComponent {
     'action',
   ];
 
-  modelValidationMetricTableDataSource: ModelValidationMetricTableModel[] = [];
+  modelValidationMetricTableDataSource: ValidationMetricTableData[] = [];
   modelValidationMetricTableDisplayedColumns: string[] = [
     'id',
     'dataset_id',
@@ -86,10 +86,10 @@ export class ModelDetailComponent {
     if (this.activatedRoute.snapshot.queryParams['id']) {
       this.modelId = this.activatedRoute.snapshot.queryParams['id'];
     }
-    this.modeDetails();
+    this.modelDetails();
   }
 
-  modeDetails(): void {
+  modelDetails(): void {
     const response = this.cogFrameworkApiService.getModelDetailById(
       this.modelId,
     );

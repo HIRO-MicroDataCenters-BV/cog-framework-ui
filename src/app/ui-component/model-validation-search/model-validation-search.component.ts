@@ -9,7 +9,7 @@ import { ValidationMetricsData } from '../../model/ValidationMetrics';
 import { Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
 
-interface ModelValidationMetricTableModel {
+interface ValidationMetricTableData {
   registered_date_time: string;
   dataset_id: number;
   id: number;
@@ -59,7 +59,7 @@ export class ModelValidationSearchComponent {
   modelValidationScoreTableSource: ModelValidationTable[] = [];
   displayedColumns: string[] = ['name', 'value'];
 
-  modelValidationMetricTableDataSource: ModelValidationMetricTableModel[] = [];
+  modelValidationMetricTableDataSource: ValidationMetricTableData[] = [];
   modelValidationMetricTableDisplayedColumns: string[] = [
     'id',
     'dataset_id',
@@ -212,7 +212,7 @@ export class ModelValidationSearchComponent {
     validationMetricsData: ValidationMetricsData[],
   ): void {
     validationMetricsData.forEach((data) => {
-      const d: ModelValidationMetricTableModel = {
+      const d: ValidationMetricTableData = {
         registered_date_time: data.registered_date_time,
         id: data.id,
         dataset_id: data.dataset_id,
