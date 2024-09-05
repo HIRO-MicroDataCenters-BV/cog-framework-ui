@@ -2,10 +2,7 @@ import {
   Component,
   Input,
   ChangeDetectorRef,
-  AfterViewInit,
   OnDestroy,
-  OnChanges,
-  SimpleChanges,
   AfterContentInit,
 } from '@angular/core';
 import { ITabItem } from '../types';
