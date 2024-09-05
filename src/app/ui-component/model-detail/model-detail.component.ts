@@ -156,21 +156,8 @@ export class ModelDetailComponent {
   buildModelValidationMetrics(
     validationMetricsData: ValidationMetricsData[],
   ): void {
-    validationMetricsData.forEach((data) => {
-      const d: ModelValidationMetricTableModel = {
-        registered_date_time: data.registered_date_time,
-        id: data.id,
-        dataset_id: data.dataset_id,
-        accuracy_score: data.accuracy_score,
-        example_count: data.example_count,
-        f1_score: data.f1_score,
-        log_loss: data.log_loss,
-        precision_score: data.precision_score,
-        recall_score: data.recall_score,
-        roc_auc: data.roc_auc,
-        score: data.score,
-      };
-      this.modelValidationMetricTableDataSource.push(d);
+    validationMetricsData.forEach(({ model_id: _model_id, ...rest }) => {
+      this.modelValidationMetricTableDataSource.push(rest);
     });
   }
 
