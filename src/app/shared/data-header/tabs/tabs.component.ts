@@ -1,9 +1,19 @@
-import { Component, Input, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  ChangeDetectorRef,
+  AfterViewInit,
+  OnDestroy,
+  OnChanges,
+  SimpleChanges,
+  AfterContentInit,
+} from '@angular/core';
 import { ITabItem } from '../types';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { NgForOf } from '@angular/common';
 import { MatTabNavPanel, MatTabsModule } from '@angular/material/tabs';
 import { filter } from 'rxjs/internal/operators/filter';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-tabs',
@@ -12,7 +22,7 @@ import { filter } from 'rxjs/internal/operators/filter';
   templateUrl: './tabs.component.html',
   styleUrl: './tabs.component.scss',
 })
-export class AppTabsComponent {
+export class AppTabsComponent implements OnDestroy, AfterContentInit {
   activeLink: string | string[] = '';
   @Input() tabPanel!: MatTabNavPanel;
   @Input()
@@ -26,13 +36,20 @@ export class AppTabsComponent {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-  ) {
-    this.router.events
+  ) {}
+
+  subscribe: Subscription | undefined;
+
+  ngAfterContentInit(): void {
+    this.subscribe = this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe((e: NavigationEnd) => {
         this.activeLink = e?.urlAfterRedirects ?? e?.url;
         this.cdr.detectChanges();
       });
     this.activeLink = this.router.url;
+  }
+  ngOnDestroy(): void {
+    this.subscribe?.unsubscribe();
   }
 }

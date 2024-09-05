@@ -64,7 +64,7 @@ export const MaterialRoutes: Routes = [
       },
       {
         path: 'run-outpost',
-        component: PipelineGraphComponent,
+        component: ModelComponent,
       },
       {
         path: 'config',
