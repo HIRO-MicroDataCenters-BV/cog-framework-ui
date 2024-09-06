@@ -22,6 +22,7 @@ import {
   ValidationMetricTableData,
 } from '../../model/ValidationMetrics';
 import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
+import { ModelUploadComponent } from '../model-upload/model-upload.component';
 
 @Component({
   selector: 'app-model-detail',
@@ -33,6 +34,7 @@ import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
     DemoMaterialModule,
     NgIf,
     DatePipe,
+    ModelUploadComponent,
   ],
   templateUrl: './model-detail.component.html',
   styleUrl: './model-detail.component.scss',
