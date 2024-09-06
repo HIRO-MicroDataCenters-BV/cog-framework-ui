@@ -1,4 +1,4 @@
-<div class="row">
+<div>
   <div class="col-12">
     <span class="error" *ngIf="errMsg">{{ errMsg }}</span>
     <mat-card>
@@ -7,34 +7,34 @@
       </mat-card-header>
 
       <mat-card-content class="content">
-        <div class="box col-12">
+        <div class="box">
           <span class="list-item"> Id: </span>
           <span>{{ modelDetailData?.model_id }}</span>
         </div>
 
-        <div class="box col-12">
+        <div class="box">
           <span class="list-item"> Name: </span>
           <span>{{ modelDetailData?.model_name }}</span>
         </div>
 
-        <div class="box col-12">
+        <div class="box">
           <span class="list-item"> Description: </span>
           <span>{{ modelDetailData?.model_description }}</span>
         </div>
 
-        <div class="box col-12">
+        <div class="box">
           <span class="list-item"> Author: </span>
           <span>{{ modelDetailData?.author }}</span>
         </div>
 
-        <div class="box col-12">
+        <div class="box">
           <span class="list-item"> Creation Time: </span>
           <span>{{ modelDetailData?.register_date }}</span>
         </div>
       </mat-card-content>
+    </mat-card>
 
-      <hr />
-
+    <mat-card>
       <mat-card-header>
         <mat-card-title>Model Files</mat-card-title>
       </mat-card-header>
@@ -83,22 +83,21 @@
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              <ng-template matNoDataRow
-                ><tr>
+              <ng-template matNoDataRow>
+                <tr>
                   <td [colSpan]="displayedColumns.length" class="no-data">
                     No data...
                   </td>
-                </tr></ng-template
-              >
+                </tr>
+              </ng-template>
             </table>
           </div>
 
           <div class="col-3"></div>
         </div>
       </mat-card-content>
-
-      <hr />
-
+    </mat-card>
+    <mat-card>
       <mat-card-header>
         <mat-card-title>Related DataSet Information</mat-card-title>
       </mat-card-header>
@@ -147,21 +146,21 @@
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              <ng-template matNoDataRow
-                ><tr>
+              <ng-template matNoDataRow>
+                <tr>
                   <td [colSpan]="displayedColumns.length" class="no-data">
                     No data...
                   </td>
-                </tr></ng-template
-              >
+                </tr>
+              </ng-template>
             </table>
           </div>
 
           <div class="col-3"></div>
         </div>
-        <hr />
       </mat-card-content>
-
+    </mat-card>
+    <mat-card>
       <mat-card-header>
         <mat-card-title>Related Model Validation Artifacts</mat-card-title>
       </mat-card-header>
@@ -226,20 +225,21 @@
                   columns: displayedColumnsModelValidationTable
                 "
               ></tr>
-              <ng-template matNoDataRow
-                ><tr>
+              <ng-template matNoDataRow>
+                <tr>
                   <td [colSpan]="displayedColumns.length" class="no-data">
                     No data...
                   </td>
-                </tr></ng-template
-              >
+                </tr>
+              </ng-template>
             </table>
           </div>
 
           <div class="col-3"></div>
         </div>
-        <hr />
       </mat-card-content>
+    </mat-card>
+    <mat-card>
       <mat-card-header>
         <mat-card-title>Model Validation Metrics</mat-card-title>
       </mat-card-header>
@@ -344,19 +344,19 @@
                   columns: modelValidationMetricTableDisplayedColumns
                 "
               ></tr>
-              <ng-template matNoDataRow
-                ><tr>
+              <ng-template matNoDataRow>
+                <tr>
                   <td [colSpan]="displayedColumns.length" class="no-data">
                     No data...
                   </td>
-                </tr></ng-template
-              >
+                </tr>
+              </ng-template>
             </table>
           </div>
         </div>
       </mat-card-content>
-
-      <hr />
+    </mat-card>
+    <mat-card>
       <mat-card-header>
         <mat-card-title>Model Pipeline</mat-card-title>
       </mat-card-header>
@@ -404,22 +404,15 @@
                   columns: displayedColumnsModelPipeLineTable
                 "
               ></tr>
-              <ng-template matNoDataRow
-                ><tr>
+              <ng-template matNoDataRow>
+                <tr>
                   <td [colSpan]="displayedColumns.length" class="no-data">
                     No data...
                   </td>
-                </tr></ng-template
-              >
+                </tr>
+              </ng-template>
             </table>
           </div>
-        </div>
-        <br />
-        <div class="col-3">
-          <button mat-flat-button color="primary" (click)="back()">
-            Back
-            <mat-icon>keyboard_backspace</mat-icon>
-          </button>
         </div>
       </mat-card-content>
     </mat-card>
