@@ -7,7 +7,7 @@ Author: Rahul Sharma
 Email: rahul.sharma@hiro-microdatacenters.nl
 File: scss
 /* --------------------------------------------- */
-/*
+
 @import 'variable';
 
 @import 'mixins/spacing';
@@ -15,7 +15,8 @@ File: scss
 @import 'mixins/font';
 
 @import 'grid/grid';
-
+@import 'responsive';
+/*
 @import 'component/global';
 @import 'component/heading';
 
@@ -25,7 +26,7 @@ File: scss
 @import 'component/card';
 @import 'component/dashboard';
 
-@import 'responsive';
+
 
 @import '../styles/icons/material-design-iconic-font/css/materialdesignicons.min.css';
 */
