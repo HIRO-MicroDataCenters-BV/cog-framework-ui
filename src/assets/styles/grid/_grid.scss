@@ -1,32 +1,85 @@
 @use "variables";
 @use "mixins";
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin-right: variables.$grid-gutter * -0.5;
-  margin-left: variables.$grid-gutter * -0.5;
+.row,
+.grid {
+  display: grid;
+  row-gap: variables.$gridRowGap;
+  column-gap: variables.$gridColumnGap;
+  grid-template-columns: repeat(variables.$gridColumns, #{variables.$gridColumns}fr);
 }
 
-.no-gutters {
-  margin-right: 0;
-  margin-left: 0;
-
-  > .col,
-  > [class*="col-"] {
-    padding-right: 0;
-    padding-left: 0;
+/// $breakPoints {map<$key: string, $value: string>}
+/// $screenType {key in $breakPoints} default values xl, lg, md, sm, xs
+/// $size {value in $breakPoint} default values 1200px, 992px, 768px, 576px, 0
+@each $screenType, $size in variables.$breakPoints {
+  @media screen and (min-width: $size) {
+    /// creates classes of type col-**-##
+    /// where ** can be xl, lg, md, sm, xs
+    /// ## can be 2 to 12
+    @for $column from variables.$gridColumns through 2 {
+      #{variables.$columnPrefix}-#{$screenType}-#{$column} {
+        grid-column: span $column !important;
+      }
+    }
+    /// creates classes of type d-**-none
+    /// where ** can be xl, lg, md, sm, xs
+    /// hides the element when the screen width is equal to `$size`
+    .d-#{$screenType}-none {
+      display: none;
+    }
   }
 }
 
-@include mixins.make-grid-columns();
+/// creates classes of type col-##
+/// where ## can be 2 to 12
+@for $column from variables.$gridColumns through 2 {
+  #{variables.$columnPrefix}-#{$column} {
+    grid-column: span $column;
+  }
+}
 
-@each $breakpoint, $infix in variables.$breakpoint-infixs {
-  @if ($breakpoint== "xsmall") {
-    @include mixins.loop-grid-columns(variables.$grid-columns, $infix);
-  } @else {
-    @include mixins.bp-gt($breakpoint) {
-      @include mixins.loop-grid-columns(variables.$grid-columns, $infix);
+
+@each $alignment, $value in variables.$horizontal-alignment {
+  /// horizontally align grid items
+  [class*="#{variables.$columnPrefix}"] {
+    &#{variables.$alignPrefix}-#{$alignment} {
+      justify-self: $value;
     }
+  }
+
+  /// horizontally align grid
+  .grid#{variables.$alignPrefix}-#{$alignment} {
+    justify-content: $value;
+  }
+}
+
+
+@each $alignment, $value in variables.$vertical-alignment {
+  /// vertically align grid items
+  [class*="#{variables.$columnPrefix}"] {
+    &#{variables.$alignPrefix}-#{$alignment} {
+      align-self: $value;
+    }
+  }
+
+  /// vertically align grid
+  .grid#{variables.$alignPrefix} {
+    &-#{$alignment} {
+      align-items: $value;
+    }
+  }
+
+}
+
+/// center align both horizontally and vertically
+[class*="#{variables.$columnPrefix}"].center {
+  place-self: center;
+}
+
+.grid,
+.row {
+  &.center {
+    place-items: center;
   }
 }
