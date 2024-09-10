@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-upload-model',
@@ -34,9 +35,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   templateUrl: './model-upload.component.html',
   styleUrl: './model-upload.component.scss',
 })
-export class ModelUploadComponent {
+export class ModelUploadComponent implements OnInit {
   file: File | null = null;
-  userId: string = '';
+  // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
+  userId: string = '0';
   modelId: string = '';
   modelDescription: string = '';
   modelType: string = '0';
@@ -46,7 +48,14 @@ export class ModelUploadComponent {
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private _snackBar: MatSnackBar,
+    private route: ActivatedRoute,
   ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      this.modelId = params['id'];
+    });
+  }
 
   openSnackBar(message: string, action: string) {
     this._snackBar.open(message, action, {

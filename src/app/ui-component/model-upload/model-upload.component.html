@@ -16,27 +16,7 @@
     <mat-card-content *ngIf="file">
       <form class="model-upload__form">
         <mat-form-field appearance="outline">
-          <mat-label>User ID</mat-label>
-          <input
-            matInput
-            [(ngModel)]="userId"
-            [ngModelOptions]="{ standalone: true }"
-            type="text"
-          />
-          <mat-hint align="start">Insert user ID - temporary</mat-hint>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Model ID</mat-label>
-          <input
-            matInput
-            [(ngModel)]="modelId"
-            [ngModelOptions]="{ standalone: true }"
-            type="text"
-          />
-          <mat-hint align="start">Insert Model ID</mat-hint>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Model Description</mat-label>
+          <mat-label>Model File Description</mat-label>
           <input
             matInput
             [(ngModel)]="modelDescription"
@@ -46,7 +26,7 @@
           <mat-hint align="start">Insert Model description</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Model Type</mat-label>
+          <mat-label>Model File Type</mat-label>
           <input
             matInput
             [(ngModel)]="modelType"
