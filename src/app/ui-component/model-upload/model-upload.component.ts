@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +13,8 @@ import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-upload-model',
@@ -35,7 +37,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './model-upload.component.html',
   styleUrl: './model-upload.component.scss',
 })
-export class ModelUploadComponent implements OnInit {
+export class ModelUploadComponent implements OnInit, OnDestroy {
   file: File | null = null;
   // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
   userId: string = '0';
@@ -49,12 +51,15 @@ export class ModelUploadComponent implements OnInit {
     private cogFrameworkApiService: CogFrameworkApiService,
     private _snackBar: MatSnackBar,
     private route: ActivatedRoute,
+    private destroy$ = new Subject<void>(),
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
-      this.modelId = params['id'];
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        this.modelId = params['id'];
+      });
   }
 
   openSnackBar(message: string, action: string) {
@@ -112,5 +117,10 @@ export class ModelUploadComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
