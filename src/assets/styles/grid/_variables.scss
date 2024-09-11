@@ -1,29 +1,18 @@
-$breakPoints: (
-        xs: 0,
-        sm: 576px,
-        md: 768px,
-        lg: 992px,
-        xl: 1200px,
+$grid-columns: 12 !default;
+$grid-gutter: 30px !default;
+
+$breakpoints: (
+  xsmall: 0,
+  small: 600px,
+  medium: 960px,
+  large: 1280px,
+  xlarge: 2100px,
 ) !default;
 
-$gridColumns: 12 !default;
-$gridRowGap: 16px !default;
-$gridColumnGap: 16px !default;
-$columnPrefix: '.col' !default;
-$alignPrefix: '.align' !default;
-
-$alignments: start, end, center, stretch;
-
-$horizontal-alignment: (
-        left: start,
-        right: end,
-        h-center: center,
-        h-stretch: stretch
-);
-
-$vertical-alignment: (
-        top: start,
-        bottom: end,
-        v-center: center,
-        v-stretch: stretch
-);
+$breakpoint-infixs: (
+  xsmall: "",
+  small: "sm",
+  medium: "md",
+  large: "lg",
+  xlarge: "xl",
+) !default;

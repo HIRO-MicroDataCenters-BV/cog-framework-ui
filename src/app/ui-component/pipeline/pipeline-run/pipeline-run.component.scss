@@ -1,0 +1,68 @@
+@use '@angular/material' as mat;
+@use '../../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../../assets/styles/variable.scss';
+
+.pipeline {
+  &-run {
+    background-color: mat.get-theme-color(main.$theme, neutral, 40);
+    @include mat.elevation(0);
+    padding: $p-1;
+    border-radius: $br-1;
+    &.has {
+      &-error {
+        h4 {
+          color: mat.get-theme-color(main.$theme, error, 40);
+        }
+      }
+    }
+    .col {
+      display: flex;
+      gap: $m-0;
+      flex-direction: column;
+      &-info {
+        &-name {
+          flex: 1;
+        }
+        &-timer {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-items: center;
+          gap: $m-004;
+          font-size: 14px;
+        }
+      }
+    }
+    .row {
+      display: flex;
+      gap: $m-0;
+      flex-direction: row;
+      align-items: center;
+    }
+    .label {
+      margin-right: $m-004;
+      &:after {
+        content: ':';
+        display: inline;
+      }
+    }
+    .icon {
+      @keyframes spin {
+        from {
+          transform: rotateZ(0deg);
+        }
+        to {
+          transform: rotateZ(360deg);
+        }
+      }
+
+      &-timer {
+        &.anim {
+          animation: spin 10s ease-in-out infinite;
+        }
+      }
+    }
+  }
+}

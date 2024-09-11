@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { Pipeline } from '../../model/PipeLine';
+import { IActionItem, ITabItem } from 'src/app/shared/data-header/types';
 
 interface PipeLineTableModel {
   name: string;
@@ -20,6 +21,48 @@ export class PipelineComponent {
   pipeLineTableModelDataSource: PipeLineTableModel[] = [];
   displayedColumnsPipeLineTableModel: string[] = ['name', 'des', 'createdAt'];
   loading = false;
+
+  tabs: ITabItem[] = [
+    {
+      label: 'Graph',
+      link: '/runs/graph',
+    },
+    {
+      label: 'Run outpost',
+      link: '/runs/run-outpost',
+    },
+    {
+      label: 'Config',
+      link: '/runs/config',
+    },
+  ];
+  actions: IActionItem[] = [
+    {
+      label: '+ Create run',
+      action: () => {},
+      disabled: false,
+    },
+    {
+      label: 'Compare runs',
+      action: () => {},
+      disabled: true,
+    },
+    {
+      label: 'Clone run',
+      action: () => {},
+      disabled: true,
+    },
+    {
+      label: 'Archive',
+      action: () => {},
+      disabled: true,
+    },
+    {
+      label: 'Refresh',
+      action: () => {},
+      disabled: false,
+    },
+  ];
 
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
