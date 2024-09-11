@@ -1,16 +1,25 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { IRun } from '../types';
+import { IPipelineStatusType, IRun } from '../types';
 import { MatCardModule } from '@angular/material/card';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { timeInterval, interval } from 'rxjs';
-import { NgClass } from '@angular/common';
+import { NgClass, NgForOf, NgIf, DatePipe } from '@angular/common';
+import { PIPELINE_STATUS_TYPES } from '../consts';
 
 @Component({
   selector: 'app-pipeline-run',
   standalone: true,
-  imports: [MatCardModule, SvgIconComponent, MatIconModule, NgClass],
+  imports: [
+    MatCardModule,
+    SvgIconComponent,
+    MatIconModule,
+    NgClass,
+    NgForOf,
+    NgIf,
+    DatePipe,
+  ],
   templateUrl: './pipeline-run.component.html',
   styleUrls: ['./pipeline-run.component.scss'],
 })
@@ -27,6 +36,10 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   timer: string = '';
 
   subscribes: Subscription[] | undefined = [];
+
+  types = PIPELINE_STATUS_TYPES;
+
+  isRealtime: boolean = false;
 
   ngOnInit(): void {
     if (this.data) {
@@ -56,11 +69,40 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   }
   tickTimer() {
     if (this.data) {
-      const sec = interval(1000).pipe(timeInterval());
-      const subscription = sec.subscribe(() => {
-        this.timer = this.getFormattedDiff(this.data?.startAt);
-      });
-      this.subscribes?.push(subscription);
+      const startAt = this.data?.startAt;
+      this.setTimer(startAt);
+      if (this.isRealtime) {
+        const sec = interval(1000).pipe(timeInterval());
+        const subscription = sec.subscribe(() => {
+          this.setTimer(startAt);
+        });
+        this.subscribes?.push(subscription);
+      }
     }
+  }
+  getProgress(): IPipelineStatusType[] {
+    const list = this.types;
+    const status = this.data?.status;
+    const result: IPipelineStatusType[] = [];
+    let i = 0;
+    Object.keys(list).forEach((key) => {
+      const name = list[key as keyof typeof list];
+      const phase = status?.phase ?? 0;
+      const error = (phase == i && status?.error) ?? false;
+
+      if (name) {
+        result.push({
+          key,
+          name,
+          error,
+          completed: phase > i,
+        });
+      }
+      i++;
+    });
+    return result;
+  }
+  setTimer(startAt: Date) {
+    this.timer = this.getFormattedDiff(startAt);
   }
 }

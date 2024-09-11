@@ -11,3 +11,10 @@ export interface IRun {
   startAt: Date;
   completed: boolean;
 }
+
+export interface IPipelineStatusType {
+  name: string;
+  key: string;
+  error: boolean;
+  completed: boolean;
+}

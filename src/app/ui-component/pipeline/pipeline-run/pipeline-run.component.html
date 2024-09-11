@@ -1,27 +1,61 @@
 <mat-card class="pipeline-run" [ngClass]="{ 'has-error': data?.status?.error }">
-  <div class="col col-info">
-    <div class="row">
-      <div class="col col-info-name">
-        <h4>{{ data?.name }}</h4>
+  <div class="container scrollbar">
+    <div class="col col-info">
+      <div class="row">
+        <div class="col col-info-name">
+          <h4>{{ data?.name }}</h4>
+        </div>
+        <div class="col col-info-timer">
+          <mat-icon class="icon-timer"
+            ><svg-icon src="/assets/icons/icon-timer.svg" /></mat-icon
+          ><span>{{ timer }}</span>
+        </div>
       </div>
-      <div class="col col-info-timer">
-        <mat-icon class="icon-timer"
-          ><svg-icon src="/assets/icons/icon-timer.svg" /></mat-icon
-        ><span>{{ timer }}</span>
+      <div class="row">
+        <div class="col col-info-experiment">
+          <h6>
+            <span class="label">Experiment</span
+            ><span class="value">{{ data?.experiment }}</span>
+          </h6>
+          <h6>
+            <span class="label">Pipeline version</span
+            ><span class="value">{{ data?.version }}</span>
+          </h6>
+        </div>
+        <div class="col col-info-datetime">
+          <h6>
+            <span class="label">Date</span
+            ><span class="value">{{ data?.startAt | date: 'd/m/YYYY' }}</span>
+          </h6>
+          <h6>
+            <span class="label">Time</span
+            ><span class="value">{{ data?.startAt | date: 'shortTime' }}</span>
+          </h6>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col col-info-experiment">
-        <h6>
-          <span class="label">Experiment</span
-          ><span class="value">{{ data?.experiment }}</span>
-        </h6>
-        <h6>
-          <span class="label">Pipeline version</span
-          ><span class="value">{{ data?.version }}</span>
-        </h6>
+    <div class="col col-progress">
+      <div class="progress">
+        <div class="progress-bar">
+          <div
+            class="progress-bar-step"
+            [ngClass]="{
+              'has-error': item?.error,
+              'is-completed': item?.completed,
+            }"
+            *ngFor="let item of getProgress()"
+          >
+            <mat-icon class="icon" *ngIf="item.completed"
+              >check_circle</mat-icon
+            >
+            <mat-icon class="icon" *ngIf="item.error">warning</mat-icon>
+            <mat-icon class="icon" *ngIf="!item.completed && !item.error"
+              >block</mat-icon
+            >
+            <span class="progress-bar-step-name">{{ item.name }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col col-progress"></div>
 </mat-card>
