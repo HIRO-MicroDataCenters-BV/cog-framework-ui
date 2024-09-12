@@ -32,7 +32,11 @@ export interface DataSetData {
 
 export interface UploadedDataset {
   data: DataSetData | undefined;
-  errors: undefined | UploadDatasetError;
+  error?: {
+    errors: UploadDatasetError[];
+    message: string;
+    success: false;
+  };
   message: string;
   success: boolean;
 }

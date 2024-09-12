@@ -4,7 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { DatePipe, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-upload-model',
@@ -24,7 +24,6 @@ import { takeUntil } from 'rxjs/operators';
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
-    DatePipe,
     FormsModule,
     MatIconModule,
     MatProgressBarModule,
@@ -38,6 +37,7 @@ import { takeUntil } from 'rxjs/operators';
   styleUrl: './model-upload.component.scss',
 })
 export class ModelUploadComponent implements OnInit, OnDestroy {
+  destroy$ = new Subject<void>();
   file: File | null = null;
   // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
   userId: string = '0';
@@ -51,7 +51,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     private cogFrameworkApiService: CogFrameworkApiService,
     private _snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private destroy$ = new Subject<void>(),
   ) {}
 
   ngOnInit() {
@@ -102,19 +101,21 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
         model_file_type: this.modelType,
         model_file_description: this.modelDescription,
       })
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
       .subscribe({
         next: (response) => {
           console.log(response);
           this.loading = false;
         },
-        error: (error) => {
-          console.log(error);
-          this.openSnackBar('Upload failed', 'Close');
-          this.loading = false;
+        error: (e) => {
+          this.openSnackBar(e?.error.message ?? 'Upload failed!', 'Close');
         },
         complete: () => {
           this.openSnackBar('Upload success!', 'Close');
-          this.loading = false;
         },
       });
   }
