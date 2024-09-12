@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Build from main branch
   build:
     runs-on: ubuntu-latest
 
@@ -35,36 +34,32 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest
-  # Deploy build from main branch
   restart-pods:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
       # Configure AWS credentials for kubectl
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-3 # Your AWS region
+          aws-region: us-east-2
 
       # Install eksctl to manage EKS cluster
       - name: Install eksctl
         run: |
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          curl --silent --location "https://github.com/eksctl-io/eksctl/releases/download/v0.190.0/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
 
       # Update kubeconfig to use the EKS cluster
       - name: Update Kubeconfig for EKS
         run: |
-          eksctl utils write-kubeconfig --cluster hirokube --region us-east-3
+          eksctl utils write-kubeconfig --cluster hirokube --region us-east-2
           kubectl get svc
 
       # Restart Kubernetes Pods to pull the latest image
       - name: Restart Deployment Pods
         run: |
-          kubectl rollout restart deployment/cog-ui  # Updated with your deployment name
-          kubectl rollout status deployment/cog-ui   # Monitor the rollout status
+          kubectl rollout restart deployment/cog-ui -n adminh # Updated with your deployment name 
+          kubectl rollout status deployment/cog-ui -n adminh  # Monitor the rollout status
