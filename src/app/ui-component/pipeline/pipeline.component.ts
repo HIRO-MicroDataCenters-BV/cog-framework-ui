@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { Pipeline } from '../../model/PipeLine';
 import { IActionItem, ITabItem } from 'src/app/shared/data-header/types';
 
 interface PipeLineTableModel {
