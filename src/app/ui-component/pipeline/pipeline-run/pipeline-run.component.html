@@ -1,14 +1,18 @@
-<mat-card class="pipeline-run" [ngClass]="{ 'has-error': data?.status?.error }">
+<mat-card
+  class="pipeline-run"
+  [routerLink]="['/runs/graph', data?.id]"
+  [ngClass]="{ 'has-error': data?.status?.error }"
+>
   <div class="container scrollbar">
     <div class="col col-info">
       <div class="row">
         <div class="col col-info-name">
           <h4>{{ data?.name }}</h4>
         </div>
-        <div class="col col-info-timer">
-          <mat-icon class="icon-timer"
+        <div class="col col-info-duration">
+          <mat-icon class="icon-duration"
             ><svg-icon src="/assets/icons/icon-timer.svg" /></mat-icon
-          ><span>{{ timer }}</span>
+          ><span>{{ duration }}</span>
         </div>
       </div>
       <div class="row">

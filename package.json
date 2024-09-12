@@ -28,8 +28,10 @@
     "apexcharts": "^3.52.0",
     "hammerjs": "^2.0.8",
     "lottie-web": "^5.12.2",
+    "monaco-editor": "^0.50.0",
     "ng-apexcharts": "^1.11.0",
     "ngx-lottie": "^12.0.0",
+    "ngx-monaco-editor-v2": "^18.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"

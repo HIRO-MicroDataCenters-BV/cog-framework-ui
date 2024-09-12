@@ -7,7 +7,7 @@ export interface Menu {
   icon: string;
 }
 
-const MENU_ITEMS: Menu[] = [
+const MENUITEMS = [
   // { state: 'dashboard', name: 'Dashboard', type: 'link', icon: 'av_timer' },
   { state: 'model', type: 'link', name: 'Model Management', icon: 'crop_7_5' },
   {
@@ -34,19 +34,17 @@ const MENU_ITEMS: Menu[] = [
     name: 'Model Validation',
     icon: 'av_timer',
   },
-  /*8
   {
     state: 'runs',
     type: 'link',
     name: 'Runs',
     icon: 'directions_run',
   },
-  */
 ];
 
 @Injectable()
 export class MenuItems {
   getMenuitem(): Menu[] {
-    return MENU_ITEMS;
+    return MENUITEMS;
   }
 }

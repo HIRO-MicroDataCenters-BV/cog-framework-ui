@@ -10,6 +10,7 @@
     border-radius: $br-1;
     background-color: mat.get-theme-color(main.$theme, neutral, 40);
     @include mat.elevation(0);
+    cursor: pointer;
     .container {
       display: flex;
       overflow: hidden;
@@ -17,7 +18,6 @@
 
       flex-direction: row;
       gap: $m-1;
-      padding-top: 10px;
     }
     &.has {
       &-error {
@@ -37,7 +37,7 @@
         &-name {
           flex: 1;
         }
-        &-timer {
+        &-duration {
           display: flex;
           flex-direction: row;
           flex-wrap: nowrap;
@@ -155,7 +155,7 @@
         }
       }
 
-      &-timer {
+      &-duration {
         &.anim {
           animation: spin 10s ease-in-out infinite;
         }

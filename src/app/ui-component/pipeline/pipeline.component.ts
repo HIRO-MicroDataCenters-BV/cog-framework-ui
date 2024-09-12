@@ -63,9 +63,8 @@ export class PipelineComponent {
       disabled: false,
     },
   ];
-
+  /*
   constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
-
   search(): void {
     this.getPipeLineByID();
   }
@@ -105,4 +104,5 @@ export class PipelineComponent {
     this.pipeLineTableModelDataSource.push(dd);
     console.log(this.pipeLineTableModelDataSource);
   }
+    */
 }

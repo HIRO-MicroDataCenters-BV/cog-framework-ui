@@ -88,6 +88,10 @@ h {
     white-space: normal;
     margin: 0;
   }
+  &3 {
+    font-size: 20px;
+    font-weight: 600;
+  }
   &4 {
     font-size: 14px;
     font-weight: 600;
@@ -95,5 +99,25 @@ h {
   &6 {
     font-size: 14px;
     font-weight: 400;
+  }
+}
+
+// Utils
+.flex {
+  &-end {
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  &-start {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  &-center {
+    justify-content: center;
+  }
+  &-space {
+    &-between {
+      justify-content: space-between;
+    }
   }
 }

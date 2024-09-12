@@ -2,7 +2,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
 import {
@@ -13,7 +16,6 @@ import {
 import { AppRoutes } from './app.routing';
 import { AppComponent } from './app.component';
 
-//import { FullComponent } from './layouts/full/full.component';
 import { MainLayoutComponent } from './layouts/main/main.component';
 import { AppHeaderComponent } from './layouts/full/header/header.component';
 import { AppSidebarComponent } from './layouts/full/sidebar/sidebar.component';
@@ -23,11 +25,11 @@ import { DemoMaterialModule } from './demo-material-module';
 import { SharedModule } from './shared/shared.module';
 import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolbar.component';
 import { provideLottieOptions } from 'ngx-lottie';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 @NgModule({
   declarations: [
     AppComponent,
-    //FullComponent,
     MainLayoutComponent,
     AppHeaderComponent,
     AppUserToolbarComponent,
@@ -37,13 +39,14 @@ import { provideLottieOptions } from 'ngx-lottie';
     BrowserAnimationsModule,
     DemoMaterialModule,
     FormsModule,
-    HttpClientModule,
     SharedModule,
     RouterModule.forRoot(AppRoutes),
     AngularSvgIconModule.forRoot(),
     AppSidebarComponent,
+    MonacoEditorModule.forRoot(),
   ],
   providers: [
+    provideHttpClient(withInterceptorsFromDi()),
     provideLottieOptions({
       player: () => import('lottie-web'),
     }),
