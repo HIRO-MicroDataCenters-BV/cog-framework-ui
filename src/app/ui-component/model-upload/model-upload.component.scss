@@ -3,11 +3,12 @@
 .model-upload__form {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   gap: 16px;
+  padding-bottom: 8px;
 }
 
 .model-upload__button-wrapper {
   display: flex;
-  padding-right: 15px;
+  padding-bottom: 8px;
 }

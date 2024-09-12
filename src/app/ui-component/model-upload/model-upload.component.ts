@@ -39,8 +39,6 @@ import { finalize, takeUntil } from 'rxjs/operators';
 export class ModelUploadComponent implements OnInit, OnDestroy {
   destroy$ = new Subject<void>();
   file: File | null = null;
-  // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
-  userId: string = '0';
   modelId: string = '';
   modelDescription: string = '';
   modelType: string = '0';
@@ -75,7 +73,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
       return;
     }
     this.file = null;
-    this.userId = '';
     this.modelId = '';
     this.modelDescription = '';
     this.modelType = '0';
@@ -84,7 +81,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
   uploadFile(): void {
     if (
       !this.file ||
-      !this.userId ||
       !this.modelId ||
       !this.modelDescription ||
       !this.modelType
@@ -96,7 +92,8 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     this.cogFrameworkApiService
       .uploadModel({
         file: this.file,
-        user_id: this.userId,
+        // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
+        user_id: '0',
         model_id: this.modelId,
         model_file_type: this.modelType,
         model_file_description: this.modelDescription,
@@ -109,7 +106,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           console.log(response);
-          this.loading = false;
         },
         error: (e) => {
           this.openSnackBar(e?.error.message ?? 'Upload failed!', 'Close');
