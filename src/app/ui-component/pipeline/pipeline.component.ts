@@ -26,8 +26,8 @@ export class PipelineComponent {
       link: '/runs/graph',
     },
     {
-      label: 'Run outpost',
-      link: '/runs/run-outpost',
+      label: 'Run output',
+      link: '/runs/run-output',
     },
     {
       label: 'Config',
