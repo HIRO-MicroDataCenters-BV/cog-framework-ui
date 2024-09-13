@@ -55,7 +55,7 @@ export class PipelineDetailComponent implements OnInit, OnDestroy {
 
   actions: IActionItem[] = [
     {
-      label: 'Retray',
+      label: 'Retry',
       action: () => {},
       disabled: false,
     },
