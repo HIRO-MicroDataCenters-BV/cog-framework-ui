@@ -149,15 +149,15 @@
                         </div>
                       </div>
                       <div class="row">
-                        <div class="col col-datetime">
+                        <div *ngIf="data.startAt" class="col col-datetime">
                           <h3>
                             <span class="value">{{
-                              data?.startAt | date: 'd/m/YYYY'
+                              data.startAt | date: 'd/m/YYYY'
                             }}</span>
                           </h3>
                           <h3>
                             <span class="value">{{
-                              data?.startAt | date: 'shortTime'
+                              data.startAt | date: 'shortTime'
                             }}</span>
                           </h3>
                         </div>
@@ -169,15 +169,15 @@
                             </h3>
                           </div>
                         </div>
-                        <div class="col col-datetime">
+                        <div *ngIf="data.endAt" class="col col-datetime">
                           <h3>
                             <span class="value">{{
-                              data?.endAt | date: 'd/m/YYYY'
+                              data.endAt | date: 'd/m/YYYY'
                             }}</span>
                           </h3>
                           <h3>
                             <span class="value">{{
-                              data?.endAt | date: 'shortTime'
+                              data.endAt | date: 'shortTime'
                             }}</span>
                           </h3>
                         </div>

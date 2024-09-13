@@ -7,8 +7,7 @@ export interface Menu {
   icon: string;
 }
 
-const MENUITEMS = [
-  // { state: 'dashboard', name: 'Dashboard', type: 'link', icon: 'av_timer' },
+const MENUITEMS: Menu[] = [
   { state: 'model', type: 'link', name: 'Model Management', icon: 'crop_7_5' },
   {
     state: 'dataset',

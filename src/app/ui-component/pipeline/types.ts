@@ -34,7 +34,7 @@ export interface IRun {
   experiment: string;
   status: IRunStatus;
   version: number;
-  startAt: Date | null;
+  startAt: Date;
   endAt: Date | null;
   completed: boolean;
   data?: IRunData;

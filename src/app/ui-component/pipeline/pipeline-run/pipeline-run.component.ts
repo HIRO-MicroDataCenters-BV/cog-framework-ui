@@ -28,13 +28,13 @@ import { getFormattedDiff } from 'src/app/utils';
 })
 export class AppPipelineRunComponent implements OnInit, OnDestroy {
   @Input()
-  get data(): IRun | null {
+  get data(): IRun {
     return this._data;
   }
   set data(data: IRun) {
     this._data = data;
   }
-  _data: IRun | null = null;
+  _data!: IRun;
 
   duration: string = '';
 
@@ -45,9 +45,7 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   types = PIPELINE_STATUS_TYPES;
 
   ngOnInit(): void {
-    if (this.data) {
-      this.tickTimer();
-    }
+    this.tickTimer();
   }
 
   ngOnDestroy(): void {
@@ -57,18 +55,14 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   }
 
   tickTimer() {
-    if (this.data) {
-      const startAt = this.data?.startAt;
-      if (startAt) {
+    const startAt = this.data.startAt;
+    this.setDuration(startAt);
+    if (this.isRealtime) {
+      const sec = interval(1000).pipe(timeInterval());
+      const subscription = sec.subscribe(() => {
         this.setDuration(startAt);
-        if (this.isRealtime) {
-          const sec = interval(1000).pipe(timeInterval());
-          const subscription = sec.subscribe(() => {
-            this.setDuration(startAt);
-          });
-          this.subscribes?.push(subscription);
-        }
-      }
+      });
+      this.subscribes?.push(subscription);
     }
   }
   getProgress(): IPipelineStatusType[] {

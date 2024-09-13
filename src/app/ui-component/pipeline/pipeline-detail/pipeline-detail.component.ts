@@ -128,7 +128,7 @@ export class PipelineDetailComponent implements OnInit, OnDestroy {
     Object.keys(list).forEach((key) => {
       const name = list[key as keyof typeof list];
       const phase = status?.phase ?? 0;
-      const error = (phase == i && status?.error) ?? false;
+      const error = (phase === i && status?.error) ?? false;
 
       if (name) {
         result.push({
