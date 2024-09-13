@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use './theme/main';
 @include mat.core();
+
 /* ---------------------------------------------
 Author: Rahul Sharma
 Email: rahul.sharma@hiro-microdatacenters.nl
@@ -8,14 +9,14 @@ File: scss
 /* --------------------------------------------- */
 
 @import 'variable';
-
+/*
 @import 'mixins/spacing';
 @import 'mixins/color';
 @import 'mixins/font';
 
 @import 'grid/grid';
 @import 'responsive';
-/*
+
 @import 'component/global';
 @import 'component/heading';
 
@@ -55,20 +56,68 @@ body {
         }
       }
     }
-    &-table {
-      .no-data {
-        text-align: center;
-        color: mat.get-theme-color(main.$theme, neutral, 50);
-      }
-    }
   }
 }
 
-.fixed {
-  &.progress-bar {
-    position: fixed;
+// Custom tiny scrollbar
+.scrollbar {
+  padding: 2px;
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: mat.get-theme-color(main.$theme, neutral, 40);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: mat.get-theme-color(main.$theme, neutral, 80);
+    border-radius: 8px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: mat.get-theme-color(main.$theme, primary, 40);
   }
 }
-.stretch {
-  width: 100%;
+// Typo
+h {
+  &1,
+  &2,
+  &3,
+  &4,
+  &5,
+  &6 {
+    white-space: normal;
+    margin: 0;
+  }
+  &3 {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  &4 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  &6 {
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+// Utils
+.flex {
+  &-end {
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  &-start {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  &-center {
+    justify-content: center;
+  }
+  &-space {
+    &-between {
+      justify-content: space-between;
+    }
+  }
 }

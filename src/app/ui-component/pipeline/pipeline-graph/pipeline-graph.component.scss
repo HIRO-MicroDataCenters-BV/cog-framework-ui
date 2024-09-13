@@ -1,0 +1,15 @@
+@use '@angular/material' as mat;
+@use '../../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../../assets/styles/variable.scss';
+
+.pipeline {
+  &-graph {
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: $m-2;
+    }
+  }
+}
