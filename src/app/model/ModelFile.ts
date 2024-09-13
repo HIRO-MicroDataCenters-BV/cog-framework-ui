@@ -5,3 +5,8 @@ export const ModelFileTypeEnum = {
 
 export type ModelFileType =
   (typeof ModelFileTypeEnum)[keyof typeof ModelFileTypeEnum];
+
+export const ModelFileTypeWithLabels = {
+  [ModelFileTypeEnum.MODEL_POLICY_FILE]: 'Model Policy File',
+  [ModelFileTypeEnum.MODEL_FILE]: 'Model File',
+} as const;

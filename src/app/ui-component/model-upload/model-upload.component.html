@@ -25,14 +25,20 @@
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Model File Type</mat-label>
-            <input
-              matInput
+            <mat-select
               [(ngModel)]="modelType"
               [ngModelOptions]="{ standalone: true }"
               type="number"
               placeholder="File Type"
-            />
-            <mat-hint align="start">Insert Model type</mat-hint>
+            >
+              <mat-option
+                *ngFor="let item of ModelFileTypeWithLabels | keyvalue"
+                [value]="item.key"
+              >
+                {{ item.value }}
+              </mat-option>
+            </mat-select>
+            <mat-hint align="start">Select Model type</mat-hint>
           </mat-form-field>
           <div class="model-upload__button-wrapper">
             <button mat-flat-button (click)="uploadFile()" [disabled]="loading">

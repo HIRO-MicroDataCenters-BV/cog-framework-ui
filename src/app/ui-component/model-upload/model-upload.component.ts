@@ -4,7 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { NgIf } from '@angular/common';
+import { KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -15,7 +15,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { ModelFileType, ModelFileTypeEnum } from '../../model/ModelFile';
+import {
+  ModelFileType,
+  ModelFileTypeEnum,
+  ModelFileTypeWithLabels,
+} from '../../model/ModelFile';
+import { MatOption, MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'app-upload-model',
@@ -33,6 +38,10 @@ import { ModelFileType, ModelFileTypeEnum } from '../../model/ModelFile';
     FileInputComponent,
     MatButtonModule,
     MatSnackBarModule,
+    MatSelect,
+    NgForOf,
+    MatOption,
+    KeyValuePipe,
   ],
   templateUrl: './model-upload.component.html',
   styleUrl: './model-upload.component.scss',
@@ -43,8 +52,8 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
   modelId: string = '';
   modelDescription: string = '';
   modelType: ModelFileType = '0';
-
   loading = false;
+  protected readonly ModelFileTypeWithLabels = ModelFileTypeWithLabels;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
