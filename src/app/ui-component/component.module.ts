@@ -20,6 +20,10 @@ import { ModelDeleteConfirmationComponent } from './model/model-delete-confirmat
 import { SharedModule } from '../shared/shared.module';
 import { LottieComponent } from 'ngx-lottie';
 import { AppLottieComponent } from './lottie/lottie.component';
+import { PipelineGraphComponent } from './pipeline/pipeline-graph/pipeline-graph.component';
+import { AppPipelineRunComponent } from './pipeline/pipeline-run/pipeline-run.component';
+import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-detail.component';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 @NgModule({
   imports: [
@@ -33,6 +37,8 @@ import { AppLottieComponent } from './lottie/lottie.component';
     SharedModule,
     LottieComponent,
     AppLottieComponent,
+    AppPipelineRunComponent,
+    MonacoEditorModule.forRoot(),
   ],
   providers: [],
   declarations: [
@@ -43,6 +49,8 @@ import { AppLottieComponent } from './lottie/lottie.component';
     ModelDeploymentComponent,
     ModelServingComponent,
     ModelDeleteConfirmationComponent,
+    PipelineGraphComponent,
+    PipelineDetailComponent,
   ],
 })
 export class MaterialComponentsModule {}

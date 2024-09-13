@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, NgZone, OnInit } from '@angular/core';
+import { AnimationItem } from 'lottie-web';
 import { AnimationOptions, LottieComponent } from 'ngx-lottie';
 
 @Component({
@@ -27,12 +28,40 @@ export class AppLottieComponent implements OnInit {
   }
   private _height = '';
 
-  @Input() path: string = '';
+  @Input() path: string | undefined = '';
+  @Input() autoplay: boolean = true;
   options: AnimationOptions = {};
+
+  animationItem: AnimationItem | undefined;
+
+  constructor(private ngZone: NgZone) {}
 
   ngOnInit(): void {
     this.options = {
       path: `${this.basePath}${this.path}`,
     };
+  }
+
+  animationCreated(animationItem: AnimationItem): void {
+    this.animationItem = animationItem;
+    this.animationItem.autoplay = this.autoplay;
+  }
+
+  stop(): void {
+    console.log('stop');
+    this.ngZone.runOutsideAngular(() => {
+      if (this.animationItem) {
+        console.log('aa', this.animationItem);
+        this.animationItem.stop();
+      }
+    });
+  }
+
+  play(): void {
+    this.ngZone.runOutsideAngular(() => {
+      if (this.animationItem) {
+        this.animationItem.play();
+      }
+    });
   }
 }

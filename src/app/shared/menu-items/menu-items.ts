@@ -8,7 +8,6 @@ export interface Menu {
 }
 
 const MENU_ITEMS: Menu[] = [
-  // { state: 'dashboard', name: 'Dashboard', type: 'link', icon: 'av_timer' },
   { state: 'model', type: 'link', name: 'Model Management', icon: 'crop_7_5' },
   {
     state: 'dataset',
@@ -34,14 +33,12 @@ const MENU_ITEMS: Menu[] = [
     name: 'Model Validation',
     icon: 'av_timer',
   },
-  /*8
   {
     state: 'runs',
     type: 'link',
     name: 'Runs',
     icon: 'directions_run',
   },
-  */
 ];
 
 @Injectable()
