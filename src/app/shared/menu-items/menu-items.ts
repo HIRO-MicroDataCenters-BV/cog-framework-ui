@@ -7,7 +7,7 @@ export interface Menu {
   icon: string;
 }
 
-const MENUITEMS: Menu[] = [
+const MENU_ITEMS: Menu[] = [
   { state: 'model', type: 'link', name: 'Model Management', icon: 'crop_7_5' },
   {
     state: 'dataset',
@@ -44,6 +44,6 @@ const MENUITEMS: Menu[] = [
 @Injectable()
 export class MenuItems {
   getMenuitem(): Menu[] {
-    return MENUITEMS;
+    return MENU_ITEMS;
   }
 }
