@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
+import { ModelFileType, ModelFileTypeEnum } from '../../model/ModelFile';
 
 @Component({
   selector: 'app-upload-model',
@@ -41,7 +42,7 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
   file: File | null = null;
   modelId: string = '';
   modelDescription: string = '';
-  modelType: string = '0';
+  modelType: ModelFileType = '0';
 
   loading = false;
 
@@ -75,7 +76,7 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     this.file = null;
     this.modelId = '';
     this.modelDescription = '';
-    this.modelType = '0';
+    this.modelType = ModelFileTypeEnum.MODEL_POLICY_FILE;
   }
 
   uploadFile(): void {

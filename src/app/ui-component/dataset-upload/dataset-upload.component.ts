@@ -71,7 +71,6 @@ export class UploadDatasetComponent {
   uploadFile(): void {
     if (
       !this.file ||
-      !this.userId ||
       !this.datasetName ||
       !this.datasetDescription ||
       !this.datasetType
@@ -82,7 +81,7 @@ export class UploadDatasetComponent {
     this.cogFrameworkApiService
       .uploadDataset({
         file: this.file,
-        user_id: this.userId,
+        user_id: '0',
         name: this.datasetName,
         type: this.datasetType,
         description: this.datasetDescription,
