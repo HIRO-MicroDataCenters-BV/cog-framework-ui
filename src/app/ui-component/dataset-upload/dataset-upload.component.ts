@@ -19,7 +19,6 @@ import {
 } from '../../model/DatasetInfo';
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
-import { ModelFileTypeWithLabels } from '../../model/ModelFile';
 
 @Component({
   selector: 'app-upload-dataset',
@@ -115,6 +114,4 @@ export class UploadDatasetComponent {
         },
       });
   }
-
-  protected readonly ModelFileTypeWithLabels = ModelFileTypeWithLabels;
 }
