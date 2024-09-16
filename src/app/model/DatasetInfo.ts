@@ -46,3 +46,18 @@ export interface UploadDatasetError {
   error_code: string;
   error_message: [string];
 }
+
+export const DatesetTypeEnum = {
+  TRAIN_DATA_SET_TYPE: '0',
+  INFERENCE_DATA_SET_TYPE: '1',
+  BOTH_TYPE: '2',
+} as const;
+
+export type DatesetType =
+  (typeof DatesetTypeEnum)[keyof typeof DatesetTypeEnum];
+
+export const DatesetTypeWithLabels = {
+  [DatesetTypeEnum.TRAIN_DATA_SET_TYPE]: 'Train Data',
+  [DatesetTypeEnum.INFERENCE_DATA_SET_TYPE]: 'Inference Data',
+  [DatesetTypeEnum.BOTH_TYPE]: 'Both',
+} as const;
