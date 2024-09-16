@@ -18,6 +18,7 @@ import { DeleteResponse } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
 import { ModelServe } from '../model/ModelServe';
 import { ModelServeResponse } from '../model/ModelServeResponse';
+import { UploadedModelFile } from '../model/ModelFile';
 
 @Injectable({
   providedIn: 'root',
@@ -160,7 +161,7 @@ export class CogFrameworkApiService {
     model_id: string;
     model_file_type: string;
     model_file_description: string;
-  }): Observable<UploadedDataset> {
+  }): Observable<UploadedModelFile> {
     const formData = new FormData();
     formData.append('file', file);
     const params = encodeURI(
@@ -172,6 +173,6 @@ export class CogFrameworkApiService {
         .toString(),
     );
     const url = `${this.baseURL}/models/upload?${params}`;
-    return this.httpClient.post<UploadedDataset>(url, formData);
+    return this.httpClient.post<UploadedModelFile>(url, formData);
   }
 }

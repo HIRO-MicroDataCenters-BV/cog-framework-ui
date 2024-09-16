@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import {
+  ModelFileData,
   ModelFileType,
   ModelFileTypeEnum,
   ModelFileTypeWithLabels,
@@ -47,11 +54,12 @@ import { MatOption, MatSelect } from '@angular/material/select';
   styleUrl: './model-upload.component.scss',
 })
 export class ModelUploadComponent implements OnInit, OnDestroy {
+  @Output() modelUploadedEvent = new EventEmitter<ModelFileData>();
   destroy$ = new Subject<void>();
   file: File | null = null;
   modelId: string = '';
   modelDescription: string = '';
-  modelType: ModelFileType = '0';
+  modelType: ModelFileType = ModelFileTypeEnum.MODEL_POLICY_FILE;
   loading = false;
   protected readonly ModelFileTypeWithLabels = ModelFileTypeWithLabels;
 
@@ -115,7 +123,9 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response) => {
-          console.log(response);
+          if (response.data) {
+            this.modelUploadedEvent.emit(response.data);
+          }
         },
         error: (e) => {
           this.openSnackBar(e?.error.message ?? 'Upload failed!', 'Close');

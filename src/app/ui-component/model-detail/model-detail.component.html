@@ -94,7 +94,7 @@
       </mat-card-content>
     </mat-card>
   </div>
-  <app-upload-model />
+  <app-upload-model (modelUploadedEvent)="updateModelFile($event)" />
   <mat-card>
     <mat-card-header>
       <mat-card-title>Related DataSet Information</mat-card-title>
