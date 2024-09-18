@@ -65,7 +65,7 @@ export const MaterialRoutes: Routes = [
       },
 
       {
-        path: 'run-outpost',
+        path: 'run-output',
         component: ModelComponent,
       },
       {

@@ -23,6 +23,7 @@ import {
 } from '../../model/ValidationMetrics';
 import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
 import { ModelUploadComponent } from '../model-upload/model-upload.component';
+import { ModelFileData } from '../../model/ModelFile';
 
 @Component({
   selector: 'app-model-detail',
@@ -172,5 +173,15 @@ export class ModelDetailComponent {
       };
       this.modelPipelineTableTableDataSource.push(data);
     });
+  }
+
+  updateModelFile(modelFile: ModelFileData): void {
+    this.modelFileDataSource = [
+      ...this.modelFileDataSource,
+      {
+        file_id: `${modelFile.id}`,
+        file_name: modelFile.file_name,
+      },
+    ];
   }
 }
