@@ -1,0 +1,199 @@
+<div class="pipeline-run-output">
+  <div>
+    <div class="progress">
+      <div class="progress-bar">
+        <div
+          class="progress-bar-step"
+          [ngClass]="{
+            'has-error': item?.error,
+            'is-completed': item?.completed,
+            'is-pending': !item?.completed && !item?.error,
+          }"
+          *ngFor="let item of progress"
+        >
+          <mat-progress-bar
+            class="bar"
+            *ngIf="item.completed"
+            [mode]="!item.error ? 'indeterminate' : 'determinate'"
+            value="100"
+          ></mat-progress-bar>
+          <app-lottie
+            class="icon-phase"
+            [path]="item?.icon"
+            [width]="iconPhaseSize"
+            [height]="iconPhaseSize"
+            [autoplay]="item.completed"
+          />
+
+          <mat-icon class="icon" *ngIf="item.completed">check_circle</mat-icon>
+          <mat-icon class="icon" *ngIf="item.error">warning</mat-icon>
+          <mat-icon class="icon" *ngIf="!item.completed && !item.error"
+            >block</mat-icon
+          >
+          <span class="progress-bar-step-name">{{ item.name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <mat-card class="info">
+      <div class="conitainer">
+        <mat-tab-group class="tabs">
+          <mat-tab *ngFor="let tab of detailTabs" [label]="tab.label">
+            <section class="tab-content">
+              <div [ngSwitch]="tab.key">
+                <div *ngSwitchCase="'inputOutput'">
+                  <mat-list class="link-list">
+                    <a
+                      class="item"
+                      mat-list-item
+                      [href]="data.data?.inputOutput?.inputParameter"
+                    >
+                      <h4 matListItemTitle>Input Parameter</h4>
+                      <p matListItemLine>
+                        {{ data.data?.inputOutput?.inputParameter }}
+                      </p></a
+                    >
+                    <a
+                      class="item"
+                      mat-list-item
+                      [href]="data.data?.inputOutput?.url"
+                    >
+                      <h4 matListItemTitle>URL</h4>
+                      <p matListItemLine>
+                        {{ data.data?.inputOutput?.url }}
+                      </p></a
+                    >
+                    <a
+                      class="item"
+                      mat-list-item
+                      [href]="data.data?.inputOutput?.inputArtiacts"
+                    >
+                      <h4 matListItemTitle>Input Artifacts</h4>
+                      <p matListItemLine>
+                        {{ data.data?.inputOutput?.inputArtiacts }}
+                      </p></a
+                    >
+                    <a
+                      class="item"
+                      mat-list-item
+                      [href]="data.data?.inputOutput?.outputArtifacts"
+                    >
+                      <h4 matListItemTitle>Out Artifacts</h4>
+                      <p matListItemLine>
+                        {{ data.data?.inputOutput?.outputArtifacts }}
+                      </p></a
+                    >
+                    <a
+                      class="item"
+                      mat-list-item
+                      [href]="data.data?.inputOutput?.data?.file"
+                    >
+                      <h4 matListItemTitle>Data</h4>
+                      <p matListItemLine>
+                        {{ data.data?.inputOutput?.data?.file }}
+                      </p></a
+                    >
+                    <ngx-monaco-editor
+                      class="editor"
+                      [options]="editorOpts"
+                      [ngModel]="data.data?.inputOutput?.data?.plain"
+                    ></ngx-monaco-editor>
+                  </mat-list>
+                </div>
+                <div *ngSwitchCase="'details'">
+                  <header>
+                    <h3>Task Details</h3>
+                  </header>
+                  <mat-list class="link-list">
+                    <mat-list-item>
+                      <h4 matListItemTitle>Task ID</h4>
+                      <p matListItemLine>
+                        {{ data.data?.details?.taskId }}
+                      </p>
+                    </mat-list-item>
+                    <mat-list-item>
+                      <h4 matListItemTitle>Task Name</h4>
+                      <p matListItemLine>
+                        {{ data.data?.details?.taskName }}
+                      </p>
+                    </mat-list-item>
+                    <mat-list-item>
+                      <h4 matListItemTitle>Status</h4>
+                      <p matListItemLine>
+                        {{ getStatus(data.data?.details?.status) }}
+                      </p>
+                    </mat-list-item>
+                  </mat-list>
+                  <div class="status">
+                    <div class="row">
+                      <div class="col col-datetime-title flex-start">
+                        <h3>Started at</h3>
+                        <div class="mark"></div>
+                      </div>
+                      <div class="col col-duration">
+                        <div class="duration-bar"></div>
+                      </div>
+                      <div class="col col-datetime-title flex-end">
+                        <h3>Finished at</h3>
+                        <div class="mark"></div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div *ngIf="data.startAt" class="col col-datetime">
+                        <h3>
+                          <span class="value">{{
+                            data.startAt | date: 'd/m/YYYY'
+                          }}</span>
+                        </h3>
+                        <h3>
+                          <span class="value">{{
+                            data.startAt | date: 'shortTime'
+                          }}</span>
+                        </h3>
+                      </div>
+                      <div class="col col-duration">
+                        <div class="duration">
+                          <h3>
+                            <span class="label">Duration:</span
+                            ><span class="value">{{ duration }}</span>
+                          </h3>
+                        </div>
+                      </div>
+                      <div *ngIf="data.endAt" class="col col-datetime">
+                        <h3>
+                          <span class="value">{{
+                            data.endAt | date: 'd/m/YYYY'
+                          }}</span>
+                        </h3>
+                        <h3>
+                          <span class="value">{{
+                            data.endAt | date: 'shortTime'
+                          }}</span>
+                        </h3>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div *ngSwitchCase="'logs'">
+                  <ngx-monaco-editor
+                    class="editor"
+                    [options]="editorOpts"
+                    [ngModel]="data.data?.logs"
+                  ></ngx-monaco-editor>
+                </div>
+                <div *ngSwitchCase="'events'">
+                  <ngx-monaco-editor
+                    class="editor"
+                    [options]="editorOpts"
+                    [ngModel]="data.data?.events"
+                  ></ngx-monaco-editor>
+                </div>
+              </div>
+            </section>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </mat-card>
+  </div>
+</div>

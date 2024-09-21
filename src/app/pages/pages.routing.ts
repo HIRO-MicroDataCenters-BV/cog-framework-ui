@@ -12,6 +12,7 @@ import { ModelDeploymentComponent } from './model-deployment/model-deployment.co
 import { ModelServingComponent } from './model-serving/model-serving.component';
 import { PipelineGraphComponent } from './pipeline/pipeline-graph/pipeline-graph.component';
 import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-detail.component';
+import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
 
 export const MaterialRoutes: Routes = [
   {
@@ -60,7 +61,7 @@ export const MaterialRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'graph',
+        redirectTo: 'run-output',
         pathMatch: 'full',
       },
       {
@@ -70,7 +71,7 @@ export const MaterialRoutes: Routes = [
 
       {
         path: 'run-output',
-        component: ModelComponent,
+        component: PipelineRunOutputComponent,
       },
       {
         path: 'config',

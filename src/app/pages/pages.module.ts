@@ -15,6 +15,7 @@ import { SharedModule } from '../shared/shared.module';
 import { PipelineGraphComponent } from './pipeline/pipeline-graph/pipeline-graph.component';
 import { AppPipelineRunComponent } from './pipeline/pipeline-run/pipeline-run.component';
 import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-detail.component';
+import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
 
 @NgModule({
   imports: [
@@ -34,6 +35,7 @@ import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-det
     ModelDeleteConfirmationComponent,
     PipelineGraphComponent,
     PipelineDetailComponent,
+    PipelineRunOutputComponent,
   ],
 })
 export class MaterialComponentsModule {}
