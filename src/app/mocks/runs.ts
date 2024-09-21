@@ -6,7 +6,7 @@ const runs = [
     version: 375,
     startAt: new Date('2024-07-21'),
     endAt: new Date(),
-    status: { error: true, phase: 2 },
+    status: { error: true, phase: 3 },
     completed: false,
     data: {
       inputOutput: {
@@ -70,7 +70,7 @@ const runs = [
     version: 375,
     startAt: new Date('2024-07-21'),
     endAt: new Date(),
-    status: { error: true, phase: 2 },
+    status: { error: false, phase: 4 },
     completed: false,
     data: {
       inputOutput: {
