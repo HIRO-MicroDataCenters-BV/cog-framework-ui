@@ -47,15 +47,12 @@ export class AppLottieComponent implements OnInit {
     this.animationItem.autoplay = this.autoplay;
     if (!this.autoplay) {
       this.animationItem.goToAndStop(25, true);
-      console.log('th', this.animationItem);
     }
   }
 
   stop(): void {
-    console.log('stop');
     this.ngZone.runOutsideAngular(() => {
       if (this.animationItem) {
-        console.log('aa', this.animationItem);
         this.animationItem.stop();
       }
     });
