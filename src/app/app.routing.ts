@@ -15,7 +15,7 @@ export const AppRoutes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('./ui-component/component.module').then(
+          import('./pages/pages.module').then(
             (m) => m.MaterialComponentsModule,
           ),
       },

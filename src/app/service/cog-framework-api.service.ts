@@ -69,10 +69,10 @@ export class CogFrameworkApiService {
     return this.httpClient.get<DatasetById>(`${this.baseURL}/dataset/${id}`);
   }
 
-  getDataset(params: GetDatasetParams = ''): Observable<DatasetInfo> {
-    return this.httpClient.get<DatasetInfo>(
-      `${this.baseURL}/dataset/${params}`,
-    );
+  getDataset(params: GetDatasetParams = {}): Observable<DatasetInfo> {
+    return this.httpClient.get<DatasetInfo>(`${this.baseURL}/datasets`, {
+      params,
+    });
   }
 
   getModelValidationArtifactById(
