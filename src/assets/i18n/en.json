@@ -19,10 +19,13 @@
     "or": "or"
   },
   "message": {
-    "no_data": "no_data..."
+    "no_data": "no_data...",
+    "_deployment_starting": "{{name}} deployment starting...",
+    "_deleted": "{{name}} deleted"
   },
   "action": {
-    "search": "search"
+    "search": "search",
+    "close": "close"
   },
   "label": {
     "id": "id",

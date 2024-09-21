@@ -20,8 +20,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoRootModule } from 'src/app/transloco-root.module';
+import { TranslocoService } from '@jsverse/transloco';
 
 const MODEL_DATA: Model[] = [];
+
+interface Error {
+  detail?: string;
+  message?: string;
+  error_message?: string;
+}
 
 @Component({
   selector: 'app-model',
@@ -64,6 +71,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
+    private translocoService: TranslocoService,
     private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -76,6 +84,13 @@ export class ModelComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
+    }
+  }
+
+  getError(error: Error): void {
+    const msg = error?.message ?? error?.detail ?? error?.error_message;
+    if (msg) {
+      this.openSnackBar(msg, this.translocoService.translate('action.close'));
     }
   }
 
@@ -96,7 +111,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
         this.dataSource.data = v.data;
       },
       error: (e) => {
-        this.openSnackBar(e.error.message, 'Close');
+        this.getError(e.error);
         this.loading = false;
       },
       complete: () => {
@@ -138,10 +153,15 @@ export class ModelComponent implements OnInit, AfterViewInit {
         );
         response.subscribe({
           next: () => {
-            this.openSnackBar('Model deployment starting...', 'Close');
+            this.openSnackBar(
+              this.translocoService.translate('message._deployment_starting', {
+                name: this.name,
+              }),
+              this.translocoService.translate('action.close'),
+            );
           },
           error: (e) => {
-            this.openSnackBar(e.error.errors[0].error_message, 'Close');
+            this.getError(e.error.errors[0]);
             result.model.isDeployed = false;
           },
           complete: () => {
@@ -156,11 +176,17 @@ export class ModelComponent implements OnInit, AfterViewInit {
     const response = this.cogFrameworkApiService.deleteModelById(id);
     response.subscribe({
       next: () => {
-        this.openSnackBar('Model deleted', 'Close');
+        this.openSnackBar(
+          this.translocoService.translate('message._deleted', {
+            name: this.name,
+          }),
+          this.translocoService.translate('action.close'),
+        );
         this.deleteModelFromTable(id);
       },
       error: (e) => {
         console.error(e);
+        this.getError(e.error);
       },
     });
   }
