@@ -1,3 +1,41 @@
 {
-  "test": "Testus"
+  "menu": {
+    "section": {
+      "model": "model management",
+      "dataset": "dataset management",
+      "model_training": "model training",
+      "model_serving": "model serving",
+      "model_validation": "model validation",
+      "runs": "runs"
+    }
+  },
+  "hint": {
+    "_serve": "{{name}} serve",
+    "open": "open",
+    "delete": "delete",
+    "select_page_of_": "Select page of models {{name}}"
+  },
+  "text": {
+    "or": "or"
+  },
+  "message": {
+    "no_data": "no_data..."
+  },
+  "action": {
+    "search": "search"
+  },
+  "label": {
+    "id": "id",
+    "name": "name",
+    "_id": "{{name}} id",
+    "_name": "{{name}} name",
+    "description": "description",
+    "creationTime": "creation time",
+    "author": "author",
+    "action": "action"
+  },
+  "title": {
+    "search_": "search {{name}}s",
+    "_search_result_list": "{{name}} search result list"
+  }
 }

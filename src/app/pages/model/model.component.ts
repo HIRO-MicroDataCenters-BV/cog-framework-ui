@@ -47,6 +47,7 @@ const MODEL_DATA: Model[] = [];
   styleUrl: './model.component.scss',
 })
 export class ModelComponent implements OnInit, AfterViewInit {
+  name = 'model';
   loading = false;
   displayedColumns: string[] = [
     'id',

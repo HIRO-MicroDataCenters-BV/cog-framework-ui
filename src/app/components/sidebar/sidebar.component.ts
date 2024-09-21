@@ -5,6 +5,7 @@ import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { TranslocoRootModule } from '../../transloco-root.module';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,6 +17,7 @@ import { MatListModule } from '@angular/material/list';
     CommonModule,
     MatIconModule,
     MatListModule,
+    TranslocoRootModule,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
