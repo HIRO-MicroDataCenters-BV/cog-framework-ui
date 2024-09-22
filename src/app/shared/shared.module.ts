@@ -26,11 +26,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { DatePipe } from '@angular/common';
+import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
 @NgModule({
   declarations: [
     AccordionAnchorDirective,
     AccordionLinkDirective,
     AccordionDirective,
+    AppFluidHeightDirective,
   ],
   imports: [
     AppDataHeaderComponent,
@@ -43,6 +45,7 @@ import { DatePipe } from '@angular/common';
     AccordionAnchorDirective,
     AccordionLinkDirective,
     AccordionDirective,
+    AppFluidHeightDirective,
     AppDataHeaderComponent,
     AppSpinnerComponent,
     FormsModule,

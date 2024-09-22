@@ -27,6 +27,7 @@ import { getFormattedDiff } from 'src/app/utils';
   styleUrls: ['./pipeline-run.component.scss'],
 })
 export class AppPipelineRunComponent implements OnInit, OnDestroy {
+  subscribes: Subscription[] | undefined = [];
   @Input()
   get data(): IRun {
     return this._data;
@@ -37,8 +38,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   _data!: IRun;
 
   duration: string = '';
-
-  subscribes: Subscription[] | undefined = [];
 
   isRealtime: boolean = false;
 

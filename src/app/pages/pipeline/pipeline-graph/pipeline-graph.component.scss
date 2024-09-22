@@ -6,10 +6,10 @@
 
 .pipeline {
   &-graph {
-    .list {
-      display: flex;
-      flex-direction: column;
-      gap: $m-2;
+    .viewport {
+      background-color: mat.get-theme-color(main.$theme, neutral, 40);
+      border-radius: $br-0;
+      overflow: hidden;
     }
   }
 }
