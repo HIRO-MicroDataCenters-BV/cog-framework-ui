@@ -1,6 +1,4 @@
 import {
-  AfterViewInit,
-  AfterContentInit,
   Directive,
   ElementRef,
   Input,
@@ -8,15 +6,8 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { fromEvent, interval, Subject, Subscription, timer } from 'rxjs';
-import {
-  debounceTime,
-  throttleTime,
-  delay,
-  tap,
-  takeUntil,
-  take,
-} from 'rxjs/operators';
+import { fromEvent, Subscription, timer } from 'rxjs';
+import { debounceTime, throttleTime, take } from 'rxjs/operators';
 
 @Directive({
   selector: '[appFluidHeight]',
@@ -73,7 +64,7 @@ export class AppFluidHeightDirective implements OnInit, OnDestroy {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
 
       return rect.top + scrollTop;
-    } catch (e) {
+    } catch (_) {
       return 0;
     }
   }

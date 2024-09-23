@@ -1,9 +1,7 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { IPipelineStatusType, IRun } from '../types';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { IRun } from '../types';
 import { IActionItem, ITabItem } from 'src/app/shared/data-header/types';
-import { PIPELINE_STATUS_TYPES } from '../consts';
-import { Subscription, timeInterval, interval } from 'rxjs';
-import { getFormattedDiff } from 'src/app/utils';
+import { Subscription } from 'rxjs';
 import { mocks } from 'src/app/mocks';
 import { ActivatedRoute } from '@angular/router';
 import { PipelineRunOutputComponent } from '../pipeline-run-output/pipeline-run-output.component';
