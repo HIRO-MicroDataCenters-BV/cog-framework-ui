@@ -1,15 +1,18 @@
-<mat-toolbar>
-  <mat-toolbar-row class="row">
-    <div class="col-tabs">
+<mat-toolbar class="data-header">
+  <mat-toolbar-row
+    class="row"
+    [ngClass]="{ 'flex-end': !tabPanel, 'flex-start': actions.length === 0 }"
+  >
+    <div *ngIf="tabs.length > 0 && tabPanel" class="col-tabs">
       <app-tabs [items]="tabs" [tabPanel]="tabPanel" />
     </div>
-    <div class="col-actions">
+    <div *ngIf="actions.length > 0" class="col-actions scrollbar">
       <app-actions-bar [items]="actions" />
     </div>
   </mat-toolbar-row>
   <mat-toolbar-row class="divider"></mat-toolbar-row>
   <mat-toolbar-row class="row">
-    <div class="col-filters">
+    <div *ngIf="hasFilter" class="col-filters">
       <app-filters />
     </div>
   </mat-toolbar-row>

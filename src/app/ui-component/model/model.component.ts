@@ -12,8 +12,6 @@ import { GetModelParams, Model } from 'src/app/model/ModelInfo';
 import { DatePipe, NgIf } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
-
-import { ModelUploadComponent } from '../model-upload/model-upload.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/model-delete-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -39,7 +37,6 @@ const MODEL_DATA: Model[] = [];
     NgIf,
     DatePipe,
     MatProgressBarModule,
-    ModelUploadComponent,
     MatPaginatorModule,
     MatSelectModule,
     MatProgressSpinner,
