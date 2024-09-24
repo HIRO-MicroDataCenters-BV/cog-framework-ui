@@ -56,7 +56,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
     },
     {
       provide: APP_BASE_HREF,
-      useValue: '/cogui',
+      useValue: '/cogui/',
     },
   ],
   bootstrap: [AppComponent],
