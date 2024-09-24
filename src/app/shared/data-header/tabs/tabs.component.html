@@ -4,8 +4,8 @@
       mat-tab-link
       *ngFor="let item of items"
       [routerLink]="item.link"
-      (click)="activeLink = item?.link ?? ''"
-      [active]="activeLink === item.link"
+      (click)="activeLink = getRouteLinkStr(item.link)"
+      [active]="activeLink === getRouteLinkStr(item.link)"
       >{{ item.label }}</a
     >
   </nav>

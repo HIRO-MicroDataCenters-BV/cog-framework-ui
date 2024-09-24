@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
@@ -17,33 +17,28 @@ import { AppRoutes } from './app.routing';
 import { AppComponent } from './app.component';
 
 import { MainLayoutComponent } from './layouts/main/main.component';
-import { AppHeaderComponent } from './layouts/full/header/header.component';
-import { AppSidebarComponent } from './layouts/full/sidebar/sidebar.component';
+import { AppSidebarComponent } from './components/sidebar/sidebar.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DemoMaterialModule } from './demo-material-module';
 
 import { SharedModule } from './shared/shared.module';
 import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolbar.component';
 import { provideLottieOptions } from 'ngx-lottie';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { TranslocoRootModule } from './transloco-root.module';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    MainLayoutComponent,
-    AppHeaderComponent,
-    AppUserToolbarComponent,
-  ],
+  declarations: [AppComponent, MainLayoutComponent, AppUserToolbarComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    DemoMaterialModule,
     FormsModule,
+    ReactiveFormsModule,
     SharedModule,
     RouterModule.forRoot(AppRoutes),
     AngularSvgIconModule.forRoot(),
     AppSidebarComponent,
     MonacoEditorModule.forRoot(),
+    TranslocoRootModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

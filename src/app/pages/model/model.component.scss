@@ -1,0 +1,57 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../assets/styles/variable.scss';
+
+.mat-card-model {
+  display: flex;
+  justify-content: center;
+  padding: 5px 5px 0;
+}
+
+.animate-spin {
+  margin-top: 8px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+.form-dual {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  .divider {
+    margin-top: -16px;
+  }
+}
+table {
+  tr {
+    td {
+      border-bottom-color: mat.get-theme-color(main.$theme, neutral, 90);
+    }
+    .mat {
+      &-column {
+        &-action {
+          mat {
+            &-icon {
+              transition: 0.4s;
+              opacity: 0.3;
+            }
+          }
+        }
+      }
+    }
+    &:hover {
+      .mat {
+        &-column {
+          &-action {
+            mat {
+              &-icon {
+                opacity: 1;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
