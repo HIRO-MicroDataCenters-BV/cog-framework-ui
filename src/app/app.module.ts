@@ -51,7 +51,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     },
     {
       provide: APP_BASE_HREF,
-      useValue: '/cogui',
+      useValue: '/cogui/',
     },
   ],
   bootstrap: [AppComponent],
