@@ -2,6 +2,9 @@
   "name": "cog-framework-ui",
   "version": "0.0.0",
   "type": "module",
+  "engines" : { 
+    "node" : ">=18.19.1" 
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
