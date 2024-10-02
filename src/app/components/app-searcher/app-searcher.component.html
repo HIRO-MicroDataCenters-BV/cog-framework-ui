@@ -1,1 +1,12 @@
-<div>New Search</div>
+<div>
+  <mat-form-field appearance="outline">
+    <mat-select [(value)]="key">
+      @for (option of options; track option) {
+        <mat-option [value]="option.key">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <input (input)="search()" [(ngModel)]="query" matInput type="text" />
+  </mat-form-field>
+</div>
