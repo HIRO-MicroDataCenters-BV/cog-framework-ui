@@ -19,8 +19,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { TranslocoRootModule } from 'src/app/transloco-root.module';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 const MODEL_DATA: Model[] = [];
 
@@ -48,7 +47,7 @@ interface Error {
     MatPaginatorModule,
     MatSelectModule,
     MatProgressSpinner,
-    TranslocoRootModule,
+    TranslocoModule,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
