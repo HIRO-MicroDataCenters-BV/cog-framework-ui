@@ -16,9 +16,22 @@ WORKDIR /usr/src/app
 ################################################################################
 # Create a stage for building the application.
 FROM base AS build
+
+# Download dependencies as a separate step to take advantage of Docker's caching.
+# Leverage bind mounts to package.json and yarn.lock to avoid having to copy them
+# Leverage a cache mount to /pnpm/store to speed up subsequent builds.
+# into this layer.
+RUN corepack enable
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=.yarnrc.yml,target=.yarnrc.yml \
+    --mount=type=bind,source=yarn.lock,target=yarn.lock \
+    --mount=type=cache,id=yarn,target=/root/.yarn \
+    yarn install --immutable
+
+# Copy the rest of the source files into the image.
 COPY . .
-RUN corepack up
-RUN npm run build
+# Run the build script.
+RUN yarn build
 
 ################################################################################
 FROM nginx:stable-alpine AS nginx
