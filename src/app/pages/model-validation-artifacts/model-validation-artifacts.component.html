@@ -1,10 +1,12 @@
 <mat-card>
   <mat-card-header class="card-header">
     <mat-card-title-group>
-      <mat-card-title>Model Validation file</mat-card-title>
+      <mat-card-title>{{
+        'title.model_validation_file' | transloco
+      }}</mat-card-title>
     </mat-card-title-group>
   </mat-card-header>
-  <div class="col-12">
+  <div>
     <div class="density-settings table-responsive">
       <table
         mat-table
@@ -127,7 +129,7 @@
         <ng-template matNoDataRow
           ><tr>
             <td [colSpan]="displayedColumnsMetricsTable.length" class="no-data">
-              No data...
+              {{ 'message.no_data' | transloco }}
             </td>
           </tr></ng-template
         >
@@ -139,92 +141,105 @@
 <mat-card>
   <mat-card-header class="card-header">
     <mat-card-title-group>
-      <mat-card-title>Model Validation Artifacts</mat-card-title>
+      <mat-card-title>{{
+        'title.model_validation_artifacts' | transloco
+      }}</mat-card-title>
     </mat-card-title-group>
   </mat-card-header>
 
-  <div class="col-12">
-    <div class="row">
-      <mat-card class="img-card" *ngIf="confusion_matrix">
-        <mat-card-header class="card-header">
-          <span class="card-head">Normalised Confusion Matrix</span>
-        </mat-card-header>
+  <mat-card-content class="images-grid">
+    <mat-card class="img-card" *ngIf="validationArtifacts?.confusion_matrix">
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.normalised_confusion_matrix' | transloco
+        }}</span>
+      </mat-card-header>
 
-        <mat-card-content style="padding: 4px">
-          <img
-            mat-card-xl-image
-            [src]="confusion_matrix"
-            alt="confusion_matrix"
-          />
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="img-card" *ngIf="precision_recall_curve_plot">
-        <mat-card-header class="card-header">
-          <span class="card-head">Precision Recall Curve</span>
-        </mat-card-header>
-        <mat-card-content style="padding: 4px">
-          <img
-            mat-card-xl-image
-            [src]="precision_recall_curve_plot"
-            alt="precision_recall_curve_plot"
-          />
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="img-card" *ngIf="roc_curve_plot">
-        <mat-card-header class="card-header">
-          <span class="card-head">Roc Curve</span>
-        </mat-card-header>
-        <mat-card-content style="padding: 4px">
-          <img mat-card-xl-image [src]="roc_curve_plot" alt="roc_curve_plot" />
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="img-card" *ngIf="shap_beeswarm_plot">
-        <mat-card-header class="card-header">
-          <span class="card-head">Shap Value</span>
-        </mat-card-header>
+      <mat-card-content>
         <img
-          mat-card-xl-image
-          [src]="shap_beeswarm_plot"
+          [src]="buildImgURL(validationArtifacts?.confusion_matrix)"
+          alt="confusion_matrix"
+        />
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card
+      class="img-card"
+      *ngIf="validationArtifacts?.precision_recall_curve_plot"
+    >
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.precision_recall_curve' | transloco
+        }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        <img
+          [src]="buildImgURL(validationArtifacts?.precision_recall_curve_plot)"
+          alt="precision_recall_curve_plot"
+        />
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="img-card" *ngIf="validationArtifacts?.roc_curve_plot">
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.roc_curve' | transloco
+        }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        <img
+          [src]="buildImgURL(validationArtifacts?.roc_curve_plot)"
+          alt="roc_curve_plot"
+        />
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="img-card" *ngIf="validationArtifacts?.shap_beeswarm_plot">
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.shap_value' | transloco
+        }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        <img
+          [src]="buildImgURL(validationArtifacts?.shap_beeswarm_plot)"
           alt="shap_beeswarm_plot"
         />
-      </mat-card>
+      </mat-card-content>
+    </mat-card>
 
-      <mat-card class="img-card" *ngIf="shap_summary_plot">
-        <mat-card-header class="card-header">
-          <span class="card-head">Mean(Shap Value)</span>
-        </mat-card-header>
-        <mat-card-content style="padding: 4px">
-          <img
-            mat-card-xl-image
-            [src]="shap_summary_plot"
-            alt="shap_summary_plot"
-          />
-        </mat-card-content>
-      </mat-card>
+    <mat-card class="img-card" *ngIf="shap_summary_plot">
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.mean_shap_value)' | transloco
+        }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        <img [src]="shap_summary_plot" alt="shap_summary_plot" />
+      </mat-card-content>
+    </mat-card>
 
-      <mat-card class="img-card" *ngIf="shap_feature_importance_plot">
-        <mat-card-header class="card-header">
-          <span class="card-head">Shap Summary</span>
-        </mat-card-header>
-        <mat-card-content style="padding: 4px">
-          <img
-            mat-card-xl-image
-            [src]="shap_feature_importance_plot"
-            alt="shap_feature_importance_plot"
-          />
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </div>
-
-  <hr />
-  <div class="col-3">
+    <mat-card
+      class="img-card"
+      *ngIf="validationArtifacts?.shap_feature_importance_plot"
+    >
+      <mat-card-header class="card-header">
+        <span class="card-head">{{
+          'label.artifacts.shap_summary' | transloco
+        }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        <img
+          [src]="buildImgURL(validationArtifacts?.shap_feature_importance_plot)"
+          alt="shap_feature_importance_plot"
+        />
+      </mat-card-content>
+    </mat-card>
+  </mat-card-content>
+  <mat-card-footer class="page-footer">
     <button mat-flat-button color="primary" (click)="back()">
-      Back
+      {{ 'action.back' | transloco }}
       <mat-icon>keyboard_backspace</mat-icon>
     </button>
-  </div>
+  </mat-card-footer>
 </mat-card>

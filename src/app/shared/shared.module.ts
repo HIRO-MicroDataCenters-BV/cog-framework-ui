@@ -27,6 +27,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { DatePipe } from '@angular/common';
 import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
+import { TranslocoPipe } from '@jsverse/transloco';
 @NgModule({
   declarations: [
     AccordionAnchorDirective,
@@ -40,6 +41,7 @@ import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
     AppLottieComponent,
     MonacoEditorModule,
     DatePipe,
+    TranslocoPipe,
   ],
   exports: [
     AccordionAnchorDirective,
@@ -67,6 +69,7 @@ import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
     MonacoEditorModule,
     AppLottieComponent,
     DatePipe,
+    TranslocoPipe,
   ],
   providers: [MenuItems],
 })
