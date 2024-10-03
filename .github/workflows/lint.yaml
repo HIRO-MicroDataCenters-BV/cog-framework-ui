@@ -21,8 +21,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Install dependencies
-        run: corepack up
+        run: yarn install --immutable
 
       - name: Lint all files
         run: npm run lint
