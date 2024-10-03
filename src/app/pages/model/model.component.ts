@@ -21,6 +21,7 @@ import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoRootModule } from 'src/app/transloco-root.module';
 import { TranslocoService } from '@jsverse/transloco';
+import { AppSearcherComponent } from '../../components/app-searcher/app-searcher.component';
 
 const MODEL_DATA: Model[] = [];
 
@@ -49,6 +50,7 @@ interface Error {
     MatSelectModule,
     MatProgressSpinner,
     TranslocoRootModule,
+    AppSearcherComponent,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
