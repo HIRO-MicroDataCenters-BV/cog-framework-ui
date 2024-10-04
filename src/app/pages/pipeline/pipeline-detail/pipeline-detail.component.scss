@@ -1,0 +1,16 @@
+@use '@angular/material' as mat;
+@use '../../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../../assets/styles/variable.scss';
+
+.pipeline {
+  &-detail {
+    height: 100%;
+    .header {
+      &-toolbar {
+        width: 100%;
+      }
+    }
+  }
+}

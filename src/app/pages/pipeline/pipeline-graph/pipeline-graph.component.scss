@@ -1,0 +1,15 @@
+@use '@angular/material' as mat;
+@use '../../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../../assets/styles/variable.scss';
+
+.pipeline {
+  &-graph {
+    .viewport {
+      background-color: mat.get-theme-color(main.$theme, neutral, 40);
+      border-radius: $br-0;
+      overflow: hidden;
+    }
+  }
+}

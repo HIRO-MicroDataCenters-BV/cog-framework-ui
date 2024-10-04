@@ -1,0 +1,39 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+@import '../../../assets/styles/variable';
+
+.sidebar {
+  .menu-list {
+    padding-top: 64px;
+    .item {
+      transition: all 0.4s;
+      --mat-list-active-indicator-shape: 0;
+      --mdc-list-list-item-one-line-container-height: 57px;
+      margin-bottom: 17px;
+      padding-left: 54px;
+      padding-right: 40px;
+      text-transform: capitalize;
+      .mat-mdc-list-item {
+        &-title,
+        &-icon {
+          transition: all 0.4s;
+          color: mat.get-theme-color(main.$theme, neutral, 0);
+        }
+        &-title {
+          font-weight: 600;
+        }
+      }
+      &.active,
+      &:hover {
+        background-color: mat.get-theme-color(main.$theme, primary, 40);
+        .mat-mdc-list-item {
+          &-title,
+          &-icon {
+            color: mat.get-theme-color(main.$theme, neutral, 40);
+          }
+        }
+      }
+    }
+  }
+}

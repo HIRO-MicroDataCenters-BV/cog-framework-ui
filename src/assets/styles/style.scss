@@ -48,6 +48,11 @@ body {
 
 .mat {
   &-mdc {
+    &-button {
+      &-base.mdc-button {
+        text-transform: capitalize;
+      }
+    }
     &-card {
       &-header {
         margin-bottom: 8px;
@@ -120,4 +125,12 @@ h {
       justify-content: space-between;
     }
   }
+}
+
+::placeholder,
+mat-label,
+mat-card-title,
+mat-tooltip,
+th {
+  text-transform: capitalize;
 }

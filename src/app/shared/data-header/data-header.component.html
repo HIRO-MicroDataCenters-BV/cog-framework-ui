@@ -10,9 +10,9 @@
       <app-actions-bar [items]="actions" />
     </div>
   </mat-toolbar-row>
-  <mat-toolbar-row class="divider"></mat-toolbar-row>
-  <mat-toolbar-row class="row">
-    <div *ngIf="hasFilter" class="col-filters">
+  <mat-toolbar-row *ngIf="hasFilter" class="divider"></mat-toolbar-row>
+  <mat-toolbar-row *ngIf="hasFilter" class="row">
+    <div class="col-filters">
       <app-filters />
     </div>
   </mat-toolbar-row>

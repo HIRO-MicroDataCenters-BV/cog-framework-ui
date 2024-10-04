@@ -1,0 +1,38 @@
+.img-card {
+  max-width: 480px;
+  img {
+    max-width: 100%;
+  }
+  .card {
+    &-header {
+      font-weight: 600;
+    }
+  }
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.images {
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-column-gap: 16px;
+    grid-row-gap: 16px;
+    @media screen and (max-width: 960px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media screen and (max-width: 720px) {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+}
+
+.page {
+  &-footer {
+    padding: 16px;
+  }
+}

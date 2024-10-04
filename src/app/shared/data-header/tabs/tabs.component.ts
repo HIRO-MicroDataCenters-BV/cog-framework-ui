@@ -45,8 +45,18 @@ export class AppTabsComponent implements OnDestroy, AfterContentInit {
         this.cdr.detectChanges();
       });
     this.activeLink = this.router.url;
+
+    console.log('t', this.activeLink);
   }
   ngOnDestroy(): void {
     this.subscribe?.unsubscribe();
+  }
+
+  //TODO: MV TO UTIS
+  getRouteLinkStr(list: string[] | undefined): string {
+    if (list) {
+      return list.join('/');
+    }
+    return '';
   }
 }
