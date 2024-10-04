@@ -1,0 +1,20 @@
+<!-- ============================================================== -->
+<!-- sidebar -->
+<!-- ============================================================== -->
+<ng-container *transloco="let t">
+  <div class="sidebar">
+    <mat-nav-list appAccordion class="menu-list">
+      <a
+        appAccordionLink
+        mat-list-item
+        class="item"
+        *ngFor="let menuitem of menuItems.getMenuitem()"
+        routerLinkActive="active"
+        [routerLink]="['/', menuitem.state]"
+      >
+        <mat-icon matListItemIcon>{{ menuitem.icon }}</mat-icon>
+        <span matListItemTitle>{{ t(menuitem.name) }}</span>
+      </a>
+    </mat-nav-list>
+  </div>
+</ng-container>

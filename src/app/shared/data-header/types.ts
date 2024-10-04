@@ -1,6 +1,6 @@
 export interface ITabItem {
   label: string;
-  link?: string;
+  link?: string[];
   key?: string;
 }
 
