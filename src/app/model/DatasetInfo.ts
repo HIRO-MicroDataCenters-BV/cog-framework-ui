@@ -12,10 +12,7 @@ export interface DatasetById {
   success: boolean;
 }
 
-export type GetDatasetParams = {
-  id?: string;
-  name?: string;
-};
+export type GetDatasetParams = string;
 
 export interface Dataset {
   dataset_id: number;

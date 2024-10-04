@@ -116,8 +116,9 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  getDatasets(params: GetDatasetParams = {}): void {
+  getDatasets(params: GetDatasetParams = ''): void {
     this.loading = true;
+    console.log('a', params);
     const response = this.cogFrameworkApiService.getDataset(params);
     response.subscribe({
       next: (v) => {
@@ -133,11 +134,32 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // TODO: Remove after API update, like in models
+  searchByID(): void {
+    this.loading = true;
+    const response = this.cogFrameworkApiService.getDatasetById(this.datasetId);
+
+    response.subscribe({
+      next: (v) => {
+        const model = [];
+        model.push(v.data);
+        this.dataSource.data = model;
+      },
+      error: (e) => {
+        this.openSnackBar(e.error.message, 'Close');
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+
   search(): void {
     if (this.datasetId.length > 0) {
-      this.getDatasets({ id: this.datasetId });
+      this.searchByID();
     } else {
-      this.getDatasets({ name: this.datasetName });
+      this.getDatasets(this.datasetName);
     }
   }
 

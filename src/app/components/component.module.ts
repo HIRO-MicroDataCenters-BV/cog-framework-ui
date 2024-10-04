@@ -10,6 +10,7 @@ import { SharedModule } from '../shared/shared.module';
 import { LottieComponent } from 'ngx-lottie';
 import { AppLottieComponent } from './lottie/lottie.component';
 import { AppSidebarComponent } from './sidebar/sidebar.component';
+import { UploadDatasetComponent } from './dataset-upload/dataset-upload.component';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { AppSidebarComponent } from './sidebar/sidebar.component';
     LottieComponent,
     AppLottieComponent,
     AppSidebarComponent,
+    UploadDatasetComponent,
   ],
   providers: [],
   declarations: [],
