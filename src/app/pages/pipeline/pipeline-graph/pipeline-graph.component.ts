@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import * as d3 from 'd3';
 import { IRunDataGraph } from '../types';
 
 @Component({
