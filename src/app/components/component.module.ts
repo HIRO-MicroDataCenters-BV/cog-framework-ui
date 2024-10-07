@@ -11,6 +11,7 @@ import { LottieComponent } from 'ngx-lottie';
 import { AppLottieComponent } from './lottie/lottie.component';
 import { AppSidebarComponent } from './sidebar/sidebar.component';
 import { UploadDatasetComponent } from './dataset-upload/dataset-upload.component';
+import { AppGraphComponent } from './graph/graph.component';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { UploadDatasetComponent } from './dataset-upload/dataset-upload.componen
     AppLottieComponent,
     AppSidebarComponent,
     UploadDatasetComponent,
+    AppGraphComponent,
   ],
   providers: [],
   declarations: [],

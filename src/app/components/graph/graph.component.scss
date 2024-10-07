@@ -1,0 +1,66 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../assets/styles/variable.scss';
+
+::ng-deep .node {
+  background-color: mat.get-theme-color(main.$theme, neutral, 100);
+  border-radius: $br-0;
+  border: 1px solid mat.get-theme-color(main.$theme, neutral, 90);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+  height: 100%;
+
+  &-wrapper {
+    border-radius: $br-0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: auto $m-2;
+    height: 100%;
+  }
+  &-content {
+    padding: $p-0;
+    .name {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+  &-status {
+    border-left: 1px solid mat.get-theme-color(main.$theme, neutral, 90);
+    background-color: mat.get-theme-color(main.$theme, neutral, 98);
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: $p-004;
+    .icon {
+      color: mat.get-theme-color(main.$theme, neutral, 50);
+    }
+  }
+  &.is {
+    &-completed {
+      .node {
+        &-status {
+          background-color: mat.get-theme-color(main.$theme, primary, 99);
+          .icon {
+            color: mat.get-theme-color(main.$theme, primary, 50);
+          }
+        }
+      }
+    }
+    &-error {
+      .node {
+        &-status {
+          background-color: mat.get-theme-color(main.$theme, error, 98);
+          .icon {
+            color: mat.get-theme-color(main.$theme, error, 50);
+          }
+        }
+      }
+    }
+  }
+}
+
+::ng-deep .link {
+  stroke: mat.get-theme-color(main.$theme, neutral, 80);
+}
