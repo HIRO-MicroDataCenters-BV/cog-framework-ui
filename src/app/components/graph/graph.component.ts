@@ -72,7 +72,6 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
       .data(this.data)
       .nodeHeight(() => 100)
       .nodeContent((d, i, arr, state) => {
-        console.log(d, i, arr, state);
         const data: IRunDataGraph = d.data as IRunDataGraph;
         return `<div class="node is-${this.getStatus(data?.status)}">
         <div class="node-wrapper">
