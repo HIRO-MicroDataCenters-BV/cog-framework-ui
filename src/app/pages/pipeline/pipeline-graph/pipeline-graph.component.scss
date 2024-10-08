@@ -10,6 +10,7 @@
       background-color: mat.get-theme-color(main.$theme, neutral, 40);
       border-radius: $br-0;
       overflow: hidden;
+      display: block;
     }
   }
 }

@@ -64,7 +64,6 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
   }
 
   onOutletLoaded(component: PipelineRunOutputComponent): void {
-    console.log('a', this.data);
     if (this.data) {
       component.data = this.data;
     }
