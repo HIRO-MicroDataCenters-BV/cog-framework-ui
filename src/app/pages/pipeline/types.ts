@@ -47,3 +47,10 @@ export interface IPipelineStatusType {
   completed: boolean;
   icon?: string;
 }
+
+export interface IRunDataGraph {
+  id: string;
+  parentId: string | null;
+  name: string;
+  status: number;
+}

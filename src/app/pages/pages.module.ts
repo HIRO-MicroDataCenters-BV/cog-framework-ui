@@ -16,6 +16,7 @@ import { PipelineGraphComponent } from './pipeline/pipeline-graph/pipeline-graph
 import { AppPipelineRunComponent } from './pipeline/pipeline-run/pipeline-run.component';
 import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-detail.component';
 import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
+import { AppGraphComponent } from '../components/graph/graph.component';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipel
     RouterModule.forChild(MaterialRoutes),
     SharedModule,
     AppPipelineRunComponent,
+    AppGraphComponent,
   ],
   providers: [],
   declarations: [
