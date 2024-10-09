@@ -46,6 +46,7 @@ body {
   }
 }
 
+// mat-mdc
 .mat {
   &-mdc {
     &-button {
@@ -58,6 +59,38 @@ body {
         margin-bottom: 8px;
         .mat-mdc-card-title {
           font-size: 16px;
+        }
+      }
+    }
+    &-table {
+      tr {
+        td {
+          border-bottom-color: mat.get-theme-color(main.$theme, neutral, 90);
+        }
+        .mat {
+          &-column {
+            &-action {
+              mat {
+                &-icon {
+                  transition: 0.4s;
+                  opacity: 0.3;
+                }
+              }
+            }
+          }
+        }
+        &:hover {
+          .mat {
+            &-column {
+              &-action {
+                mat {
+                  &-icon {
+                    opacity: 1;
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
