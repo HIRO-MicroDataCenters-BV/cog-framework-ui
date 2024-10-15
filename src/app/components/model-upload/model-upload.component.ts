@@ -86,7 +86,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
   }
 
   handleFileInput(files: File[]) {
-    console.log('f', files);
     if (files) {
       this.files = files;
       return;
@@ -113,7 +112,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
       .uploadModel({
         files: this.files,
         // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
-        user_id: '0',
         model_id: this.modelId,
         model_file_type: this.modelType,
         model_file_description: this.modelDescription,

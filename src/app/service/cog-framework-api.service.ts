@@ -124,13 +124,11 @@ export class CogFrameworkApiService {
 
   uploadDataset({
     files,
-    user_id,
     name,
     type,
     description,
   }: {
     files: File[];
-    user_id: string;
     name: string;
     type: string;
     description: string;
@@ -139,7 +137,6 @@ export class CogFrameworkApiService {
     for (const file of files) {
       formData.append('files', file);
     }
-    formData.append('user_id', user_id);
     formData.append('dataset_name', name);
     formData.append('dataset_type', type);
     formData.append('description', description);
@@ -150,13 +147,11 @@ export class CogFrameworkApiService {
 
   uploadModel({
     files,
-    user_id,
     model_id,
     model_file_type,
     model_file_description,
   }: {
     files: File[];
-    user_id: string;
     model_id: string;
     model_file_type: string;
     model_file_description: string;
@@ -165,7 +160,6 @@ export class CogFrameworkApiService {
     for (const file of files) {
       formData.append('files', file);
     }
-    formData.append('user_id', user_id);
     formData.append('model_id', model_id);
     formData.append('file_type', model_file_type);
     formData.append('file_description', model_file_description);

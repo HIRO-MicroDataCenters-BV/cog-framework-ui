@@ -59,7 +59,6 @@ export class UploadDatasetComponent {
   ) {}
 
   handleFileInput(files: File[]) {
-    console.log('f', files);
     if (files) {
       this.files = files;
       return;
@@ -93,7 +92,6 @@ export class UploadDatasetComponent {
       .uploadDataset({
         files: this.files,
         // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
-        user_id: '0',
         name: this.datasetName,
         type: this.datasetType,
         description: this.datasetDescription,
