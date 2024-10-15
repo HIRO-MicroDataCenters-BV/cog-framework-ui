@@ -12,7 +12,7 @@
           label="Model file"
           (changeEvent)="handleFileInput($event)"
         ></app-file-input>
-        <ng-template [ngIf]="file">
+        <ng-template [ngIf]="files">
           <mat-form-field appearance="outline">
             <mat-label>Model File Description</mat-label>
             <input

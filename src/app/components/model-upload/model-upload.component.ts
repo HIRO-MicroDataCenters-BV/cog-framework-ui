@@ -56,7 +56,7 @@ import { MatOption, MatSelect } from '@angular/material/select';
 export class ModelUploadComponent implements OnInit, OnDestroy {
   @Output() modelUploadedEvent = new EventEmitter<ModelFileData>();
   destroy$ = new Subject<void>();
-  file: File | null = null;
+  files: File[] | null = null;
   modelId: string = '';
   modelDescription: string = '';
   modelType: ModelFileType = ModelFileTypeEnum.MODEL_POLICY_FILE;
@@ -85,12 +85,13 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     });
   }
 
-  handleFileInput(file: File) {
-    if (file) {
-      this.file = file;
+  handleFileInput(files: File[]) {
+    console.log('f', files);
+    if (files) {
+      this.files = files;
       return;
     }
-    this.file = null;
+    this.files = null;
     this.modelId = '';
     this.modelDescription = '';
     this.modelType = ModelFileTypeEnum.MODEL_POLICY_FILE;
@@ -98,7 +99,7 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
 
   uploadFile(): void {
     if (
-      !this.file ||
+      !this.files ||
       !this.modelId ||
       !this.modelDescription ||
       !this.modelType
@@ -107,9 +108,10 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+
     this.cogFrameworkApiService
       .uploadModel({
-        file: this.file,
+        files: this.files,
         // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
         user_id: '0',
         model_id: this.modelId,

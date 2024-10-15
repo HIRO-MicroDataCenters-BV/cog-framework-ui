@@ -45,7 +45,7 @@ import { MatOption, MatSelect } from '@angular/material/select';
   styleUrl: './dataset-upload.component.scss',
 })
 export class UploadDatasetComponent {
-  file: File | null = null;
+  files: File[] | null = null;
   datasetName: string = '';
   datasetDescription: string = '';
   datasetType: DatesetType = DatesetTypeEnum.TRAIN_DATA_SET_TYPE;
@@ -58,12 +58,13 @@ export class UploadDatasetComponent {
     private _snackBar: MatSnackBar,
   ) {}
 
-  handleFileInput(file: File) {
-    if (file) {
-      this.file = file;
+  handleFileInput(files: File[]) {
+    console.log('f', files);
+    if (files) {
+      this.files = files;
       return;
     }
-    this.file = null;
+    this.files = null;
     this.datasetName = '';
     this.datasetDescription = '';
     this.datasetType = DatesetTypeEnum.TRAIN_DATA_SET_TYPE;
@@ -79,7 +80,7 @@ export class UploadDatasetComponent {
 
   uploadFile(): void {
     if (
-      !this.file ||
+      !this.files ||
       !this.datasetName ||
       !this.datasetDescription ||
       !this.datasetType
@@ -87,9 +88,10 @@ export class UploadDatasetComponent {
       return;
     }
     this.loading = true;
+
     this.cogFrameworkApiService
       .uploadDataset({
-        file: this.file,
+        files: this.files,
         // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
         user_id: '0',
         name: this.datasetName,
