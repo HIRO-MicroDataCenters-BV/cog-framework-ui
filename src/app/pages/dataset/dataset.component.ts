@@ -77,7 +77,6 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    console.log('th', this.paginator);
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
     }
