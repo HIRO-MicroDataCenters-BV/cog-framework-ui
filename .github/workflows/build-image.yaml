@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || 'dev' }}
 
     steps:
       - name: Checkout code
@@ -33,10 +37,13 @@ jobs:
         with:
           platforms: linux/amd64, linux/arm64
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.IMAGE_TAG }}
   restart-pods:
     needs: [build]
     runs-on: ubuntu-latest
+
+    env:
+      DEPLOYMENT_NAME: ${{ github.ref == 'refs/heads/main' && 'cog-ui' || 'cog-ui-dev' }}
 
     steps:
       # Configure AWS credentials for kubectl
@@ -62,5 +69,5 @@ jobs:
       # Restart Kubernetes Pods to pull the latest image
       - name: Restart Deployment Pods
         run: |
-          kubectl rollout restart deployment/cog-ui -n adminh # Updated with your deployment name 
-          kubectl rollout status deployment/cog-ui -n adminh  # Monitor the rollout status
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }} -n adminh # Updated with your deployment name 
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} -n adminh  # Monitor the rollout status
