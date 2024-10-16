@@ -7,6 +7,8 @@
   justify-content: center;
   align-items: center;
   --mdc-outlined-text-field-container-shape: 1px;
+  --mat-form-field-container-height: 40px;
+  --mat-form-field-container-vertical-padding: 8px;
 
   &__selector-container {
     .mat-form-field-outline {
