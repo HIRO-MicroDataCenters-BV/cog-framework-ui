@@ -110,7 +110,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
     this.page = i + 1;
     this.limit = params?.pageSize ?? this.limit;
     this.loading = true;
-    params.limit = this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
     params.page = this.page;
     const response = this.cogFrameworkApiService.getModel(params);
     response.subscribe({
