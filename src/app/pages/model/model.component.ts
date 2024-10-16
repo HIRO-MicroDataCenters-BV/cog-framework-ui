@@ -65,6 +65,9 @@ export class ModelComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Model>(MODEL_DATA);
   modelName = '';
   modelId = '';
+  limit = 5;
+  page = 1;
+  total = 0;
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
@@ -96,18 +99,29 @@ export class ModelComponent implements OnInit, AfterViewInit {
   open(item: Model): void {
     this.router
       .navigate(['/model-detail'], { queryParams: { id: item.id } })
-      .then((r) => {
-        console.log(r);
+      .then(() => {
         console.log('redirected to other component');
       });
   }
 
   getModels(params: GetModelParams = {}): void {
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
     this.loading = true;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
     const response = this.cogFrameworkApiService.getModel(params);
     response.subscribe({
-      next: (v) => {
-        this.dataSource.data = v.data;
+      next: (res) => {
+        if (res) {
+          const pagination = res.pagination;
+          this.total = pagination.total_items;
+          this.page = pagination.page;
+          this.limit = pagination.limit;
+          this.dataSource.data = res.data;
+        }
       },
       error: (e) => {
         this.getError(e.error);
