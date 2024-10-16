@@ -22,19 +22,19 @@ export class FileInputComponent {
   @Input() disabled: boolean = false;
   @Input() accept: string = '';
   @Input() label: string = '';
-  @Output() changeEvent = new EventEmitter<File>();
+  @Output() changeEvent = new EventEmitter<File[]>();
 
   @ViewChild('fileInput') fileInput!: ElementRef;
-  file: File | null = null;
+  files: File[] | null = null;
 
   constructor() {}
 
   get displayedValue(): string {
-    return this.file ? this.file.name : '';
+    return this.files ? this.files[0].name : '';
   }
 
   get icon(): string {
-    return this.file ? 'close' : 'upload_file';
+    return this.files ? 'close' : 'upload_file';
   }
 
   onClickToUploadFile(): void {
@@ -44,16 +44,16 @@ export class FileInputComponent {
   onUploadFile(): void {
     const files = this.fileInput.nativeElement.files;
     if (files && files.length > 0) {
-      this.file = files[0];
-      this.changeEvent.emit(this.file!);
+      this.files = files;
+      this.changeEvent.emit(this.files!);
     }
   }
 
   handleIconClick(): void {
-    if (this.file) {
-      this.file = null;
+    if (this.files) {
+      this.files = null;
       this.fileInput.nativeElement.value = '';
-      this.changeEvent.emit(this.file!);
+      this.changeEvent.emit(this.files!);
     } else {
       this.onClickToUploadFile();
     }

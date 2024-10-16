@@ -1,8 +1,9 @@
+import { Pagination } from './General';
+
 export interface ModelInfo {
   data: Model[];
-  errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
-  success: boolean;
+  pagination: Pagination;
 }
 
 export interface Model {
@@ -20,4 +21,7 @@ export interface Model {
 export type GetModelParams = {
   id?: string;
   name?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
 };

@@ -22,6 +22,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmation/dataset-delete-confirmation.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslocoModule } from '@jsverse/transloco';
 
 const ELEMENT_DATA: DataSetData[] = [];
 
@@ -42,6 +43,7 @@ const ELEMENT_DATA: DataSetData[] = [];
     NgIf,
     UploadDatasetComponent,
     MatPaginatorModule,
+    TranslocoModule,
   ],
   templateUrl: './dataset.component.html',
   styleUrl: './dataset.component.scss',
