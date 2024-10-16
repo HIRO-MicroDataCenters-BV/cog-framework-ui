@@ -1,5 +1,16 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+
 .app-searcher {
   display: flex;
   justify-content: center;
   align-items: center;
+  --mdc-outlined-text-field-container-shape: 1px;
+
+  &__selector-container {
+    .mat-form-field-outline {
+      border-radius: 0;
+    }
+  }
 }
