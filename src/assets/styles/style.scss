@@ -49,6 +49,26 @@ body {
 // mat-mdc
 .mat {
   &-mdc {
+    &-dialog {
+      &-container {
+        .mat-mdc-dialog-surface {
+          border-radius: $br-0;
+          padding: $p-0;
+          .mat {
+            &-mdc {
+              &-card {
+                @include mat.elevation(0);
+                &-actions {
+                  gap: $m-004;
+                  margin-top: $m-0;
+                  justify-content: flex-end;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     &-button {
       &-base.mdc-button {
         text-transform: capitalize;

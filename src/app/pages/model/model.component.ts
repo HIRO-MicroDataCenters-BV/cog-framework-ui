@@ -175,7 +175,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
   modelServe(model: Model): void {
     const dialogRef = this.dialog.open(ModelServeComponent, {
       data: model,
-      minWidth: '25%',
     });
 
     dialogRef.afterClosed().subscribe((result) => {
