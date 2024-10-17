@@ -35,3 +35,8 @@ export interface Pipeline {
   description: string;
   created_at: string;
 }
+
+export type GetValidationMetricsParams = {
+  model_id?: string;
+  model_name?: string;
+};

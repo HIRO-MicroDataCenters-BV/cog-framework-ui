@@ -1,16 +1,16 @@
-<div class="dialog-container">
-  <p><span class="dialog-heading">Confirm Delete Dataset ? </span><b> </b></p>
+<mat-card>
+  <mat-card-header>Confirm Delete Dataset?</mat-card-header>
+  <mat-card-content>
+    <p class="table-text">{{ dataSetData.dataset_name }}</p>
 
-  <hr />
-  <span class="table-text"> {{ dataSetData.dataset_name }}</span>
-  <hr />
-  <span class="text-danger note"
-    >Note: it will delete all <strong>datasets</strong>
-  </span>
-  <div align="end" class="pt-3" mat-dialog-actions>
-    <button (click)="deleteModel()" color="warn" mat-button mat-flat-button>
+    <p class="text-danger note">
+      Note: it will delete all <strong>datasets</strong>
+    </p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button (click)="deleteDataset()" color="warn" mat-button mat-flat-button>
       Ok
     </button>
     <button (click)="closeDialog()" mat-button>Cancel</button>
-  </div>
-</div>
+  </mat-card-actions>
+</mat-card>

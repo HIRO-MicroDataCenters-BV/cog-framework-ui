@@ -1,65 +1,73 @@
-<div class="row">
-  <div class="col-12">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title class="dataset-upload__header">
-          Upload Dataset
-        </mat-card-title>
-      </mat-card-header>
+<ng-container *transloco="let t">
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title class="dataset-upload__header">
+            {{ t('title.upload_', { name }) }}
+          </mat-card-title>
+        </mat-card-header>
 
-      <mat-card-content>
-        <form class="dataset-upload__form">
-          <app-file-input
-            label="Dataset file"
-            (changeEvent)="handleFileInput($event)"
-          ></app-file-input>
-          <ng-template [ngIf]="files">
-            <mat-form-field appearance="outline">
-              <mat-label>Dataset Name</mat-label>
-              <input
-                matInput
-                [(ngModel)]="datasetName"
-                [ngModelOptions]="{ standalone: true }"
-                type="text"
-              />
-              <mat-hint align="start">Insert Dataset name</mat-hint>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Dataset Description</mat-label>
-              <input
-                matInput
-                [(ngModel)]="datasetDescription"
-                [ngModelOptions]="{ standalone: true }"
-                type="text"
-              />
-              <mat-hint align="start">Insert Dataset description</mat-hint>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Dataset Type</mat-label>
-              <mat-select
-                [(ngModel)]="datasetType"
-                [ngModelOptions]="{ standalone: true }"
-                type="number"
-                placeholder="Dataset Type"
-              >
-                <mat-option
-                  *ngFor="let item of DatesetTypeWithLabels | keyvalue"
-                  [value]="item.key"
+        <mat-card-content>
+          <form class="dataset-upload__form">
+            <app-file-input
+              label="Dataset file"
+              (changeEvent)="handleFileInput($event)"
+            ></app-file-input>
+            <ng-template [ngIf]="files">
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('label._name', { name }) }}</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="datasetName"
+                  [ngModelOptions]="{ standalone: true }"
+                  type="text"
+                />
+                <mat-hint align="start">{{
+                  t('hint.insert_dataset_name')
+                }}</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('label.description') }}</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="datasetDescription"
+                  [ngModelOptions]="{ standalone: true }"
+                  type="text"
+                />
+                <mat-hint align="start">{{
+                  t('hint.insert_dataset_description')
+                }}</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('label.type') }}</mat-label>
+                <mat-select
+                  [(ngModel)]="datasetType"
+                  [ngModelOptions]="{ standalone: true }"
+                  type="number"
+                  placeholder="Dataset Type"
                 >
-                  {{ item.value }}
-                </mat-option>
-              </mat-select>
-              <mat-hint align="start">Select Dataset type</mat-hint>
-            </mat-form-field>
-            <div class="col-1 dataset-upload__button-wrapper">
-              <button mat-flat-button (click)="uploadFile()">
-                <span>Upload</span>
-              </button>
-            </div>
-          </ng-template>
-        </form>
-        <mat-progress-bar mode="indeterminate" color="warn" *ngIf="loading" />
-      </mat-card-content>
-    </mat-card>
+                  <mat-option
+                    *ngFor="let item of DatesetTypeWithLabels | keyvalue"
+                    [value]="item.key"
+                  >
+                    {{ item.value }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint align="start">{{
+                  t('hint.select_dataset_type')
+                }}</mat-hint>
+              </mat-form-field>
+              <div class="col-1 dataset-upload__button-wrapper">
+                <button mat-flat-button (click)="uploadFile()">
+                  <span>{{ t('action.upload') }}</span>
+                </button>
+              </div>
+            </ng-template>
+          </form>
+          <mat-progress-bar mode="indeterminate" color="warn" *ngIf="loading" />
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
-</div>
+</ng-container>

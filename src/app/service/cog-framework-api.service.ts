@@ -12,8 +12,14 @@ import {
 } from '../model/DatasetInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
-import { ValidationArtifactsResponse } from '../model/ValidationArtifacts';
-import { ValidationMetricsResponse } from '../model/ValidationMetrics';
+import {
+  GetValidationArtifactsParams,
+  ValidationArtifactsResponse,
+} from '../model/ValidationArtifacts';
+import {
+  GetValidationMetricsParams,
+  ValidationMetricsResponse,
+} from '../model/ValidationMetrics';
 import { DeleteResponse } from '../model/DeleteResponse';
 import { PipelineResponse } from '../model/PipeLine';
 import { ModelServe } from '../model/ModelServe';
@@ -75,39 +81,24 @@ export class CogFrameworkApiService {
     });
   }
 
-  getModelValidationArtifactById(
-    modelId: string,
+  getModelValidationArtifacts(
+    params: GetValidationArtifactsParams = {},
   ): Observable<ValidationArtifactsResponse> {
     return this.httpClient.get<ValidationArtifactsResponse>(
-      `${this.baseURL}/validation/artifact/model_id/${modelId}`,
+      `${this.baseURL}/validation/artifacts`,
+      { params },
     );
   }
 
-  getModelValidationArtifactByName(
-    modelName: string,
-  ): Observable<ValidationArtifactsResponse> {
-    return this.httpClient.get<ValidationArtifactsResponse>(
-      `${this.baseURL}/validation/artifact/model_name/${modelName}`,
-    );
-  }
-
-  getModelValidationMetricsById(
-    modelId: string,
+  getModelValidationMetrics(
+    params: GetValidationMetricsParams = {},
   ): Observable<ValidationMetricsResponse> {
     return this.httpClient.get<ValidationMetricsResponse>(
-      `${this.baseURL}/validation/metrics/model_id/${modelId}`,
+      `${this.baseURL}/validation/metrics`,
+      { params },
     );
   }
 
-  getModelValidationMetricsByName(
-    modelName: string,
-  ): Observable<ValidationMetricsResponse> {
-    return this.httpClient.get<ValidationMetricsResponse>(
-      `${this.baseURL}/validation/metrics/model_name/${modelName}`,
-    );
-  }
-
-  //s3://mlflow/per_class_metrics.csv
   getModelValidationCSV(csvFile: string): Observable<string> {
     return this.httpClient.get<string>(
       `${this.baseURL}/s3/get_image?url=${csvFile}`,
