@@ -9,12 +9,7 @@
       "runs": "runs"
     }
   },
-  "hint": {
-    "_serve": "{{name}} serve",
-    "open": "open",
-    "delete": "delete",
-    "select_page_of_": "Select page of models {{name}}"
-  },
+
   "text": {
     "or": "or"
   },
@@ -26,7 +21,8 @@
   "action": {
     "search": "search",
     "close": "close",
-    "back": "back"
+    "back": "back",
+    "upload": "upload"
   },
   "label": {
     "id": "id",
@@ -37,6 +33,8 @@
     "creationTime": "creation time",
     "author": "author",
     "action": "action",
+    "type": "type",
+
     "artifacts": {
       "shap_summary": "shap summary",
       "mean_shap_value": "mean(shap value)",
@@ -46,10 +44,20 @@
       "normalised_confusion_matrix": "normalised confusion matrix"
     }
   },
+  "hint": {
+    "_serve": "{{name}} serve",
+    "open": "open",
+    "delete": "delete",
+    "select_page_of_": "Select page of models {{name}}",
+    "insert_dataset_name": "insert dataset name",
+    "insert_dataset_description": "insert dataset description",
+    "select_dataset_type": "select dataset type"
+  },
   "title": {
     "search_": "search {{name}}s",
     "_search_result_list": "{{name}} search result list",
     "model_validation_artifacts": "model validation artifacts",
-    "model_validation_file": "model validation file"
+    "model_validation_file": "model validation file",
+    "upload_": "upload {{name}}"
   }
 }

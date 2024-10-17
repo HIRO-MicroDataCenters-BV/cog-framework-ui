@@ -20,7 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
 
 const MODEL_DATA: Model[] = [];
 
@@ -194,6 +194,9 @@ export class ModelComponent implements OnInit, AfterViewInit {
             );
           },
           error: (e) => {
+            if (e.status === RESPONSE_CODE.NOT_FOUND) {
+              this.dataSource.data = [];
+            }
             this.getError(e.error.errors[0]);
             result.model.isDeployed = false;
           },
