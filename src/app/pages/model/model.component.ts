@@ -90,6 +90,12 @@ export class ModelComponent implements OnInit, AfterViewInit {
       if (params['id']) {
         this.modelId = params['id'];
       }
+      if (params['limit']) {
+        this.limit = params['limit'];
+      }
+      if (params['page']) {
+        this.page = params['page'];
+      }
       this.getModels({ ...params });
     });
   }
@@ -117,12 +123,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
 
   getModels(params: GetModelParams = {}): void {
     this.loading = true;
-
-    const i = (this.paginator?.pageIndex as number) ?? 0;
-    this.page = i + 1;
-    this.limit = params?.pageSize ?? this.limit;
-    params.limit = this.paginator?.pageSize ?? this.limit;
-    params.page = this.page;
     const response = this.cogFrameworkApiService.getModel(params);
     response.subscribe({
       next: (res) => {
@@ -149,6 +149,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
     if (this.modelId.length > 0) {
       params = { id: this.modelId };
     }
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
