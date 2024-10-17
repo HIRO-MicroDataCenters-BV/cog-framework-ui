@@ -191,7 +191,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge',
+      queryParamsHandling: 'replace',
     });
   }
 

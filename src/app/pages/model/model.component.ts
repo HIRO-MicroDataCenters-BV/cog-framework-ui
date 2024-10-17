@@ -135,6 +135,9 @@ export class ModelComponent implements OnInit, AfterViewInit {
         }
       },
       error: (e) => {
+        if (e.status === RESPONSE_CODE.NOT_FOUND) {
+          this.dataSource.data = [];
+        }
         this.getError(e.error);
         this.loading = false;
       },
@@ -157,7 +160,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge',
+      queryParamsHandling: 'replace',
     });
   }
 
@@ -193,9 +196,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
             );
           },
           error: (e) => {
-            if (e.status === RESPONSE_CODE.NOT_FOUND) {
-              this.dataSource.data = [];
-            }
             this.getError(e.error.errors[0]);
             result.model.isDeployed = false;
           },
