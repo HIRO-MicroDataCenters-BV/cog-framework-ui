@@ -158,7 +158,6 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     if (this.datasetId.length > 0) {
       params = { id: this.datasetId };
     }
-    this.getDatasets(params);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,

@@ -149,7 +149,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
     if (this.modelId.length > 0) {
       params = { id: this.modelId };
     }
-    this.getModels(params);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
