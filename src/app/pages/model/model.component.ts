@@ -116,7 +116,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
   }
 
   getModels(params: GetModelParams = {}): void {
-    console.log('p', params, this.limit);
     this.loading = true;
 
     const i = (this.paginator?.pageIndex as number) ?? 0;
