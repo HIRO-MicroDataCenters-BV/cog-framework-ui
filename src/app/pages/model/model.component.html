@@ -137,7 +137,7 @@
         </ng-template>
       </table>
       <mat-paginator
-        [pageSizeOptions]="[5, 10, 20]"
+        [pageSizeOptions]="pageSizeOptions"
         [length]="total"
         [pageSize]="limit"
         (page)="search()"

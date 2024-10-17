@@ -15,7 +15,7 @@ import {
   DataSetData,
   GetDatasetParams,
 } from '../../model/DatasetInfo';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { UploadDatasetComponent } from '../../components/dataset-upload/dataset-upload.component';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -23,6 +23,7 @@ import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmatio
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule } from '@jsverse/transloco';
+import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
 
 const ELEMENT_DATA: DataSetData[] = [];
 
@@ -57,10 +58,13 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     'author',
     'action',
   ];
-
+  pageSizeOptions = PAGE_SIZE_OPTIONS;
   dataSource = new MatTableDataSource<DataSetData>(ELEMENT_DATA);
   datasetName = '';
   datasetId = '';
+  limit = this.pageSizeOptions[0];
+  page = 1;
+  total = 0;
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
@@ -69,11 +73,19 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.getDatasets();
-    return;
+    this.route.queryParams.subscribe((params) => {
+      if (params['name']) {
+        this.datasetName = params['name'];
+      }
+      if (params['id']) {
+        this.datasetId = params['id'];
+      }
+      this.getDatasets({ ...params });
+    });
   }
 
   ngAfterViewInit() {
@@ -120,6 +132,12 @@ export class DatasetComponent implements OnInit, AfterViewInit {
 
   getDatasets(params: GetDatasetParams = {}): void {
     this.loading = true;
+
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
     const response = this.cogFrameworkApiService.getDataset(params);
     response.subscribe({
       next: (v) => {
@@ -136,11 +154,16 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   }
 
   search(): void {
+    let params: GetDatasetParams = { name: this.datasetName };
     if (this.datasetId.length > 0) {
-      this.getDatasets({ id: this.datasetId });
-    } else {
-      this.getDatasets({ name: this.datasetName });
+      params = { id: this.datasetId };
     }
+    this.getDatasets(params);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge',
+    });
   }
 
   private deleteDataSetFromTable(id: number): void {
