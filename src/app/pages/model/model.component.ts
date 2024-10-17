@@ -11,7 +11,7 @@ import { CogFrameworkApiService } from '../../service/cog-framework-api.service'
 import { GetModelParams, Model } from 'src/app/model/ModelInfo';
 import { DatePipe, NgIf } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/model-delete-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
+import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
 
 const MODEL_DATA: Model[] = [];
 
@@ -62,10 +63,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
     'author',
     'action',
   ];
+  pageSizeOptions = PAGE_SIZE_OPTIONS;
   dataSource = new MatTableDataSource<Model>(MODEL_DATA);
   modelName = '';
   modelId = '';
-  limit = 5;
+  limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
 
@@ -77,10 +79,19 @@ export class ModelComponent implements OnInit, AfterViewInit {
     private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.getModels();
+    this.route.queryParams.subscribe((params) => {
+      if (params['name']) {
+        this.modelName = params['name'];
+      }
+      if (params['id']) {
+        this.modelId = params['id'];
+      }
+      this.getModels({ ...params });
+    });
   }
 
   ngAfterViewInit() {
@@ -105,11 +116,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
   }
 
   getModels(params: GetModelParams = {}): void {
-    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.loading = true;
 
+    const i = (this.paginator?.pageIndex as number) ?? 0;
     this.page = i + 1;
     this.limit = params?.pageSize ?? this.limit;
-    this.loading = true;
     params.limit = this.paginator?.pageSize ?? this.limit;
     params.page = this.page;
     const response = this.cogFrameworkApiService.getModel(params);
@@ -134,11 +145,16 @@ export class ModelComponent implements OnInit, AfterViewInit {
   }
 
   search(): void {
+    let params: GetModelParams = { name: this.modelName };
     if (this.modelId.length > 0) {
-      this.getModels({ id: this.modelId });
-    } else {
-      this.getModels({ name: this.modelName });
+      params = { id: this.modelId };
     }
+    this.getModels(params);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge',
+    });
   }
 
   openModelDialog(model: Model): void {

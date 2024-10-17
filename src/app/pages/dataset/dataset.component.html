@@ -127,7 +127,10 @@
       >
     </table>
     <mat-paginator
-      [pageSizeOptions]="[5, 10, 20]"
+      [pageSizeOptions]="pageSizeOptions"
+      [length]="total"
+      [pageSize]="limit"
+      (page)="search()"
       showFirstLastButtons
       aria-label="Select page of dataset elements"
     >
