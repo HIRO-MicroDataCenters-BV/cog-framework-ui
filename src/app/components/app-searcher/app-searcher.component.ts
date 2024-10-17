@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { MatOption } from '@angular/material/autocomplete';
-import { MatFormField, MatSelect } from '@angular/material/select';
+import { MatFormField, MatPrefix, MatSelect } from '@angular/material/select';
 import { MatInput } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
 
 export type SearcherOption = {
   key: string;
@@ -30,6 +31,8 @@ type SearcherEvent = {
     MatInput,
     ReactiveFormsModule,
     FormsModule,
+    MatIcon,
+    MatPrefix,
   ],
 })
 export class AppSearcherComponent {

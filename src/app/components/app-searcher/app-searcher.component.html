@@ -1,12 +1,15 @@
 <div class="app-searcher">
   <mat-form-field appearance="outline" class="app-searcher__selector-container">
+    <mat-icon class="app-searcher__selector-icon" matPrefix>
+      filter_alt
+    </mat-icon>
     <mat-select [(value)]="key" class="app-searcher__selector">
       @for (option of options; track option) {
         <mat-option [value]="option.key">{{ option.label }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
-  <mat-form-field appearance="outline" class="app-searcher__input">
+  <mat-form-field appearance="outline" class="app-searcher__input-container">
     <input (input)="search()" [(ngModel)]="query" matInput type="text" />
   </mat-form-field>
 </div>
