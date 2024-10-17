@@ -1,13 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 
 import {
+  GetValidationArtifactsParams,
   ValidationArtifactsData,
   ValidationArtifactsResponse,
 } from '../../model/ValidationArtifacts';
-import { ValidationMetricsData } from '../../model/ValidationMetrics';
-import { Router } from '@angular/router';
+import {
+  GetValidationMetricsParams,
+  ValidationMetricsData,
+} from '../../model/ValidationMetrics';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
+import { RESPONSE_CODE } from 'src/app/consts';
 
 interface ValidationMetricTableData {
   registered_date_time: string;
@@ -39,7 +44,7 @@ interface ModelValidationTableModel {
   templateUrl: './model-validation-search.component.html',
   styleUrls: ['./model-validation-search.component.scss'],
 })
-export class ModelValidationSearchComponent {
+export class ModelValidationSearchComponent implements OnInit {
   modelValidationName = '';
   modelValidationId = '';
 
@@ -77,9 +82,23 @@ export class ModelValidationSearchComponent {
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
     private modelValidationService: ModelValidationService,
+    private route: ActivatedRoute,
   ) {
     // TODO: I'm not sure what this is supposed to do, maybe it will work after api update
     // this.search();
+  }
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params['model_name']) {
+        this.modelValidationName = params['model_name'];
+      }
+      if (params['model_id']) {
+        this.modelValidationId = params['model_id'];
+      }
+      this.getModelValidationArtifacts({ ...params });
+      this.getModeValidationMetrics({ ...params });
+    });
   }
 
   open(item: ValidationArtifactsData): void {
@@ -98,6 +117,21 @@ export class ModelValidationSearchComponent {
   }
 
   search(): void {
+    let params: GetValidationArtifactsParams = {
+      model_name: this.modelValidationName,
+    };
+    if (this.modelValidationId.length > 0) {
+      params = { model_id: this.modelValidationId };
+    }
+    /*
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
+    */
+    /*
     if (this.modelValidationId.length > 0) {
       console.log('Search by ID');
       this.getModelValidationArtifactByID();
@@ -107,8 +141,66 @@ export class ModelValidationSearchComponent {
       this.getModelValidationArtifactByName();
       this.getModeValidationMetricsByName();
     }
+      */
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'replace',
+    });
   }
+  getModelValidationArtifacts(params: GetValidationArtifactsParams = {}): void {
+    this.loading = true;
+    const response =
+      this.cogFrameworkApiService.getModelValidationArtifacts(params);
 
+    response.subscribe({
+      next: (res) => {
+        this.validationArtifactsResponse = res;
+        this.modelValidationTableDataSource = [];
+        res.data.forEach((data) => {
+          const dd: ModelValidationTableModel = {
+            id: data.id,
+            dataset_id: data.dataset_id,
+            model_id: data.model_id,
+          };
+          this.modelValidationTableDataSource.push(dd);
+        });
+      },
+      error: (e) => {
+        console.error(e);
+        if (e.status === RESPONSE_CODE.NOT_FOUND) {
+          this.modelValidationTableDataSource = [];
+        }
+        this.loading = false;
+      },
+      complete: () => {
+        console.info('complete');
+        this.loading = false;
+      },
+    });
+  }
+  getModeValidationMetrics(params: GetValidationMetricsParams): void {
+    const response =
+      this.cogFrameworkApiService.getModelValidationMetrics(params);
+
+    response.subscribe({
+      next: (v) => {
+        this.validationMetricsData = v.data[0];
+        this.buildModelValidationMetrics(v.data);
+      },
+      error: (e) => {
+        console.error(e);
+        if (e.status === RESPONSE_CODE.NOT_FOUND) {
+          this.modelValidationMetricTableDataSource = [];
+        }
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
+  }
+  /*
   getModelValidationArtifactByID(): void {
     this.loading = true;
     const response = this.cogFrameworkApiService.getModelValidationArtifactById(
@@ -207,6 +299,7 @@ export class ModelValidationSearchComponent {
       },
     });
   }
+  */
 
   buildModelValidationMetrics(
     validationMetricsData: ValidationMetricsData[],

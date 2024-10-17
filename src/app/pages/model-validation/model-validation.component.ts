@@ -108,17 +108,18 @@ export class ModelValidationComponent {
 
   getModelValidationArtifactByName(): void {
     this.loading = true;
-    const response =
-      this.cogFrameworkApiService.getModelValidationArtifactByName(
-        this.modelValidationName,
-      );
+    const response = this.cogFrameworkApiService.getModelValidationArtifacts({
+      model_name: this.modelValidationName,
+    });
 
     response.subscribe({
       next: (v) => {
         this.validationArtifactsResponse = v;
         this.validationArtifactsData = v.data[0];
         console.log(this.validationArtifactsResponse);
-        this.buildImgURL(this.validationArtifactsData);
+        if (this.validationArtifactsData) {
+          this.buildImgURL(this.validationArtifactsData);
+        }
       },
       error: (e) => {
         console.error(e);
@@ -131,9 +132,9 @@ export class ModelValidationComponent {
 
   getModelValidationArtifactByID(): void {
     this.loading = true;
-    const response = this.cogFrameworkApiService.getModelValidationArtifactById(
-      this.modelValidationId,
-    );
+    const response = this.cogFrameworkApiService.getModelValidationArtifacts({
+      model_id: this.modelValidationId,
+    });
 
     response.subscribe({
       next: (v) => {
@@ -151,9 +152,9 @@ export class ModelValidationComponent {
   }
 
   getModeValidationMetricsById(): void {
-    const response = this.cogFrameworkApiService.getModelValidationMetricsById(
-      this.modelValidationId,
-    );
+    const response = this.cogFrameworkApiService.getModelValidationMetrics({
+      model_id: this.modelValidationId,
+    });
 
     response.subscribe({
       next: (v) => {
@@ -170,10 +171,9 @@ export class ModelValidationComponent {
   }
 
   getModeValidationMetricsByName(): void {
-    const response =
-      this.cogFrameworkApiService.getModelValidationMetricsByName(
-        this.modelValidationName,
-      );
+    const response = this.cogFrameworkApiService.getModelValidationMetrics({
+      model_name: this.modelValidationName,
+    });
 
     response.subscribe({
       next: (v) => {
@@ -296,8 +296,10 @@ export class ModelValidationComponent {
     this.shap_summary_plot =
       this.baseURL +
       validationArtifactsData.validation_artifacts.shap_summary_plot;
-    this.modeValidationCsv(
-      validationArtifactsData.validation_artifacts.per_class_metrics,
-    );
+    if (validationArtifactsData.validation_artifacts.per_class_metrics) {
+      this.modeValidationCsv(
+        validationArtifactsData.validation_artifacts.per_class_metrics,
+      );
+    }
   }
 }
