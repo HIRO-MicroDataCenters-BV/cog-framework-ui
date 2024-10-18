@@ -19,6 +19,7 @@ import {
 } from '../../model/DatasetInfo';
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-upload-dataset',
@@ -40,11 +41,13 @@ import { MatOption, MatSelect } from '@angular/material/select';
     KeyValuePipe,
     MatOption,
     NgForOf,
+    TranslocoModule,
   ],
   templateUrl: './dataset-upload.component.html',
   styleUrl: './dataset-upload.component.scss',
 })
 export class UploadDatasetComponent {
+  name: string = 'dataset';
   files: File[] | null = null;
   datasetName: string = '';
   datasetDescription: string = '';

@@ -22,10 +22,16 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmation/dataset-delete-confirmation.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslocoModule } from '@jsverse/transloco';
-import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
 
 const ELEMENT_DATA: DataSetData[] = [];
+
+interface Error {
+  detail?: string;
+  message?: string;
+  error_message?: string;
+}
 
 @Component({
   selector: 'app-dataset',
@@ -50,6 +56,7 @@ const ELEMENT_DATA: DataSetData[] = [];
   styleUrl: './dataset.component.scss',
 })
 export class DatasetComponent implements OnInit, AfterViewInit {
+  name = 'dataset';
   loading = false;
   displayedColumns: string[] = [
     'id',
@@ -74,6 +81,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
+    private translocoService: TranslocoService,
   ) {}
 
   ngOnInit(): void {
@@ -84,6 +92,12 @@ export class DatasetComponent implements OnInit, AfterViewInit {
       if (params['id']) {
         this.datasetId = params['id'];
       }
+      if (params['limit']) {
+        this.limit = params['limit'];
+      }
+      if (params['page']) {
+        this.page = params['page'];
+      }
       this.getDatasets({ ...params });
     });
   }
@@ -91,6 +105,13 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
+    }
+  }
+
+  getError(error: Error): void {
+    const msg = error?.message ?? error?.detail ?? error?.error_message;
+    if (msg) {
+      this.openSnackBar(msg, this.translocoService.translate('action.close'));
     }
   }
 
@@ -118,7 +139,12 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     const response = this.cogFrameworkApiService.deleteDataSetDetailById(id);
     response.subscribe({
       next: () => {
-        this.openSnackBar('DataSet deleted', 'Close');
+        this.openSnackBar(
+          this.translocoService.translate('message._deleted', {
+            name: this.name,
+          }),
+          this.translocoService.translate('action.close'),
+        );
         this.deleteDataSetFromTable(id);
       },
       error: (e) => {
@@ -132,19 +158,16 @@ export class DatasetComponent implements OnInit, AfterViewInit {
 
   getDatasets(params: GetDatasetParams = {}): void {
     this.loading = true;
-
-    const i = (this.paginator?.pageIndex as number) ?? 0;
-    this.page = i + 1;
-    this.limit = params?.pageSize ?? this.limit;
-    params.limit = this.paginator?.pageSize ?? this.limit;
-    params.page = this.page;
     const response = this.cogFrameworkApiService.getDataset(params);
     response.subscribe({
       next: (v) => {
         this.dataSource.data = v.data;
       },
       error: (e) => {
-        this.openSnackBar(e.error.message, 'Close');
+        if (e.status === RESPONSE_CODE.NOT_FOUND) {
+          this.dataSource.data = [];
+        }
+        this.getError(e.error);
         this.loading = false;
       },
       complete: () => {
@@ -154,15 +177,21 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   }
 
   search(): void {
+    console.log('f');
     let params: GetDatasetParams = { name: this.datasetName };
     if (this.datasetId.length > 0) {
       params = { id: this.datasetId };
     }
-    this.getDatasets(params);
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge',
+      queryParamsHandling: 'replace',
     });
   }
 

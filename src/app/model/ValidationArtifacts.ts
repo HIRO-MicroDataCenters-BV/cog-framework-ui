@@ -21,3 +21,8 @@ export interface ValidationArtifacts {
   shap_feature_importance_plot?: string;
   shap_summary_plot?: string;
 }
+
+export type GetValidationArtifactsParams = {
+  model_id?: string;
+  model_name?: string;
+};
