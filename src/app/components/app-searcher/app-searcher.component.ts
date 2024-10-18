@@ -37,10 +37,7 @@ export type SearcherEvent = {
 })
 export class AppSearcherComponent {
   @Output() updated = new EventEmitter<SearcherEvent>();
-  @Input() options: SearcherOption[] = [
-    { key: 'name', label: 'Model Name' },
-    { key: 'id', label: 'Model Id' },
-  ];
+  @Input() options: SearcherOption[] = [];
   key: string = this.options[0].key;
   query: string = '';
   private searchSubject = new Subject<void>();
@@ -56,10 +53,6 @@ export class AppSearcherComponent {
   }
 
   private emitSearchEvent() {
-    console.log('Search value:', {
-      key: this.key,
-      query: this.query,
-    });
     this.updated.emit({ key: this.key, query: this.query });
   }
 }
