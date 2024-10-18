@@ -158,7 +158,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
   }
 
   search(event: SearcherEvent = { key: 'name', query: '' }): void {
-    console.log('Search value1:', event);
     const params: GetModelParams = event.query
       ? { [event.key]: event.query }
       : {};

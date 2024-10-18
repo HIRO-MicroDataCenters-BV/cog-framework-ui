@@ -4,22 +4,8 @@
 
 @import '../../../assets/styles/variable.scss';
 
-.mat-card-model {
-  display: flex;
-  justify-content: center;
-  padding: 5px 5px 0;
-}
-
 .animate-spin {
   margin-top: 8px;
   margin-right: 10px;
   margin-left: 10px;
-}
-.form-dual {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  .divider {
-    margin-top: -16px;
-  }
 }
