@@ -37,7 +37,7 @@ export type SearcherEvent = {
 })
 export class AppSearcherComponent {
   @Output() updated = new EventEmitter<SearcherEvent>();
-  @Input() options: SearcherOption[] = [];
+  @Input() options: SearcherOption[] = [{ key: 'name', label: '' }];
   key: string = this.options[0].key;
   query: string = '';
   private searchSubject = new Subject<void>();
