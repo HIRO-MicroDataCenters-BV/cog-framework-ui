@@ -25,7 +25,7 @@ import {
   SearcherEvent,
   SearcherOption,
 } from '../../components/app-searcher/app-searcher.component';
-import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
 
 const MODEL_DATA: Model[] = [];
 
@@ -100,6 +100,12 @@ export class ModelComponent implements OnInit, AfterViewInit {
       if (params['id']) {
         this.modelId = params['id'];
       }
+      if (params['limit']) {
+        this.limit = params['limit'];
+      }
+      if (params['page']) {
+        this.page = params['page'];
+      }
       this.getModels({ ...params });
     });
   }
@@ -127,12 +133,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
 
   getModels(params: GetModelParams = {}): void {
     this.loading = true;
-
-    const i = (this.paginator?.pageIndex as number) ?? 0;
-    this.page = i + 1;
-    this.limit = params?.pageSize ?? this.limit;
-    params.limit = this.paginator?.pageSize ?? this.limit;
-    params.page = this.page;
     const response = this.cogFrameworkApiService.getModel(params);
     response.subscribe({
       next: (res) => {
@@ -145,6 +145,9 @@ export class ModelComponent implements OnInit, AfterViewInit {
         }
       },
       error: (e) => {
+        if (e.status === RESPONSE_CODE.NOT_FOUND) {
+          this.dataSource.data = [];
+        }
         this.getError(e.error);
         this.loading = false;
       },
@@ -159,11 +162,15 @@ export class ModelComponent implements OnInit, AfterViewInit {
     const params: GetModelParams = event.query
       ? { [event.key]: event.query }
       : {};
-    this.getModels(params);
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.page = i + 1;
+    this.limit = params?.pageSize ?? this.limit;
+    params.limit = this.paginator?.pageSize ?? this.limit;
+    params.page = this.page;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge',
+      queryParamsHandling: 'replace',
     });
   }
 
@@ -181,7 +188,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
   modelServe(model: Model): void {
     const dialogRef = this.dialog.open(ModelServeComponent, {
       data: model,
-      minWidth: '25%',
     });
 
     dialogRef.afterClosed().subscribe((result) => {

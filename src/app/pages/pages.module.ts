@@ -17,6 +17,7 @@ import { AppPipelineRunComponent } from './pipeline/pipeline-run/pipeline-run.co
 import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-detail.component';
 import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
 import { AppGraphComponent } from '../components/graph/graph.component';
+import { DatasetDeleteConfirmationComponent } from './dataset/dataset-delete-confirmation/dataset-delete-confirmation.component';
 
 @NgModule({
   imports: [
@@ -35,6 +36,7 @@ import { AppGraphComponent } from '../components/graph/graph.component';
     ModelDeploymentComponent,
     ModelServingComponent,
     ModelDeleteConfirmationComponent,
+    DatasetDeleteConfirmationComponent,
     PipelineGraphComponent,
     PipelineDetailComponent,
     PipelineRunOutputComponent,
