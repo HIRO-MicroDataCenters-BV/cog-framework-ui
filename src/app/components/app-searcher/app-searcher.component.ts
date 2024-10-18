@@ -13,7 +13,7 @@ export type SearcherOption = {
   label: string;
 };
 
-type SearcherEvent = {
+export type SearcherEvent = {
   key: string;
   query: string;
 };
@@ -36,7 +36,7 @@ type SearcherEvent = {
   ],
 })
 export class AppSearcherComponent {
-  @Output() changeEvent = new EventEmitter<SearcherEvent>();
+  @Output() updated = new EventEmitter<SearcherEvent>();
   @Input() options: SearcherOption[] = [
     { key: 'name', label: 'Model Name' },
     { key: 'id', label: 'Model Id' },
@@ -60,6 +60,6 @@ export class AppSearcherComponent {
       key: this.key,
       query: this.query,
     });
-    this.changeEvent.emit({ key: this.key, query: this.query });
+    this.updated.emit({ key: this.key, query: this.query });
   }
 }

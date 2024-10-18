@@ -20,7 +20,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { AppSearcherComponent } from '../../components/app-searcher/app-searcher.component';
+import {
+  AppSearcherComponent,
+  SearcherEvent,
+  SearcherOption,
+} from '../../components/app-searcher/app-searcher.component';
 import { PAGE_SIZE_OPTIONS } from 'src/app/consts';
 
 const MODEL_DATA: Model[] = [];
@@ -72,6 +76,10 @@ export class ModelComponent implements OnInit, AfterViewInit {
   limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
+  searchOptions: SearcherOption[] = [
+    { key: 'name', label: 'Model Name' },
+    { key: 'id', label: 'Model Id' },
+  ];
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
@@ -146,11 +154,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
     });
   }
 
-  search(): void {
-    let params: GetModelParams = { name: this.modelName };
-    if (this.modelId.length > 0) {
-      params = { id: this.modelId };
-    }
+  search(event: SearcherEvent = { key: 'name', query: '' }): void {
+    console.log('Search value1:', event);
+    const params: GetModelParams = event.query
+      ? { [event.key]: event.query }
+      : {};
     this.getModels(params);
     this.router.navigate([], {
       relativeTo: this.route,
@@ -177,29 +185,30 @@ export class ModelComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        result.model.isDeployed = true;
-        const response = this.cogFrameworkApiService.serveModel(
-          result.modelServeData,
-        );
-        response.subscribe({
-          next: () => {
-            this.openSnackBar(
-              this.translocoService.translate('message._deployment_starting', {
-                name: this.name,
-              }),
-              this.translocoService.translate('action.close'),
-            );
-          },
-          error: (e) => {
-            this.getError(e.error.errors[0]);
-            result.model.isDeployed = false;
-          },
-          complete: () => {
-            result.model.isDeployed = false;
-          },
-        });
+      if (!result) {
+        return;
       }
+      result.model.isDeployed = true;
+      const response = this.cogFrameworkApiService.serveModel(
+        result.modelServeData,
+      );
+      response.subscribe({
+        next: () => {
+          this.openSnackBar(
+            this.translocoService.translate('message._deployment_starting', {
+              name: this.name,
+            }),
+            this.translocoService.translate('action.close'),
+          );
+        },
+        error: (e) => {
+          this.getError(e.error.errors[0]);
+          result.model.isDeployed = false;
+        },
+        complete: () => {
+          result.model.isDeployed = false;
+        },
+      });
     });
   }
 
