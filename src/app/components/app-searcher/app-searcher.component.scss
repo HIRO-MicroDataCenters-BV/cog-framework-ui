@@ -1,0 +1,59 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+
+@include mat.core();
+
+.app-searcher {
+  display: flex;
+  align-items: center;
+  --mdc-outlined-text-field-container-shape: 1px;
+  --mat-form-field-container-height: 32px;
+  --mat-form-field-container-vertical-padding: 4px;
+  --mat-select-trigger-text-size: 0.875rem;
+  --mat-select-trigger-text-line-height: 1.25rem;
+  --mat-select-trigger-text-weight: 500;
+  --mat-form-field-container-text-size: 0.875rem;
+  --mat-form-field-container-text-line-height: 1.25rem;
+
+  &__selector-container {
+    max-width: 160px;
+
+    .mat-form-field-outline {
+      border-radius: 0;
+    }
+
+    ::ng-deep {
+      .mat-icon {
+        padding: 0 0 0 8px;
+      }
+
+      .mdc-text-field {
+        padding: 0 8px 0 0;
+      }
+
+      .mdc-notched-outline__trailing {
+        border-right: none;
+      }
+
+      .mdc-text-field--outlined {
+        &:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__trailing {
+          border-right: 2px solid var(--mdc-outlined-text-field-focus-outline-color);
+        }
+      }
+    }
+  }
+
+  &__input-container {
+    ::ng-deep {
+      .mat-mdc-form-field-infix {
+        display: flex;
+      }
+    }
+  }
+
+  &__selector-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}

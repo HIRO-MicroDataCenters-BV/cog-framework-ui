@@ -24,8 +24,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
-
-const ELEMENT_DATA: DataSetData[] = [];
+import {
+  AppSearcherComponent,
+  SearcherEvent,
+  SearcherOption,
+} from '../../components/app-searcher/app-searcher.component';
 
 interface Error {
   detail?: string;
@@ -51,6 +54,7 @@ interface Error {
     UploadDatasetComponent,
     MatPaginatorModule,
     TranslocoModule,
+    AppSearcherComponent,
   ],
   templateUrl: './dataset.component.html',
   styleUrl: './dataset.component.scss',
@@ -66,12 +70,16 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     'action',
   ];
   pageSizeOptions = PAGE_SIZE_OPTIONS;
-  dataSource = new MatTableDataSource<DataSetData>(ELEMENT_DATA);
+  dataSource = new MatTableDataSource<DataSetData>([]);
   datasetName = '';
   datasetId = '';
   limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
+  searchOptions: SearcherOption[] = [
+    { key: 'name', label: 'Dataset Name' },
+    { key: 'id', label: 'Dataset Id' },
+  ];
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
@@ -176,12 +184,10 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  search(): void {
-    console.log('f');
-    let params: GetDatasetParams = { name: this.datasetName };
-    if (this.datasetId.length > 0) {
-      params = { id: this.datasetId };
-    }
+  search(event: SearcherEvent = { key: 'name', query: '' }): void {
+    const params: GetDatasetParams = event.query
+      ? { [event.key]: event.query }
+      : {};
     const i = (this.paginator?.pageIndex as number) ?? 0;
     this.page = i + 1;
     this.limit = params?.pageSize ?? this.limit;

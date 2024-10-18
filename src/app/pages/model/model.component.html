@@ -8,38 +8,10 @@
       <mat-card-title>{{ t('title.search_', { name }) }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div>
-        <form class="form-dual">
-          <mat-form-field class="input-search" appearance="outline">
-            <mat-label>{{ t('label._name', { name }) }}</mat-label>
-            <input
-              matInput
-              [placeholder]="t('label._name', { name })"
-              [(ngModel)]="modelName"
-              name="modelName"
-              [disabled]="modelId.length > 0"
-            />
-          </mat-form-field>
-
-          <span class="divider">{{ t('text.or') }}</span>
-
-          <mat-form-field class="input-search" appearance="outline">
-            <mat-label>{{ t('label._id', { name }) }}</mat-label>
-            <input
-              matInput
-              [(ngModel)]="modelId"
-              name="modelId"
-              [disabled]="modelName.length > 0"
-            />
-          </mat-form-field>
-        </form>
-
-        <div class="input-button-search">
-          <button mat-flat-button (click)="search()">
-            {{ t('action.search') }}
-          </button>
-        </div>
-      </div>
+      <app-searcher
+        [options]="searchOptions"
+        (updated)="search($event)"
+      ></app-searcher>
     </mat-card-content>
   </mat-card>
 
