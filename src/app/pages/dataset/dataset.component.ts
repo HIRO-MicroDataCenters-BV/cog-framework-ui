@@ -77,8 +77,8 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   page = 1;
   total = 0;
   searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Dataset Name' },
-    { key: 'id', label: 'Dataset Id' },
+    { key: 'name', label: 'Dataset Name', inputType: 'text' },
+    { key: 'id', label: 'Dataset Id', inputType: 'number' },
   ];
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;

@@ -36,6 +36,11 @@
           border-right: 2px solid var(--mdc-outlined-text-field-focus-outline-color);
         }
       }
+
+      .mdc-notched-outline__leading {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+      }
     }
   }
 
@@ -43,6 +48,11 @@
     ::ng-deep {
       .mat-mdc-form-field-infix {
         display: flex;
+      }
+
+      .mdc-notched-outline__trailing {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
       }
     }
   }

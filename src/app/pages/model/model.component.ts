@@ -77,8 +77,8 @@ export class ModelComponent implements OnInit, AfterViewInit {
   page = 1;
   total = 0;
   searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Model Name' },
-    { key: 'id', label: 'Model Id' },
+    { key: 'name', label: 'Model Name', inputType: 'text' },
+    { key: 'id', label: 'Model Id', inputType: 'number' },
   ];
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
