@@ -11,6 +11,8 @@
       <mat-card-content>
         <app-searcher
           [options]="searchOptions"
+          [defaultQuery]="defaultSearchQuery"
+          [defaultOptionKey]="defaultSearchOptionKey"
           (updated)="search($event)"
         ></app-searcher>
       </mat-card-content>

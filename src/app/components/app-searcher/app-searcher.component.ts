@@ -41,6 +41,8 @@ export class AppSearcherComponent implements OnInit {
   @Input() options: SearcherOption[] = [
     { key: 'name', label: '', inputType: 'text' },
   ];
+  @Input() defaultQuery: string = '';
+  @Input() defaultOptionKey: string = '';
   query: string = '';
   private _selectedOption: SearcherOption = { key: '', label: '' };
   @Input() set selectedOption(value: SearcherOption) {
@@ -61,7 +63,10 @@ export class AppSearcherComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.selectedOption = this.options[0];
+    this.selectedOption =
+      this.options.find(({ key }) => key === this.defaultOptionKey) ||
+      this.options[0];
+    this.query = this.defaultQuery;
   }
 
   search() {
