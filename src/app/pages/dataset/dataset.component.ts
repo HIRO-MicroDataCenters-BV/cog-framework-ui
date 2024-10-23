@@ -23,7 +23,7 @@ import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmatio
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
 import {
   AppSearcherComponent,
   SearcherEvent,

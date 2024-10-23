@@ -25,7 +25,7 @@ import {
   SearcherEvent,
   SearcherOption,
 } from '../../components/app-searcher/app-searcher.component';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/consts';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
 
 const MODEL_DATA: Model[] = [];
 
