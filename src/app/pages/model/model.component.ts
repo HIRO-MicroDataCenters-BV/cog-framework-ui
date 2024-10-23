@@ -55,7 +55,6 @@ interface Error {
     MatProgressSpinner,
     TranslocoModule,
     AppSearcherComponent,
-    TranslocoService,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
