@@ -97,9 +97,14 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       if (params['name']) {
         this.datasetName = params['name'];
+        this.defaultSearchQuery = this.datasetName;
       }
       if (params['id']) {
         this.datasetId = params['id'];
+        this.defaultSearchQuery = this.datasetId;
+      }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
       }
       if (params['limit']) {
         this.limit = params['limit'];

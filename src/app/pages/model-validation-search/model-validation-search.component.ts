@@ -127,12 +127,24 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      if (params['model_name']) {
-        this.modelValidationName = params['model_name'];
+      if (params['name']) {
+        this.modelValidationName = params['name'];
+        this.defaultSearchQuery = this.modelValidationName;
       }
-      if (params['model_id']) {
-        this.modelValidationId = params['model_id'];
+      if (params['id']) {
+        this.modelValidationId = params['id'];
+        this.defaultSearchQuery = this.modelValidationId;
       }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
+      }
+      if (params['limit']) {
+        this.limitMetrics = params['limit'];
+      }
+      if (params['page']) {
+        this.pageMetrics = params['page'];
+      }
+
       this.getModelValidationArtifacts({ ...params });
       this.getModeValidationMetrics({ ...params });
     });
@@ -168,6 +180,7 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
     this.limitMetrics = params?.pageSize ?? this.limitMetrics;
     params.limit = this.paginator?.pageSize ?? this.limitMetrics;
     params.page = this.pageMetrics;
+    params.key = event.key;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,

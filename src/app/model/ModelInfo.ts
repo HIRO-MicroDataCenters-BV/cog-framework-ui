@@ -24,4 +24,5 @@ export type GetModelParams = {
   limit?: number;
   page?: number;
   pageSize?: number;
+  key?: string;
 };

@@ -99,9 +99,14 @@ export class ModelComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       if (params['name']) {
         this.modelName = params['name'];
+        this.defaultSearchQuery = this.modelName;
       }
       if (params['id']) {
         this.modelId = params['id'];
+        this.defaultSearchQuery = this.modelId;
+      }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
       }
       if (params['limit']) {
         this.limit = params['limit'];
