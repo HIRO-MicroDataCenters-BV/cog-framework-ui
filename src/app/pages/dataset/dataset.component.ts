@@ -77,10 +77,11 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   page = 1;
   total = 0;
   searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Dataset Name' },
-    { key: 'id', label: 'Dataset Id' },
+    { key: 'name', label: 'Dataset Name', inputType: 'text' },
+    { key: 'id', label: 'Dataset Id', inputType: 'number' },
   ];
-
+  defaultSearchOptionKey = '';
+  defaultSearchQuery = '';
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
   constructor(
@@ -108,6 +109,8 @@ export class DatasetComponent implements OnInit, AfterViewInit {
       }
       this.getDatasets({ ...params });
     });
+    this.defaultSearchOptionKey = this.datasetName ? 'name' : 'id';
+    this.defaultSearchQuery = this.datasetName || this.datasetId;
   }
 
   ngAfterViewInit() {

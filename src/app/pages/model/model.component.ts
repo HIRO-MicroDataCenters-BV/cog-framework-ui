@@ -77,9 +77,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
   page = 1;
   total = 0;
   searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Model Name' },
-    { key: 'id', label: 'Model Id' },
+    { key: 'name', label: 'Model Name', inputType: 'text' },
+    { key: 'id', label: 'Model Id', inputType: 'number' },
   ];
+  defaultSearchQuery = '';
+  defaultSearchOptionKey = '';
 
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
@@ -108,6 +110,8 @@ export class ModelComponent implements OnInit, AfterViewInit {
       }
       this.getModels({ ...params });
     });
+    this.defaultSearchOptionKey = this.modelName ? 'name' : 'id';
+    this.defaultSearchQuery = this.modelName || this.modelId;
   }
 
   ngAfterViewInit() {
