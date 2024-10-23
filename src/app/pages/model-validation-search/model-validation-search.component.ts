@@ -12,7 +12,7 @@ import {
 } from '../../model/ValidationMetrics';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
-import { RESPONSE_CODE } from 'src/app/consts';
+import { RESPONSE_CODE } from 'src/app/constants';
 
 interface ValidationMetricTableData {
   registered_date_time: string;
@@ -125,7 +125,7 @@ export class ModelValidationSearchComponent implements OnInit {
     }
     /*
     const i = (this.paginator?.pageIndex as number) ?? 0;
-    
+
     this.page = i + 1;
     this.limit = params?.pageSize ?? this.limit;
     params.limit = this.paginator?.pageSize ?? this.limit;

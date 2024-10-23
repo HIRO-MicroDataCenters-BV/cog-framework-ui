@@ -2,6 +2,7 @@
 @use '../../../assets/styles/theme/main';
 @include mat.core();
 @import '../../../assets/styles/variable';
+@import '../../../assets/styles/responsive';
 
 .main {
   &-toolbar.mat-toolbar {
@@ -10,18 +11,20 @@
     button {
       color: mat.get-theme-color(main.$theme, neutral, 100);
     }
-    .logo {
-      max-height: 100%;
-    }
     .navbar {
       &-brand {
         display: flex;
         height: 80px;
         gap: 24px;
+        padding-left: 16px;
       }
       &-header {
         flex: auto;
       }
+    }
+    .logo {
+      max-height: 100%;
+      max-width: 128px;
     }
   }
   &-sidebar {
@@ -30,6 +33,7 @@
   }
   &-container {
     height: calc(100vh - $main-toolbar-height);
+    --mat-sidenav-container-width: 320px;
   }
   &-content {
     padding: 16px;
