@@ -71,9 +71,7 @@
  ============================================================== */
 
 @media (max-width: 767px) {
-  .mat-toolbar-single-row {
-    height: 64px !important;
-  }
+  $main-toolbar-height: 64px;
   .d-flex {
     display: block;
   }
