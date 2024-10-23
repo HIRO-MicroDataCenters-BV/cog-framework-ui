@@ -23,7 +23,11 @@ import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmatio
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
+import {
+  DEF_SEARCH_PARAMS,
+  PAGE_SIZE_OPTIONS,
+  RESPONSE_CODE,
+} from 'src/app/constants';
 import {
   AppSearcherComponent,
   SearcherEvent,
@@ -76,10 +80,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
-  searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Dataset Name', inputType: 'text' },
-    { key: 'id', label: 'Dataset Id', inputType: 'number' },
-  ];
+  searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchOptionKey = '';
   defaultSearchQuery = '';
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;

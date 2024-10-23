@@ -12,7 +12,11 @@ import {
 } from '../../model/ValidationMetrics';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
+import {
+  DEF_SEARCH_PARAMS,
+  PAGE_SIZE_OPTIONS,
+  RESPONSE_CODE,
+} from 'src/app/constants';
 import {
   AppSearcherComponent,
   SearcherEvent,
@@ -26,20 +30,6 @@ import { DecimalPipe, NgIf } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { GetModelParams } from 'src/app/model/ModelInfo';
-
-interface ValidationMetricTableData {
-  registered_date_time: string;
-  dataset_id: number;
-  id: number;
-  accuracy_score: number;
-  example_count: number;
-  f1_score: number;
-  log_loss: number;
-  precision_score: number;
-  recall_score: number;
-  roc_auc: number;
-  score: number;
-}
 
 interface ModelValidationTable {
   name: string;
@@ -109,10 +99,7 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
   pageMetrics = 1;
   totalMetrics = 0;
 
-  searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Model Name', inputType: 'text' },
-    { key: 'id', label: 'Model Id', inputType: 'number' },
-  ];
+  searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchQuery = '';
   defaultSearchOptionKey = '';
 
@@ -371,28 +358,4 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
     });
   }
   */
-
-  buildModelValidationMetrics(
-    validationMetricsData: ValidationMetricsData[],
-  ): void {
-    console.log('v', validationMetricsData);
-    validationMetricsData.forEach((data) => {
-      const d: ValidationMetricTableData = {
-        registered_date_time: data.registered_date_time,
-        id: data.id,
-        dataset_id: data.dataset_id,
-        accuracy_score: data.accuracy_score,
-        example_count: data.example_count,
-        f1_score: data.f1_score,
-        log_loss: data.log_loss,
-        precision_score: data.precision_score,
-        recall_score: data.recall_score,
-        roc_auc: data.roc_auc,
-        score: data.score,
-      };
-
-      this.modelValidationMetricTableDataSource.data.push(d);
-      console.log('data', d, this.modelValidationMetricTableDataSource);
-    });
-  }
 }
