@@ -1,16 +1,21 @@
 <mat-card>
-  <mat-card-header>Confirm Delete Dataset?</mat-card-header>
+  <mat-card-header>{{
+    'title.confirm_delete_' | transloco: { name }
+  }}</mat-card-header>
   <mat-card-content>
-    <p class="table-text">{{ dataSetData.dataset_name }}</p>
+    <p class="table-text">{{ data.dataset_name }}</p>
 
     <p class="text-danger note">
-      Note: it will delete all <strong>datasets</strong>
+      {{ 'note.note_it_will_delete_all' | transloco }}
+      <strong>{{ 'text.datasets' | transloco }}</strong>
     </p>
   </mat-card-content>
   <mat-card-actions>
-    <button (click)="deleteDataset()" color="warn" mat-button mat-flat-button>
-      Ok
+    <button (click)="close()" mat-button>
+      {{ 'action.cancel' | transloco }}
     </button>
-    <button (click)="closeDialog()" mat-button>Cancel</button>
+    <button (click)="delete()" color="warn" mat-button mat-flat-button>
+      {{ 'action.ok' | transloco }}
+    </button>
   </mat-card-actions>
 </mat-card>

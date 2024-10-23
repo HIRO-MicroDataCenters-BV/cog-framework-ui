@@ -12,7 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   Dataset,
-  DataSetData,
+  DatasetData,
   GetDatasetParams,
 } from '../../model/DatasetInfo';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -70,7 +70,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     'action',
   ];
   pageSizeOptions = PAGE_SIZE_OPTIONS;
-  dataSource = new MatTableDataSource<DataSetData>([]);
+  dataSource = new MatTableDataSource<DatasetData>([]);
   datasetName = '';
   datasetId = '';
   limit = this.pageSizeOptions[0];
@@ -126,7 +126,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     }
   }
 
-  open(item: DataSetData): void {
+  open(item: DatasetData): void {
     this.router
       .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
       .then((r) => {
@@ -147,7 +147,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   }
 
   deleteDataSetById(id: number): void {
-    const response = this.cogFrameworkApiService.deleteDataSetDetailById(id);
+    const response = this.cogFrameworkApiService.deleteDatasetById(id);
     response.subscribe({
       next: () => {
         this.openSnackBar(

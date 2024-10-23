@@ -9,27 +9,27 @@
       <mat-card-content class="content">
         <div class="box col-12">
           <span class="list-item"> Id: </span>
-          <span>{{ dataSetDetail?.dataset_id }}</span>
+          <span>{{ data?.dataset_id }}</span>
         </div>
 
         <div class="box col-12">
           <span class="list-item"> Name: </span>
-          <span>{{ dataSetDetail?.dataset_name }}</span>
+          <span>{{ data?.dataset_name }}</span>
         </div>
 
         <div class="box col-12">
           <span class="list-item"> Description: </span>
-          <span>{{ dataSetDetail?.dataset_description }}</span>
+          <span>{{ data?.dataset_description }}</span>
         </div>
 
         <div class="box col-12">
           <span class="list-item"> Author: </span>
-          <span>{{ dataSetDetail?.author }}</span>
+          <span>{{ data?.author }}</span>
         </div>
 
         <div class="box col-12">
           <span class="list-item"> Creation Time: </span>
-          <span>{{ dataSetDetail?.register_date }}</span>
+          <span>{{ data?.register_date }}</span>
         </div>
       </mat-card-content>
 
@@ -46,7 +46,7 @@
           <div class="density-settings col-6">
             <table
               mat-table
-              [dataSource]="dataSetFileDataSource"
+              [dataSource]="datasetFileDataSource"
               class="mat-elevation-z0"
             >
               <!-- Position Column -->
@@ -86,11 +86,11 @@
 
               <tr
                 mat-header-row
-                *matHeaderRowDef="dataSetFileDisplayedColumns"
+                *matHeaderRowDef="datasetFileDisplayedColumns"
               ></tr>
               <tr
                 mat-row
-                *matRowDef="let row; columns: dataSetFileDisplayedColumns"
+                *matRowDef="let row; columns: datasetFileDisplayedColumns"
               ></tr>
               <ng-template matNoDataRow
                 ><tr>
@@ -118,7 +118,7 @@
           <div class="density-settings col-6">
             <table
               mat-table
-              [dataSource]="dataSetRelatedModelsDataSource"
+              [dataSource]="datasetRelatedModelsDataSource"
               class="mat-elevation-z0"
             >
               <!-- Position Column -->

@@ -1,12 +1,5 @@
 export interface DatasetInfo {
-  data: DataSetData[];
-  errors?: { date: string; error_code: string; error_message: string }[];
-  message: string;
-  success: boolean;
-}
-
-export interface DatasetById {
-  data: DataSetData;
+  data: DatasetData[];
   errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
@@ -25,7 +18,7 @@ export interface Dataset {
   dataset_name: string;
 }
 
-export interface DataSetData {
+export interface DatasetData {
   data_source_type: number;
   description: string;
   id: number;
@@ -34,10 +27,11 @@ export interface DataSetData {
   register_date_time: string;
   train_and_inference_type: number;
   user_id: number;
+  author: string;
 }
 
 export interface UploadedDataset {
-  data: DataSetData | undefined;
+  data: DatasetData | undefined;
   error?: {
     errors: UploadDatasetError[];
     message: string;
