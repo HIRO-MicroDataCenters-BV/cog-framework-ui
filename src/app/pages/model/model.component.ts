@@ -55,6 +55,7 @@ interface Error {
     MatProgressSpinner,
     TranslocoModule,
     AppSearcherComponent,
+    TranslocoService,
   ],
   templateUrl: './model.component.html',
   styleUrl: './model.component.scss',
@@ -83,7 +84,8 @@ export class ModelComponent implements OnInit, AfterViewInit {
   defaultSearchQuery = '';
   defaultSearchOptionKey = '';
 
-  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator | undefined;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,

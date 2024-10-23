@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { MaterialRoutes } from './pages.routing';
-import { ModelValidationSearchComponent } from './model-validation-search/model-validation-search.component';
 import { ModelValidationArtifactsComponent } from './model-validation-artifacts/model-validation-artifacts.component';
 import { PipelineComponent } from './pipeline/pipeline.component';
 import { ModelTrainingComponent } from './model-training/model-training.component';
@@ -29,7 +28,6 @@ import { DatasetDeleteConfirmationComponent } from './dataset/dataset-delete-con
   ],
   providers: [],
   declarations: [
-    ModelValidationSearchComponent,
     ModelValidationArtifactsComponent,
     PipelineComponent,
     ModelTrainingComponent,

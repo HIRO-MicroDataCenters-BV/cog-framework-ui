@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 
 import {
@@ -12,7 +12,20 @@ import {
 } from '../../model/ValidationMetrics';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
-import { RESPONSE_CODE } from 'src/app/constants';
+import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
+import {
+  AppSearcherComponent,
+  SearcherEvent,
+  SearcherOption,
+} from 'src/app/components/app-searcher/app-searcher.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { DecimalPipe, NgIf } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { GetModelParams } from 'src/app/model/ModelInfo';
 
 interface ValidationMetricTableData {
   registered_date_time: string;
@@ -41,10 +54,22 @@ interface ModelValidationTableModel {
 
 @Component({
   selector: 'app-model-validation-search',
+  standalone: true,
+  imports: [
+    MatCardModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatIconModule,
+    MatPaginatorModule,
+    DecimalPipe,
+    AppSearcherComponent,
+    TranslocoPipe,
+    NgIf,
+  ],
   templateUrl: './model-validation-search.component.html',
   styleUrls: ['./model-validation-search.component.scss'],
 })
-export class ModelValidationSearchComponent implements OnInit {
+export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
   modelValidationName = '';
   modelValidationId = '';
 
@@ -64,7 +89,7 @@ export class ModelValidationSearchComponent implements OnInit {
   modelValidationScoreTableSource: ModelValidationTable[] = [];
   displayedColumns: string[] = ['name', 'value'];
 
-  modelValidationMetricTableDataSource: ValidationMetricTableData[] = [];
+  modelValidationMetricTableDataSource = new MatTableDataSource();
   modelValidationMetricTableDisplayedColumns: string[] = [
     'id',
     'dataset_id',
@@ -78,15 +103,27 @@ export class ModelValidationSearchComponent implements OnInit {
     'score',
   ];
 
+  pageSizeOptions = PAGE_SIZE_OPTIONS;
+
+  limitMetrics = this.pageSizeOptions[0];
+  pageMetrics = 1;
+  totalMetrics = 0;
+
+  searchOptions: SearcherOption[] = [
+    { key: 'name', label: 'Model Name', inputType: 'text' },
+    { key: 'id', label: 'Model Id', inputType: 'number' },
+  ];
+  defaultSearchQuery = '';
+  defaultSearchOptionKey = '';
+
+  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
     private modelValidationService: ModelValidationService,
     private route: ActivatedRoute,
-  ) {
-    // TODO: I'm not sure what this is supposed to do, maybe it will work after api update
-    // this.search();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -99,6 +136,12 @@ export class ModelValidationSearchComponent implements OnInit {
       this.getModelValidationArtifacts({ ...params });
       this.getModeValidationMetrics({ ...params });
     });
+  }
+
+  ngAfterViewInit() {
+    if (this.paginator) {
+      this.modelValidationMetricTableDataSource.paginator = this.paginator;
+    }
   }
 
   open(item: ValidationArtifactsData): void {
@@ -116,13 +159,29 @@ export class ModelValidationSearchComponent implements OnInit {
       });
   }
 
-  search(): void {
+  search(event: SearcherEvent = { key: 'name', query: '' }): void {
+    const params: GetModelParams = event.query
+      ? { [event.key]: event.query }
+      : {};
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.pageMetrics = i + 1;
+    this.limitMetrics = params?.pageSize ?? this.limitMetrics;
+    params.limit = this.paginator?.pageSize ?? this.limitMetrics;
+    params.page = this.pageMetrics;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'replace',
+    });
+
+    /*
     let params: GetValidationArtifactsParams = {
       model_name: this.modelValidationName,
     };
     if (this.modelValidationId.length > 0) {
       params = { model_id: this.modelValidationId };
     }
+    */
     /*
     const i = (this.paginator?.pageIndex as number) ?? 0;
 
@@ -185,13 +244,12 @@ export class ModelValidationSearchComponent implements OnInit {
 
     response.subscribe({
       next: (v) => {
-        this.validationMetricsData = v.data[0];
-        this.buildModelValidationMetrics(v.data);
+        this.modelValidationMetricTableDataSource.data = v.data;
       },
       error: (e) => {
         console.error(e);
         if (e.status === RESPONSE_CODE.NOT_FOUND) {
-          this.modelValidationMetricTableDataSource = [];
+          this.modelValidationMetricTableDataSource.data = [];
         }
         this.loading = false;
       },
@@ -304,6 +362,7 @@ export class ModelValidationSearchComponent implements OnInit {
   buildModelValidationMetrics(
     validationMetricsData: ValidationMetricsData[],
   ): void {
+    console.log('v', validationMetricsData);
     validationMetricsData.forEach((data) => {
       const d: ValidationMetricTableData = {
         registered_date_time: data.registered_date_time,
@@ -318,7 +377,9 @@ export class ModelValidationSearchComponent implements OnInit {
         roc_auc: data.roc_auc,
         score: data.score,
       };
-      this.modelValidationMetricTableDataSource.push(d);
+
+      this.modelValidationMetricTableDataSource.data.push(d);
+      console.log('data', d, this.modelValidationMetricTableDataSource);
     });
   }
 }

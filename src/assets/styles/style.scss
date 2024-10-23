@@ -81,8 +81,17 @@ body {
           font-size: 16px;
         }
       }
+      &-content {
+        .container {
+          overflow: hidden;
+          overflow-x: auto;
+        }
+      }
     }
     &-table {
+      width: 100%;
+      overflow: hidden;
+      overflow-x: auto;
       tr {
         td {
           border-bottom-color: mat.get-theme-color(main.$theme, neutral, 90);
