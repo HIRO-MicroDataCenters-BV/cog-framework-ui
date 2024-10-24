@@ -7,7 +7,6 @@ import {
   ViewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import * as d3 from 'd3';
 import { OrgChart } from 'd3-org-chart';
 import { IRunDataGraph } from 'src/app/pages/pipeline/types';
 
@@ -33,7 +32,6 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
   };
 
   constructor() {
-    console.log('d3', d3);
     this.draw();
   }
   ngOnChanges(): void {

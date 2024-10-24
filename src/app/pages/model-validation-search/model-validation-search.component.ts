@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 
 import {
@@ -12,21 +12,24 @@ import {
 } from '../../model/ValidationMetrics';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
-import { RESPONSE_CODE } from 'src/app/constants';
-
-interface ValidationMetricTableData {
-  registered_date_time: string;
-  dataset_id: number;
-  id: number;
-  accuracy_score: number;
-  example_count: number;
-  f1_score: number;
-  log_loss: number;
-  precision_score: number;
-  recall_score: number;
-  roc_auc: number;
-  score: number;
-}
+import {
+  DEF_SEARCH_PARAMS,
+  PAGE_SIZE_OPTIONS,
+  RESPONSE_CODE,
+} from 'src/app/constants';
+import {
+  AppSearcherComponent,
+  SearcherEvent,
+  SearcherOption,
+} from 'src/app/components/app-searcher/app-searcher.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { DecimalPipe, NgIf } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { GetModelParams } from 'src/app/model/ModelInfo';
 
 interface ModelValidationTable {
   name: string;
@@ -41,10 +44,22 @@ interface ModelValidationTableModel {
 
 @Component({
   selector: 'app-model-validation-search',
+  standalone: true,
+  imports: [
+    MatCardModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatIconModule,
+    MatPaginatorModule,
+    DecimalPipe,
+    AppSearcherComponent,
+    TranslocoPipe,
+    NgIf,
+  ],
   templateUrl: './model-validation-search.component.html',
   styleUrls: ['./model-validation-search.component.scss'],
 })
-export class ModelValidationSearchComponent implements OnInit {
+export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
   modelValidationName = '';
   modelValidationId = '';
 
@@ -64,7 +79,7 @@ export class ModelValidationSearchComponent implements OnInit {
   modelValidationScoreTableSource: ModelValidationTable[] = [];
   displayedColumns: string[] = ['name', 'value'];
 
-  modelValidationMetricTableDataSource: ValidationMetricTableData[] = [];
+  modelValidationMetricTableDataSource = new MatTableDataSource();
   modelValidationMetricTableDisplayedColumns: string[] = [
     'id',
     'dataset_id',
@@ -78,27 +93,54 @@ export class ModelValidationSearchComponent implements OnInit {
     'score',
   ];
 
+  pageSizeOptions = PAGE_SIZE_OPTIONS;
+
+  limitMetrics = this.pageSizeOptions[0];
+  pageMetrics = 1;
+  totalMetrics = 0;
+
+  searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
+  defaultSearchQuery = '';
+  defaultSearchOptionKey = '';
+
+  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
     private modelValidationService: ModelValidationService,
     private route: ActivatedRoute,
-  ) {
-    // TODO: I'm not sure what this is supposed to do, maybe it will work after api update
-    // this.search();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      if (params['model_name']) {
-        this.modelValidationName = params['model_name'];
+      if (params['name']) {
+        this.modelValidationName = params['name'];
+        this.defaultSearchQuery = this.modelValidationName;
       }
-      if (params['model_id']) {
-        this.modelValidationId = params['model_id'];
+      if (params['id']) {
+        this.modelValidationId = params['id'];
+        this.defaultSearchQuery = this.modelValidationId;
       }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
+      }
+      if (params['limit']) {
+        this.limitMetrics = params['limit'];
+      }
+      if (params['page']) {
+        this.pageMetrics = params['page'];
+      }
+
       this.getModelValidationArtifacts({ ...params });
       this.getModeValidationMetrics({ ...params });
     });
+  }
+
+  ngAfterViewInit() {
+    if (this.paginator) {
+      this.modelValidationMetricTableDataSource.paginator = this.paginator;
+    }
   }
 
   open(item: ValidationArtifactsData): void {
@@ -116,13 +158,30 @@ export class ModelValidationSearchComponent implements OnInit {
       });
   }
 
-  search(): void {
+  search(event: SearcherEvent = { key: 'name', query: '' }): void {
+    const params: GetModelParams = event.query
+      ? { [event.key]: event.query }
+      : {};
+    const i = (this.paginator?.pageIndex as number) ?? 0;
+    this.pageMetrics = i + 1;
+    this.limitMetrics = params?.pageSize ?? this.limitMetrics;
+    params.limit = this.paginator?.pageSize ?? this.limitMetrics;
+    params.page = this.pageMetrics;
+    params.key = event.key;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'replace',
+    });
+
+    /*
     let params: GetValidationArtifactsParams = {
       model_name: this.modelValidationName,
     };
     if (this.modelValidationId.length > 0) {
       params = { model_id: this.modelValidationId };
     }
+    */
     /*
     const i = (this.paginator?.pageIndex as number) ?? 0;
 
@@ -185,13 +244,12 @@ export class ModelValidationSearchComponent implements OnInit {
 
     response.subscribe({
       next: (v) => {
-        this.validationMetricsData = v.data[0];
-        this.buildModelValidationMetrics(v.data);
+        this.modelValidationMetricTableDataSource.data = v.data;
       },
       error: (e) => {
         console.error(e);
         if (e.status === RESPONSE_CODE.NOT_FOUND) {
-          this.modelValidationMetricTableDataSource = [];
+          this.modelValidationMetricTableDataSource.data = [];
         }
         this.loading = false;
       },
@@ -300,25 +358,4 @@ export class ModelValidationSearchComponent implements OnInit {
     });
   }
   */
-
-  buildModelValidationMetrics(
-    validationMetricsData: ValidationMetricsData[],
-  ): void {
-    validationMetricsData.forEach((data) => {
-      const d: ValidationMetricTableData = {
-        registered_date_time: data.registered_date_time,
-        id: data.id,
-        dataset_id: data.dataset_id,
-        accuracy_score: data.accuracy_score,
-        example_count: data.example_count,
-        f1_score: data.f1_score,
-        log_loss: data.log_loss,
-        precision_score: data.precision_score,
-        recall_score: data.recall_score,
-        roc_auc: data.roc_auc,
-        score: data.score,
-      };
-      this.modelValidationMetricTableDataSource.push(d);
-    });
-  }
 }

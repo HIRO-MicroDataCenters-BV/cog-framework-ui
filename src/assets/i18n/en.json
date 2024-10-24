@@ -11,10 +11,15 @@
   },
 
   "text": {
-    "or": "or"
+    "or": "or",
+    "models": "models",
+    "datasets": "datasets"
+  },
+  "note": {
+    "note_it_will_delete_all": "Note: it will delete all"
   },
   "message": {
-    "no_data": "no_data...",
+    "no_data": "no data...",
     "_deployment_starting": "{{name}} deployment starting...",
     "_deleted": "{{name}} deleted"
   },
@@ -22,18 +27,29 @@
     "search": "search",
     "close": "close",
     "back": "back",
-    "upload": "upload"
+    "upload": "upload",
+    "cancel": "cancel",
+    "ok": "ok"
   },
   "label": {
     "id": "id",
     "name": "name",
     "_id": "{{name}} id",
     "_name": "{{name}} name",
+    "value": "value",
     "description": "description",
     "creationTime": "creation time",
     "author": "author",
     "action": "action",
     "type": "type",
+    "accuracy_score": "accuracy score",
+    "example_count": "example count",
+    "f1_score": "f1 score",
+    "log_loss": "log loss",
+    "precision_score": "precision score",
+    "recall_score": "recall score",
+    "roc_auc": "roc auc",
+    "score": "score",
 
     "artifacts": {
       "shap_summary": "shap summary",
@@ -58,6 +74,7 @@
     "_search_result_list": "{{name}} search result list",
     "model_validation_artifacts": "model validation artifacts",
     "model_validation_file": "model validation file",
-    "upload_": "upload {{name}}"
+    "upload_": "upload {{name}}",
+    "confirm_delete_": "Confirm Delete {{name}}?"
   }
 }

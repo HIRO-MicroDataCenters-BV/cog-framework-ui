@@ -25,7 +25,11 @@ import {
   SearcherEvent,
   SearcherOption,
 } from '../../components/app-searcher/app-searcher.component';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
+import {
+  DEF_SEARCH_PARAMS,
+  PAGE_SIZE_OPTIONS,
+  RESPONSE_CODE,
+} from 'src/app/constants';
 
 const MODEL_DATA: Model[] = [];
 
@@ -76,14 +80,12 @@ export class ModelComponent implements OnInit, AfterViewInit {
   limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
-  searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Model Name', inputType: 'text' },
-    { key: 'id', label: 'Model Id', inputType: 'number' },
-  ];
+  searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchQuery = '';
   defaultSearchOptionKey = '';
 
-  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator | undefined;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
@@ -98,9 +100,14 @@ export class ModelComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       if (params['name']) {
         this.modelName = params['name'];
+        this.defaultSearchQuery = this.modelName;
       }
       if (params['id']) {
         this.modelId = params['id'];
+        this.defaultSearchQuery = this.modelId;
+      }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
       }
       if (params['limit']) {
         this.limit = params['limit'];

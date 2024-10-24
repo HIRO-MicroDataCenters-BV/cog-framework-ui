@@ -8,16 +8,17 @@ import { Dataset } from '../../../model/DatasetInfo';
   styleUrl: './dataset-delete-confirmation.component.scss',
 })
 export class DatasetDeleteConfirmationComponent {
+  name: string = 'datasets';
   constructor(
-    @Inject(MAT_DIALOG_DATA) public dataSetData: Dataset,
+    @Inject(MAT_DIALOG_DATA) public data: Dataset,
     public dialogRef: MatDialogRef<DatasetDeleteConfirmationComponent>,
   ) {}
 
-  deleteDataset(): void {
-    this.dialogRef.close({ data: this.dataSetData });
+  delete(): void {
+    this.dialogRef.close({ data: this.data });
   }
 
-  closeDialog(): void {
+  close(): void {
     this.dialogRef.close();
   }
 }

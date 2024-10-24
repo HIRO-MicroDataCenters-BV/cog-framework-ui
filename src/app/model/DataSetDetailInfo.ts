@@ -1,3 +1,10 @@
+export interface DatasetById {
+  data: DatasetData;
+  errors?: { date: string; error_code: string; error_message: string }[];
+  message: string;
+  success: boolean;
+}
+
 export interface DataSetDetailInfo {
   data: Data;
   errors?: { date: string; error_code: string; error_message: string }[];
@@ -32,6 +39,8 @@ export interface DatasetData {
   dataset_id: number;
   dataset_name: string;
   register_date: string;
+  dataset_files: DatasetFiles;
+  related_model: RelatedModel[];
 }
 
 export interface RelatedModel {

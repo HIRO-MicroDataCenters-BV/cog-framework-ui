@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { KeyValuePipe } from '@angular/common';
+import { DatePipe, KeyValuePipe } from '@angular/common';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatFormField, MatPrefix, MatSelect } from '@angular/material/select';
 import { MatInput } from '@angular/material/input';
@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 export type SearcherOption = {
   key: string;
@@ -34,6 +35,8 @@ export type SearcherEvent = {
     FormsModule,
     MatIcon,
     MatPrefix,
+    DatePipe,
+    TranslocoPipe,
   ],
 })
 export class AppSearcherComponent implements OnInit {

@@ -32,13 +32,13 @@ import {
 })
 export class DatasetDetailComponent {
   modelId = '1';
-  dataSetDetail: DatasetData | undefined;
+  data: DatasetData | undefined;
 
-  dataSetFileDisplayedColumns: string[] = ['id', 'name', 'action'];
+  datasetFileDisplayedColumns: string[] = ['id', 'name', 'action'];
   displayedColumns: string[] = ['id', 'action'];
-  dataSetFileDataSource: DatasetFilesInfo[] = [];
+  datasetFileDataSource: DatasetFilesInfo[] = [];
 
-  dataSetRelatedModelsDataSource: RelatedModel[] = [];
+  datasetRelatedModelsDataSource: RelatedModel[] = [];
   errMsg = undefined;
 
   constructor(
@@ -49,24 +49,21 @@ export class DatasetDetailComponent {
     if (this.activatedRoute.snapshot.queryParams['id']) {
       this.modelId = this.activatedRoute.snapshot.queryParams['id'];
     }
-    this.dataSetDetails();
+    this.fetchDetails();
   }
 
-  dataSetDetails(): void {
-    console.log('search dataSetDetails with id ' + this.modelId);
-    const response = this.cogFrameworkApiService.getDataSetDetailById(
-      this.modelId,
-    );
+  fetchDetails(): void {
+    console.log('search datasetDetails with id ' + this.modelId);
+    const response = this.cogFrameworkApiService.getDatasetById(this.modelId);
 
     response.subscribe({
       next: (v) => {
         console.log(v);
-        this.dataSetDetail = v.data.dataset_info;
-        console.log(v.data.dataset_files);
+        this.data = v.data;
         this.convertDataSetFileModel(v.data.dataset_files);
         // this.modelFileDataSource = v.data.model_files
         this.errMsg = undefined;
-        this.dataSetRelatedModelsDataSource = v.data.related_model;
+        this.datasetRelatedModelsDataSource = v.data.related_model;
       },
       error: (e) => {
         console.log('error----->');
@@ -101,7 +98,7 @@ export class DatasetDetailComponent {
       datasetFilesInfo.push(d);
     });
 
-    this.dataSetFileDataSource = datasetFilesInfo;
+    this.datasetFileDataSource = datasetFilesInfo;
   }
 
   back(): void {

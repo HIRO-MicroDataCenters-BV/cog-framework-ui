@@ -12,7 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   Dataset,
-  DataSetData,
+  DatasetData,
   GetDatasetParams,
 } from '../../model/DatasetInfo';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +23,11 @@ import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmatio
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { PAGE_SIZE_OPTIONS, RESPONSE_CODE } from 'src/app/constants';
+import {
+  DEF_SEARCH_PARAMS,
+  PAGE_SIZE_OPTIONS,
+  RESPONSE_CODE,
+} from 'src/app/constants';
 import {
   AppSearcherComponent,
   SearcherEvent,
@@ -70,16 +74,13 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     'action',
   ];
   pageSizeOptions = PAGE_SIZE_OPTIONS;
-  dataSource = new MatTableDataSource<DataSetData>([]);
+  dataSource = new MatTableDataSource<DatasetData>([]);
   datasetName = '';
   datasetId = '';
   limit = this.pageSizeOptions[0];
   page = 1;
   total = 0;
-  searchOptions: SearcherOption[] = [
-    { key: 'name', label: 'Dataset Name', inputType: 'text' },
-    { key: 'id', label: 'Dataset Id', inputType: 'number' },
-  ];
+  searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchOptionKey = '';
   defaultSearchQuery = '';
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
@@ -97,9 +98,14 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     this.route.queryParams.subscribe((params) => {
       if (params['name']) {
         this.datasetName = params['name'];
+        this.defaultSearchQuery = this.datasetName;
       }
       if (params['id']) {
         this.datasetId = params['id'];
+        this.defaultSearchQuery = this.datasetId;
+      }
+      if (params['key']) {
+        this.defaultSearchOptionKey = params['key'];
       }
       if (params['limit']) {
         this.limit = params['limit'];
@@ -126,7 +132,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     }
   }
 
-  open(item: DataSetData): void {
+  open(item: DatasetData): void {
     this.router
       .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
       .then((r) => {
@@ -147,7 +153,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   }
 
   deleteDataSetById(id: number): void {
-    const response = this.cogFrameworkApiService.deleteDataSetDetailById(id);
+    const response = this.cogFrameworkApiService.deleteDatasetById(id);
     response.subscribe({
       next: () => {
         this.openSnackBar(

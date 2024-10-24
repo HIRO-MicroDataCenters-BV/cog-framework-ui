@@ -4,12 +4,13 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  DatasetById,
-  DataSetData,
+  //DatasetById,
+  DatasetData,
   DatasetInfo,
   GetDatasetParams,
   UploadedDataset,
 } from '../model/DatasetInfo';
+import { DatasetById } from '../model/DataSetDetailInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
 import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import {
@@ -46,21 +47,21 @@ export class CogFrameworkApiService {
     );
   }
 
-  deleteModelById(id: number): Observable<DataSetData> {
-    return this.httpClient.delete<DataSetData>(
+  deleteModelById(id: number): Observable<DatasetData> {
+    return this.httpClient.delete<DatasetData>(
       `${this.baseURL}/delete_model_details?model_id=${id}`,
     );
   }
 
-  getDataSetDetailById(id: string): Observable<DataSetDetailInfo> {
+  getDatasetDetailById(id: string): Observable<DataSetDetailInfo> {
     return this.httpClient.get<DataSetDetailInfo>(
       `${this.baseURL}/dataset/details?id=${id}`,
     );
   }
 
-  deleteDataSetDetailById(id: number): Observable<DeleteResponse> {
+  deleteDatasetById(id: number): Observable<DeleteResponse> {
     return this.httpClient.delete<DeleteResponse>(
-      `${this.baseURL}/dataset/${id}`,
+      `${this.baseURL}/datasets/${id}`,
     );
   }
 
