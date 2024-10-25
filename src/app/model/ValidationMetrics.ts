@@ -1,8 +1,11 @@
+import { Pagination } from './General';
+
 export interface ValidationMetricsResponse {
   data: ValidationMetricsData[];
   errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
+  pagination: Pagination;
 }
 
 export type ValidationMetricsData = ValidationMetricTableData & {
@@ -39,4 +42,6 @@ export interface Pipeline {
 export type GetValidationMetricsParams = {
   model_id?: string;
   model_name?: string;
+  page?: number;
+  limit?: number;
 };

@@ -27,7 +27,7 @@
           class="progress-bar fixed"
         />
         <div class="container scrollbar">
-          <table mat-table [dataSource]="modelValidationTableDataSource">
+          <table mat-table [dataSource]="dataSource.artifacts">
             <!-- Position Column -->
             <ng-container matColumnDef="id">
               <th mat-header-cell *matHeaderCellDef>
@@ -41,7 +41,7 @@
             <!-- Position Column -->
             <ng-container matColumnDef="dataset_id">
               <th mat-header-cell *matHeaderCellDef>
-                {{ 'label._id' | transloco: { name: 'dataset' } }}/th>
+                {{ 'label._id' | transloco: { name: 'dataset' } }}
               </th>
               <td mat-cell *matCellDef="let element">
                 {{ element.dataset_id }}
@@ -76,19 +76,16 @@
 
             <tr
               mat-header-row
-              *matHeaderRowDef="displayedColumnsModelValidationTable"
+              *matHeaderRowDef="displyedColumens.artifacts"
             ></tr>
             <tr
               mat-row
-              *matRowDef="
-                let row;
-                columns: displayedColumnsModelValidationTable
-              "
+              *matRowDef="let row; columns: displyedColumens.artifacts"
             ></tr>
             <ng-template matNoDataRow
               ><tr>
                 <td
-                  [colSpan]="displayedColumnsModelValidationTable.length"
+                  [colSpan]="displyedColumens.artifacts.length"
                   class="no-data"
                 >
                   {{ 'message.no_data' | transloco }}
@@ -98,9 +95,10 @@
           </table>
         </div>
         <mat-paginator
+          #paginatorArtifacts
           [pageSizeOptions]="pageSizeOptions"
-          [length]="totalMetrics"
-          [pageSize]="limitMetrics"
+          [length]="pagigation.artifacts.total"
+          [pageSize]="pagigation.artifacts.limit"
           (page)="search()"
           showFirstLastButtons
         >
@@ -121,7 +119,7 @@
           class="progress-bar fixed"
         />
         <div class="container scrollbar">
-          <table mat-table [dataSource]="modelValidationMetricTableDataSource">
+          <table mat-table [dataSource]="dataSource.metrics">
             <!-- Position Column -->
             <ng-container matColumnDef="id">
               <th mat-header-cell *matHeaderCellDef>
@@ -222,23 +220,14 @@
               </td>
             </ng-container>
 
-            <tr
-              mat-header-row
-              *matHeaderRowDef="modelValidationMetricTableDisplayedColumns"
-            ></tr>
+            <tr mat-header-row *matHeaderRowDef="displyedColumens.metrics"></tr>
             <tr
               mat-row
-              *matRowDef="
-                let row;
-                columns: modelValidationMetricTableDisplayedColumns
-              "
+              *matRowDef="let row; columns: displyedColumens.metrics"
             ></tr>
             <ng-template matNoDataRow
               ><tr>
-                <td
-                  [colSpan]="modelValidationMetricTableDisplayedColumns.length"
-                  class="no-data"
-                >
+                <td [colSpan]="displyedColumens.metrics.length" class="no-data">
                   {{ 'message.no_data' | transloco }}
                 </td>
               </tr></ng-template
@@ -246,9 +235,10 @@
           </table>
         </div>
         <mat-paginator
+          #paginatorMetrics
           [pageSizeOptions]="pageSizeOptions"
-          [length]="totalMetrics"
-          [pageSize]="limitMetrics"
+          [length]="pagigation.metrics.total"
+          [pageSize]="pagigation.metrics.limit"
           (page)="search()"
           showFirstLastButtons
         >
@@ -257,11 +247,11 @@
     </mat-card>
   </div>
 
-  <div class="col-3" style="padding-top: 10px" *ngIf="false">
+  <div class="col-3" *ngIf="false">
     <div class="density-settings">
       <div class="density-settings col-3">
         <div class="container scrollbar">
-          <table mat-table [dataSource]="modelValidationScoreTableSource">
+          <table #paginatorScores mat-table [dataSource]="dataSource.scores">
             <!-- Position Column -->
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef>
@@ -288,11 +278,14 @@
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-header-row *matHeaderRowDef="displyedColumens.scores"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displyedColumens.scores"
+            ></tr>
             <ng-template matNoDataRow
               ><tr>
-                <td [colSpan]="displayedColumns.length" class="no-data">
+                <td [colSpan]="displyedColumens.scores.length" class="no-data">
                   {{ 'message.no_data' | transloco }}
                 </td>
               </tr></ng-template
