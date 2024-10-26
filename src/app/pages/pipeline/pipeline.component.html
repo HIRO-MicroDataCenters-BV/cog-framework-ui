@@ -11,3 +11,8 @@
     </div>
   </mat-card-content>
 </mat-card>
+<!-- dialogs -->
+<ng-template #dialogCreateRun>
+  <app-dialog [title]="'title.create_' | transloco: { name: 'run' }">
+  </app-dialog>
+</ng-template>

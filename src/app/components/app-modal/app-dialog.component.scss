@@ -1,0 +1,37 @@
+@use '@angular/material' as mat;
+@use '../../../assets/styles/theme/main';
+@include mat.core();
+
+@import '../../../assets/styles/variable.scss';
+
+.dialog {
+  &-header {
+    h6 {
+      font-size: 20px;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: mat.get-theme-color(main.$theme, neutral, 30);
+    }
+  }
+  &-content {
+  }
+  &-actions {
+    gap: $m-0;
+    .varient {
+      &-primary {
+        @include mat.button-color(main.$theme, $color-variant: primary);
+      }
+      &-secondary {
+        @include mat.button-color(main.$theme, $color-variant: secondary);
+      }
+      &-tertiary {
+        @include mat.button-color(main.$theme, $color-variant: tertiary);
+      }
+      &-error {
+        @include mat.button-color(main.$theme, $color-variant: error);
+      }
+    }
+  }
+  .action {
+  }
+}

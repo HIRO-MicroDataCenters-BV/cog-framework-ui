@@ -6,6 +6,6 @@ export interface ITabItem {
 
 export interface IActionItem {
   label: string;
-  action: unknown;
+  action: () => unknown;
   disabled?: boolean;
 }

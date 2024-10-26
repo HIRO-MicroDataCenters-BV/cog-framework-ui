@@ -11,6 +11,7 @@ import { LottieComponent } from 'ngx-lottie';
 import { AppLottieComponent } from './lottie/lottie.component';
 import { AppSidebarComponent } from './sidebar/sidebar.component';
 import { AppGraphComponent } from './graph/graph.component';
+import { AppDialogComponent } from './app-modal/app-dialog.component';
 
 @NgModule({
   imports: [
@@ -23,8 +24,8 @@ import { AppGraphComponent } from './graph/graph.component';
     AppLottieComponent,
     AppSidebarComponent,
     AppGraphComponent,
+    AppDialogComponent,
   ],
   providers: [],
-  declarations: [],
 })
 export class MaterialComponentsModule {}

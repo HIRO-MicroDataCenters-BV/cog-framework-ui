@@ -25,6 +25,7 @@ import { AppUserToolbarComponent } from './layouts/main/user-toolbar/user-toolba
 import { provideLottieOptions } from 'ngx-lottie';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { TranslocoRootModule } from './transloco-root.module';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [AppComponent, MainLayoutComponent, AppUserToolbarComponent],
@@ -41,6 +42,11 @@ import { TranslocoRootModule } from './transloco-root.module';
     TranslocoRootModule,
   ],
   providers: [
+    {
+      provide: MatDialogRef,
+      useValue: {},
+    },
+    { provide: MAT_DIALOG_DATA, useValue: {} },
     provideHttpClient(withInterceptorsFromDi()),
     provideLottieOptions({
       player: () => import('lottie-web'),

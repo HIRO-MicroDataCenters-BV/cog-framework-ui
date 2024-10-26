@@ -7,6 +7,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { IActionItem, ITabItem } from './types';
 import { MatTabNavPanel } from '@angular/material/tabs';
 import { NgIf, NgClass } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-data-header',
@@ -18,6 +19,7 @@ import { NgIf, NgClass } from '@angular/common';
     MatToolbarModule,
     NgIf,
     NgClass,
+    TranslocoPipe,
   ],
   standalone: true,
   templateUrl: './data-header.component.html',

@@ -1,5 +1,10 @@
 <div class="actions">
-  <button *ngFor="let item of items" mat-flat-button [disabled]="item.disabled">
-    {{ item.label }}
+  <button
+    *ngFor="let item of items"
+    mat-flat-button
+    [disabled]="item.disabled"
+    (click)="item.action()"
+  >
+    {{ 'action.' + item.label | transloco }}
   </button>
 </div>
