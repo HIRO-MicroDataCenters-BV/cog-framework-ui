@@ -26,6 +26,7 @@ import { provideLottieOptions } from 'ngx-lottie';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { TranslocoRootModule } from './transloco-root.module';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 
 @NgModule({
   declarations: [AppComponent, MainLayoutComponent, AppUserToolbarComponent],
@@ -42,6 +43,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
     TranslocoRootModule,
   ],
   providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { appearance: 'outline' },
+    },
     {
       provide: MatDialogRef,
       useValue: {},

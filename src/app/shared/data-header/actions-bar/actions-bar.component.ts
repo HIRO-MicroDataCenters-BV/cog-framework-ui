@@ -4,7 +4,7 @@ import { IActionItem } from '../types';
 import { NgForOf } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MatDialogModule } from '@angular/material/dialog';
-import { AppDialogComponent } from 'src/app/components/app-modal/app-dialog.component';
+import { AppDialogComponent } from 'src/app/components/app-dialog/app-dialog.component';
 
 @Component({
   selector: 'app-actions-bar',

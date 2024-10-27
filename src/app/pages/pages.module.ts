@@ -17,7 +17,8 @@ import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-det
 import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
 import { AppGraphComponent } from '../components/graph/graph.component';
 import { DatasetDeleteConfirmationComponent } from './dataset/dataset-delete-confirmation/dataset-delete-confirmation.component';
-import { AppDialogComponent } from '../components/app-modal/app-dialog.component';
+import { AppDialogComponent } from '../components/app-dialog/app-dialog.component';
+import { AppTableComponent } from '../components/app-table/app-table.component';
 
 @NgModule({
   imports: [
@@ -27,6 +28,7 @@ import { AppDialogComponent } from '../components/app-modal/app-dialog.component
     AppPipelineRunComponent,
     AppGraphComponent,
     AppDialogComponent,
+    AppTableComponent,
   ],
   providers: [],
   declarations: [

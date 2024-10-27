@@ -35,7 +35,8 @@
     "archive": "archive",
     "clone": "clone",
     "compare": "compare",
-    "refresh": "refresh"
+    "refresh": "refresh",
+    "start": "start"
   },
   "label": {
     "id": "id",
@@ -83,6 +84,7 @@
     "upload_": "upload {{name}}",
     "confirm_delete_": "confirm delete {{name}}?",
     "create_": "create {{name}}",
-    "clone_": "clone {{name}}"
+    "clone_": "clone {{name}}",
+    "select_": "select {{name}}"
   }
 }

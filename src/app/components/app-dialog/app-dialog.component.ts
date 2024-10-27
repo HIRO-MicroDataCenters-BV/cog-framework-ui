@@ -1,11 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
-import { DIALOG_DATA, DialogModule, DialogRef } from '@angular/cdk/dialog';
+import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { MatCardModule } from '@angular/material/card';
-import {
-  MatDialogActions,
-  MatDialogContainer,
-  MatDialogModule,
-} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { TranslocoPipe } from '@jsverse/transloco';
 import {
@@ -23,11 +18,7 @@ import { ButtonItem } from 'src/app/model/General';
   selector: 'app-dialog',
   standalone: true,
   imports: [
-    DialogModule,
     MatCardModule,
-    MatDialogModule,
-    MatDialogContainer,
-    MatDialogActions,
     MatButtonModule,
     TranslocoPipe,
     AsyncPipe,
@@ -47,8 +38,15 @@ export class AppDialogComponent {
   data = inject(DIALOG_DATA);
   ref = inject<DialogRef<string>>(DialogRef<string>);
 
-  action(type: string | undefined): void {
-    console.log('type');
-    this.ref.close(type);
+  action(
+    type: string | undefined,
+    action: () => unknown = () => {},
+    hasClose: boolean = true,
+  ): void {
+    console.log('type', type, action);
+    action();
+    if (hasClose) {
+      this.ref.close(type);
+    }
   }
 }

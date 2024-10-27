@@ -6,11 +6,15 @@
 
 .dialog {
   &-header {
+    margin-bottom: $m-1;
     h6 {
       font-size: 20px;
-      font-weight: 500;
-      text-transform: uppercase;
-      color: mat.get-theme-color(main.$theme, neutral, 30);
+      font-weight: 400;
+
+      color: mat.get-theme-color(main.$theme, neutral, 0);
+      &::first-letter {
+        text-transform: capitalize;
+      }
     }
   }
   &-content {
