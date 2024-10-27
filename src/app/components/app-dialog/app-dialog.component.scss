@@ -5,6 +5,7 @@
 @import '../../../assets/styles/variable.scss';
 
 .dialog {
+  outline: 0 !important;
   &-header {
     margin-bottom: $m-1;
     h6 {
