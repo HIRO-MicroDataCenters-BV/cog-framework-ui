@@ -5,7 +5,7 @@ export type Pagination = {
 };
 
 export interface ButtonItem {
-  varient: 'primary' | 'secondary' | 'tertiary' | 'error';
+  variant: 'primary' | 'secondary' | 'tertiary' | 'error';
   type: string;
   ui: 'basic' | 'flat' | 'raised' | 'stroked';
   action?: () => unknown;

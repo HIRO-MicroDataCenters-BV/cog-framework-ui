@@ -22,7 +22,7 @@
   }
   &-actions {
     gap: $m-0;
-    .varient {
+    .variant {
       &-primary {
         @include mat.button-color(main.$theme, $color-variant: primary);
       }

@@ -71,12 +71,12 @@ export class PipelineComponent implements OnInit {
   dialogActions: ButtonItems = {
     createRun: [
       {
-        varient: 'secondary',
+        variant: 'secondary',
         type: 'cancel',
         ui: 'basic',
       },
       {
-        varient: 'primary',
+        variant: 'primary',
         type: 'start',
         ui: 'flat',
         action: () => {

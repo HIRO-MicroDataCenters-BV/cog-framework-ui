@@ -12,7 +12,7 @@
           *ngSwitchCase="'flat'"
           mat-flat-button
           (click)="action(item.type, item.action, item.hasClose)"
-          [class]="'action ui-' + item.ui + ' varient-' + item.varient"
+          [class]="'action ui-' + item.ui + ' variant-' + item.variant"
         >
           {{ 'action.' + item.type | transloco }}
         </button>
@@ -20,7 +20,7 @@
           *ngSwitchDefault
           mat-button
           (click)="action(item.type, item.action, item.hasClose)"
-          [class]="'action ui-' + item.ui + ' varient-' + item.varient"
+          [class]="'action ui-' + item.ui + ' variant-' + item.variant"
         >
           {{ 'action.' + item.type | transloco }}
         </button>

@@ -10,12 +10,12 @@ export const DEF_SEARCH_PARAMS: SearcherOption[] = [
 
 export const DEF_DIALOG_ACTIONS: ButtonItem[] = [
   {
-    varient: 'secondary',
+    variant: 'secondary',
     type: 'cancel',
     ui: 'basic',
   },
   {
-    varient: 'primary',
+    variant: 'primary',
     type: 'ok',
     ui: 'flat',
   },
