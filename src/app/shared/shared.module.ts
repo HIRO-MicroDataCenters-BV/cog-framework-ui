@@ -28,6 +28,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { DatePipe } from '@angular/common';
 import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MatDialogModule } from '@angular/material/dialog';
 @NgModule({
   declarations: [
     AccordionAnchorDirective,
@@ -50,6 +51,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     AppFluidHeightDirective,
     AppDataHeaderComponent,
     AppSpinnerComponent,
+
     FormsModule,
     ReactiveFormsModule,
     MatTabsModule,
@@ -66,6 +68,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     MatButtonModule,
     MatTableModule,
     MatPaginatorModule,
+    MatDialogModule,
     MonacoEditorModule,
     AppLottieComponent,
     DatePipe,

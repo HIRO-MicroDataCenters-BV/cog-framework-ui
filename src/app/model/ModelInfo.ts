@@ -25,4 +25,9 @@ export type GetModelParams = {
   page?: number;
   pageSize?: number;
   key?: string;
+  //TODO: remove after standarizide
+  metrics_limit?: number;
+  metrics_page?: number;
+  artifacts_limit?: number;
+  artifacts_page?: number;
 };

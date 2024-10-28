@@ -4,12 +4,8 @@ import { CogFrameworkApiService } from '../../service/cog-framework-api.service'
 import {
   GetValidationArtifactsParams,
   ValidationArtifactsData,
-  ValidationArtifactsResponse,
 } from '../../model/ValidationArtifacts';
-import {
-  GetValidationMetricsParams,
-  ValidationMetricsData,
-} from '../../model/ValidationMetrics';
+import { GetValidationMetricsParams } from '../../model/ValidationMetrics';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModelValidationService } from '../../service/model-validation.service';
 import {
@@ -31,17 +27,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { GetModelParams } from 'src/app/model/ModelInfo';
 
-interface ModelValidationTable {
-  name: string;
-  value: number;
-}
-
-interface ModelValidationTableModel {
-  id: number;
-  dataset_id: number;
-  model_id: number;
-}
-
 @Component({
   selector: 'app-model-validation-search',
   standalone: true,
@@ -60,50 +45,56 @@ interface ModelValidationTableModel {
   styleUrls: ['./model-validation-search.component.scss'],
 })
 export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
-  modelValidationName = '';
-  modelValidationId = '';
-
-  validationMetricsData: ValidationMetricsData | undefined;
-  validationArtifactsResponse: ValidationArtifactsResponse | undefined;
-
-  loading = false;
-
-  modelValidationTableDataSource: ModelValidationTableModel[] = [];
-  displayedColumnsModelValidationTable: string[] = [
-    'id',
-    'dataset_id',
-    'model_id',
-    'action',
-  ];
-
-  modelValidationScoreTableSource: ModelValidationTable[] = [];
-  displayedColumns: string[] = ['name', 'value'];
-
-  modelValidationMetricTableDataSource = new MatTableDataSource();
-  modelValidationMetricTableDisplayedColumns: string[] = [
-    'id',
-    'dataset_id',
-    'accuracy_score',
-    'example_count',
-    'f1_score',
-    'log_loss',
-    'precision_score',
-    'recall_score',
-    'roc_auc',
-    'score',
-  ];
-
   pageSizeOptions = PAGE_SIZE_OPTIONS;
-
-  limitMetrics = this.pageSizeOptions[0];
-  pageMetrics = 1;
-  totalMetrics = 0;
-
   searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchQuery = '';
   defaultSearchOptionKey = '';
 
-  @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
+  loading = false;
+
+  dataSource = {
+    metrics: new MatTableDataSource(),
+    scores: new MatTableDataSource(),
+    artifacts: new MatTableDataSource(),
+  };
+  displyedColumens = {
+    metrics: [
+      'id',
+      'dataset_id',
+      'accuracy_score',
+      'example_count',
+      'f1_score',
+      'log_loss',
+      'precision_score',
+      'recall_score',
+      'roc_auc',
+      'score',
+    ],
+    scores: ['name', 'value'],
+    artifacts: ['id', 'dataset_id', 'model_id', 'action'],
+  };
+  pagigation = {
+    metrics: {
+      limit: this.pageSizeOptions[0],
+      page: 1,
+      total: 0,
+    },
+    scores: {
+      limit: this.pageSizeOptions[0],
+      page: 1,
+      total: 0,
+    },
+    artifacts: {
+      limit: this.pageSizeOptions[0],
+      page: 1,
+      total: 0,
+    },
+  };
+  id = '';
+  name = '';
+
+  @ViewChild('paginatorMetrics') paginatorMetrics: MatPaginator | undefined;
+  @ViewChild('paginatorArtifacts') paginatorArtifacts: MatPaginator | undefined;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
@@ -113,40 +104,67 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe((data) => {
+      //TODO: rm params after standartizide
+      const params = { ...data };
       if (params['name']) {
-        this.modelValidationName = params['name'];
-        this.defaultSearchQuery = this.modelValidationName;
+        this.name = params['name'];
+        this.defaultSearchQuery = this.name;
+
+        params['model_name'] = this.name;
       }
       if (params['id']) {
-        this.modelValidationId = params['id'];
-        this.defaultSearchQuery = this.modelValidationId;
+        this.id = params['id'];
+        this.defaultSearchQuery = this.id;
+        params['model_id'] = this.id;
       }
       if (params['key']) {
         this.defaultSearchOptionKey = params['key'];
       }
-      if (params['limit']) {
-        this.limitMetrics = params['limit'];
+      if (params['metrics_limit']) {
+        this.pagigation.metrics.limit = params['metrics_limit'];
       }
-      if (params['page']) {
-        this.pageMetrics = params['page'];
+      if (params['metrics_page']) {
+        this.pagigation.metrics.page = params['metrics_page'];
+      }
+      if (params['artifacts_limit']) {
+        this.pagigation.artifacts.limit = params['artifacts_limit'];
+      }
+      if (params['artifacts_page']) {
+        this.pagigation.artifacts.page = params['artifacts_page'];
       }
 
-      this.getModelValidationArtifacts({ ...params });
-      this.getModeValidationMetrics({ ...params });
+      this.getModelValidationArtifacts({
+        ...params,
+        ...{
+          page: params['artifacts_page'] ?? this.pagigation.artifacts.page,
+          limit: params['artifacts_limit'] ?? this.pagigation.artifacts.limit,
+        },
+      });
+      this.getModeValidationMetrics({
+        ...params,
+        ...{
+          page: params['metrics_page'] ?? this.pagigation.metrics.page,
+          limit: params['metrics_limit'] ?? this.pagigation.metrics.limit,
+        },
+      });
     });
   }
 
   ngAfterViewInit() {
-    if (this.paginator) {
-      this.modelValidationMetricTableDataSource.paginator = this.paginator;
+    if (this.paginatorMetrics) {
+      this.dataSource.metrics.paginator = this.paginatorMetrics;
+    }
+    if (this.paginatorArtifacts) {
+      this.dataSource.artifacts.paginator = this.paginatorArtifacts;
     }
   }
 
   open(item: ValidationArtifactsData): void {
-    this.validationArtifactsResponse?.data.forEach((res) => {
-      if (item.id === res.id) {
-        this.modelValidationService.modelValidationArtifactsData = res;
+    this.dataSource.artifacts?.data.forEach((res) => {
+      const value = res as ValidationArtifactsData;
+      if (res && item.id === value.id) {
+        this.modelValidationService.modelValidationArtifactsData = value;
       }
     });
     this.router
@@ -162,45 +180,25 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
     const params: GetModelParams = event.query
       ? { [event.key]: event.query }
       : {};
-    const i = (this.paginator?.pageIndex as number) ?? 0;
-    this.pageMetrics = i + 1;
-    this.limitMetrics = params?.pageSize ?? this.limitMetrics;
-    params.limit = this.paginator?.pageSize ?? this.limitMetrics;
-    params.page = this.pageMetrics;
+    const idxMetrics = (this.paginatorMetrics?.pageIndex as number) ?? 0;
+    const idxArtifacts = (this.paginatorArtifacts?.pageIndex as number) ?? 0;
+    this.pagigation.metrics.page = idxMetrics + 1;
+    this.pagigation.metrics.limit =
+      params?.pageSize ?? this.pagigation.metrics.limit;
+
+    this.pagigation.artifacts.page = idxArtifacts + 1;
+    this.pagigation.artifacts.limit =
+      params?.pageSize ?? this.pagigation.artifacts.limit;
+
+    params['metrics_limit'] =
+      this.paginatorMetrics?.pageSize ?? this.pagigation.metrics.limit;
+    params['metrics_page'] = this.pagigation.metrics.page;
+
+    params['artifacts_limit'] =
+      this.paginatorArtifacts?.pageSize ?? this.pagigation.artifacts.limit;
+    params['artifacts_page'] = this.pagigation.artifacts.page;
     params.key = event.key;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: params,
-      queryParamsHandling: 'replace',
-    });
 
-    /*
-    let params: GetValidationArtifactsParams = {
-      model_name: this.modelValidationName,
-    };
-    if (this.modelValidationId.length > 0) {
-      params = { model_id: this.modelValidationId };
-    }
-    */
-    /*
-    const i = (this.paginator?.pageIndex as number) ?? 0;
-
-    this.page = i + 1;
-    this.limit = params?.pageSize ?? this.limit;
-    params.limit = this.paginator?.pageSize ?? this.limit;
-    params.page = this.page;
-    */
-    /*
-    if (this.modelValidationId.length > 0) {
-      console.log('Search by ID');
-      this.getModelValidationArtifactByID();
-      this.getModeValidationMetricsById();
-    } else {
-      console.log('Search by Name');
-      this.getModelValidationArtifactByName();
-      this.getModeValidationMetricsByName();
-    }
-      */
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
@@ -213,22 +211,15 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
       this.cogFrameworkApiService.getModelValidationArtifacts(params);
 
     response.subscribe({
-      next: (res) => {
-        this.validationArtifactsResponse = res;
-        this.modelValidationTableDataSource = [];
-        res.data.forEach((data) => {
-          const dd: ModelValidationTableModel = {
-            id: data.id,
-            dataset_id: data.dataset_id,
-            model_id: data.model_id,
-          };
-          this.modelValidationTableDataSource.push(dd);
-        });
+      next: (v) => {
+        this.dataSource.artifacts.data = v.data;
+        this.pagigation.artifacts.total = v.pagination.total_items;
       },
       error: (e) => {
         console.error(e);
         if (e.status === RESPONSE_CODE.NOT_FOUND) {
-          this.modelValidationTableDataSource = [];
+          this.dataSource.artifacts.data = [];
+          this.pagigation.artifacts.total = 0;
         }
         this.loading = false;
       },
@@ -244,12 +235,14 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
 
     response.subscribe({
       next: (v) => {
-        this.modelValidationMetricTableDataSource.data = v.data;
+        this.dataSource.metrics.data = v.data;
+        this.pagigation.metrics.total = v.pagination.total_items;
       },
       error: (e) => {
         console.error(e);
         if (e.status === RESPONSE_CODE.NOT_FOUND) {
-          this.modelValidationMetricTableDataSource.data = [];
+          this.dataSource.metrics.data = [];
+          this.pagigation.metrics.total = 0;
         }
         this.loading = false;
       },
@@ -258,104 +251,4 @@ export class ModelValidationSearchComponent implements OnInit, AfterViewInit {
       },
     });
   }
-  /*
-  getModelValidationArtifactByID(): void {
-    this.loading = true;
-    const response = this.cogFrameworkApiService.getModelValidationArtifactById(
-      this.modelValidationId,
-    );
-
-    response.subscribe({
-      next: (res) => {
-        this.validationArtifactsResponse = res;
-        res.data.forEach((data) => {
-          const dd: ModelValidationTableModel = {
-            id: data.id,
-            dataset_id: data.dataset_id,
-            model_id: data.model_id,
-          };
-          this.modelValidationTableDataSource.push(dd);
-        });
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        console.info('complete');
-        this.loading = false;
-      },
-    });
-  }
-
-  getModelValidationArtifactByName(): void {
-    this.loading = true;
-    const response =
-      this.cogFrameworkApiService.getModelValidationArtifactByName(
-        this.modelValidationName,
-      );
-
-    response.subscribe({
-      next: (res) => {
-        this.validationArtifactsResponse = res;
-        res.data.forEach((data) => {
-          const dd: ModelValidationTableModel = {
-            id: data.id,
-            dataset_id: data.dataset_id,
-            model_id: data.model_id,
-          };
-          this.modelValidationTableDataSource.push(dd);
-        });
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  getModeValidationMetricsById(): void {
-    const response = this.cogFrameworkApiService.getModelValidationMetricsById(
-      this.modelValidationId,
-    );
-
-    response.subscribe({
-      next: (v) => {
-        this.validationMetricsData = v.data[0];
-        this.buildModelValidationMetrics(v.data);
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  getModeValidationMetricsByName(): void {
-    const response =
-      this.cogFrameworkApiService.getModelValidationMetricsByName(
-        this.modelValidationName,
-      );
-
-    response.subscribe({
-      next: (v) => {
-        this.validationMetricsData = v.data[0];
-        this.buildModelValidationMetrics(v.data);
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
-  }
-  */
 }

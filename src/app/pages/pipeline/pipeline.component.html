@@ -11,3 +11,29 @@
     </div>
   </mat-card-content>
 </mat-card>
+<!-- dialogs -->
+<ng-template #dialogCreateRun>
+  <app-dialog
+    [title]="'title.create_' | transloco: { name: 'run' }"
+    [actions]="dialogActions.createRun"
+  >
+    <form [formGroup]="pipelineForm" (ngSubmit)="onSubmit()">
+      <div>
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput type="text" formControlName="name" />
+        </mat-form-field>
+      </div>
+    </form>
+  </app-dialog>
+</ng-template>
+<ng-template #dialogSelectPipeline>
+  <app-dialog [title]="'title.select_' | transloco: { name: 'pipeline' }">
+    <app-table />
+  </app-dialog>
+</ng-template>
+<ng-template #dialogSelectExperiment>
+  <app-dialog [title]="'title.select_' | transloco: { name: 'pipeline' }">
+    <app-table />
+  </app-dialog>
+</ng-template>

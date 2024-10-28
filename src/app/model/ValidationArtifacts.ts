@@ -1,8 +1,11 @@
+import { Pagination } from './General';
+
 export interface ValidationArtifactsResponse {
   data: ValidationArtifactsData[];
   errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
+  pagination: Pagination;
 }
 
 export interface ValidationArtifactsData {
@@ -25,4 +28,6 @@ export interface ValidationArtifacts {
 export type GetValidationArtifactsParams = {
   model_id?: string;
   model_name?: string;
+  page?: number;
+  limit?: number;
 };
