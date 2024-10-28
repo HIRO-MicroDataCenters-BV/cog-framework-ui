@@ -43,7 +43,7 @@ export class CogFrameworkApiService {
 
   getModelDetailById(id: string): Observable<ModelDetailInfo> {
     return this.httpClient.get<ModelDetailInfo>(
-      `${this.baseURL}/model_details?id=${id}`,
+      `${this.baseURL}/models/details?model_id=${id}`,
     );
   }
 
