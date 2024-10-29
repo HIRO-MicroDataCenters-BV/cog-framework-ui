@@ -25,7 +25,7 @@ import { DeleteResponse } from '../model/DeleteResponse';
 import { ModelServe } from '../model/ModelServe';
 import { ModelServeResponse } from '../model/ModelServeResponse';
 import { UploadedModelFile } from '../model/ModelFile';
-import { PipelineResponse } from '../model/Pipeline';
+import { GetPipelineParams, PipelineResponse } from '../model/Pipeline';
 
 @Injectable({
   providedIn: 'root',
