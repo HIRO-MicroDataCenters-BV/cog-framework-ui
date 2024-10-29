@@ -22,10 +22,10 @@ import {
   ValidationMetricsResponse,
 } from '../model/ValidationMetrics';
 import { DeleteResponse } from '../model/DeleteResponse';
-import { PipelineResponse } from '../model/PipeLine';
 import { ModelServe } from '../model/ModelServe';
 import { ModelServeResponse } from '../model/ModelServeResponse';
 import { UploadedModelFile } from '../model/ModelFile';
+import { PipelineResponse } from '../model/Pipeline';
 
 @Injectable({
   providedIn: 'root',
@@ -65,11 +65,27 @@ export class CogFrameworkApiService {
     );
   }
 
+  getPipeline(params: GetPipelineParams = {}): Observable<PipelineResponse> {
+    return this.httpClient.get<PipelineResponse>(
+      `${this.baseURL}/pipelines/component`,
+      { params },
+    );
+  }
+  getPipelineByRun(
+    params: GetPipelineParams = {},
+  ): Observable<PipelineResponse> {
+    return this.httpClient.get<PipelineResponse>(
+      `${this.baseURL}/pipelines/component/run`,
+      { params },
+    );
+  }
+  /*
   getPipelineByModelID(id: string): Observable<PipelineResponse> {
     return this.httpClient.get<PipelineResponse>(
       `${this.baseURL}/pipeline/${id}`,
     );
   }
+  */
 
   // dataset apis
   getDatasetById(id: string): Observable<DatasetById> {
