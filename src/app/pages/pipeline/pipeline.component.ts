@@ -7,11 +7,12 @@ import {
 } from '@angular/core';
 import { IActionItem } from 'src/app/shared/data-header/types';
 import { IRun } from './types';
-import { mocks } from 'src/app/mocks';
+//import { mocks } from 'src/app/mocks';
 import { MatDialogConfig } from '@angular/material/dialog';
 import { Dialog } from '@angular/cdk/dialog';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ButtonItem } from 'src/app/model/General';
+import { Pipeline } from 'src/app/model/Pipeline';
 /*
 interface PipeLineTableModel {
   name: string;
@@ -87,7 +88,7 @@ export class PipelineComponent implements OnInit {
     ],
   };
 
-  runs: IRun[] = mocks.runs;
+  runs: Pipeline[] = []; //mocks.runs;
 
   @ViewChild('dialogCreateRun', { read: TemplateRef })
   dialogCreateRun: TemplateRef<unknown> | unknown;
@@ -162,6 +163,10 @@ export class PipelineComponent implements OnInit {
      model_ids: []
     }
     */
+  }
+
+  changeData(data: Pipeline) {
+    this.runs = data ? [data] : [];
   }
 
   open(inputCfg: MatDialogConfig = {}) {

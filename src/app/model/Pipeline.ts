@@ -1,3 +1,5 @@
+import { Pagination } from './General';
+
 export interface PipelineTaskInputOutput {
   name: string;
   value: string;
@@ -15,10 +17,11 @@ export interface PipelineTask {
   inputs: PipelineTaskInputOutput[];
   outputs: PipelineTaskInputOutput[];
   status: 'Pending' | 'Running' | 'Succeeded' | 'Skipped' | 'Failed' | 'Error';
-  startedAt: Date;
-  finishedAt: Date;
+  startedAt: string;
+  finishedAt: string;
   resourcesDuration: PipelineTaskResourcesDuration;
-  children: PipelineTaskStructure;
+  //children: PipelineTaskStructure | PipelineTask[];
+  children: PipelineTask[];
 }
 
 export interface PipelineTaskStructure {
@@ -30,19 +33,14 @@ export interface Pipeline {
   pipeline_workflow_name: string;
   task_structure: PipelineTaskStructure;
 }
-/*
-export interface Pipeline {
-  createdAt_in_sec: string;
-  description: string;
-  model_id: number;
+
+export interface PipelineStatusType {
   name: string;
-  parameters: string;
-  pipeline_spec: string;
-  pipeline_spec_uri: string;
-  status: string;
-  uuid: string;
+  key: string;
+  error: boolean;
+  completed: boolean;
+  icon?: string;
 }
-*/
 
 export type GetPipelineParams = {
   id?: string;
@@ -62,4 +60,5 @@ export interface PipelineResponse {
   errors?: { date: string; error_code: string; error_message: string }[];
   message: string;
   success: boolean;
+  pagination: Pagination;
 }

@@ -1,6 +1,10 @@
 <mat-card class="pipeline">
   <mat-card-header>
-    <app-data-header class="header-toolbar" [actions]="actions" />
+    <app-data-header
+      class="header-toolbar"
+      [actions]="actions"
+      (changeData)="changeData($event)"
+    />
   </mat-card-header>
   <mat-card-content>
     <div class="list">

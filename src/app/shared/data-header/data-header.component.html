@@ -13,7 +13,15 @@
   <mat-toolbar-row *ngIf="hasFilter" class="divider"></mat-toolbar-row>
   <mat-toolbar-row *ngIf="hasFilter" class="row">
     <div class="col-filters">
+      <!--
       <app-filters />
+      -->
+      <app-searcher
+        [options]="searchOptions"
+        [defaultQuery]="defaultSearchQuery"
+        [defaultOptionKey]="defaultSearchOptionKey"
+        (updated)="search($event)"
+      ></app-searcher>
     </div>
   </mat-toolbar-row>
 </mat-toolbar>

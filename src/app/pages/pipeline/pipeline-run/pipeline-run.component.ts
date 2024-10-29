@@ -1,14 +1,19 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { IPipelineStatusType, IRun } from '../types';
 import { MatCardModule } from '@angular/material/card';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs/internal/Subscription';
-import { timeInterval, interval } from 'rxjs';
 import { NgClass, NgForOf, NgIf, DatePipe } from '@angular/common';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { RouterModule } from '@angular/router';
 import { getFormattedDiff } from 'src/app/utils';
+import { timeInterval, interval } from 'rxjs';
+
+import {
+  Pipeline,
+  PipelineStatusType,
+  PipelineTask,
+} from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-pipeline-run',
@@ -29,13 +34,16 @@ import { getFormattedDiff } from 'src/app/utils';
 export class AppPipelineRunComponent implements OnInit, OnDestroy {
   subscribes: Subscription[] | undefined = [];
   @Input()
-  get data(): IRun {
+  get data(): Pipeline {
     return this._data;
   }
-  set data(data: IRun) {
+  set data(data: Pipeline) {
     this._data = data;
+    this.root = this.getRoot(data);
   }
-  _data!: IRun;
+  _data!: Pipeline;
+
+  root!: PipelineTask;
 
   duration: string = '';
 
@@ -53,40 +61,75 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     }
   }
 
+  getRoot(data: Pipeline): PipelineTask {
+    const tasks = data.task_structure;
+    const nodes = Object.keys(data.task_structure);
+    return tasks[nodes[0]];
+  }
+
+  hasError(status: PipelineTask['status']) {
+    return status === 'Error';
+  }
+
+  isPending(status: PipelineTask['status']) {
+    return status === 'Pending';
+  }
+
   tickTimer() {
-    const startAt = this.data.startAt;
-    this.setDuration(startAt);
+    const startedAt = this.root.startedAt;
+    const finishedAt = this.root.finishedAt;
+    this.setDuration(startedAt, finishedAt);
     if (this.isRealtime) {
       const sec = interval(1000).pipe(timeInterval());
       const subscription = sec.subscribe(() => {
-        this.setDuration(startAt);
+        this.setDuration(startedAt, finishedAt);
       });
       this.subscribes?.push(subscription);
     }
   }
-  getProgress(): IPipelineStatusType[] {
-    const list = this.types;
-    const status = this.data?.status;
-    const result: IPipelineStatusType[] = [];
-    let i = 0;
-    Object.keys(list).forEach((key) => {
-      const name = list[key as keyof typeof list];
-      const phase = status?.phase ?? 0;
-      const error = (phase == i && status?.error) ?? false;
-
-      if (name) {
+  getProgress(): PipelineStatusType[] {
+    const result: PipelineStatusType[] = [];
+    if (this.root) {
+      const flatTree: PipelineTask[] = this.flatten(
+        this.root.children,
+        0,
+        null,
+      ) as PipelineTask[];
+      for (const task of flatTree) {
         result.push({
-          key,
-          name,
-          error,
-          completed: phase > i,
+          key: task.name.toLowerCase(),
+          name: task.name.replace('-', ' '),
+          error: this.hasError(task.status),
+          completed: !this.isPending(task.status),
         });
       }
-      i++;
-    });
+    }
+    console.log('p', result);
     return result;
   }
-  setDuration(startAt: Date) {
-    this.duration = getFormattedDiff(startAt);
+  flatten(
+    data: PipelineTask | PipelineTask[],
+    level = 0,
+    parent: PipelineTask | null = null,
+  ) {
+    const result: unknown[] = [];
+
+    if (!data) {
+      return result;
+    }
+
+    if (Array.isArray(data)) {
+      data.forEach((item) =>
+        result.push(...this.flatten(item, level + 1, data[0])),
+      );
+    } else {
+      result.push({ ...data, level, parent });
+      result.push(...this.flatten(data.children, level + 1, data));
+    }
+
+    return result;
+  }
+  setDuration(startedAt: string, finishedAt: string) {
+    this.duration = getFormattedDiff(startedAt, finishedAt);
   }
 }

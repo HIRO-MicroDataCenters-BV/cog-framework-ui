@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IRun } from '../types';
+//import { IRun } from '../types';
 import { IActionItem, ITabItem } from 'src/app/shared/data-header/types';
 import { Subscription } from 'rxjs';
-import { mocks } from 'src/app/mocks';
+//import { mocks } from 'src/app/mocks';
 import { ActivatedRoute } from '@angular/router';
 import { PipelineRunOutputComponent } from '../pipeline-run-output/pipeline-run-output.component';
+import { Pipeline } from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-pipeline-detail',
@@ -15,7 +16,7 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
   subscribes: Subscription[] = [];
   // NOTE: A MOCK DATA FOR RUNS
   // TODO: Remove a mock data after connection to the API
-  data: IRun | undefined;
+  data: Pipeline | undefined;
   id: number | undefined;
 
   actions: IActionItem[] = [
@@ -71,6 +72,7 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
 
   fetch(): void {
     // TODO: REMOVE AFTER API CONNECT
+    /*
     this.data = mocks.runs.find((item) => item.id == this.id);
     if (this.data) {
       this.tabs = [
@@ -88,5 +90,6 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
         },
       ];
     }
+    */
   }
 }
