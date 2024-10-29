@@ -1,12 +1,19 @@
-<div>
+<div class="model-detail">
   <span class="error" *ngIf="errMsg">{{ errMsg }}</span>
   <div class="row">
-    <mat-card class="col-12 col-sm-6 col-md-5">
+    <app-data-header
+      class="col-12"
+      [hasFilter]="false"
+      [tabs]="tabs"
+      [tabPanel]="tabPanel"
+    />
+    <mat-tab-nav-panel class="col-12" #tabPanel> test </mat-tab-nav-panel>
+    <mat-card class="col-12 col-sm-6 col-md-5" #tabPanel>
       <mat-card-header>
         <mat-card-title>Model Information</mat-card-title>
       </mat-card-header>
 
-      <mat-card-content class="content">
+      <mat-card-content>
         <div class="box">
           <span class="list-item"> Id: </span>
           <span>{{ modelDetailData?.model_id }}</span>
@@ -18,19 +25,26 @@
         </div>
 
         <div class="box">
-          <span class="list-item"> Description: </span>
-          <span>{{ modelDetailData?.model_description }}</span>
-        </div>
-
-        <div class="box">
           <span class="list-item"> Author: </span>
           <span>{{ modelDetailData?.author }}</span>
         </div>
 
         <div class="box">
           <span class="list-item"> Creation Time: </span>
-          <span>{{ modelDetailData?.register_date }}</span>
+          <span>{{
+            modelDetailData?.register_date | date: 'dd-MMM-yyyy hh:mm:ss'
+          }}</span>
         </div>
+      </mat-card-content>
+
+      <mat-card-header>
+        <mat-card-title>Model Description:</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="model-detail__description">
+          {{ modelDetailData?.model_description }}
+        </p>
       </mat-card-content>
     </mat-card>
 
@@ -336,63 +350,6 @@
                 let row;
                 columns: modelValidationMetricTableDisplayedColumns
               "
-            ></tr>
-            <ng-template matNoDataRow>
-              <tr>
-                <td [colSpan]="displayedColumns.length" class="no-data">
-                  No data...
-                </td>
-              </tr>
-            </ng-template>
-          </table>
-        </div>
-      </div>
-    </mat-card-content>
-  </mat-card>
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Model Pipeline</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="col-12" style="display: flex">
-        <div class="density-settings table-responsive">
-          <table
-            mat-table
-            [dataSource]="modelPipelineTableTableDataSource"
-            class="mat-elevation-z0"
-            *ngIf="modelPipelineTableTableDataSource.length > 0"
-          >
-            <!-- Position Column -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
-              <td mat-cell *matCellDef="let element">
-                {{ element.name }}
-              </td>
-            </ng-container>
-
-            <!-- Position Column -->
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
-              <td mat-cell *matCellDef="let element">
-                {{ element.description }}
-              </td>
-            </ng-container>
-
-            <!-- Position Column -->
-            <ng-container matColumnDef="created_at">
-              <th mat-header-cell *matHeaderCellDef>Created At</th>
-              <td mat-cell *matCellDef="let element">
-                {{ element.createdAt | date: 'dd-MMM-yyyy hh:mm' }}
-              </td>
-            </ng-container>
-
-            <tr
-              mat-header-row
-              *matHeaderRowDef="displayedColumnsModelPipeLineTable"
-            ></tr>
-            <tr
-              mat-row
-              *matRowDef="let row; columns: displayedColumnsModelPipeLineTable"
             ></tr>
             <ng-template matNoDataRow>
               <tr>

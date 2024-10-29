@@ -24,6 +24,8 @@ import {
 import { ValidationArtifactsData } from '../../model/ValidationArtifacts';
 import { ModelUploadComponent } from '../../components/model-upload/model-upload.component';
 import { ModelFileData } from '../../model/ModelFile';
+import { AppDataHeaderComponent } from '../../shared/data-header/data-header.component';
+import { ITabItem } from '../../shared/data-header/types';
 
 @Component({
   selector: 'app-model-detail',
@@ -36,6 +38,7 @@ import { ModelFileData } from '../../model/ModelFile';
     NgIf,
     DatePipe,
     ModelUploadComponent,
+    AppDataHeaderComponent,
   ],
   templateUrl: './model-detail.component.html',
   styleUrl: './model-detail.component.scss',
@@ -74,10 +77,23 @@ export class ModelDetailComponent {
   ];
 
   modelPipelineTableTableDataSource: ModelPipelineTableModel[] = [];
-  displayedColumnsModelPipeLineTable: string[] = [
-    'name',
-    'description',
-    'created_at',
+  tabs: ITabItem[] = [
+    {
+      label: 'Input/Output',
+      key: 'inputOutput',
+    },
+    {
+      label: 'Details',
+      key: 'details',
+    },
+    {
+      label: 'Logs',
+      key: 'logs',
+    },
+    {
+      label: 'Events',
+      key: 'events',
+    },
   ];
 
   constructor(
@@ -86,8 +102,9 @@ export class ModelDetailComponent {
     private router: Router,
     private modelValidationService: ModelValidationService,
   ) {
-    if (this.activatedRoute.snapshot.queryParams['id']) {
-      this.modelId = this.activatedRoute.snapshot.queryParams['id'];
+    const modelId = this.activatedRoute.snapshot.paramMap.get('id');
+    if (modelId) {
+      this.modelId = modelId;
     }
     this.modelDetails();
   }
@@ -123,10 +140,6 @@ export class ModelDetailComponent {
         console.info('complete');
       },
     });
-  }
-
-  back(): void {
-    this.router.navigate(['/model']).then(() => {});
   }
 
   open(item: ValidationArtifactsData): void {

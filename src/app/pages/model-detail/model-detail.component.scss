@@ -5,9 +5,6 @@
 }
 
 .box {
-  // display: flex;
-  font-size: 12px;
-  font-weight: 500;
   justify-content: space-evenly;
 }
 
@@ -24,4 +21,10 @@
   display: block;
   width: 100%;
   overflow-x: auto;
+}
+
+.model-detail {
+  &__description {
+    margin: 0;
+  }
 }

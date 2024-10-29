@@ -136,7 +136,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
 
   open(item: Model): void {
     this.router
-      .navigate(['/model-detail'], { queryParams: { id: item.id } })
+      .navigate(['/model-detail', item.id], { queryParams: { id: item.id } })
       .then(() => {
         console.log('redirected to other component');
       });
