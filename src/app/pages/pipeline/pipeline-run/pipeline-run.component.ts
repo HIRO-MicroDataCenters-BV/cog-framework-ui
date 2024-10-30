@@ -108,7 +108,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     }
     return result;
   }
-
   setDuration(startedAt: string, finishedAt: string) {
     this.duration = getFormattedDiff(startedAt, finishedAt);
   }

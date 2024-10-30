@@ -108,29 +108,6 @@ export class PipelineRunOutputComponent implements OnInit {
       }
     }
     return result;
-    /*
-    const list = this.types;
-    const status = this.data?.status;
-    const result: PipelineStatusType[] = [];
-    let i = 0;
-    Object.keys(list).forEach((key) => {
-      const name = list[key as keyof typeof list];
-      const phase = 0; //status?.phase ?? 0;
-      const error = false; //(phase === i && status?.error) ?? false;
-
-      if (name) {
-        result.push({
-          key,
-          name,
-          error,
-          completed: phase > i,
-          icon: `icon-${key}.json`,
-        });
-      }
-      i++;
-    });
-    return result;
-    */
   }
 
   getStatus(id: number = 0) {
