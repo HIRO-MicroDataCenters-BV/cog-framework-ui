@@ -67,11 +67,11 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   }
 
   hasError(status: PipelineTask['status']) {
-    return status === 'Error';
+    return status === 'error' || status === 'failed';
   }
 
   isPending(status: PipelineTask['status']) {
-    return status === 'Pending';
+    return status === 'pending';
   }
 
   tickTimer() {
@@ -93,11 +93,12 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
         this.root.children,
       ) as PipelineTask[];
       for (const task of flatTree) {
+        const status = task.status.toLowerCase();
         result.push({
           key: task.name.toLowerCase(),
           name: task.name.replace('-', ' '),
-          error: this.hasError(task.status),
-          completed: !this.isPending(task.status),
+          error: this.hasError(status as PipelineTask['status']),
+          completed: !this.isPending(status as PipelineTask['status']),
         });
       }
     }

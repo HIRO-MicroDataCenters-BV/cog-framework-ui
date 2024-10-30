@@ -36,7 +36,7 @@ export const flatten = (
   }
 
   if (Array.isArray(data)) {
-    data.forEach((item) => result.push(...flatten(item, level + 1, data[0])));
+    data.forEach((item) => result.push(...flatten(item, level + 1, parent)));
   } else {
     result.push({ ...data, level, parent });
     result.push(...flatten(data.children, level + 1, data));

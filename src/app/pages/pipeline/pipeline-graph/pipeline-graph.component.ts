@@ -1,6 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { IRunDataGraph } from '../types';
+import { Component, Input, OnInit } from '@angular/core';
+
+import {
+  Pipeline,
+  PipelineTask,
+  PipelineTreeNode,
+} from 'src/app/model/Pipeline';
+import { flatten, getRoot } from 'src/app/utils';
 
 @Component({
   selector: 'app-pipeline-graph',
@@ -8,20 +13,49 @@ import { IRunDataGraph } from '../types';
   styleUrls: ['./pipeline-graph.component.scss'],
 })
 export class PipelineGraphComponent implements OnInit {
-  data: IRunDataGraph[] | undefined;
+  @Input()
+  get data(): Pipeline {
+    return this._data;
+  }
+  set data(data: Pipeline) {
+    this._data = data;
+    this.root = this.getRoot(data);
+  }
+  _data!: Pipeline;
+  root!: PipelineTask;
 
-  constructor(private httpClient: HttpClient) {}
+  tree: PipelineTreeNode[] = [];
 
   ngOnInit() {
-    this.getData();
+    console.log('root', this.root);
+    const flatTree: PipelineTask[] = this.flatten(
+      this.root.children,
+    ) as PipelineTask[];
+    if (flatTree.length > 0) {
+      this.tree = this.getTree(flatTree);
+      console.log('t', this.tree);
+    }
   }
-  async getData() {
-    this.data = [
-      { id: '1', parentId: null, name: 'Root task', status: 1 },
-      { id: '2', parentId: '1', name: 'Any task', status: 1 },
-      { id: '3', parentId: '1', name: 'Secondary', status: -1 },
-      { id: '4', parentId: '2', name: 'Maybe else', status: 0 },
-      { id: '5', parentId: '4', name: 'Other one', status: 0 },
-    ];
+
+  getRoot(data: Pipeline): PipelineTask {
+    return getRoot(data);
+  }
+
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
+  }
+
+  getTree(data: PipelineTask[]): PipelineTreeNode[] {
+    const result = [];
+    for (const item of data) {
+      console.log('i', item);
+      result.push({
+        id: item.id,
+        parentId: item.parent ? item.parent.id : null,
+        name: item.name,
+        status: item.status.toLowerCase() as PipelineTask['status'],
+      });
+    }
+    return result;
   }
 }

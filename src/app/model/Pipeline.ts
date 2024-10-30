@@ -16,12 +16,13 @@ export interface PipelineTask {
   name: string;
   inputs: PipelineTaskInputOutput[];
   outputs: PipelineTaskInputOutput[];
-  status: 'Pending' | 'Running' | 'Succeeded' | 'Skipped' | 'Failed' | 'Error';
+  status: 'pending' | 'running' | 'succeeded' | 'skipped' | 'failed' | 'error';
   startedAt: string;
   finishedAt: string;
   resourcesDuration: PipelineTaskResourcesDuration;
   //children: PipelineTaskStructure | PipelineTask[];
   children: PipelineTask[];
+  parent?: PipelineTask;
 }
 
 export interface PipelineTaskStructure {
@@ -40,6 +41,13 @@ export interface PipelineStatusType {
   error: boolean;
   completed: boolean;
   icon?: string;
+}
+
+export interface PipelineTreeNode {
+  id: string;
+  parentId: string | null;
+  status: PipelineTask['status'];
+  name: string;
 }
 
 export type GetPipelineParams = {
