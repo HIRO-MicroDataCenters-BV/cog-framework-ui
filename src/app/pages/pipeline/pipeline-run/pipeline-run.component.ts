@@ -98,7 +98,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
       const flatTree: PipelineTask[] = this.flatten(
         this.root.children,
       ) as PipelineTask[];
-      console.log('sss', flatTree);
       for (const task of flatTree) {
         const status = task.status.toLowerCase();
         result.push({

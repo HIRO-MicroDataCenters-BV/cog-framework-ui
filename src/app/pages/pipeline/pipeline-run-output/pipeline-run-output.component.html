@@ -1,5 +1,5 @@
 <div class="pipeline-run-output">
-  <div>
+  <div class="progress-container scrollbar">
     <div class="progress">
       <div class="progress-bar">
         <div
@@ -27,9 +27,11 @@
             [autoplay]="item.completed"
           />
 
-          <mat-icon class="icon" *ngIf="item.completed">check_circle</mat-icon>
           <mat-icon class="icon" *ngIf="item.error">warning</mat-icon>
-          <mat-icon class="icon" *ngIf="!item.completed && !item.error"
+          <mat-icon class="icon" *ngElseIf="item.completed"
+            >check_circle</mat-icon
+          >
+          <mat-icon class="icon" *ngElseIf="!item.completed && !item.error"
             >block</mat-icon
           >
           <span class="progress-bar-step-name">{{ item.name }}</span>
