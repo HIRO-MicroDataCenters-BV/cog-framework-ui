@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IRun } from '../types';
+//import { IRun } from '../types';
 import { IActionItem, ITabItem } from 'src/app/shared/data-header/types';
 import { Subscription } from 'rxjs';
-import { mocks } from 'src/app/mocks';
+//import { mocks } from 'src/app/mocks';
 import { ActivatedRoute } from '@angular/router';
 import { PipelineRunOutputComponent } from '../pipeline-run-output/pipeline-run-output.component';
+import { Pipeline } from 'src/app/model/Pipeline';
+import { CogFrameworkApiService } from 'src/app/service/cog-framework-api.service';
 
 @Component({
   selector: 'app-pipeline-detail',
@@ -12,30 +14,29 @@ import { PipelineRunOutputComponent } from '../pipeline-run-output/pipeline-run-
   styleUrls: ['./pipeline-detail.component.scss'],
 })
 export class PipelineDetailComponent implements OnDestroy, OnInit {
+  loading: boolean = false;
   subscribes: Subscription[] = [];
-  // NOTE: A MOCK DATA FOR RUNS
-  // TODO: Remove a mock data after connection to the API
-  data: IRun | undefined;
-  id: number | undefined;
+  data: Pipeline | null = null;
+  id: string | undefined;
 
   actions: IActionItem[] = [
     {
-      label: 'Retry',
+      label: 'retry',
       action: () => {},
       disabled: false,
     },
     {
-      label: 'Clone run',
+      label: 'clone',
       action: () => {},
       disabled: false,
     },
     {
-      label: 'Terminate',
+      label: 'terminate',
       action: () => {},
       disabled: true,
     },
     {
-      label: 'Archive',
+      label: 'archive',
       action: () => {},
       disabled: false,
     },
@@ -43,7 +44,10 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
 
   tabs: ITabItem[] = [];
 
-  constructor(private activatedRoute: ActivatedRoute) {
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private cogFrameworkApiService: CogFrameworkApiService,
+  ) {
     this.subscribes.push(
       this.activatedRoute.params.subscribe((params) => {
         this.id = params?.['id'];
@@ -70,23 +74,37 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
   }
 
   fetch(): void {
-    // TODO: REMOVE AFTER API CONNECT
-    this.data = mocks.runs.find((item) => item.id == this.id);
-    if (this.data) {
-      this.tabs = [
-        {
-          label: 'Graph',
-          link: ['/runs', this.data.id as string, 'graph'],
-        },
-        {
-          label: 'Run output',
-          link: ['/runs', this.data.id as string, 'run-output'],
-        },
-        {
-          label: 'Config',
-          link: ['/runs', this.data.id as string, 'config'],
-        },
-      ];
-    }
+    this.loading = true;
+    const response = this.cogFrameworkApiService.getPipelineByRun({
+      run_id: this.id,
+    });
+    response.subscribe({
+      next: (res) => {
+        if (res) {
+          this.data = res.data;
+          this.tabs = [
+            {
+              label: 'Graph',
+              link: ['/runs', this.id as string, 'graph'],
+            },
+            {
+              label: 'Run output',
+              link: ['/runs', this.id as string, 'run-output'],
+            },
+            {
+              label: 'Config',
+              link: ['/runs', this.id as string, 'config'],
+            },
+          ];
+        }
+      },
+      error: () => {
+        this.data = null;
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
   }
 }

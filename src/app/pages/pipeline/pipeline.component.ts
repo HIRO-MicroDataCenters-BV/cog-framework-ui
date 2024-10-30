@@ -1,17 +1,10 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, TemplateRef, ViewChild } from '@angular/core';
 import { IActionItem } from 'src/app/shared/data-header/types';
-import { IRun } from './types';
-import { mocks } from 'src/app/mocks';
 import { MatDialogConfig } from '@angular/material/dialog';
 import { Dialog } from '@angular/cdk/dialog';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ButtonItem } from 'src/app/model/General';
+import { Pipeline } from 'src/app/model/Pipeline';
 /*
 interface PipeLineTableModel {
   name: string;
@@ -29,7 +22,7 @@ interface ButtonItems {
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.scss'],
 })
-export class PipelineComponent implements OnInit {
+export class PipelineComponent {
   actions: IActionItem[] = [
     {
       label: 'create_run',
@@ -87,7 +80,7 @@ export class PipelineComponent implements OnInit {
     ],
   };
 
-  runs: IRun[] = mocks.runs;
+  runs: Pipeline[] = []; //mocks.runs;
 
   @ViewChild('dialogCreateRun', { read: TemplateRef })
   dialogCreateRun: TemplateRef<unknown> | unknown;
@@ -104,64 +97,8 @@ export class PipelineComponent implements OnInit {
     name: new FormControl(''),
   });
 
-  ngOnInit(): void {
-    console.log('init');
-
-    //this.pipelineForm.addControl('');
-    //firstName: new FormControl(''),
-    // NOTE: createdatinSec createdAt_in_sec
-    //required fields for [POST] /pipiline
-    /*
-    {
-     run_details: {
-     uuid: string,
-     name: string,
-     experiment_uuid,
-     pipeline_uuid
-     createdAt_in_sec: string($date-time)
-     },
-     experiment_details: {
-      name
-      description
-      uuid
-      createdatinSec
-     },
-     pipeline_details: {
-      uuid
-      name
-      description
-      createdAt_in_sec
-      experiment_uuid
-     },
-     task_details: {
-      uuid
-      runuuid
-      createdtimestamp
-      startedtimestamp
-      finishedtimestamp
-     },
-    }
-    //not required
-    {
-     run_details: {
-      display_name
-      description
-     },
-     pipeline_details: {
-      model_id
-      parameters
-      status
-      pipeline_spec
-      pipeline_spec_uri
-     },
-     task_details: {
-      state
-      name
-      parenttaskuuid
-     },
-     model_ids: []
-    }
-    */
+  changeData(data: Pipeline) {
+    this.runs = data ? [data] : [];
   }
 
   open(inputCfg: MatDialogConfig = {}) {
@@ -181,54 +118,4 @@ export class PipelineComponent implements OnInit {
     console.log('form values', this.pipelineForm.value);
     this.dialog.closeAll();
   }
-
-  /*
-  modelName = '';
-  modelId = '1';
-
-  pipeLineTableModelDataSource: PipeLineTableModel[] = [];
-  displayedColumnsPipeLineTableModel: string[] = ['name', 'des', 'createdAt'];
-  loading = false;
-
-  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
-  search(): void {
-    this.getPipeLineByID();
-  }
-
-  getPipeLineByID(): void {
-    this.loading = true;
-    // const pipeline = this.cogFrameworkApiService.getPipelineByModelID(this.modelId);
-    const response = this.cogFrameworkApiService.getPipelineByModelID(
-      this.modelId,
-    );
-    response.subscribe({
-      next: (v) => {
-        console.log(v);
-        console.log(v.data[0]);
-        this.buildPipeLineTableModelId(v.data[0]);
-      },
-      error: (e) => {
-        console.log('error----->');
-        console.error(e);
-        console.error(e.status);
-        console.error(e.error.error);
-      },
-      complete: () => {
-        //this.loading = false;
-        console.info('complete');
-        this.loading = false;
-      },
-    });
-  }
-
-  buildPipeLineTableModelId(pipeline: Pipeline): void {
-    const dd: PipeLineTableModel = {
-      name: pipeline.name,
-      description: pipeline.description,
-      uploadAt: pipeline.createdAt_in_sec,
-    };
-    this.pipeLineTableModelDataSource.push(dd);
-    console.log(this.pipeLineTableModelDataSource);
-  }
-    */
 }

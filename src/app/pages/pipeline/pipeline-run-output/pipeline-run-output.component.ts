@@ -1,9 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { IPipelineStatusType, IRun } from '../types';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { Subscription, timeInterval, interval } from 'rxjs';
-import { getFormattedDiff } from 'src/app/utils';
+import { getFormattedDiff, getRoot } from 'src/app/utils';
 import { ITabItem } from 'src/app/shared/data-header/types';
+import {
+  Pipeline,
+  PipelineStatusType,
+  PipelineTask,
+} from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-pipeline-run-output',
@@ -12,7 +16,16 @@ import { ITabItem } from 'src/app/shared/data-header/types';
 })
 export class PipelineRunOutputComponent implements OnInit {
   subscribes: Subscription[] = [];
-  @Input() data!: IRun;
+  @Input()
+  get data(): Pipeline {
+    return this._data;
+  }
+  set data(data: Pipeline) {
+    this._data = data;
+    this.root = this.getRoot(data);
+  }
+  _data!: Pipeline;
+  root!: PipelineTask;
 
   editorOpts = {
     theme: 'vs',
@@ -32,7 +45,7 @@ export class PipelineRunOutputComponent implements OnInit {
 
   iconPhaseSize = 84;
 
-  progress: IPipelineStatusType[] = [];
+  progress: PipelineStatusType[] = [];
 
   detailTabs: ITabItem[] = [
     {
@@ -60,16 +73,22 @@ export class PipelineRunOutputComponent implements OnInit {
     }
   }
 
-  getProgress(): IPipelineStatusType[] {
+  getRoot(data: Pipeline): PipelineTask {
+    return getRoot(data);
+  }
+
+  getProgress(): PipelineStatusType[] {
+    return [];
     // TODO: REMOVE AFTER API CONNECT
+    /*
     const list = this.types;
     const status = this.data?.status;
-    const result: IPipelineStatusType[] = [];
+    const result: PipelineStatusType[] = [];
     let i = 0;
     Object.keys(list).forEach((key) => {
       const name = list[key as keyof typeof list];
-      const phase = status?.phase ?? 0;
-      const error = (phase === i && status?.error) ?? false;
+      const phase = 0; //status?.phase ?? 0;
+      const error = false; //(phase === i && status?.error) ?? false;
 
       if (name) {
         result.push({
@@ -83,6 +102,7 @@ export class PipelineRunOutputComponent implements OnInit {
       i++;
     });
     return result;
+    */
   }
 
   getStatus(id: number = 0) {
@@ -91,20 +111,21 @@ export class PipelineRunOutputComponent implements OnInit {
 
   tickTimer() {
     if (this.data) {
-      const startAt = this.data?.startAt;
-      if (startAt) {
-        this.setDuration(startAt);
+      const startedAt = this.root?.startedAt;
+      const finishedAt = this.root?.finishedAt;
+      if (startedAt) {
+        this.setDuration(startedAt, finishedAt);
         if (this.isRealtime) {
           const sec = interval(1000).pipe(timeInterval());
           const subscription = sec.subscribe(() => {
-            this.setDuration(startAt);
+            this.setDuration(startedAt, finishedAt);
           });
           this.subscribes?.push(subscription);
         }
       }
     }
   }
-  setDuration(startAt: Date) {
-    this.duration = getFormattedDiff(startAt);
+  setDuration(startedAt: string, finishedAt: string) {
+    this.duration = getFormattedDiff(startedAt, finishedAt);
   }
 }

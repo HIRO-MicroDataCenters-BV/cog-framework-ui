@@ -1,13 +1,14 @@
 <mat-card
+  *ngIf="root"
   class="pipeline-run"
-  [routerLink]="['/runs', data.id]"
-  [ngClass]="{ 'has-error': data.status.error }"
+  [routerLink]="['/runs', linkId]"
+  [ngClass]="{ 'has-error': hasError(root.status) }"
 >
   <div class="container scrollbar">
     <div class="col col-info">
       <div class="row">
         <div class="col col-info-name">
-          <h4>{{ data.name }}</h4>
+          <h4>{{ root.name }}</h4>
         </div>
         <div class="col col-info-duration">
           <mat-icon class="icon-duration"
@@ -18,22 +19,26 @@
       <div class="row">
         <div class="col col-info-experiment">
           <h6>
+            <!--
             <span class="label">Experiment</span
             ><span class="value">{{ data.experiment }}</span>
+            -->
           </h6>
           <h6>
+            <!--
             <span class="label">Pipeline version</span
             ><span class="value">{{ data.version }}</span>
+            -->
           </h6>
         </div>
-        <div *ngIf="data.startAt" class="col col-info-datetime">
+        <div *ngIf="root.startedAt" class="col col-info-datetime">
           <h6>
             <span class="label">Date</span
-            ><span class="value">{{ data.startAt | date: 'd/m/YYYY' }}</span>
+            ><span class="value">{{ root.startedAt | date: 'd/m/YYYY' }}</span>
           </h6>
           <h6>
             <span class="label">Time</span
-            ><span class="value">{{ data.startAt | date: 'shortTime' }}</span>
+            ><span class="value">{{ root.startedAt | date: 'shortTime' }}</span>
           </h6>
         </div>
       </div>
