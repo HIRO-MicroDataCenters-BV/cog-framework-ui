@@ -14,7 +14,9 @@
           <mat-progress-bar
             class="bar"
             *ngIf="item.completed"
-            [mode]="!item.error ? 'indeterminate' : 'determinate'"
+            [mode]="
+              !item.error || !item.completed ? 'indeterminate' : 'determinate'
+            "
             value="100"
           ></mat-progress-bar>
           <app-lottie

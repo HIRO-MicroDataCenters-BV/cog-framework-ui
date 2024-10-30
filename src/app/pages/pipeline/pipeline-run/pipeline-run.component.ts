@@ -74,6 +74,10 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     return status === 'pending';
   }
 
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
+  }
+
   tickTimer() {
     const startedAt = this.root.startedAt;
     const finishedAt = this.root.finishedAt;
@@ -104,9 +108,7 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     }
     return result;
   }
-  flatten(data: PipelineTask | PipelineTask[]) {
-    return flatten(data);
-  }
+
   setDuration(startedAt: string, finishedAt: string) {
     this.duration = getFormattedDiff(startedAt, finishedAt);
   }

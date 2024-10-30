@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { Subscription, timeInterval, interval } from 'rxjs';
-import { getFormattedDiff, getRoot } from 'src/app/utils';
+import { flatten, getFormattedDiff, getRoot } from 'src/app/utils';
 import { ITabItem } from 'src/app/shared/data-header/types';
 import {
   Pipeline,
@@ -77,9 +77,37 @@ export class PipelineRunOutputComponent implements OnInit {
     return getRoot(data);
   }
 
+  hasError(status: PipelineTask['status']) {
+    return status === 'error' || status === 'failed';
+  }
+
+  isPending(status: PipelineTask['status']) {
+    return status === 'pending';
+  }
+
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
+  }
+
   getProgress(): PipelineStatusType[] {
-    return [];
-    // TODO: REMOVE AFTER API CONNECT
+    const result: PipelineStatusType[] = [];
+    if (this.root) {
+      const flatTree: PipelineTask[] = this.flatten(
+        this.root.children,
+      ) as PipelineTask[];
+      for (const task of flatTree) {
+        const status = task.status.toLowerCase();
+        const key = task.name.toLowerCase();
+        result.push({
+          key,
+          name: task.name.replace('-', ' '),
+          error: this.hasError(status as PipelineTask['status']),
+          completed: !this.isPending(status as PipelineTask['status']),
+          icon: `icon-${key}.json`,
+        });
+      }
+    }
+    return result;
     /*
     const list = this.types;
     const status = this.data?.status;
