@@ -21,22 +21,22 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
 
   actions: IActionItem[] = [
     {
-      label: 'Retry',
+      label: 'retry',
       action: () => {},
       disabled: false,
     },
     {
-      label: 'Clone run',
+      label: 'clone',
       action: () => {},
       disabled: false,
     },
     {
-      label: 'Terminate',
+      label: 'terminate',
       action: () => {},
       disabled: true,
     },
     {
-      label: 'Archive',
+      label: 'archive',
       action: () => {},
       disabled: false,
     },
@@ -81,53 +81,30 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
     response.subscribe({
       next: (res) => {
         if (res) {
-          console.log('res', res);
-          /*
-          const pagination = res.pagination;
-          this.total = pagination.total_items;
-          this.page = pagination.page;
-          this.limit = pagination.limit;
-          */
-          //console.log('res', res.data);
-          //this.dataSource.data = res.data;
-          //this.changeData.emit({ ...res.data });
+          this.data = res.data;
+          this.tabs = [
+            {
+              label: 'Graph',
+              link: ['/runs', this.id as string, 'graph'],
+            },
+            {
+              label: 'Run output',
+              link: ['/runs', this.id as string, 'run-output'],
+            },
+            {
+              label: 'Config',
+              link: ['/runs', this.id as string, 'config'],
+            },
+          ];
         }
       },
       error: (e) => {
-        console.log('e', e);
         this.data = null;
-        /*
-        this.changeData.emit();
-        if (e.status === RESPONSE_CODE.NOT_FOUND) {
-          this.dataSource.data = [];
-        }
-          */
-        //this.getError(e.error);
         this.loading = false;
       },
       complete: () => {
         this.loading = false;
       },
     });
-    // TODO: REMOVE AFTER API CONNECT
-    /*
-    this.data = mocks.runs.find((item) => item.id == this.id);
-    if (this.data) {
-      this.tabs = [
-        {
-          label: 'Graph',
-          link: ['/runs', this.data.id as string, 'graph'],
-        },
-        {
-          label: 'Run output',
-          link: ['/runs', this.data.id as string, 'run-output'],
-        },
-        {
-          label: 'Config',
-          link: ['/runs', this.data.id as string, 'config'],
-        },
-      ];
-    }
-    */
   }
 }

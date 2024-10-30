@@ -36,7 +36,9 @@
     "clone": "clone",
     "compare": "compare",
     "refresh": "refresh",
-    "start": "start"
+    "start": "start",
+    "retry": "retry",
+    "terminate": "terminate"
   },
   "label": {
     "id": "id",
