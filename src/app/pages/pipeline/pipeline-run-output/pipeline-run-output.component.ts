@@ -1,13 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { Subscription, timeInterval, interval } from 'rxjs';
-import { getFormattedDiff, getRoot } from 'src/app/utils';
+import { flatten, getFormattedDiff, getRoot } from 'src/app/utils';
 import { ITabItem } from 'src/app/shared/data-header/types';
 import {
   Pipeline,
   PipelineStatusType,
   PipelineTask,
 } from 'src/app/model/Pipeline';
+import { PIPELINE_ICONS_KEYS } from 'src/app/constants';
 
 @Component({
   selector: 'app-pipeline-run-output',
@@ -43,6 +44,8 @@ export class PipelineRunOutputComponent implements OnInit {
 
   types = PIPELINE_STATUS_TYPES;
 
+  iconsKeys = PIPELINE_ICONS_KEYS;
+
   iconPhaseSize = 84;
 
   progress: PipelineStatusType[] = [];
@@ -77,32 +80,43 @@ export class PipelineRunOutputComponent implements OnInit {
     return getRoot(data);
   }
 
-  getProgress(): PipelineStatusType[] {
-    return [];
-    // TODO: REMOVE AFTER API CONNECT
-    /*
-    const list = this.types;
-    const status = this.data?.status;
-    const result: PipelineStatusType[] = [];
-    let i = 0;
-    Object.keys(list).forEach((key) => {
-      const name = list[key as keyof typeof list];
-      const phase = 0; //status?.phase ?? 0;
-      const error = false; //(phase === i && status?.error) ?? false;
+  hasError(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
+    return status === 'error' || status === 'failed';
+  }
 
-      if (name) {
+  isPending(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
+    return status === 'pending' || status === 'omitted';
+  }
+
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
+  }
+
+  getIconKey(key: string): string {
+    return this.iconsKeys.indexOf(key) > -1 ? key : 'preprocess';
+  }
+
+  getProgress(): PipelineStatusType[] {
+    const result: PipelineStatusType[] = [];
+    if (this.root) {
+      const flatTree: PipelineTask[] = this.flatten(
+        this.root.children,
+      ) as PipelineTask[];
+      for (const task of flatTree) {
+        const status = task.status.toLowerCase();
+        const key = task.name.toLowerCase();
         result.push({
           key,
-          name,
-          error,
-          completed: phase > i,
-          icon: `icon-${key}.json`,
+          name: task.name.replace('-', ' '),
+          error: this.hasError(status as PipelineTask['status']),
+          completed: !this.isPending(status as PipelineTask['status']),
+          icon: `icon-${this.getIconKey(key)}.json`,
         });
       }
-      i++;
-    });
+    }
     return result;
-    */
   }
 
   getStatus(id: number = 0) {

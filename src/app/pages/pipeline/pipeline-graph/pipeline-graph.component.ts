@@ -27,13 +27,11 @@ export class PipelineGraphComponent implements OnInit {
   tree: PipelineTreeNode[] = [];
 
   ngOnInit() {
-    console.log('root', this.root);
     const flatTree: PipelineTask[] = this.flatten(
       this.root.children,
     ) as PipelineTask[];
     if (flatTree.length > 0) {
       this.tree = this.getTree(flatTree);
-      console.log('t', this.tree);
     }
   }
 
@@ -46,15 +44,17 @@ export class PipelineGraphComponent implements OnInit {
   }
 
   getTree(data: PipelineTask[]): PipelineTreeNode[] {
-    const result = [];
+    const result: PipelineTreeNode[] = [];
     for (const item of data) {
-      console.log('i', item);
-      result.push({
-        id: item.id,
-        parentId: item.parent ? item.parent.id : null,
-        name: item.name,
-        status: item.status.toLowerCase() as PipelineTask['status'],
-      });
+      const existsNode = result.find((node) => node.id === item.id);
+      if (!existsNode) {
+        result.push({
+          id: item.id,
+          parentId: item.parent ? item.parent.id : null,
+          name: item.name,
+          status: item.status.toLowerCase() as PipelineTask['status'],
+        });
+      }
     }
     return result;
   }

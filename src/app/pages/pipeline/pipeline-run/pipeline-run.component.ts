@@ -66,12 +66,18 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     return getRoot(data);
   }
 
-  hasError(status: PipelineTask['status']) {
+  hasError(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
     return status === 'error' || status === 'failed';
   }
 
-  isPending(status: PipelineTask['status']) {
-    return status === 'pending';
+  isPending(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
+    return status === 'pending' || status === 'omitted';
+  }
+
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
   }
 
   tickTimer() {
@@ -103,9 +109,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
       }
     }
     return result;
-  }
-  flatten(data: PipelineTask | PipelineTask[]) {
-    return flatten(data);
   }
   setDuration(startedAt: string, finishedAt: string) {
     this.duration = getFormattedDiff(startedAt, finishedAt);

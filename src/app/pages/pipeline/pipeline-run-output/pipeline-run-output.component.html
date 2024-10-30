@@ -1,5 +1,5 @@
 <div class="pipeline-run-output">
-  <div>
+  <div class="progress-container scrollbar">
     <div class="progress">
       <div class="progress-bar">
         <div
@@ -14,7 +14,9 @@
           <mat-progress-bar
             class="bar"
             *ngIf="item.completed"
-            [mode]="!item.error ? 'indeterminate' : 'determinate'"
+            [mode]="
+              !item.error || !item.completed ? 'indeterminate' : 'determinate'
+            "
             value="100"
           ></mat-progress-bar>
           <app-lottie
@@ -25,8 +27,10 @@
             [autoplay]="item.completed"
           />
 
-          <mat-icon class="icon" *ngIf="item.completed">check_circle</mat-icon>
           <mat-icon class="icon" *ngIf="item.error">warning</mat-icon>
+          <mat-icon class="icon" *ngIf="!item.error && item.completed"
+            >check_circle</mat-icon
+          >
           <mat-icon class="icon" *ngIf="!item.completed && !item.error"
             >block</mat-icon
           >
