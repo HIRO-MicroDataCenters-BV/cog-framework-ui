@@ -21,6 +21,14 @@ export const DEF_DIALOG_ACTIONS: ButtonItem[] = [
   },
 ];
 
+export const PIPELINE_ICONS_KEYS: string[] = [
+  'download-data',
+  'getmodel',
+  'preprocess',
+  'serving',
+  'training',
+];
+
 export const RESPONSE_CODE = {
   NOT_FOUND: 404,
 };

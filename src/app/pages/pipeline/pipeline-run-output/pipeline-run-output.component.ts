@@ -8,6 +8,7 @@ import {
   PipelineStatusType,
   PipelineTask,
 } from 'src/app/model/Pipeline';
+import { PIPELINE_ICONS_KEYS } from 'src/app/constants';
 
 @Component({
   selector: 'app-pipeline-run-output',
@@ -42,6 +43,8 @@ export class PipelineRunOutputComponent implements OnInit {
   isRealtime: boolean = false;
 
   types = PIPELINE_STATUS_TYPES;
+
+  iconsKeys = PIPELINE_ICONS_KEYS;
 
   iconPhaseSize = 84;
 
@@ -91,6 +94,10 @@ export class PipelineRunOutputComponent implements OnInit {
     return flatten(data);
   }
 
+  getIconKey(key: string): string {
+    return this.iconsKeys.indexOf(key) > -1 ? key : 'preprocess';
+  }
+
   getProgress(): PipelineStatusType[] {
     const result: PipelineStatusType[] = [];
     if (this.root) {
@@ -105,7 +112,7 @@ export class PipelineRunOutputComponent implements OnInit {
           name: task.name.replace('-', ' '),
           error: this.hasError(status as PipelineTask['status']),
           completed: !this.isPending(status as PipelineTask['status']),
-          icon: `icon-${key}.json`,
+          icon: `icon-${this.getIconKey(key)}.json`,
         });
       }
     }
