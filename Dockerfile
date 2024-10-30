@@ -38,8 +38,13 @@ FROM nginx:stable-alpine AS nginx
 
 COPY --from=build /usr/src/app/dist/cog-framework-ui/browser /usr/share/nginx/html/cogui
 
-COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
+COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
+COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
 
 EXPOSE 80
 
-CMD [ "nginx", "-g", "daemon off;" ]
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
