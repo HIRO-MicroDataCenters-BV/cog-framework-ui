@@ -98,7 +98,7 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
           ];
         }
       },
-      error: (e) => {
+      error: () => {
         this.data = null;
         this.loading = false;
       },
