@@ -16,7 +16,14 @@ export interface PipelineTask {
   name: string;
   inputs: PipelineTaskInputOutput[];
   outputs: PipelineTaskInputOutput[];
-  status: 'pending' | 'running' | 'succeeded' | 'skipped' | 'failed' | 'error';
+  status:
+    | 'pending'
+    | 'running'
+    | 'succeeded'
+    | 'skipped'
+    | 'failed'
+    | 'error'
+    | 'omitted';
   startedAt: string;
   finishedAt: string;
   resourcesDuration: PipelineTaskResourcesDuration;

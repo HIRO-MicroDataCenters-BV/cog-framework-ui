@@ -77,12 +77,14 @@ export class PipelineRunOutputComponent implements OnInit {
     return getRoot(data);
   }
 
-  hasError(status: PipelineTask['status']) {
+  hasError(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
     return status === 'error' || status === 'failed';
   }
 
-  isPending(status: PipelineTask['status']) {
-    return status === 'pending';
+  isPending(status: string) {
+    status = status?.toLocaleLowerCase() as PipelineTask['status'];
+    return status === 'pending' || status === 'omitted';
   }
 
   flatten(data: PipelineTask | PipelineTask[]) {
