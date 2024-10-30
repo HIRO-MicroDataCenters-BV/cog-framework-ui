@@ -111,18 +111,9 @@ export class AppDataHeaderComponent implements OnInit {
   getPipelines(params: GetPipelineParams = {}): void {
     this.loading = true;
     const response = this.cogFrameworkApiService.getPipelineByRun(params);
-    console.log('getPipelines', params);
     response.subscribe({
       next: (res) => {
         if (res) {
-          /*
-          const pagination = res.pagination;
-          this.total = pagination.total_items;
-          this.page = pagination.page;
-          this.limit = pagination.limit;
-          */
-          //console.log('res', res.data);
-          //this.dataSource.data = res.data;
           this.changeData.emit({ ...res.data });
         }
       },
