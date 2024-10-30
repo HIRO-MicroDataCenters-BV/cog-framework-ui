@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs/internal/Subscription';
 import { NgClass, NgForOf, NgIf, DatePipe } from '@angular/common';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { RouterModule } from '@angular/router';
-import { getFormattedDiff } from 'src/app/utils';
+import { flatten, getFormattedDiff, getRoot } from 'src/app/utils';
 import { timeInterval, interval } from 'rxjs';
 
 import {
@@ -42,8 +42,9 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     this.root = this.getRoot(data);
   }
   _data!: Pipeline;
-
   root!: PipelineTask;
+  // TODO: RM after fix run_id in API
+  linkId: string = 'afcf98bb-a9af-4a34-a512-1236110150ae';
 
   duration: string = '';
 
@@ -62,9 +63,7 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   }
 
   getRoot(data: Pipeline): PipelineTask {
-    const tasks = data.task_structure;
-    const nodes = Object.keys(data.task_structure);
-    return tasks[nodes[0]];
+    return getRoot(data);
   }
 
   hasError(status: PipelineTask['status']) {
@@ -92,8 +91,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     if (this.root) {
       const flatTree: PipelineTask[] = this.flatten(
         this.root.children,
-        0,
-        null,
       ) as PipelineTask[];
       for (const task of flatTree) {
         result.push({
@@ -106,27 +103,8 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
     }
     return result;
   }
-  flatten(
-    data: PipelineTask | PipelineTask[],
-    level = 0,
-    parent: PipelineTask | null = null,
-  ) {
-    const result: unknown[] = [];
-
-    if (!data) {
-      return result;
-    }
-
-    if (Array.isArray(data)) {
-      data.forEach((item) =>
-        result.push(...this.flatten(item, level + 1, data[0])),
-      );
-    } else {
-      result.push({ ...data, level, parent });
-      result.push(...this.flatten(data.children, level + 1, data));
-    }
-
-    return result;
+  flatten(data: PipelineTask | PipelineTask[]) {
+    return flatten(data);
   }
   setDuration(startedAt: string, finishedAt: string) {
     this.duration = getFormattedDiff(startedAt, finishedAt);

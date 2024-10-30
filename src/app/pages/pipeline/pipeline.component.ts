@@ -1,10 +1,4 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, TemplateRef, ViewChild } from '@angular/core';
 import { IActionItem } from 'src/app/shared/data-header/types';
 import { MatDialogConfig } from '@angular/material/dialog';
 import { Dialog } from '@angular/cdk/dialog';
@@ -28,7 +22,7 @@ interface ButtonItems {
   templateUrl: './pipeline.component.html',
   styleUrls: ['./pipeline.component.scss'],
 })
-export class PipelineComponent implements OnInit {
+export class PipelineComponent {
   actions: IActionItem[] = [
     {
       label: 'create_run',

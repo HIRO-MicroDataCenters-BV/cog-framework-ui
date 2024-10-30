@@ -1,7 +1,7 @@
 <mat-card
   *ngIf="root"
   class="pipeline-run"
-  [routerLink]="['/runs', root.id]"
+  [routerLink]="['/runs', linkId]"
   [ngClass]="{ 'has-error': hasError(root.status) }"
 >
   <div class="container scrollbar">

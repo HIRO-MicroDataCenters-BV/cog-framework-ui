@@ -1,9 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PIPELINE_STATUS_TYPES } from '../consts';
 import { Subscription, timeInterval, interval } from 'rxjs';
-import { getFormattedDiff } from 'src/app/utils';
+import { getFormattedDiff, getRoot } from 'src/app/utils';
 import { ITabItem } from 'src/app/shared/data-header/types';
-import { Pipeline, PipelineStatusType } from 'src/app/model/Pipeline';
+import {
+  Pipeline,
+  PipelineStatusType,
+  PipelineTask,
+} from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-pipeline-run-output',
@@ -12,7 +16,16 @@ import { Pipeline, PipelineStatusType } from 'src/app/model/Pipeline';
 })
 export class PipelineRunOutputComponent implements OnInit {
   subscribes: Subscription[] = [];
-  @Input() data!: Pipeline;
+  @Input()
+  get data(): Pipeline {
+    return this._data;
+  }
+  set data(data: Pipeline) {
+    this._data = data;
+    this.root = this.getRoot(data);
+  }
+  _data!: Pipeline;
+  root!: PipelineTask;
 
   editorOpts = {
     theme: 'vs',
@@ -60,6 +73,10 @@ export class PipelineRunOutputComponent implements OnInit {
     }
   }
 
+  getRoot(data: Pipeline): PipelineTask {
+    return getRoot(data);
+  }
+
   getProgress(): PipelineStatusType[] {
     return [];
     // TODO: REMOVE AFTER API CONNECT
@@ -94,13 +111,14 @@ export class PipelineRunOutputComponent implements OnInit {
 
   tickTimer() {
     if (this.data) {
-      const startedAt = this.data?.startedAt;
-      if (startAt) {
-        this.setDuration(startedAt);
+      const startedAt = this.root?.startedAt;
+      const finishedAt = this.root?.finishedAt;
+      if (startedAt) {
+        this.setDuration(startedAt, finishedAt);
         if (this.isRealtime) {
           const sec = interval(1000).pipe(timeInterval());
           const subscription = sec.subscribe(() => {
-            this.setDuration(startedAt);
+            this.setDuration(startedAt, finishedAt);
           });
           this.subscribes?.push(subscription);
         }
