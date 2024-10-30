@@ -3,11 +3,7 @@ import { PIPELINE_STATUS_TYPES } from '../consts';
 import { Subscription, timeInterval, interval } from 'rxjs';
 import { getFormattedDiff } from 'src/app/utils';
 import { ITabItem } from 'src/app/shared/data-header/types';
-import {
-  Pipeline,
-  PipelineStatusType,
-  PipelineTask,
-} from 'src/app/model/Pipeline';
+import { Pipeline, PipelineStatusType } from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-pipeline-run-output',
@@ -97,7 +93,6 @@ export class PipelineRunOutputComponent implements OnInit {
   }
 
   tickTimer() {
-    /*
     if (this.data) {
       const startedAt = this.data?.startedAt;
       if (startAt) {
@@ -111,7 +106,6 @@ export class PipelineRunOutputComponent implements OnInit {
         }
       }
     }
-      */
   }
   setDuration(startedAt: string, finishedAt: string) {
     this.duration = getFormattedDiff(startedAt, finishedAt);

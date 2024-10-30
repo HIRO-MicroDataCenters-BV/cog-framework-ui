@@ -104,7 +104,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
         });
       }
     }
-    console.log('p', result);
     return result;
   }
   flatten(
