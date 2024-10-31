@@ -1,5 +1,5 @@
 <div class="pipeline-run-output">
-  <div>
+  <div class="progress-container scrollbar">
     <div class="progress">
       <div class="progress-bar">
         <div
@@ -14,7 +14,9 @@
           <mat-progress-bar
             class="bar"
             *ngIf="item.completed"
-            [mode]="!item.error ? 'indeterminate' : 'determinate'"
+            [mode]="
+              !item.error || !item.completed ? 'indeterminate' : 'determinate'
+            "
             value="100"
           ></mat-progress-bar>
           <app-lottie
@@ -25,8 +27,10 @@
             [autoplay]="item.completed"
           />
 
-          <mat-icon class="icon" *ngIf="item.completed">check_circle</mat-icon>
           <mat-icon class="icon" *ngIf="item.error">warning</mat-icon>
+          <mat-icon class="icon" *ngIf="!item.error && item.completed"
+            >check_circle</mat-icon
+          >
           <mat-icon class="icon" *ngIf="!item.completed && !item.error"
             >block</mat-icon
           >
@@ -45,60 +49,29 @@
                 <div *ngSwitchCase="'inputOutput'">
                   <mat-list class="link-list">
                     <a
+                      *ngFor="let item of root.inputs"
                       class="item"
                       mat-list-item
-                      [href]="data.data?.inputOutput?.inputParameter"
+                      [href]="item.value"
                     >
-                      <h4 matListItemTitle>Input Parameter</h4>
+                      <h4 matListItemTitle>{{ item.name }}</h4>
                       <p matListItemLine>
-                        {{ data.data?.inputOutput?.inputParameter }}
+                        {{ item.value }}
                       </p></a
                     >
+                  </mat-list>
+                  <mat-list class="link-list">
                     <a
+                      *ngFor="let item of root.outputs"
                       class="item"
                       mat-list-item
-                      [href]="data.data?.inputOutput?.url"
+                      [href]="item.value"
                     >
-                      <h4 matListItemTitle>URL</h4>
+                      <h4 matListItemTitle>{{ item.name }}</h4>
                       <p matListItemLine>
-                        {{ data.data?.inputOutput?.url }}
+                        {{ item.value }}
                       </p></a
                     >
-                    <a
-                      class="item"
-                      mat-list-item
-                      [href]="data.data?.inputOutput?.inputArtiacts"
-                    >
-                      <h4 matListItemTitle>Input Artifacts</h4>
-                      <p matListItemLine>
-                        {{ data.data?.inputOutput?.inputArtiacts }}
-                      </p></a
-                    >
-                    <a
-                      class="item"
-                      mat-list-item
-                      [href]="data.data?.inputOutput?.outputArtifacts"
-                    >
-                      <h4 matListItemTitle>Out Artifacts</h4>
-                      <p matListItemLine>
-                        {{ data.data?.inputOutput?.outputArtifacts }}
-                      </p></a
-                    >
-                    <a
-                      class="item"
-                      mat-list-item
-                      [href]="data.data?.inputOutput?.data?.file"
-                    >
-                      <h4 matListItemTitle>Data</h4>
-                      <p matListItemLine>
-                        {{ data.data?.inputOutput?.data?.file }}
-                      </p></a
-                    >
-                    <ngx-monaco-editor
-                      class="editor"
-                      [options]="editorOpts"
-                      [ngModel]="data.data?.inputOutput?.data?.plain"
-                    ></ngx-monaco-editor>
                   </mat-list>
                 </div>
                 <div *ngSwitchCase="'details'">
@@ -109,19 +82,19 @@
                     <mat-list-item>
                       <h4 matListItemTitle>Task ID</h4>
                       <p matListItemLine>
-                        {{ data.data?.details?.taskId }}
+                        {{ root.id }}
                       </p>
                     </mat-list-item>
                     <mat-list-item>
                       <h4 matListItemTitle>Task Name</h4>
                       <p matListItemLine>
-                        {{ data.data?.details?.taskName }}
+                        {{ root.name }}
                       </p>
                     </mat-list-item>
                     <mat-list-item>
                       <h4 matListItemTitle>Status</h4>
                       <p matListItemLine>
-                        {{ getStatus(data.data?.details?.status) }}
+                        {{ root.status }}
                       </p>
                     </mat-list-item>
                   </mat-list>
@@ -140,15 +113,15 @@
                       </div>
                     </div>
                     <div class="row">
-                      <div *ngIf="data.startAt" class="col col-datetime">
+                      <div *ngIf="root.startedAt" class="col col-datetime">
                         <h3>
                           <span class="value">{{
-                            data.startAt | date: 'd/m/YYYY'
+                            root.startedAt | date: 'd/m/YYYY'
                           }}</span>
                         </h3>
                         <h3>
                           <span class="value">{{
-                            data.startAt | date: 'shortTime'
+                            root.startedAt | date: 'shortTime'
                           }}</span>
                         </h3>
                       </div>
@@ -160,15 +133,15 @@
                           </h3>
                         </div>
                       </div>
-                      <div *ngIf="data.endAt" class="col col-datetime">
+                      <div *ngIf="root.finishedAt" class="col col-datetime">
                         <h3>
                           <span class="value">{{
-                            data.endAt | date: 'd/m/YYYY'
+                            root.finishedAt | date: 'd/m/YYYY'
                           }}</span>
                         </h3>
                         <h3>
                           <span class="value">{{
-                            data.endAt | date: 'shortTime'
+                            root.finishedAt | date: 'shortTime'
                           }}</span>
                         </h3>
                       </div>
@@ -179,14 +152,14 @@
                   <ngx-monaco-editor
                     class="editor"
                     [options]="editorOpts"
-                    [ngModel]="data.data?.logs"
+                    [ngModel]=""
                   ></ngx-monaco-editor>
                 </div>
                 <div *ngSwitchCase="'events'">
                   <ngx-monaco-editor
                     class="editor"
                     [options]="editorOpts"
-                    [ngModel]="data.data?.events"
+                    [ngModel]=""
                   ></ngx-monaco-editor>
                 </div>
               </div>

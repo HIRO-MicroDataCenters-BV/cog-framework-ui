@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject, TemplateRef, ViewChild } from '@angular/core';
 import { IActionItem } from 'src/app/shared/data-header/types';
-import { IRun } from './types';
-import { mocks } from 'src/app/mocks';
+import { MatDialogConfig } from '@angular/material/dialog';
+import { Dialog } from '@angular/cdk/dialog';
+import { FormGroup, FormControl } from '@angular/forms';
+import { ButtonItem } from 'src/app/model/General';
+import { Pipeline } from 'src/app/model/Pipeline';
 /*
 interface PipeLineTableModel {
   name: string;
@@ -9,6 +12,10 @@ interface PipeLineTableModel {
   uploadAt: string;
 }
   */
+
+interface ButtonItems {
+  createRun: ButtonItem[];
+}
 
 @Component({
   selector: 'app-pipeline',
@@ -18,81 +25,97 @@ interface PipeLineTableModel {
 export class PipelineComponent {
   actions: IActionItem[] = [
     {
-      label: '+ Create run',
-      action: () => {},
+      label: 'create_run',
+      action: () => {
+        this.open({ minWidth: 640, maxWidth: '90%' });
+      },
       disabled: false,
     },
     {
-      label: 'Compare runs',
-      action: () => {},
+      label: 'compare',
+      action: () => {
+        this.open();
+      },
       disabled: true,
     },
     {
-      label: 'Clone run',
-      action: () => {},
+      label: 'clone',
+      action: () => {
+        this.open();
+      },
       disabled: true,
     },
     {
-      label: 'Archive',
-      action: () => {},
+      label: 'archive',
+      action: () => {
+        this.open();
+      },
       disabled: true,
     },
     {
-      label: 'Refresh',
-      action: () => {},
+      label: 'refresh',
+      action: () => {
+        this.open();
+      },
       disabled: false,
     },
   ];
 
-  runs: IRun[] = mocks.runs;
+  dialogActions: ButtonItems = {
+    createRun: [
+      {
+        varient: 'secondary',
+        type: 'cancel',
+        ui: 'basic',
+      },
+      {
+        varient: 'primary',
+        type: 'start',
+        ui: 'flat',
+        action: () => {
+          this.onSubmit();
+        },
+        hasClose: false,
+      },
+    ],
+  };
 
-  /*
-  modelName = '';
-  modelId = '1';
+  runs: Pipeline[] = []; //mocks.runs;
 
-  pipeLineTableModelDataSource: PipeLineTableModel[] = [];
-  displayedColumnsPipeLineTableModel: string[] = ['name', 'des', 'createdAt'];
-  loading = false;
+  @ViewChild('dialogCreateRun', { read: TemplateRef })
+  dialogCreateRun: TemplateRef<unknown> | unknown;
 
-  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
-  search(): void {
-    this.getPipeLineByID();
+  @ViewChild('dialogSelectPipeline', { read: TemplateRef })
+  dialogSelectPipeline: TemplateRef<unknown> | unknown;
+
+  @ViewChild('dialogSelectExperiment', { read: TemplateRef })
+  dialogSelectExperiment: TemplateRef<unknown> | unknown;
+
+  dialog = inject(Dialog);
+
+  pipelineForm: FormGroup = new FormGroup({
+    name: new FormControl(''),
+  });
+
+  changeData(data: Pipeline) {
+    this.runs = data ? [data] : [];
   }
 
-  getPipeLineByID(): void {
-    this.loading = true;
-    // const pipeline = this.cogFrameworkApiService.getPipelineByModelID(this.modelId);
-    const response = this.cogFrameworkApiService.getPipelineByModelID(
-      this.modelId,
-    );
-    response.subscribe({
-      next: (v) => {
-        console.log(v);
-        console.log(v.data[0]);
-        this.buildPipeLineTableModelId(v.data[0]);
-      },
-      error: (e) => {
-        console.log('error----->');
-        console.error(e);
-        console.error(e.status);
-        console.error(e.error.error);
-      },
-      complete: () => {
-        //this.loading = false;
-        console.info('complete');
-        this.loading = false;
-      },
-    });
+  open(inputCfg: MatDialogConfig = {}) {
+    const ref = this.dialogCreateRun as TemplateRef<unknown>;
+    if (ref) {
+      const defCfg = new MatDialogConfig();
+      defCfg.minWidth = 300;
+      defCfg.autoFocus = false;
+      const cfg = { ...defCfg, ...inputCfg };
+      this.dialog.open(ref, cfg).closed.subscribe((res) => {
+        console.log('is closed', res);
+      });
+    }
   }
 
-  buildPipeLineTableModelId(pipeline: Pipeline): void {
-    const dd: PipeLineTableModel = {
-      name: pipeline.name,
-      description: pipeline.description,
-      uploadAt: pipeline.createdAt_in_sec,
-    };
-    this.pipeLineTableModelDataSource.push(dd);
-    console.log(this.pipeLineTableModelDataSource);
+  onSubmit() {
+    console.log('form values', this.pipelineForm.value);
+    this.dialog.closeAll();
   }
-    */
 }

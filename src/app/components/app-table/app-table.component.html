@@ -1,0 +1,13 @@
+<div class="table">
+  <div class="container scrollbar">
+    <table mat-table></table>
+  </div>
+  <mat-paginator
+    [pageSizeOptions]="pageSizeOptions"
+    [length]="pagigation.total"
+    [pageSize]="pagigation.limit"
+    (page)="search()"
+    showFirstLastButtons
+  >
+  </mat-paginator>
+</div>

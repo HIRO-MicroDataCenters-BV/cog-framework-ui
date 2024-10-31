@@ -88,6 +88,11 @@
       padding-bottom: 30px;
       margin-bottom: 40px;
       margin-top: 72px;
+      &-container {
+        overflow: hidden;
+        overflow-x: auto;
+        margin-bottom: $m-0;
+      }
       &-bar {
         display: flex;
         flex-wrap: nowrap;

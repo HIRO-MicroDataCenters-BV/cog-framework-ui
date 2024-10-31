@@ -29,7 +29,16 @@
     "back": "back",
     "upload": "upload",
     "cancel": "cancel",
-    "ok": "ok"
+    "ok": "ok",
+    "create": "create",
+    "create_run": "+ create run",
+    "archive": "archive",
+    "clone": "clone",
+    "compare": "compare",
+    "refresh": "refresh",
+    "start": "start",
+    "retry": "retry",
+    "terminate": "terminate"
   },
   "label": {
     "id": "id",
@@ -75,6 +84,9 @@
     "model_validation_artifacts": "model validation artifacts",
     "model_validation_file": "model validation file",
     "upload_": "upload {{name}}",
-    "confirm_delete_": "Confirm Delete {{name}}?"
+    "confirm_delete_": "confirm delete {{name}}?",
+    "create_": "create {{name}}",
+    "clone_": "clone {{name}}",
+    "select_": "select {{name}}"
   }
 }

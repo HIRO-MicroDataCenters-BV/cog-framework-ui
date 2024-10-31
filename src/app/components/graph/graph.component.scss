@@ -38,7 +38,7 @@
     }
   }
   &.is {
-    &-completed {
+    &-succeeded {
       .node {
         &-status {
           background-color: mat.get-theme-color(main.$theme, primary, 99);
@@ -48,7 +48,8 @@
         }
       }
     }
-    &-error {
+    &-error,
+    &-faild {
       .node {
         &-status {
           background-color: mat.get-theme-color(main.$theme, error, 98);
