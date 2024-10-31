@@ -111,7 +111,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
     this.cogFrameworkApiService
       .uploadModel({
         files: this.files,
-        // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
         model_id: this.modelId,
         model_file_type: this.modelType,
         model_file_description: this.modelDescription,

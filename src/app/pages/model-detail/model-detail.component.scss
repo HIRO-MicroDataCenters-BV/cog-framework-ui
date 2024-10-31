@@ -4,27 +4,10 @@
   @include mat.all-component-densities(-3);
 }
 
-.box {
-  justify-content: space-evenly;
-}
-
-.list-item {
-  min-width: 120px;
-  display: inline-block;
-}
-
-.error {
-  color: red;
-}
-
-.table-responsive {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-}
-
 .model-detail {
-  &__description {
-    margin: 0;
+  ::ng-deep {
+    .mat-toolbar {
+      display: initial;
+    }
   }
 }
