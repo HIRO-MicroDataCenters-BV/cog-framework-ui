@@ -49,6 +49,7 @@ export class PipelineGraphComponent implements OnInit {
   getTree(data: PipelineTask[]): PipelineTreeNode[] {
     const result: PipelineTreeNode[] = [];
     const connections = [];
+
     for (const item of data) {
       const existsNode = result.find((node) => node.id === item.id);
       if (!existsNode) {
@@ -58,6 +59,7 @@ export class PipelineGraphComponent implements OnInit {
           name: item.name,
           status: item.status.toLowerCase() as PipelineTask['status'],
         });
+
       } else {
         if (item.parent) {
           connections.push({
@@ -66,6 +68,7 @@ export class PipelineGraphComponent implements OnInit {
             label: '',
           });
         }
+
       }
     }
     this.connections = connections;
