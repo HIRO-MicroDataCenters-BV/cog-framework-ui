@@ -84,15 +84,15 @@ export class PipelineDetailComponent implements OnDestroy, OnInit {
           this.data = res.data;
           this.tabs = [
             {
-              label: 'Graph',
+              label: 'label.graph',
               link: ['/runs', this.id as string, 'graph'],
             },
             {
-              label: 'Run output',
+              label: 'label.run_output',
               link: ['/runs', this.id as string, 'run-output'],
             },
             {
-              label: 'Config',
+              label: 'label.config',
               link: ['/runs', this.id as string, 'config'],
             },
           ];

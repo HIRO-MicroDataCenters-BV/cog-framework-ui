@@ -82,7 +82,6 @@ export class AppDataHeaderComponent implements OnInit {
   ngOnInit(): void {
     this.search();
     this.route.queryParams.subscribe((data) => {
-      console.log('data', data);
       //TODO: rm params after standartizide
       const params = { ...data };
       if (params['name']) {

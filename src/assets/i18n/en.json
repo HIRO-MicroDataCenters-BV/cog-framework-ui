@@ -60,6 +60,9 @@
     "roc_auc": "roc auc",
     "score": "score",
     "file_name": "file name",
+    "graph": "graph",
+    "run_output": "run output",
+    "config": "config",
     "artifacts": {
       "shap_summary": "shap summary",
       "mean_shap_value": "mean(shap value)",
