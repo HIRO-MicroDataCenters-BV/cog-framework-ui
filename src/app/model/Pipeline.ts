@@ -57,6 +57,12 @@ export interface PipelineTreeNode {
   name: string;
 }
 
+export interface PipelineTreeNodeConnection {
+  from: string;
+  to: string;
+  label: string;
+}
+
 export type GetPipelineParams = {
   id?: string;
   name?: string;

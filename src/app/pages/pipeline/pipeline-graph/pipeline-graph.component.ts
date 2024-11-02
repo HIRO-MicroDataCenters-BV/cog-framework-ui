@@ -4,6 +4,7 @@ import {
   Pipeline,
   PipelineTask,
   PipelineTreeNode,
+  PipelineTreeNodeConnection,
 } from 'src/app/model/Pipeline';
 import { flatten, getRoot } from 'src/app/utils';
 
@@ -26,6 +27,8 @@ export class PipelineGraphComponent implements OnInit {
 
   tree: PipelineTreeNode[] = [];
 
+  connections: PipelineTreeNodeConnection[] = [];
+
   ngOnInit() {
     const flatTree: PipelineTask[] = this.flatten(
       this.root.children,
@@ -45,6 +48,7 @@ export class PipelineGraphComponent implements OnInit {
 
   getTree(data: PipelineTask[]): PipelineTreeNode[] {
     const result: PipelineTreeNode[] = [];
+    const connections = [];
     for (const item of data) {
       const existsNode = result.find((node) => node.id === item.id);
       if (!existsNode) {
@@ -54,8 +58,17 @@ export class PipelineGraphComponent implements OnInit {
           name: item.name,
           status: item.status.toLowerCase() as PipelineTask['status'],
         });
+      } else {
+        if (item.parent) {
+          connections.push({
+            from: item.parent.id,
+            to: item.id,
+            label: '',
+          });
+        }
       }
     }
+    this.connections = connections;
     return result;
   }
 }

@@ -8,7 +8,10 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { OrgChart } from 'd3-org-chart';
-import { PipelineTreeNode } from 'src/app/model/Pipeline';
+import {
+  PipelineTreeNode,
+  PipelineTreeNodeConnection,
+} from 'src/app/model/Pipeline';
 
 @Component({
   selector: 'app-graph',
@@ -20,6 +23,7 @@ import { PipelineTreeNode } from 'src/app/model/Pipeline';
 export class AppGraphComponent implements OnChanges, AfterViewInit {
   @ViewChild('graphContainer') graphContainer!: ElementRef;
   @Input() data: PipelineTreeNode[] | undefined;
+  @Input() connections: PipelineTreeNodeConnection[] | undefined;
   graph: OrgChart<unknown> | undefined;
 
   icons = {
@@ -80,6 +84,15 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
         </div>`;
       })
       .render();
+
+    if (this.connections && this.connections.length > 0) {
+      this.graph.connections(this.connections).render();
+      const state = this.graph.getChartState();
+      if (state) {
+        state['nodesWrapper'].raise();
+      }
+    }
     this.graph.expandAll();
+    ///this.graph.render();
   }
 }
