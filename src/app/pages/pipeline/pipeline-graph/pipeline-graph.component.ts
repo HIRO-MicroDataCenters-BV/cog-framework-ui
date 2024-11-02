@@ -59,7 +59,6 @@ export class PipelineGraphComponent implements OnInit {
           name: item.name,
           status: item.status.toLowerCase() as PipelineTask['status'],
         });
-
       } else {
         if (item.parent) {
           connections.push({
@@ -68,7 +67,6 @@ export class PipelineGraphComponent implements OnInit {
             label: '',
           });
         }
-
       }
     }
     this.connections = connections;
