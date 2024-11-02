@@ -3,19 +3,19 @@ import { ITabItem } from '../../shared/data-header/types';
 export const MODEL_DETAIL_TABS = (id: string): ITabItem[] =>
   [
     {
-      label: 'Model Info',
+      label: 'label.model_info',
       link: ['/model-detail', id, 'info'],
     },
     {
-      label: 'Model Files',
+      label: 'label.model_files',
       link: ['/model-detail', id, 'files'],
     },
     {
-      label: 'Model Datasets',
+      label: 'label.model_datasets',
       link: ['/model-detail', id, 'datasets'],
     },
     {
-      label: 'Validation Metrics',
+      label: 'label.model_validation_metrics',
       link: ['/model-detail', id, 'metrics'],
     },
     // {

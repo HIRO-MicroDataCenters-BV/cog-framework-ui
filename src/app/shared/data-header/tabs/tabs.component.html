@@ -6,7 +6,7 @@
       [routerLink]="item.link"
       (click)="activeLink = getRouteLinkStr(item.link)"
       [active]="activeLink === getRouteLinkStr(item.link)"
-      >{{ item.label }}</a
+      >{{ item.label | transloco }}</a
     >
   </nav>
 </div>

@@ -2,7 +2,7 @@
   <app-upload-model (modelUploadedEvent)="updateModelFile($event)" />
   <mat-card class="col-12">
     <mat-card-header>
-      <mat-card-title>Model Files</mat-card-title>
+      <mat-card-title>{{ 'title.model_files' | transloco }}</mat-card-title>
     </mat-card-header>
     <mat-card-content class="content">
       <div>
@@ -14,14 +14,18 @@
           >
             <!-- Position Column -->
             <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>id</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{ 'label.id' | transloco }}
+              </th>
               <td mat-cell *matCellDef="let file">
                 {{ file.file_id }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>File Name</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{ 'label.file_name' | transloco }}
+              </th>
               <td mat-cell *matCellDef="let file">
                 {{ file.file_name }}
               </td>
@@ -29,18 +33,24 @@
 
             <!-- Position Column -->
             <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef>Action</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{ 'label.action' | transloco }}
+              </th>
               <td mat-cell *matCellDef="let file">
                 <button
                   mat-icon-button
-                  matTooltip="Open"
+                  [matTooltip]="'hint.open' | transloco"
                   class="iconbutton"
                   color="primary"
                 >
                   <mat-icon>open_in_browser</mat-icon>
                 </button>
 
-                <button mat-icon-button matTooltip="Download" color="primary">
+                <button
+                  mat-icon-button
+                  [matTooltip]="'hint.download' | transloco"
+                  color="primary"
+                >
                   <mat-icon>cloud_download</mat-icon>
                 </button>
               </td>
@@ -51,7 +61,7 @@
             <ng-template matNoDataRow>
               <tr>
                 <td [colSpan]="displayedColumns.length" class="no-data">
-                  No data...
+                  {{ 'message.no_data' | transloco }}
                 </td>
               </tr>
             </ng-template>

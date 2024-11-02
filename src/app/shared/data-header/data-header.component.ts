@@ -18,6 +18,7 @@ import { CogFrameworkApiService } from 'src/app/service/cog-framework-api.servic
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetPipelineParams, Pipeline } from 'src/app/model/Pipeline';
 import { MatTableDataSource } from '@angular/material/table';
+import { isEmpty } from 'src/app/utils';
 
 @Component({
   selector: 'app-data-header',
@@ -61,7 +62,7 @@ export class AppDataHeaderComponent implements OnInit {
   page = 1;
   total = 0;
 
-  id = 'afcf98bb-a9af-4a34-a512-1236110150ae';
+  id = '';
   name = '';
 
   dataSource = new MatTableDataSource();
@@ -81,6 +82,7 @@ export class AppDataHeaderComponent implements OnInit {
   ngOnInit(): void {
     this.search();
     this.route.queryParams.subscribe((data) => {
+      console.log('data', data);
       //TODO: rm params after standartizide
       const params = { ...data };
       if (params['name']) {
@@ -102,7 +104,9 @@ export class AppDataHeaderComponent implements OnInit {
       if (params['page']) {
         this.page = params['page'];
       }
-      this.getPipelines({ ...params });
+      if (!isEmpty(params)) {
+        this.getPipelines({ ...params });
+      }
     });
     this.defaultSearchOptionKey = this.name ? 'name' : 'id';
     this.defaultSearchQuery = this.name || this.id;
@@ -148,10 +152,13 @@ export class AppDataHeaderComponent implements OnInit {
     if (params['key']) {
       this.defaultSearchOptionKey = params['key'];
     }
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: params,
-      queryParamsHandling: 'replace',
-    });
+
+    if (this.id != '' || this.name != '') {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: params,
+        queryParamsHandling: 'replace',
+      });
+    }
   }
 }

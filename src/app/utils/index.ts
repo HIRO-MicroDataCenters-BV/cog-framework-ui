@@ -44,3 +44,14 @@ export const flatten = (
 
   return result;
 };
+
+export const isEmpty = (
+  value: string | number | boolean | null | undefined | object,
+) => {
+  return (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    Object.keys(value).length === 0
+  );
+};
