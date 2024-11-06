@@ -8,7 +8,7 @@ export interface ModelDetailInfo {
 }
 
 export interface ModelDetailData {
-  datasets: DatasetInfo[];
+  datasets: ModelDatasetInfo[];
   model_files: ModelFileInfo[];
   model_id: number;
   model_name: string;
@@ -23,7 +23,7 @@ export interface ValidationArtifact {
   validation_artifacts: ValidationArtifacts;
 }
 
-export interface DatasetInfo {
+export interface ModelDatasetInfo {
   dataset_id: string;
   dataset_name: string;
 }

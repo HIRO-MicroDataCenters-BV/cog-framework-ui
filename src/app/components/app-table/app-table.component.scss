@@ -5,4 +5,25 @@
 @import '../../../assets/styles/variable.scss';
 
 .table {
+  .artifacts {
+    &-csv,
+    &-charts {
+      padding: $p-1;
+    }
+    &-charts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $m-1;
+      .chart {
+        h6 {
+          font-size: 12px;
+          margin-bottom: $m-0;
+        }
+        .img {
+          width: 100%;
+          display: block;
+        }
+      }
+    }
+  }
 }

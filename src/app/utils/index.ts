@@ -1,4 +1,5 @@
 import { Pipeline, PipelineTask } from 'src/app/model/Pipeline';
+import { environment } from 'src/environments/environment';
 
 export const getFormattedDiff = (
   startedAt: string,
@@ -54,4 +55,8 @@ export const isEmpty = (
     value === '' ||
     Object.keys(value).length === 0
   );
+};
+
+export const buildImgURL = (url: string): string => {
+  return `${environment.appURL}/s/get_image?url=${url}`;
 };

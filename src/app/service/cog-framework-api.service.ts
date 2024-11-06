@@ -24,7 +24,10 @@ import {
 import { DeleteResponse } from '../model/DeleteResponse';
 import { ModelServe } from '../model/ModelServe';
 import { ModelServeResponse } from '../model/ModelServeResponse';
-import { UploadedModelFile } from '../model/ModelFile';
+import {
+  GetDownloadModelFileParams,
+  UploadedModelFile,
+} from '../model/ModelFile';
 import { GetPipelineParams, PipelineResponse } from '../model/Pipeline';
 
 @Injectable({
@@ -173,5 +176,11 @@ export class CogFrameworkApiService {
     formData.append('file_description', model_file_description);
     const url = `${this.baseURL}/models/file`;
     return this.httpClient.post<UploadedModelFile>(url, formData);
+  }
+
+  downloadModelFile(params: GetDownloadModelFileParams): Observable<string> {
+    return this.httpClient.get<string>(`${this.baseURL}/models/file/`, {
+      params,
+    });
   }
 }

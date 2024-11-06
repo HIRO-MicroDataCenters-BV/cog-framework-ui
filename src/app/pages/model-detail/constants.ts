@@ -15,8 +15,8 @@ export const MODEL_DETAIL_TABS = (id: string): ITabItem[] =>
       link: ['/model-detail', id, 'datasets'],
     },
     {
-      label: 'label.model_validation_metrics',
-      link: ['/model-detail', id, 'metrics'],
+      label: 'label.model_validation',
+      link: ['/model-detail', id, 'validation'],
     },
     // {
     //   label: 'Model Pipeline',

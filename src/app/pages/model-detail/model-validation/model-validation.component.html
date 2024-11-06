@@ -1,0 +1,38 @@
+<div *ngIf="modelDetailData">
+  <mat-card class="col-12">
+    <mat-card-header>
+      <mat-card-title>{{
+        'title.model_validation_metrics' | transloco
+      }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="content">
+      <div>
+        <div>
+          <app-table
+            source="getModelValidationMetrics"
+            [params]="{ model_id: modelDetailData.model_id.toString() }"
+            [displayedColumns]="displayedColumns.metrics"
+          ></app-table>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="col-12">
+    <mat-card-header>
+      <mat-card-title>{{
+        'title.model_validation_artifacts' | transloco
+      }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="content">
+      <div>
+        <div>
+          <app-table
+            source="getModelValidationArtifacts"
+            [params]="{ model_id: modelDetailData.model_id.toString() }"
+            [displayedColumns]="displayedColumns.artifacts"
+          ></app-table>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
