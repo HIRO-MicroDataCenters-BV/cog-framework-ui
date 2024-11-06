@@ -1,33 +1,32 @@
 <div *ngIf="modelDetailData">
-  <app-upload-model (modelUploadedEvent)="updateModelFile($event)" />
   <mat-card class="col-12">
     <mat-card-header>
-      <mat-card-title>{{ 'title.model_files' | transloco }}</mat-card-title>
+      <mat-card-title>{{ 'title.model_datasets' | transloco }}</mat-card-title>
     </mat-card-header>
     <mat-card-content class="content">
       <div>
         <div>
           <table
             mat-table
-            [dataSource]="modelFileDataSource"
+            [dataSource]="modelDatasetDataSource"
             class="mat-elevation-z0"
           >
             <!-- Position Column -->
-            <ng-container matColumnDef="id">
+            <ng-container matColumnDef="dataset_id">
               <th mat-header-cell *matHeaderCellDef>
                 {{ 'label.id' | transloco }}
               </th>
               <td mat-cell *matCellDef="let item">
-                {{ item.file_id }}
+                {{ item.dataset_id }}
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="name">
+            <ng-container matColumnDef="dataset_name">
               <th mat-header-cell *matHeaderCellDef>
-                {{ 'label.file_name' | transloco }}
+                {{ 'label.name' | transloco }}
               </th>
               <td mat-cell *matCellDef="let item">
-                {{ item.file_name }}
+                {{ item.dataset_name }}
               </td>
             </ng-container>
 
@@ -42,18 +41,9 @@
                   [matTooltip]="'hint.open' | transloco"
                   class="iconbutton"
                   color="primary"
-                  (click)="open(item.file_id)"
+                  (click)="open(item.dataset_id)"
                 >
                   <mat-icon>open_in_browser</mat-icon>
-                </button>
-
-                <button
-                  mat-icon-button
-                  [matTooltip]="'hint.download' | transloco"
-                  color="primary"
-                  (click)="download(item.file_id)"
-                >
-                  <mat-icon>cloud_download</mat-icon>
                 </button>
               </td>
             </ng-container>

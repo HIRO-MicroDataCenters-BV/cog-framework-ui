@@ -15,7 +15,8 @@ import { PipelineDetailComponent } from './pipeline/pipeline-detail/pipeline-det
 import { PipelineRunOutputComponent } from './pipeline/pipeline-run-output/pipeline-run-output.component';
 import { ModelFilesComponent } from './model-detail/model-files/model-files.component';
 import { ModelInfoComponent } from './model-detail/model-info/model-info.component';
-
+import { ModelDatasetsComponent } from './model-detail/model-datasets/model-datasets.component';
+import { ModelValidationComponent } from './model-detail/model-validation/model-validation.component';
 export const MaterialRoutes: Routes = [
   {
     path: 'model',
@@ -40,15 +41,15 @@ export const MaterialRoutes: Routes = [
       },
       {
         path: 'datasets',
-        component: ModelFilesComponent,
-      },
-      {
-        path: 'metrics',
-        component: ModelFilesComponent,
+        component: ModelDatasetsComponent,
       },
       {
         path: 'pipeline',
         component: ModelFilesComponent,
+      },
+      {
+        path: 'validation',
+        component: ModelValidationComponent,
       },
     ],
   },

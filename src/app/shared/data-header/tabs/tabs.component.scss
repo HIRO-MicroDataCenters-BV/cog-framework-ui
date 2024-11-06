@@ -3,3 +3,8 @@
 @include mat.core();
 
 @import '../../../../assets/styles/variable.scss';
+.tabs {
+  a {
+    text-transform: capitalize;
+  }
+}

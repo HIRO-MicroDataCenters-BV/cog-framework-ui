@@ -11,10 +11,11 @@ import { NgForOf } from '@angular/common';
 import { MatTabNavPanel, MatTabsModule } from '@angular/material/tabs';
 import { filter } from 'rxjs/internal/operators/filter';
 import { Subscription } from 'rxjs';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-tabs',
-  imports: [MatTabsModule, RouterModule, NgForOf],
+  imports: [MatTabsModule, RouterModule, NgForOf, TranslocoPipe],
   standalone: true,
   templateUrl: './tabs.component.html',
   styleUrl: './tabs.component.scss',

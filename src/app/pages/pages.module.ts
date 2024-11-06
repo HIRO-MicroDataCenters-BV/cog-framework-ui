@@ -23,6 +23,8 @@ import { ModelFilesComponent } from './model-detail/model-files/model-files.comp
 import { ModelInfoComponent } from './model-detail/model-info/model-info.component';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ModelUploadComponent } from '../components/model-upload/model-upload.component';
+import { ModelDatasetsComponent } from './model-detail/model-datasets/model-datasets.component';
+import { ModelValidationComponent } from './model-detail/model-validation/model-validation.component';
 
 @NgModule({
   imports: [
@@ -50,6 +52,8 @@ import { ModelUploadComponent } from '../components/model-upload/model-upload.co
     PipelineRunOutputComponent,
     ModelInfoComponent,
     ModelFilesComponent,
+    ModelDatasetsComponent,
+    ModelValidationComponent,
   ],
 })
 export class MaterialComponentsModule {}
