@@ -130,6 +130,7 @@ export class AppTableComponent implements AfterViewInit {
 
   modeValidationCsv(csvFileS3Url: string): void {
     console.log('csvFileS3Url', csvFileS3Url);
+    // BUG: INFINITE LOOP
     /*
     const response =
       this.cogFrameworkApiService.getModelValidationCSV(csvFileS3Url);
