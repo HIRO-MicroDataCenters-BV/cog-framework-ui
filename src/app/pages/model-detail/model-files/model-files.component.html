@@ -1,5 +1,8 @@
 <div *ngIf="modelDetailData">
-  <app-upload-model (modelUploadedEvent)="updateModelFile($event)" />
+  <app-upload-model
+    [modelId]="String(modelDetailData.model_id)"
+    (modelUploadedEvent)="updateModelFile($event)"
+  />
   <mat-card class="col-12">
     <mat-card-header>
       <mat-card-title>{{ 'title.model_files' | transloco }}</mat-card-title>
