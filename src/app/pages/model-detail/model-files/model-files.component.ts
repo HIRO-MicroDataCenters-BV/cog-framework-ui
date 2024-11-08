@@ -9,7 +9,9 @@ import { CogFrameworkApiService } from 'src/app/service/cog-framework-api.servic
   styleUrls: ['./model-files.component.scss'],
 })
 export class ModelFilesComponent {
+  protected readonly String = String;
   loading: boolean = false;
+
   @Input()
   get modelDetailData(): ModelDetailData {
     return this._modelDetailData;
@@ -23,9 +25,8 @@ export class ModelFilesComponent {
   _modelDetailData!: ModelDetailData;
   modelFileDataSource: ModelFileInfo[] = [];
   displayedColumns: string[] = ['id', 'name', 'action'];
-  constructor(private cogFrameworkApiService: CogFrameworkApiService) {
-    // this.modelFileDataSource = this.modelDetailData.model_files;
-  }
+
+  constructor(private cogFrameworkApiService: CogFrameworkApiService) {}
 
   updateModelFile(modelFile: ModelFileData): void {
     this.modelFileDataSource = [
@@ -37,12 +38,7 @@ export class ModelFilesComponent {
     ];
   }
 
-  open(id: string): void {
-    console.log(id);
-  }
-
   download(model_id: string): void {
-    console.log(model_id);
     const response = this.cogFrameworkApiService.downloadModelFile({
       model_id,
     });
