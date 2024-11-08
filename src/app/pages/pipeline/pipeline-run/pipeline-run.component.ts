@@ -43,8 +43,6 @@ export class AppPipelineRunComponent implements OnInit, OnDestroy {
   }
   _data!: Pipeline;
   root!: PipelineTask;
-  // TODO: RM after fix run_id in API
-  linkId: string = 'afcf98bb-a9af-4a34-a512-1236110150ae';
 
   duration: string = '';
 

@@ -114,7 +114,7 @@ export class AppDataHeaderComponent implements OnInit {
     response.subscribe({
       next: (res) => {
         if (res) {
-          this.changeData.emit({ ...res.data });
+          this.changeData.emit({ ...res.data, run_id: this.id });
         }
       },
       error: (e) => {
