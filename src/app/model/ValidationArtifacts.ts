@@ -25,6 +25,11 @@ export interface ValidationArtifacts {
   shap_summary_plot?: string;
 }
 
+export interface ValidationArtifactsChart {
+  name: string;
+  value: string;
+}
+
 export type GetValidationArtifactsParams = {
   model_id?: string;
   model_name?: string;

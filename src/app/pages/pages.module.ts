@@ -19,6 +19,12 @@ import { AppGraphComponent } from '../components/graph/graph.component';
 import { DatasetDeleteConfirmationComponent } from './dataset/dataset-delete-confirmation/dataset-delete-confirmation.component';
 import { AppDialogComponent } from '../components/app-dialog/app-dialog.component';
 import { AppTableComponent } from '../components/app-table/app-table.component';
+import { ModelFilesComponent } from './model-detail/model-files/model-files.component';
+import { ModelInfoComponent } from './model-detail/model-info/model-info.component';
+import { MatTooltip } from '@angular/material/tooltip';
+import { ModelUploadComponent } from '../components/model-upload/model-upload.component';
+import { ModelDatasetsComponent } from './model-detail/model-datasets/model-datasets.component';
+import { ModelValidationComponent } from './model-detail/model-validation/model-validation.component';
 
 @NgModule({
   imports: [
@@ -29,6 +35,8 @@ import { AppTableComponent } from '../components/app-table/app-table.component';
     AppGraphComponent,
     AppDialogComponent,
     AppTableComponent,
+    MatTooltip,
+    ModelUploadComponent,
   ],
   providers: [],
   declarations: [
@@ -42,6 +50,10 @@ import { AppTableComponent } from '../components/app-table/app-table.component';
     PipelineGraphComponent,
     PipelineDetailComponent,
     PipelineRunOutputComponent,
+    ModelInfoComponent,
+    ModelFilesComponent,
+    ModelDatasetsComponent,
+    ModelValidationComponent,
   ],
 })
 export class MaterialComponentsModule {}

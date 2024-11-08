@@ -29,6 +29,8 @@ import { DatePipe } from '@angular/common';
 import { AppFluidHeightDirective } from './fluid-height/fluid-height.directive';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MatDialogModule } from '@angular/material/dialog';
+import { AppTableComponent } from '../components/app-table/app-table.component';
+
 @NgModule({
   declarations: [
     AccordionAnchorDirective,
@@ -43,6 +45,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     MonacoEditorModule,
     DatePipe,
     TranslocoPipe,
+    AppTableComponent,
   ],
   exports: [
     AccordionAnchorDirective,
@@ -51,7 +54,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     AppFluidHeightDirective,
     AppDataHeaderComponent,
     AppSpinnerComponent,
-
+    AppTableComponent,
     FormsModule,
     ReactiveFormsModule,
     MatTabsModule,

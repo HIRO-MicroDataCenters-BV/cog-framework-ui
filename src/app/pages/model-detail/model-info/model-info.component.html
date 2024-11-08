@@ -1,0 +1,41 @@
+<div *ngIf="modelDetailData">
+  <mat-card class="col-12" *ngIf="modelDetailData">
+    <mat-card-header>
+      <mat-card-title>Model Information</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="box">
+        <span class="list-item"> Id: </span>
+        <span>{{ modelDetailData.model_id }}</span>
+      </div>
+
+      <div class="box">
+        <span class="list-item"> Name: </span>
+        <span>{{ modelDetailData.model_name }}</span>
+      </div>
+
+      <div class="box">
+        <span class="list-item"> Author: </span>
+        <span>{{ modelDetailData.author }}</span>
+      </div>
+
+      <div class="box">
+        <span class="list-item"> Creation Time: </span>
+        <span>{{
+          modelDetailData.register_date | date: 'dd-MMM-yyyy hh:mm:ss'
+        }}</span>
+      </div>
+    </mat-card-content>
+
+    <mat-card-header>
+      <mat-card-title>Model Description:</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p class="model-detail__description">
+        {{ modelDetailData.model_description }}
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>
