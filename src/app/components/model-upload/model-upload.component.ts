@@ -1,8 +1,8 @@
 import {
   Component,
   EventEmitter,
+  Input,
   OnDestroy,
-  OnInit,
   Output,
 } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
@@ -18,9 +18,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import {
   ModelFileData,
   ModelFileType,
@@ -53,11 +52,11 @@ import { MatOption, MatSelect } from '@angular/material/select';
   templateUrl: './model-upload.component.html',
   styleUrl: './model-upload.component.scss',
 })
-export class ModelUploadComponent implements OnInit, OnDestroy {
+export class ModelUploadComponent implements OnDestroy {
+  @Input() modelId: string = '';
   @Output() modelUploadedEvent = new EventEmitter<ModelFileData>();
   destroy$ = new Subject<void>();
   files: File[] | null = null;
-  modelId: string = '';
   modelDescription: string = '';
   modelType: ModelFileType = ModelFileTypeEnum.MODEL_POLICY_FILE;
   loading = false;
@@ -66,16 +65,7 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private _snackBar: MatSnackBar,
-    private route: ActivatedRoute,
   ) {}
-
-  ngOnInit() {
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((params) => {
-        this.modelId = params['id'];
-      });
-  }
 
   openSnackBar(message: string, action: string) {
     this._snackBar.open(message, action, {
@@ -91,7 +81,6 @@ export class ModelUploadComponent implements OnInit, OnDestroy {
       return;
     }
     this.files = null;
-    this.modelId = '';
     this.modelDescription = '';
     this.modelType = ModelFileTypeEnum.MODEL_POLICY_FILE;
   }
