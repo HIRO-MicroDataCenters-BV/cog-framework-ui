@@ -1,0 +1,18 @@
+<div class="row">
+  <mat-card class="col-12">
+    <mat-card-header>
+      <mat-card-title>{{
+        'title.link_dataset_to_model' | transloco
+      }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <app-searcher
+        [options]="searchOptions"
+        [defaultQuery]="defaultSearchQuery"
+        [defaultOptionKey]="defaultSearchOptionKey"
+        (updated)="search($event)"
+      >
+      </app-searcher>
+    </mat-card-content>
+  </mat-card>
+</div>
