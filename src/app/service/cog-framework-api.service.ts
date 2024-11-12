@@ -4,15 +4,15 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  //DatasetById,
   DatasetData,
   DatasetInfo,
   GetDatasetParams,
+  LinkDatasetToModelParams,
+  LinkDatasetToModelResponse,
   UploadedDataset,
 } from '../model/DatasetInfo';
-import { DatasetById } from '../model/DataSetDetailInfo';
+import { DatasetById, DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
-import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import {
   GetValidationArtifactsParams,
   ValidationArtifactsResponse,
@@ -74,6 +74,7 @@ export class CogFrameworkApiService {
       { params },
     );
   }
+
   getPipelineByRun(
     params: GetPipelineParams = {},
   ): Observable<PipelineResponse> {
@@ -82,6 +83,7 @@ export class CogFrameworkApiService {
       { params },
     );
   }
+
   /*
   getPipelineByModelID(id: string): Observable<PipelineResponse> {
     return this.httpClient.get<PipelineResponse>(
@@ -99,6 +101,16 @@ export class CogFrameworkApiService {
     return this.httpClient.get<DatasetInfo>(`${this.baseURL}/datasets`, {
       params,
     });
+  }
+
+  linkDatasetToModel({
+    model_id,
+    dataset_id,
+  }: LinkDatasetToModelParams): Observable<LinkDatasetToModelResponse> {
+    return this.httpClient.post<LinkDatasetToModelResponse>(
+      `${this.baseURL}/datasets/${dataset_id}/models/${model_id}/link`,
+      {},
+    );
   }
 
   getModelValidationArtifacts(

@@ -1,5 +1,5 @@
 <div *ngIf="modelDetailData">
-  <app-model-dataset-link />
+  <app-model-dataset-link [modelId]="modelDetailData.model_id" />
   <mat-card class="col-12">
     <mat-card-header>
       <mat-card-title>{{ 'title.model_datasets' | transloco }}</mat-card-title>

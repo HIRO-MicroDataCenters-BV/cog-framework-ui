@@ -97,7 +97,8 @@
     "model_files": "model files",
     "model_datasets": "model datasets",
     "model_validation": "model validation",
-    "__validation_artifacts": "validation artifacts"
+    "__validation_artifacts": "validation artifacts",
+    "link_dataset": "link dataset"
   },
   "hint": {
     "_serve": "{{name}} serve",

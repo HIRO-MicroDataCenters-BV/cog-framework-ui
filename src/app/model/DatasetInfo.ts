@@ -61,3 +61,18 @@ export const DatesetTypeWithLabels = {
   [DatesetTypeEnum.INFERENCE_DATA_SET_TYPE]: 'Inference Data',
   [DatesetTypeEnum.BOTH_TYPE]: 'Both',
 } as const;
+
+export type LinkDatasetToModelParams = {
+  model_id: string | number;
+  dataset_id: string | number;
+};
+
+export type LinkDatasetToModelResponse = {
+  status_code: number;
+  message: string;
+  data: {
+    model_id: number;
+    dataset_id: number;
+    linked_time: string;
+  };
+};
