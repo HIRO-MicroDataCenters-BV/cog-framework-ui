@@ -53,6 +53,7 @@ import { buildImgURL } from 'src/app/utils';
 export class AppTableComponent implements AfterViewInit {
   loading = false;
   pageSizeOptions = PAGE_SIZE_OPTIONS;
+  artifactsPageSizeOptions = [1, ...PAGE_SIZE_OPTIONS];
   //@Input() source!: (params: GetParams) => Observable<unknown>;
   @Input() source!: string;
   @Input() query: string | unknown = '';
@@ -137,7 +138,7 @@ export class AppTableComponent implements AfterViewInit {
     console.log('csv', csvFileS3Url);
     response.subscribe({
       next: (data) => {
-      
+
         this.csvData = data;
         const list = data.split('\n');
         const result: unknown[] = [];
@@ -166,7 +167,7 @@ export class AppTableComponent implements AfterViewInit {
           }
         });
         this.artifactsDataSource.data = result;
-        
+
         ///console.log('list', list);
         //console.log(this.modelValidationMetricTableSource);
       },
