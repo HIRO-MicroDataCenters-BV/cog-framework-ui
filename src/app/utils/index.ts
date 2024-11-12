@@ -58,5 +58,5 @@ export const isEmpty = (
 };
 
 export const buildImgURL = (url: string): string => {
-  return `${environment.appURL}/s/get_image?url=${url}`;
+  return `${environment.appURL}/s3/get_image?url=${url}`;
 };

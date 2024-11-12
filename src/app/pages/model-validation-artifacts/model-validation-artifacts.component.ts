@@ -5,9 +5,9 @@ import {
   ValidationArtifacts,
   ValidationArtifactsData,
 } from '../../model/ValidationArtifacts';
-import { environment } from '../../../environments/environment';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { Router } from '@angular/router';
+import { buildImgURL } from '../../utils';
 
 interface ModelValidationMetricTable {
   positive_class: number;
@@ -33,7 +33,6 @@ export class ModelValidationArtifactsComponent implements OnInit {
   data: ValidationArtifactsData | undefined;
   validationArtifacts: ValidationArtifacts | undefined;
 
-  baseURL = environment.appURL + '/s3/get_image?url=';
   shap_summary_plot: string | undefined;
 
   modelValidationMetricTableSource: ModelValidationMetricTable[] = [];
@@ -77,11 +76,11 @@ export class ModelValidationArtifactsComponent implements OnInit {
     this.backURLQuery = this.modelValidationService.previousComponentUrlQuery;
   }
 
-  buildImgURL(url: string | undefined): string {
+  buildImgURL(url?: string): string {
     if (!url) {
       return '';
     }
-    return `${this.baseURL}${url}`;
+    return buildImgURL(url);
   }
 
   modeValidationCsv(csvFileS3Url: string | undefined): void {
