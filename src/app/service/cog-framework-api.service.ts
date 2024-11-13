@@ -9,6 +9,8 @@ import {
   GetDatasetParams,
   LinkDatasetToModelParams,
   LinkDatasetToModelResponse,
+  UnlinkDatasetFromModelParams,
+  UnlinkDatasetFromModelResponse,
   UploadedDataset,
 } from '../model/DatasetInfo';
 import { DatasetById, DataSetDetailInfo } from '../model/DataSetDetailInfo';
@@ -109,6 +111,16 @@ export class CogFrameworkApiService {
   }: LinkDatasetToModelParams): Observable<LinkDatasetToModelResponse> {
     return this.httpClient.post<LinkDatasetToModelResponse>(
       `${this.baseURL}/datasets/${dataset_id}/models/${model_id}/link`,
+      {},
+    );
+  }
+
+  unlinkDatasetFromModel({
+    model_id,
+    dataset_id,
+  }: UnlinkDatasetFromModelParams): Observable<UnlinkDatasetFromModelResponse> {
+    return this.httpClient.post<UnlinkDatasetFromModelResponse>(
+      `${this.baseURL}/datasets/${dataset_id}/models/${model_id}/unlink`,
       {},
     );
   }

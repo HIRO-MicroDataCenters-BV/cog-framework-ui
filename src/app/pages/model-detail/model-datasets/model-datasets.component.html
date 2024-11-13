@@ -46,6 +46,15 @@
                 >
                   <mat-icon>open_in_browser</mat-icon>
                 </button>
+                <button
+                  mat-icon-button
+                  [matTooltip]="'hint.open' | transloco"
+                  class="iconbutton"
+                  color="primary"
+                  (click)="unlinkDatasetFromModel(item.dataset_id)"
+                >
+                  <mat-icon class="icon">link_off</mat-icon>
+                </button>
               </td>
             </ng-container>
 

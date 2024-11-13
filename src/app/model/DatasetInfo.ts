@@ -67,6 +67,8 @@ export type LinkDatasetToModelParams = {
   dataset_id: string | number;
 };
 
+export type UnlinkDatasetFromModelParams = LinkDatasetToModelParams;
+
 export type LinkDatasetToModelResponse = {
   status_code: number;
   message: string;
@@ -74,5 +76,15 @@ export type LinkDatasetToModelResponse = {
     model_id: number;
     dataset_id: number;
     linked_time: string;
+  };
+};
+
+export type UnlinkDatasetFromModelResponse = Omit<
+  LinkDatasetToModelResponse,
+  'data'
+> & {
+  data: {
+    model_id: number;
+    dataset_id: number;
   };
 };
