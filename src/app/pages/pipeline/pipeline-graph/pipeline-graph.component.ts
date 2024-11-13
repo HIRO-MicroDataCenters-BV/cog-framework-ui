@@ -4,7 +4,6 @@ import { MatDrawer } from '@angular/material/sidenav';
 import {
   Pipeline,
   PipelineTask,
-  PipelineTaskInputOutputArtifactsItem,
   PipelineTaskNode,
   PipelineTreeNode,
   PipelineTreeNodeConnection,

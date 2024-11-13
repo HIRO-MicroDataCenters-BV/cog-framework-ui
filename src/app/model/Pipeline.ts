@@ -1,4 +1,3 @@
-import { Optional } from '@angular/core';
 import { Pagination } from './General';
 
 export interface PipelineTaskInputOutput {
