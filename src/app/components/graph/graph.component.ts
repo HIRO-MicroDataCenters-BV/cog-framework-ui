@@ -87,7 +87,6 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
         </div>`;
       })
       .onNodeClick((d) => {
-        console.log('d', d);
         const data: PipelineTreeNode = d.data as PipelineTreeNode;
 
         this.clickNode.emit(data.id);

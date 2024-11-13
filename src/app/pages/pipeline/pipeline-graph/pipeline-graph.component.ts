@@ -71,7 +71,6 @@ export class PipelineGraphComponent implements OnInit {
     const node = this.flatTree.find((node) => node.id === id) as
       | PipelineTask
       | PipelineTaskNode;
-    console.log('node', node);
     if (node !== null) {
       this.node = node as PipelineTaskNode;
     }
