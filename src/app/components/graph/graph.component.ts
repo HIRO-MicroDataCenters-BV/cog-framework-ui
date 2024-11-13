@@ -2,8 +2,10 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,6 +26,7 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
   @ViewChild('graphContainer') graphContainer!: ElementRef;
   @Input() data: PipelineTreeNode[] | undefined;
   @Input() connections: PipelineTreeNodeConnection[] | undefined;
+  @Output() clickNode = new EventEmitter<string>();
   graph: OrgChart<unknown> | undefined;
 
   icons = {
@@ -82,6 +85,12 @@ export class AppGraphComponent implements OnChanges, AfterViewInit {
         </div>
         </div>
         </div>`;
+      })
+      .onNodeClick((d) => {
+        console.log('d', d);
+        const data: PipelineTreeNode = d.data as PipelineTreeNode;
+
+        this.clickNode.emit(data.id);
       })
       .render();
 

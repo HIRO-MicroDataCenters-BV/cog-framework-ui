@@ -1,3 +1,4 @@
+import { Optional } from '@angular/core';
 import { Pagination } from './General';
 
 export interface PipelineTaskInputOutput {
@@ -10,12 +11,48 @@ export interface PipelineTaskResourcesDuration {
   memory: number;
 }
 
+export interface S3 {
+  key: string;
+}
+
 export interface PipelineTask {
   id: string;
   podName: string;
   name: string;
   inputs: PipelineTaskInputOutput[];
   outputs: PipelineTaskInputOutput[];
+  status:
+    | 'pending'
+    | 'running'
+    | 'succeeded'
+    | 'skipped'
+    | 'failed'
+    | 'error'
+    | 'omitted';
+  startedAt: string;
+  finishedAt: string;
+  resourcesDuration: PipelineTaskResourcesDuration;
+  children: PipelineTask[];
+  parent?: PipelineTask;
+}
+
+export interface PipelineTaskInputOutputArtifactsItem {
+  name: string;
+  optional?: string | null;
+  s3: S3;
+  path: string | null;
+}
+
+export interface PipelineTaskInputOutputArtifacts {
+  artifacts: PipelineTaskInputOutputArtifactsItem[];
+}
+
+export interface PipelineTaskNode {
+  id: string;
+  podName: string;
+  name: string;
+  inputs: PipelineTaskInputOutput[];
+  outputs?: PipelineTaskInputOutputArtifacts;
   status:
     | 'pending'
     | 'running'
