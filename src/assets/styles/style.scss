@@ -49,6 +49,13 @@ body {
 // mat-mdc
 .mat {
   &-mdc {
+    &-list {
+      &-item {
+        &:not(.mat-mdc-list-item-interactive)[href] {
+          cursor: pointer;
+        }
+      }
+    }
     &-dialog {
       &-container {
         .mat-mdc-dialog-surface {

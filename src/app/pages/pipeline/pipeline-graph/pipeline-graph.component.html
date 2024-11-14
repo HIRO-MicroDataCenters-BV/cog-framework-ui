@@ -1,9 +1,50 @@
 <div class="pipeline-graph">
-  <app-graph
-    class="viewport"
-    appFluidHeight
-    [margin]="16"
-    [data]="tree"
-    [connections]="connections"
-  ></app-graph>
+  <mat-drawer-container autosize>
+    <mat-drawer #drawer mode="over" position="end" class="drawer">
+      <div class="drawer-container">
+        <ng-container *ngIf="node">
+          <header>
+            <h3>{{ node.name }}</h3>
+          </header>
+          <article>
+            <mat-list class="link-list">
+              <a
+                *ngFor="let item of node.inputs"
+                class="item"
+                mat-list-item
+                [href]="item.value"
+              >
+                <h4 matListItemTitle>{{ item.name }}</h4>
+                <p matListItemLine>
+                  {{ item.value }}
+                </p></a
+              >
+            </mat-list>
+            <mat-list class="link-list" *ngIf="node?.outputs?.artifacts">
+              <a
+                *ngFor="let item of node?.outputs?.artifacts"
+                class="item"
+                mat-list-item
+                [href]="buildImgURL(item.s3.key)"
+              >
+                <h4 matListItemTitle>{{ item.name }}</h4>
+                <p matListItemLine>
+                  {{ item.s3.key }}
+                </p></a
+              >
+            </mat-list>
+          </article>
+        </ng-container>
+      </div>
+    </mat-drawer>
+
+    <app-graph
+      class="viewport"
+      appFluidHeight
+      [margin]="16"
+      [data]="tree"
+      [connections]="connections"
+      (clickNode)="handleGetNodeById($event)"
+    ></app-graph>
+  </mat-drawer-container>
 </div>

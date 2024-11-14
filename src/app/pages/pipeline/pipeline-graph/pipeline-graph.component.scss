@@ -12,5 +12,11 @@
       overflow: hidden;
       display: block;
     }
+    .drawer {
+      width: 50%;
+      &-container {
+        padding: $p-1;
+      }
+    }
   }
 }
