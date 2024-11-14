@@ -30,4 +30,6 @@ export type GetModelParams = {
   metrics_page?: number;
   artifacts_limit?: number;
   artifacts_page?: number;
+  model_id?: string;
+  model_name?: string;
 };
