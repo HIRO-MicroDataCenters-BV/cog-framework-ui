@@ -62,10 +62,15 @@ export class ModelDatasetsComponent {
       },
       complete: () => {
         this.modelDetailData.datasets = this.modelDetailData.datasets.filter(
-          (dataset) => dataset.dataset_id !== id,
+          (dataset) => dataset.id !== id,
         );
         this.modelDatasetDataSource = this.modelDetailData.datasets;
       },
     });
+  }
+
+  updateDatasets(dataset: ModelDatasetInfo): void {
+    this.modelDetailData.datasets = [...this.modelDetailData.datasets, dataset];
+    this.modelDetailData = { ...this.modelDetailData };
   }
 }

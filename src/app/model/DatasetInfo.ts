@@ -19,7 +19,7 @@ export interface Dataset {
 }
 
 export interface DatasetData {
-  data_source_type: number;
+  data_source_type: DatesetType;
   description: string;
   id: number;
   last_modified_time: string;
@@ -28,6 +28,7 @@ export interface DatasetData {
   train_and_inference_type: number;
   user_id: number;
   author: string;
+  dataset_name: string;
 }
 
 export interface UploadedDataset {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   MatCard,
   MatCardContent,
@@ -39,6 +39,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatPaginator } from '@angular/material/paginator';
+import { ModelDatasetInfo } from '../../model/ModelDetails';
 
 interface Error {
   detail: { msg: string };
@@ -86,6 +87,7 @@ export class ModelDatasetLinkComponent {
   defaultSearchQuery = '';
   loading = false;
   dataSource = new MatTableDataSource<DatasetData>([]);
+  @Output() updated = new EventEmitter<ModelDatasetInfo>();
   displayedColumns: string[] = ['id', 'dataset_name', 'creationTime', 'action'];
 
   constructor(
@@ -146,6 +148,14 @@ export class ModelDatasetLinkComponent {
           v.message,
           this.translocoService.translate('action.close'),
         );
+        const dataset = this.dataSource.data.find((d) => d.id === id);
+        this.updated.emit({
+          id: String(id),
+          data_source_type: dataset!.data_source_type,
+          description: dataset!.description,
+          train_and_inference_type: dataset!.train_and_inference_type,
+          dataset_name: dataset!.dataset_name,
+        });
       },
       error: (e) => {
         this.getError(e.error);

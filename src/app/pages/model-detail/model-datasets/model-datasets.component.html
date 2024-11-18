@@ -1,5 +1,8 @@
 <div *ngIf="modelDetailData">
-  <app-model-dataset-link [modelId]="modelDetailData.model_id" />
+  <app-model-dataset-link
+    [modelId]="modelDetailData.model_id"
+    (updated)="updateDatasets($event)"
+  />
   <mat-card class="col-12">
     <mat-card-header>
       <mat-card-title>{{ 'title.model_datasets' | transloco }}</mat-card-title>
@@ -18,7 +21,7 @@
                 {{ 'label.id' | transloco }}
               </th>
               <td mat-cell *matCellDef="let item">
-                {{ item.dataset_id }}
+                {{ item.id }}
               </td>
             </ng-container>
 
@@ -51,7 +54,7 @@
                   [matTooltip]="'hint.open' | transloco"
                   class="iconbutton"
                   color="primary"
-                  (click)="unlinkDatasetFromModel(item.dataset_id)"
+                  (click)="unlinkDatasetFromModel(item.id)"
                 >
                   <mat-icon class="icon">link_off</mat-icon>
                 </button>
