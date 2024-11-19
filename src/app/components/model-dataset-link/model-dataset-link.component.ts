@@ -112,6 +112,10 @@ export class ModelDatasetLinkComponent {
   }
 
   search(event: SearcherEvent): void {
+    if (event.query.length < 1) {
+      this.dataSource.data = [];
+      return;
+    }
     const params: GetDatasetParams = event.query
       ? { [event.key]: event.query }
       : {};
