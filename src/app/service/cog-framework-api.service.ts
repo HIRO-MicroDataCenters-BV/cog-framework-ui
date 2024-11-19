@@ -41,6 +41,12 @@ export class CogFrameworkApiService {
   constructor(private httpClient: HttpClient) {}
 
   getModel(params: GetModelParams = {}): Observable<ModelInfo> {
+    if (params.id) {
+      params.model_id = params.id;
+    }
+    if (params.name) {
+      params.model_name = params.name;
+    }
     return this.httpClient.get<ModelInfo>(`${this.baseURL}/models`, {
       params,
     });
@@ -100,6 +106,9 @@ export class CogFrameworkApiService {
   }
 
   getDataset(params: GetDatasetParams = {}): Observable<DatasetInfo> {
+    if (params.id) {
+      params.dataset_id = params.id;
+    }
     return this.httpClient.get<DatasetInfo>(`${this.baseURL}/datasets`, {
       params,
     });

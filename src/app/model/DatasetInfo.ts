@@ -11,6 +11,7 @@ export type GetDatasetParams = {
   limit?: number;
   page?: number;
   pageSize?: number;
+  dataset_id?: number | string;
 };
 
 export interface Dataset {
