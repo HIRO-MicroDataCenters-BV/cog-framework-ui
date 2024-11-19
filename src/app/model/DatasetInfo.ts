@@ -50,9 +50,9 @@ export interface UploadDatasetError {
 }
 
 export const DatesetTypeEnum = {
-  TRAIN_DATA_SET_TYPE: '0',
-  INFERENCE_DATA_SET_TYPE: '1',
-  BOTH_TYPE: '2',
+  TRAIN_DATA_SET_TYPE: 0,
+  INFERENCE_DATA_SET_TYPE: 1,
+  BOTH_TYPE: 2,
 } as const;
 
 export type DatesetType =

@@ -1,6 +1,7 @@
 <div *ngIf="modelDetailData">
   <app-model-dataset-link
     [modelId]="modelDetailData.model_id"
+    [modelDatasets]="modelDatasetDataSource"
     (updated)="updateDatasets($event)"
   />
   <mat-card class="col-12">
@@ -51,7 +52,7 @@
                 </button>
                 <button
                   mat-icon-button
-                  [matTooltip]="'hint.open' | transloco"
+                  [matTooltip]="'hint.unlink' | transloco"
                   class="iconbutton"
                   color="primary"
                   (click)="unlinkDatasetFromModel(item.id)"

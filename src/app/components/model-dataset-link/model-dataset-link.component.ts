@@ -18,7 +18,12 @@ import {
 import { DEF_SEARCH_PARAMS, RESPONSE_CODE } from '../../constants';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DatasetData, GetDatasetParams } from '../../model/DatasetInfo';
+import {
+  DatasetData,
+  DatesetType,
+  DatesetTypeWithLabels,
+  GetDatasetParams,
+} from '../../model/DatasetInfo';
 import {
   MatCell,
   MatCellDef,
@@ -82,13 +87,21 @@ interface Error {
 })
 export class ModelDatasetLinkComponent {
   @Input() modelId = 0;
+  @Input() modelDatasets: ModelDatasetInfo[] = [];
   searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchOptionKey = '';
   defaultSearchQuery = '';
   loading = false;
   dataSource = new MatTableDataSource<DatasetData>([]);
   @Output() updated = new EventEmitter<ModelDatasetInfo>();
-  displayedColumns: string[] = ['id', 'dataset_name', 'creationTime', 'action'];
+  displayedColumns: string[] = [
+    'id',
+    'dataset_name',
+    'description',
+    'dataSourceType',
+    'creationTime',
+    'action',
+  ];
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
@@ -124,7 +137,11 @@ export class ModelDatasetLinkComponent {
     response.subscribe({
       next: (v) => {
         console.log(v);
-        this.dataSource.data = v.data;
+        const usedDatasetIds = this.modelDatasets.map((d) => String(d.id));
+        console.log(usedDatasetIds, 'usedDatasetIds');
+        this.dataSource.data = v.data.filter(
+          (d) => !usedDatasetIds.includes(String(d.id)),
+        );
       },
       error: (e) => {
         if (e.status === RESPONSE_CODE.NOT_FOUND) {
@@ -160,6 +177,7 @@ export class ModelDatasetLinkComponent {
           train_and_inference_type: dataset!.train_and_inference_type,
           dataset_name: dataset!.dataset_name,
         });
+        this.dataSource.data = this.dataSource.data.filter((d) => d.id !== id);
       },
       error: (e) => {
         this.getError(e.error);
@@ -169,5 +187,9 @@ export class ModelDatasetLinkComponent {
         this.loading = false;
       },
     });
+  }
+
+  getDatasetTypeLabel(type: DatesetType): string {
+    return DatesetTypeWithLabels[type];
   }
 }

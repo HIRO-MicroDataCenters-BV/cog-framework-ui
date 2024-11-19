@@ -6,6 +6,7 @@ import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
   DatasetData,
   DatasetInfo,
+  DatesetType,
   GetDatasetParams,
   LinkDatasetToModelParams,
   LinkDatasetToModelResponse,
@@ -174,7 +175,7 @@ export class CogFrameworkApiService {
   }: {
     files: File[];
     name: string;
-    type: string;
+    type: DatesetType;
     description: string;
   }): Observable<UploadedDataset> {
     const formData = new FormData();
@@ -182,7 +183,7 @@ export class CogFrameworkApiService {
       formData.append('files', file);
     }
     formData.append('dataset_name', name);
-    formData.append('dataset_type', type);
+    formData.append('dataset_type', String(type));
     formData.append('description', description);
 
     const url = `${this.baseURL}/datasets`;

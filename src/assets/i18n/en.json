@@ -47,6 +47,7 @@
     "_name": "{{name}} name",
     "dataset_name": "dataset name",
     "dataset_id": "dataset id",
+    "dataset_type": "dataset type",
     "model_name": "model name",
     "model_id": "model id",
     "value": "value",
@@ -108,7 +109,9 @@
     "insert_dataset_name": "insert dataset name",
     "insert_dataset_description": "insert dataset description",
     "select_dataset_type": "select dataset type",
-    "download": "download"
+    "download": "download",
+    "link": "link",
+    "unlink": "unlink"
   },
   "title": {
     "model_files": "model files",
