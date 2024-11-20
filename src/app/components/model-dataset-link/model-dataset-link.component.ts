@@ -136,9 +136,7 @@ export class ModelDatasetLinkComponent {
     const response = this.cogFrameworkApiService.getDataset(params);
     response.subscribe({
       next: (v) => {
-        console.log(v);
         const usedDatasetIds = this.modelDatasets.map((d) => String(d.id));
-        console.log(usedDatasetIds, 'usedDatasetIds');
         this.dataSource.data = v.data.filter(
           (d) => !usedDatasetIds.includes(String(d.id)),
         );
@@ -164,7 +162,6 @@ export class ModelDatasetLinkComponent {
     });
     response.subscribe({
       next: (v) => {
-        console.log(v);
         this.openSnackBar(
           v.message,
           this.translocoService.translate('action.close'),
