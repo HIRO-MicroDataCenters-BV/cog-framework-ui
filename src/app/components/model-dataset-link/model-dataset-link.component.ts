@@ -18,12 +18,7 @@ import {
 import { DEF_SEARCH_PARAMS, RESPONSE_CODE } from '../../constants';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  DatasetData,
-  DatesetType,
-  DatesetTypeWithLabels,
-  GetDatasetParams,
-} from '../../model/DatasetInfo';
+import { DatasetData, GetDatasetParams } from '../../model/DatasetInfo';
 import {
   MatCell,
   MatCellDef,
@@ -45,6 +40,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatPaginator } from '@angular/material/paginator';
 import { ModelDatasetInfo } from '../../model/ModelDetails';
+import { getDatasetTypeLabel } from '../../utils';
 
 interface Error {
   detail: { msg: string };
@@ -86,6 +82,7 @@ interface Error {
   styleUrl: './model-dataset-link.component.scss',
 })
 export class ModelDatasetLinkComponent {
+  protected readonly getDatasetTypeLabel = getDatasetTypeLabel;
   @Input() modelId = 0;
   @Input() modelDatasets: ModelDatasetInfo[] = [];
   searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
@@ -96,7 +93,7 @@ export class ModelDatasetLinkComponent {
   @Output() updated = new EventEmitter<ModelDatasetInfo>();
   displayedColumns: string[] = [
     'id',
-    'dataset_name',
+    'name',
     'description',
     'dataSourceType',
     'creationTime',
@@ -184,9 +181,5 @@ export class ModelDatasetLinkComponent {
         this.loading = false;
       },
     });
-  }
-
-  getDatasetTypeLabel(type: DatesetType): string {
-    return DatesetTypeWithLabels[type];
   }
 }

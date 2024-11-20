@@ -3,6 +3,7 @@ import { ModelDatasetInfo, ModelDetailData } from '../../../model/ModelDetails';
 import { CogFrameworkApiService } from '../../../service/cog-framework-api.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoService } from '@jsverse/transloco';
+import { getDatasetTypeLabel } from '../../../utils';
 
 @Component({
   selector: 'app-model-datasets',
@@ -10,6 +11,7 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrls: ['./model-datasets.component.scss'],
 })
 export class ModelDatasetsComponent {
+  protected readonly getDatasetTypeLabel = getDatasetTypeLabel;
   @Input()
   get modelDetailData(): ModelDetailData {
     return this._modelDetailData;
@@ -22,7 +24,13 @@ export class ModelDatasetsComponent {
 
   _modelDetailData!: ModelDetailData;
   modelDatasetDataSource: ModelDatasetInfo[] = [];
-  displayedColumns: string[] = ['dataset_id', 'dataset_name', 'action'];
+  displayedColumns: string[] = [
+    'id',
+    'name',
+    'description',
+    'dataSourceType',
+    'action',
+  ];
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
