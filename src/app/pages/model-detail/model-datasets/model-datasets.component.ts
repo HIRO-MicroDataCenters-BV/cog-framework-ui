@@ -19,11 +19,11 @@ export class ModelDatasetsComponent {
 
   set modelDetailData(data: ModelDetailData) {
     this._modelDetailData = data;
-    this.modelDatasetDataSource = this._modelDetailData.datasets;
+    this.dataSource = this._modelDetailData.datasets;
   }
 
   _modelDetailData!: ModelDetailData;
-  modelDatasetDataSource: ModelDatasetInfo[] = [];
+  dataSource: ModelDatasetInfo[] = [];
   displayedColumns: string[] = [
     'id',
     'name',
@@ -57,7 +57,7 @@ export class ModelDatasetsComponent {
         this.modelDetailData.datasets = this.modelDetailData.datasets.filter(
           (dataset) => dataset.id !== id,
         );
-        this.modelDatasetDataSource = this.modelDetailData.datasets;
+        this.dataSource = this.modelDetailData.datasets;
       },
     });
   }

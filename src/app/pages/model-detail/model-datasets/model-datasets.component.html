@@ -1,7 +1,7 @@
 <div *ngIf="modelDetailData">
   <app-model-dataset-link
     [modelId]="modelDetailData.model_id"
-    [modelDatasets]="modelDatasetDataSource"
+    [modelDatasets]="dataSource"
     (updated)="updateDatasets($event)"
   />
   <mat-card class="col-12">
@@ -11,11 +11,7 @@
     <mat-card-content class="content">
       <div>
         <div>
-          <table
-            mat-table
-            [dataSource]="modelDatasetDataSource"
-            class="mat-elevation-z0"
-          >
+          <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
             <ng-container matColumnDef="id">
               <th mat-header-cell *matHeaderCellDef>
                 {{ 'label.id' | transloco }}
