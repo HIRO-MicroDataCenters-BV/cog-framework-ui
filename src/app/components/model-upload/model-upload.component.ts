@@ -17,7 +17,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import {
@@ -27,6 +26,7 @@ import {
   ModelFileTypeWithLabels,
 } from '../../model/ModelFile';
 import { MatOption, MatSelect } from '@angular/material/select';
+import { SnackBarService } from '../../service/snackbar.service';
 
 @Component({
   selector: 'app-upload-model',
@@ -43,7 +43,6 @@ import { MatOption, MatSelect } from '@angular/material/select';
     NgIf,
     FileInputComponent,
     MatButtonModule,
-    MatSnackBarModule,
     MatSelect,
     NgForOf,
     MatOption,
@@ -64,16 +63,8 @@ export class ModelUploadComponent implements OnDestroy {
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
-    private _snackBar: MatSnackBar,
+    private snackBarService: SnackBarService,
   ) {}
-
-  openSnackBar(message: string, action: string) {
-    this._snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'right',
-      politeness: 'assertive',
-    });
-  }
 
   handleFileInput(files: File[]) {
     if (files) {
@@ -116,10 +107,12 @@ export class ModelUploadComponent implements OnDestroy {
           }
         },
         error: (e) => {
-          this.openSnackBar(e?.error.message ?? 'Upload failed!', 'Close');
+          this.snackBarService.openSnackBar(
+            e?.error.message ?? 'Upload failed!',
+          );
         },
         complete: () => {
-          this.openSnackBar('Upload success!', 'Close');
+          this.snackBarService.openSnackBar('Upload success!');
         },
       });
   }

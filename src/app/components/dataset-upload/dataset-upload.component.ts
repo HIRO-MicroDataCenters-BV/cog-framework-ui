@@ -11,7 +11,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   DatesetType,
   DatesetTypeEnum,
@@ -20,6 +19,7 @@ import {
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { TranslocoModule } from '@jsverse/transloco';
+import { SnackBarService } from '../../service/snackbar.service';
 
 @Component({
   selector: 'app-upload-dataset',
@@ -36,7 +36,6 @@ import { TranslocoModule } from '@jsverse/transloco';
     NgIf,
     FileInputComponent,
     MatButtonModule,
-    MatSnackBarModule,
     MatSelect,
     KeyValuePipe,
     MatOption,
@@ -58,7 +57,7 @@ export class UploadDatasetComponent {
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
-    private _snackBar: MatSnackBar,
+    private snackBarService: SnackBarService,
   ) {}
 
   handleFileInput(files: File[]) {
@@ -70,14 +69,6 @@ export class UploadDatasetComponent {
     this.datasetName = '';
     this.datasetDescription = '';
     this.datasetType = DatesetTypeEnum.TRAIN_DATA_SET_TYPE;
-  }
-
-  openSnackBar(message: string, action: string) {
-    this._snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'right',
-      politeness: 'assertive',
-    });
   }
 
   uploadFile(): void {
@@ -94,7 +85,6 @@ export class UploadDatasetComponent {
     this.cogFrameworkApiService
       .uploadDataset({
         files: this.files,
-        // TODO: Since we dont have any user service, user id is hardcoded, remove when API without user id is available
         name: this.datasetName,
         type: this.datasetType,
         description: this.datasetDescription,
@@ -110,10 +100,10 @@ export class UploadDatasetComponent {
         },
         error: (error) => {
           console.log(error);
-          this.openSnackBar('Upload failed', 'Close');
+          this.snackBarService.openSnackBar('Upload failed');
         },
         complete: () => {
-          this.openSnackBar('Upload success!', 'Close');
+          this.snackBarService.openSnackBar('Upload success!');
         },
       });
   }

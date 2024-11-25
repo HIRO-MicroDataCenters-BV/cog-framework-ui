@@ -1,9 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { ModelDatasetInfo, ModelDetailData } from '../../../model/ModelDetails';
 import { CogFrameworkApiService } from '../../../service/cog-framework-api.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslocoService } from '@jsverse/transloco';
 import { getDatasetTypeLabel } from '../../../utils';
+import { SnackBarService } from '../../../service/snackbar.service';
 
 @Component({
   selector: 'app-model-datasets',
@@ -12,6 +11,7 @@ import { getDatasetTypeLabel } from '../../../utils';
 })
 export class ModelDatasetsComponent {
   protected readonly getDatasetTypeLabel = getDatasetTypeLabel;
+
   @Input()
   get modelDetailData(): ModelDetailData {
     return this._modelDetailData;
@@ -34,17 +34,8 @@ export class ModelDatasetsComponent {
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
-    private snackBar: MatSnackBar,
-    private translocoService: TranslocoService,
+    private snackBarService: SnackBarService,
   ) {}
-
-  private openSnackBar(message: string, action: string): void {
-    this.snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
 
   open(id: string): void {
     console.log(id);
@@ -57,16 +48,10 @@ export class ModelDatasetsComponent {
     });
     response.subscribe({
       next: (v) => {
-        this.openSnackBar(
-          v.message,
-          this.translocoService.translate('action.close'),
-        );
+        this.snackBarService.openSnackBar(v.message);
       },
       error: (e) => {
-        this.openSnackBar(
-          e.error.message,
-          this.translocoService.translate('action.close'),
-        );
+        this.snackBarService.openSnackBar(e.error.message);
       },
       complete: () => {
         this.modelDetailData.datasets = this.modelDetailData.datasets.filter(

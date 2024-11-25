@@ -5,11 +5,7 @@ import {
   MatCardHeader,
   MatCardTitle,
 } from '@angular/material/card';
-import {
-  TranslocoDirective,
-  TranslocoPipe,
-  TranslocoService,
-} from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoPipe } from '@jsverse/transloco';
 import {
   AppSearcherComponent,
   SearcherEvent,
@@ -17,7 +13,6 @@ import {
 } from '../app-searcher/app-searcher.component';
 import { DEF_SEARCH_PARAMS, RESPONSE_CODE } from '../../constants';
 import { CogFrameworkApiService } from '../../service/cog-framework-api.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { DatasetData, GetDatasetParams } from '../../model/DatasetInfo';
 import {
   MatCell,
@@ -41,6 +36,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatPaginator } from '@angular/material/paginator';
 import { ModelDatasetInfo } from '../../model/ModelDetails';
 import { getDatasetTypeLabel } from '../../utils';
+import { SnackBarService } from '../../service/snackbar.service';
 
 interface Error {
   detail: { msg: string };
@@ -102,22 +98,13 @@ export class ModelDatasetLinkComponent {
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
-    private snackBar: MatSnackBar,
-    private translocoService: TranslocoService,
+    private snackBarService: SnackBarService,
   ) {}
-
-  private openSnackBar(message: string, action: string): void {
-    this.snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
 
   getError(error: Error): void {
     const msg = error?.message ?? error?.error_message ?? error.detail?.msg;
     if (msg) {
-      this.openSnackBar(msg, this.translocoService.translate('action.close'));
+      this.snackBarService.openSnackBar(msg);
     }
   }
 
@@ -159,10 +146,7 @@ export class ModelDatasetLinkComponent {
     });
     response.subscribe({
       next: (v) => {
-        this.openSnackBar(
-          v.message,
-          this.translocoService.translate('action.close'),
-        );
+        this.snackBarService.openSnackBar(v.message);
         const dataset = this.dataSource.data.find((d) => d.id === id);
         this.updated.emit({
           id: String(id),
