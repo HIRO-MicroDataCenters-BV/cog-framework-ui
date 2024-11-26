@@ -47,6 +47,7 @@
     "_name": "{{name}} name",
     "dataset_name": "dataset name",
     "dataset_id": "dataset id",
+    "dataset_type": "dataset type",
     "model_name": "model name",
     "model_id": "model id",
     "value": "value",
@@ -97,7 +98,8 @@
     "model_files": "model files",
     "model_datasets": "model datasets",
     "model_validation": "model validation",
-    "__validation_artifacts": "validation artifacts"
+    "__validation_artifacts": "validation artifacts",
+    "link_dataset": "link dataset"
   },
   "hint": {
     "_serve": "{{name}} serve",
@@ -107,7 +109,9 @@
     "insert_dataset_name": "insert dataset name",
     "insert_dataset_description": "insert dataset description",
     "select_dataset_type": "select dataset type",
-    "download": "download"
+    "download": "download",
+    "link": "link",
+    "unlink": "unlink"
   },
   "title": {
     "model_files": "model files",
@@ -122,6 +126,7 @@
     "confirm_delete_": "confirm delete {{name}}?",
     "create_": "create {{name}}",
     "clone_": "clone {{name}}",
-    "select_": "select {{name}}"
+    "select_": "select {{name}}",
+    "link_dataset_to_model": "link dataset to model"
   }
 }

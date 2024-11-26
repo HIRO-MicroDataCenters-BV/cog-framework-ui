@@ -14,7 +14,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ModelDeleteConfirmationComponent } from './model-delete-confirmation/model-delete-confirmation.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { ModelServeComponent } from './model-serve/model-serve.component';
@@ -30,6 +29,7 @@ import {
   PAGE_SIZE_OPTIONS,
   RESPONSE_CODE,
 } from 'src/app/constants';
+import { SnackBarService } from '../../service/snackbar.service';
 
 const MODEL_DATA: Model[] = [];
 
@@ -92,8 +92,8 @@ export class ModelComponent implements OnInit, AfterViewInit {
     private translocoService: TranslocoService,
     private router: Router,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
     private route: ActivatedRoute,
+    private snackBarService: SnackBarService,
   ) {}
 
   ngOnInit(): void {
@@ -130,7 +130,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
   getError(error: Error): void {
     const msg = error?.message ?? error?.detail ?? error?.error_message;
     if (msg) {
-      this.openSnackBar(msg, this.translocoService.translate('action.close'));
+      this.snackBarService.openSnackBar(msg);
     }
   }
 
@@ -208,11 +208,10 @@ export class ModelComponent implements OnInit, AfterViewInit {
       );
       response.subscribe({
         next: () => {
-          this.openSnackBar(
+          this.snackBarService.openSnackBar(
             this.translocoService.translate('message._deployment_starting', {
               name: this.name,
             }),
-            this.translocoService.translate('action.close'),
           );
         },
         error: (e) => {
@@ -230,11 +229,10 @@ export class ModelComponent implements OnInit, AfterViewInit {
     const response = this.cogFrameworkApiService.deleteModelById(id);
     response.subscribe({
       next: () => {
-        this.openSnackBar(
+        this.snackBarService.openSnackBar(
           this.translocoService.translate('message._deleted', {
             name: this.name,
           }),
-          this.translocoService.translate('action.close'),
         );
         this.deleteModelFromTable(id);
       },
@@ -242,14 +240,6 @@ export class ModelComponent implements OnInit, AfterViewInit {
         console.error(e);
         this.getError(e.error);
       },
-    });
-  }
-
-  private openSnackBar(message: string, action: string): void {
-    this.snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
     });
   }
 

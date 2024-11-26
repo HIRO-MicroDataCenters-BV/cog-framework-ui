@@ -179,7 +179,6 @@ export class AppTableComponent implements AfterViewInit {
   }
 
   buildImgURL(url: string): string {
-    console.log('b');
     return buildImgURL(url);
   }
 

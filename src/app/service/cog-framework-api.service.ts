@@ -4,15 +4,18 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { GetModelParams, ModelInfo } from '../model/ModelInfo';
 import {
-  //DatasetById,
   DatasetData,
   DatasetInfo,
+  DatesetType,
   GetDatasetParams,
+  LinkDatasetToModelParams,
+  LinkDatasetToModelResponse,
+  UnlinkDatasetFromModelParams,
+  UnlinkDatasetFromModelResponse,
   UploadedDataset,
 } from '../model/DatasetInfo';
-import { DatasetById } from '../model/DataSetDetailInfo';
+import { DatasetById, DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import { ModelDetailInfo } from '../model/ModelDetails';
-import { DataSetDetailInfo } from '../model/DataSetDetailInfo';
 import {
   GetValidationArtifactsParams,
   ValidationArtifactsResponse,
@@ -80,6 +83,7 @@ export class CogFrameworkApiService {
       { params },
     );
   }
+
   getPipelineByRun(
     params: GetPipelineParams = {},
   ): Observable<PipelineResponse> {
@@ -88,6 +92,7 @@ export class CogFrameworkApiService {
       { params },
     );
   }
+
   /*
   getPipelineByModelID(id: string): Observable<PipelineResponse> {
     return this.httpClient.get<PipelineResponse>(
@@ -108,6 +113,26 @@ export class CogFrameworkApiService {
     return this.httpClient.get<DatasetInfo>(`${this.baseURL}/datasets`, {
       params,
     });
+  }
+
+  linkDatasetToModel({
+    model_id,
+    dataset_id,
+  }: LinkDatasetToModelParams): Observable<LinkDatasetToModelResponse> {
+    return this.httpClient.post<LinkDatasetToModelResponse>(
+      `${this.baseURL}/datasets/${dataset_id}/models/${model_id}/link`,
+      {},
+    );
+  }
+
+  unlinkDatasetFromModel({
+    model_id,
+    dataset_id,
+  }: UnlinkDatasetFromModelParams): Observable<UnlinkDatasetFromModelResponse> {
+    return this.httpClient.post<UnlinkDatasetFromModelResponse>(
+      `${this.baseURL}/datasets/${dataset_id}/models/${model_id}/unlink`,
+      {},
+    );
   }
 
   getModelValidationArtifacts(
@@ -150,7 +175,7 @@ export class CogFrameworkApiService {
   }: {
     files: File[];
     name: string;
-    type: string;
+    type: DatesetType;
     description: string;
   }): Observable<UploadedDataset> {
     const formData = new FormData();
@@ -158,7 +183,7 @@ export class CogFrameworkApiService {
       formData.append('files', file);
     }
     formData.append('dataset_name', name);
-    formData.append('dataset_type', type);
+    formData.append('dataset_type', String(type));
     formData.append('description', description);
 
     const url = `${this.baseURL}/datasets`;

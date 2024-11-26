@@ -20,7 +20,7 @@ export interface Dataset {
 }
 
 export interface DatasetData {
-  data_source_type: number;
+  data_source_type: DatesetType;
   description: string;
   id: number;
   last_modified_time: string;
@@ -29,6 +29,7 @@ export interface DatasetData {
   train_and_inference_type: number;
   user_id: number;
   author: string;
+  dataset_name: string;
 }
 
 export interface UploadedDataset {
@@ -49,9 +50,9 @@ export interface UploadDatasetError {
 }
 
 export const DatesetTypeEnum = {
-  TRAIN_DATA_SET_TYPE: '0',
-  INFERENCE_DATA_SET_TYPE: '1',
-  BOTH_TYPE: '2',
+  TRAIN_DATA_SET_TYPE: 0,
+  INFERENCE_DATA_SET_TYPE: 1,
+  BOTH_TYPE: 2,
 } as const;
 
 export type DatesetType =
@@ -62,3 +63,30 @@ export const DatesetTypeWithLabels = {
   [DatesetTypeEnum.INFERENCE_DATA_SET_TYPE]: 'Inference Data',
   [DatesetTypeEnum.BOTH_TYPE]: 'Both',
 } as const;
+
+export type LinkDatasetToModelParams = {
+  model_id: string | number;
+  dataset_id: string | number;
+};
+
+export type UnlinkDatasetFromModelParams = LinkDatasetToModelParams;
+
+export type LinkDatasetToModelResponse = {
+  status_code: number;
+  message: string;
+  data: {
+    model_id: number;
+    dataset_id: number;
+    linked_time: string;
+  };
+};
+
+export type UnlinkDatasetFromModelResponse = Omit<
+  LinkDatasetToModelResponse,
+  'data'
+> & {
+  data: {
+    model_id: number;
+    dataset_id: number;
+  };
+};

@@ -21,7 +21,6 @@ import { UploadDatasetComponent } from '../../components/dataset-upload/dataset-
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { DatasetDeleteConfirmationComponent } from './dataset-delete-confirmation/dataset-delete-confirmation.component';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import {
   DEF_SEARCH_PARAMS,
@@ -33,6 +32,7 @@ import {
   SearcherEvent,
   SearcherOption,
 } from '../../components/app-searcher/app-searcher.component';
+import { SnackBarService } from '../../service/snackbar.service';
 
 interface Error {
   detail?: string;
@@ -89,7 +89,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     private cogFrameworkApiService: CogFrameworkApiService,
     private router: Router,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    private snackBarService: SnackBarService,
     private route: ActivatedRoute,
     private translocoService: TranslocoService,
   ) {}
@@ -128,7 +128,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   getError(error: Error): void {
     const msg = error?.message ?? error?.detail ?? error?.error_message;
     if (msg) {
-      this.openSnackBar(msg, this.translocoService.translate('action.close'));
+      this.snackBarService.openSnackBar(msg);
     }
   }
 
@@ -156,11 +156,10 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     const response = this.cogFrameworkApiService.deleteDatasetById(id);
     response.subscribe({
       next: () => {
-        this.openSnackBar(
+        this.snackBarService.openSnackBar(
           this.translocoService.translate('message._deleted', {
             name: this.name,
           }),
-          this.translocoService.translate('action.close'),
         );
         this.deleteDataSetFromTable(id);
       },
@@ -214,13 +213,5 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     this.dataSource.data = this.dataSource.data.filter(
       (item) => item.id !== id,
     );
-  }
-
-  private openSnackBar(message: string, action: string): void {
-    this.snackBar.open(message, action, {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
   }
 }

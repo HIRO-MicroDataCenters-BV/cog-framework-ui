@@ -25,6 +25,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ModelUploadComponent } from '../components/model-upload/model-upload.component';
 import { ModelDatasetsComponent } from './model-detail/model-datasets/model-datasets.component';
 import { ModelValidationComponent } from './model-detail/model-validation/model-validation.component';
+import { ModelDatasetLinkComponent } from '../components/model-dataset-link/model-dataset-link.component';
 
 @NgModule({
   imports: [
@@ -37,6 +38,7 @@ import { ModelValidationComponent } from './model-detail/model-validation/model-
     AppTableComponent,
     MatTooltip,
     ModelUploadComponent,
+    ModelDatasetLinkComponent,
   ],
   providers: [],
   declarations: [
