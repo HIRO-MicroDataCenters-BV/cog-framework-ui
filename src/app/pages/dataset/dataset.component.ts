@@ -33,6 +33,7 @@ import {
   SearcherOption,
 } from '../../components/app-searcher/app-searcher.component';
 import { SnackBarService } from '../../service/snackbar.service';
+import { getDatasetTypeLabel } from '../../utils';
 
 interface Error {
   detail?: string;
@@ -70,7 +71,8 @@ export class DatasetComponent implements OnInit, AfterViewInit {
     'id',
     'name',
     'creationTime',
-    'author',
+    'description',
+    'dataSourceType',
     'action',
   ];
   pageSizeOptions = PAGE_SIZE_OPTIONS;
@@ -83,6 +85,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
   searchOptions: SearcherOption[] = [...DEF_SEARCH_PARAMS];
   defaultSearchOptionKey = '';
   defaultSearchQuery = '';
+  protected readonly getDatasetTypeLabel = getDatasetTypeLabel;
   @ViewChild(MatPaginator) paginator: MatPaginator | undefined;
 
   constructor(
