@@ -134,7 +134,7 @@ export class DatasetComponent implements OnInit, AfterViewInit {
 
   open(item: DatasetData): void {
     this.router
-      .navigate(['/dataset-detail'], { queryParams: { id: item.id } })
+      .navigate(['/dataset', item.id], { queryParams: { id: item.id } })
       .then((r) => {
         console.log('redirected to other component', r);
       });
