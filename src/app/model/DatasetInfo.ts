@@ -20,7 +20,7 @@ export interface Dataset {
 }
 
 export interface DatasetData {
-  data_source_type: DatesetType;
+  data_source_type: DatasetType;
   description: string;
   id: number;
   last_modified_time: string;
@@ -49,19 +49,19 @@ export interface UploadDatasetError {
   error_message: [string];
 }
 
-export const DatesetTypeEnum = {
+export const DatasetTypeEnum = {
   TRAIN_DATA_SET_TYPE: 0,
   INFERENCE_DATA_SET_TYPE: 1,
   BOTH_TYPE: 2,
 } as const;
 
-export type DatesetType =
-  (typeof DatesetTypeEnum)[keyof typeof DatesetTypeEnum];
+export type DatasetType =
+  (typeof DatasetTypeEnum)[keyof typeof DatasetTypeEnum];
 
-export const DatesetTypeWithLabels = {
-  [DatesetTypeEnum.TRAIN_DATA_SET_TYPE]: 'Train Data',
-  [DatesetTypeEnum.INFERENCE_DATA_SET_TYPE]: 'Inference Data',
-  [DatesetTypeEnum.BOTH_TYPE]: 'Both',
+export const DatasetTypeWithLabels = {
+  [DatasetTypeEnum.TRAIN_DATA_SET_TYPE]: 'Train Data',
+  [DatasetTypeEnum.INFERENCE_DATA_SET_TYPE]: 'Inference Data',
+  [DatasetTypeEnum.BOTH_TYPE]: 'Both',
 } as const;
 
 export type LinkDatasetToModelParams = {
