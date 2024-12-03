@@ -12,9 +12,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import {
-  DatesetType,
-  DatesetTypeEnum,
-  DatesetTypeWithLabels,
+  DatasetType,
+  DatasetTypeEnum,
+  DatasetTypeWithLabels,
 } from '../../model/DatasetInfo';
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
@@ -50,8 +50,8 @@ export class UploadDatasetComponent {
   files: File[] | null = null;
   datasetName: string = '';
   datasetDescription: string = '';
-  datasetType: DatesetType = DatesetTypeEnum.TRAIN_DATA_SET_TYPE;
-  protected readonly DatesetTypeWithLabels = DatesetTypeWithLabels;
+  datasetType: DatasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
+  protected readonly DatasetTypeWithLabels = DatasetTypeWithLabels;
 
   loading = false;
 
@@ -68,7 +68,7 @@ export class UploadDatasetComponent {
     this.files = null;
     this.datasetName = '';
     this.datasetDescription = '';
-    this.datasetType = DatesetTypeEnum.TRAIN_DATA_SET_TYPE;
+    this.datasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
   }
 
   uploadFile(): void {

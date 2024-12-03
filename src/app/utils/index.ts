@@ -1,6 +1,6 @@
 import { Pipeline, PipelineTask } from 'src/app/model/Pipeline';
 import { environment } from 'src/environments/environment';
-import { DatesetType, DatesetTypeWithLabels } from '../model/DatasetInfo';
+import { DatasetType, DatasetTypeWithLabels } from '../model/DatasetInfo';
 
 export const getFormattedDiff = (
   startedAt: string,
@@ -62,6 +62,6 @@ export const buildImgURL = (url: string): string => {
   return `${environment.appURL}/s3/get_image?url=${url}`;
 };
 
-export const getDatasetTypeLabel = (type: DatesetType): string => {
-  return DatesetTypeWithLabels[type];
+export const getDatasetTypeLabel = (type: DatasetType): string => {
+  return DatasetTypeWithLabels[type];
 };

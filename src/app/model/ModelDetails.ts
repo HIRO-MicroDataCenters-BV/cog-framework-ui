@@ -1,5 +1,5 @@
 import { ValidationArtifacts } from './ValidationArtifacts';
-import { DatesetType } from './DatasetInfo';
+import { DatasetType } from './DatasetInfo';
 
 export interface ModelDetailInfo {
   data: ModelDetailData[];
@@ -28,7 +28,7 @@ export interface ModelDatasetInfo {
   id: string;
   dataset_name: string;
   description: string | null;
-  data_source_type: DatesetType;
+  data_source_type: DatasetType;
   train_and_inference_type: number; // It's probably an enum, but I don't know the values
 }
 

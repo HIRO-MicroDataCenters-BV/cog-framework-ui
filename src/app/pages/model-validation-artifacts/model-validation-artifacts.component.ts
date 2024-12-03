@@ -124,7 +124,7 @@ export class ModelValidationArtifactsComponent implements OnInit {
   }
 
   back(): void {
-    if (this.backURL === '/model-detail') {
+    if (this.backURL === '/model') {
       this.router
         .navigate([this.backURL], { queryParams: { id: this.backURLQuery } })
         .then((r) => {

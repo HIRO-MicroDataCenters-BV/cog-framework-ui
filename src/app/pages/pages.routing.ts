@@ -23,7 +23,7 @@ export const MaterialRoutes: Routes = [
     component: ModelComponent,
   },
   {
-    path: 'model-detail/:id',
+    path: 'model/:id',
     component: ModelDetailComponent,
     children: [
       {
@@ -58,7 +58,7 @@ export const MaterialRoutes: Routes = [
     component: DatasetComponent,
   },
   {
-    path: 'dataset-detail',
+    path: 'dataset/:id',
     component: DatasetDetailComponent,
   },
   {
