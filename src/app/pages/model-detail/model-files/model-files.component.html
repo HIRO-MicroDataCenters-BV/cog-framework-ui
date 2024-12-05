@@ -43,7 +43,7 @@
                   mat-icon-button
                   [matTooltip]="'hint.download' | transloco"
                   color="primary"
-                  (click)="download(item.file_id)"
+                  (click)="download(String(modelDetailData.model_id))"
                 >
                   <mat-icon>cloud_download</mat-icon>
                 </button>

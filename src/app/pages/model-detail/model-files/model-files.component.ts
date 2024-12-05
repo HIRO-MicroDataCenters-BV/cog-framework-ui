@@ -39,21 +39,9 @@ export class ModelFilesComponent {
   }
 
   download(model_id: string): void {
-    const response = this.cogFrameworkApiService.downloadModelFile({
-      model_id,
-    });
-    response.subscribe({
-      next: (v) => {
-        console.log('download', v);
-      },
-      error: (e) => {
-        console.error(e);
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-        console.info('complete');
-      },
-    });
+    window.open(
+      this.cogFrameworkApiService.downloadModelFileURL(model_id),
+      '_blank',
+    );
   }
 }
