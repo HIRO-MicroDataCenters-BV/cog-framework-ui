@@ -37,9 +37,3 @@ export type UploadedModelFileError = {
   error_code: string;
   error_message: [string];
 };
-
-export type GetDownloadModelFileParams = {
-  model_id?: string;
-  model_name?: string;
-  data_app?: string;
-};
