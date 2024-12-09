@@ -1,4 +1,5 @@
 <div *ngIf="modelDetailData">
+  <app-upload-dataset [modelId]="modelDetailData.model_id" />
   <app-model-dataset-link
     [modelId]="modelDetailData.model_id"
     [modelDatasets]="dataSource"

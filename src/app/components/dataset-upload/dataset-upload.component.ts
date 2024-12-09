@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -20,6 +20,7 @@ import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { TranslocoModule } from '@jsverse/transloco';
 import { SnackBarService } from '../../service/snackbar.service';
+import { ModelDatasetInfo } from '../../model/ModelDetails';
 
 @Component({
   selector: 'app-upload-dataset',
@@ -46,12 +47,14 @@ import { SnackBarService } from '../../service/snackbar.service';
   styleUrl: './dataset-upload.component.scss',
 })
 export class UploadDatasetComponent {
-  name: string = 'dataset';
+  @Input() modelId: string | number = '';
+  name = this.modelId ? 'dataset' : 'and link dataset';
   files: File[] | null = null;
   datasetName: string = '';
   datasetDescription: string = '';
   datasetType: DatasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
   protected readonly DatasetTypeWithLabels = DatasetTypeWithLabels;
+  @Output() updated = new EventEmitter<ModelDatasetInfo>();
 
   loading = false;
 
@@ -69,6 +72,29 @@ export class UploadDatasetComponent {
     this.datasetName = '';
     this.datasetDescription = '';
     this.datasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
+  }
+
+  linkDatasetToModel(datasetId: number): void {
+    this.cogFrameworkApiService
+      .linkDatasetToModel({
+        model_id: `${this.modelId}`,
+        dataset_id: datasetId,
+      })
+      .subscribe({
+        next: (response) => {
+          console.log('dataSetLinked', response);
+        },
+        error: () => {
+          this.snackBarService.openSnackBar(
+            'Dataset is uploaded, but linking failed',
+          );
+        },
+        complete: () => {
+          this.snackBarService.openSnackBar(
+            'Dataset is uploaded and linked to model',
+          );
+        },
+      });
   }
 
   uploadFile(): void {
@@ -96,13 +122,18 @@ export class UploadDatasetComponent {
       )
       .subscribe({
         next: (response) => {
-          console.log(response);
+          if (this.modelId && response.data?.id) {
+            this.linkDatasetToModel(response.data.id);
+          }
         },
         error: (error) => {
-          console.log(error);
+          console.error(error);
           this.snackBarService.openSnackBar('Upload failed');
         },
         complete: () => {
+          if (this.modelId) {
+            return;
+          }
           this.snackBarService.openSnackBar('Upload success!');
         },
       });
