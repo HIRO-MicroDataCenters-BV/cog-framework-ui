@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import {
+  DatasetData,
   DatasetType,
   DatasetTypeEnum,
   DatasetTypeWithLabels,
@@ -74,15 +75,22 @@ export class UploadDatasetComponent {
     this.datasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
   }
 
-  linkDatasetToModel(datasetId: number): void {
+  linkDatasetToModel(dataset: DatasetData): void {
     this.cogFrameworkApiService
       .linkDatasetToModel({
         model_id: `${this.modelId}`,
-        dataset_id: datasetId,
+        dataset_id: dataset.id,
       })
       .subscribe({
-        next: (response) => {
-          console.log('dataSetLinked', response);
+        next: () => {
+          console.log(dataset);
+          this.updated.emit({
+            id: `${dataset.id}`,
+            data_source_type: this.datasetType,
+            description: this.datasetDescription,
+            train_and_inference_type: 0, // ?? I'm not sure what to put here it's not documented
+            dataset_name: this.datasetName,
+          });
         },
         error: () => {
           this.snackBarService.openSnackBar(
@@ -123,7 +131,7 @@ export class UploadDatasetComponent {
       .subscribe({
         next: (response) => {
           if (this.modelId && response.data?.id) {
-            this.linkDatasetToModel(response.data.id);
+            this.linkDatasetToModel(response.data);
           }
         },
         error: (error) => {
