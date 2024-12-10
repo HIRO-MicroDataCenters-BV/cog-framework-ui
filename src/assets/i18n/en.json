@@ -21,7 +21,11 @@
   "message": {
     "no_data": "no data...",
     "_deployment_starting": "{{name}} deployment starting...",
-    "_deleted": "{{name}} deleted"
+    "_deleted": "{{name}} deleted",
+    "dataset_uploaded_and_linked": "Dataset is uploaded and linked to model",
+    "dataset_uploaded_but_no_link": "Dataset is uploaded, but linking failed",
+    "upload_success": "Upload success!",
+    "upload_failed": "Upload failed!"
   },
   "action": {
     "search": "search",

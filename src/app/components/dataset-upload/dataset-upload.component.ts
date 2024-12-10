@@ -19,7 +19,7 @@ import {
 } from '../../model/DatasetInfo';
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { SnackBarService } from '../../service/snackbar.service';
 import { ModelDatasetInfo } from '../../model/ModelDetails';
 
@@ -62,6 +62,7 @@ export class UploadDatasetComponent {
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private snackBarService: SnackBarService,
+    private translocoService: TranslocoService,
   ) {}
 
   handleFileInput(files: File[]) {
@@ -94,12 +95,12 @@ export class UploadDatasetComponent {
         },
         error: () => {
           this.snackBarService.openSnackBar(
-            'Dataset is uploaded, but linking failed',
+            this.translocoService.translate('dataset_uploaded_but_no_link'),
           );
         },
         complete: () => {
           this.snackBarService.openSnackBar(
-            'Dataset is uploaded and linked to model',
+            this.translocoService.translate('dataset_uploaded_and_linked'),
           );
         },
       });
@@ -136,13 +137,17 @@ export class UploadDatasetComponent {
         },
         error: (error) => {
           console.error(error);
-          this.snackBarService.openSnackBar('Upload failed');
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate('upload_failed'),
+          );
         },
         complete: () => {
           if (this.modelId) {
             return;
           }
-          this.snackBarService.openSnackBar('Upload success!');
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate('upload_success'),
+          );
         },
       });
   }
