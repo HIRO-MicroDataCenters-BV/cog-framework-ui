@@ -95,12 +95,16 @@ export class UploadDatasetComponent {
         },
         error: () => {
           this.snackBarService.openSnackBar(
-            this.translocoService.translate('dataset_uploaded_but_no_link'),
+            this.translocoService.translate(
+              'message.dataset_uploaded_but_no_link',
+            ),
           );
         },
         complete: () => {
           this.snackBarService.openSnackBar(
-            this.translocoService.translate('dataset_uploaded_and_linked'),
+            this.translocoService.translate(
+              'message.dataset_uploaded_and_linked',
+            ),
           );
         },
       });
@@ -138,7 +142,7 @@ export class UploadDatasetComponent {
         error: (error) => {
           console.error(error);
           this.snackBarService.openSnackBar(
-            this.translocoService.translate('upload_failed'),
+            this.translocoService.translate('message.upload_failed'),
           );
         },
         complete: () => {
@@ -146,7 +150,7 @@ export class UploadDatasetComponent {
             return;
           }
           this.snackBarService.openSnackBar(
-            this.translocoService.translate('upload_success'),
+            this.translocoService.translate('message.upload_success'),
           );
         },
       });
