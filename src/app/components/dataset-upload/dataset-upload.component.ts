@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -12,14 +12,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileInputComponent } from '../file-input/file-input.component';
 import { MatButtonModule } from '@angular/material/button';
 import {
+  DatasetData,
   DatasetType,
   DatasetTypeEnum,
   DatasetTypeWithLabels,
 } from '../../model/DatasetInfo';
 import { finalize } from 'rxjs/operators';
 import { MatOption, MatSelect } from '@angular/material/select';
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { SnackBarService } from '../../service/snackbar.service';
+import { ModelDatasetInfo } from '../../model/ModelDetails';
 
 @Component({
   selector: 'app-upload-dataset',
@@ -46,18 +48,21 @@ import { SnackBarService } from '../../service/snackbar.service';
   styleUrl: './dataset-upload.component.scss',
 })
 export class UploadDatasetComponent {
-  name: string = 'dataset';
+  @Input() modelId: string | number = '';
+  name = this.modelId ? 'dataset' : 'and link dataset';
   files: File[] | null = null;
   datasetName: string = '';
   datasetDescription: string = '';
   datasetType: DatasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
   protected readonly DatasetTypeWithLabels = DatasetTypeWithLabels;
+  @Output() updated = new EventEmitter<ModelDatasetInfo>();
 
   loading = false;
 
   constructor(
     private cogFrameworkApiService: CogFrameworkApiService,
     private snackBarService: SnackBarService,
+    private translocoService: TranslocoService,
   ) {}
 
   handleFileInput(files: File[]) {
@@ -69,6 +74,40 @@ export class UploadDatasetComponent {
     this.datasetName = '';
     this.datasetDescription = '';
     this.datasetType = DatasetTypeEnum.TRAIN_DATA_SET_TYPE;
+  }
+
+  linkDatasetToModel(dataset: DatasetData): void {
+    this.cogFrameworkApiService
+      .linkDatasetToModel({
+        model_id: `${this.modelId}`,
+        dataset_id: dataset.id,
+      })
+      .subscribe({
+        next: () => {
+          console.log(dataset);
+          this.updated.emit({
+            id: `${dataset.id}`,
+            data_source_type: this.datasetType,
+            description: this.datasetDescription,
+            train_and_inference_type: 0, // ?? I'm not sure what to put here it's not documented
+            dataset_name: this.datasetName,
+          });
+        },
+        error: () => {
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate(
+              'message.dataset_uploaded_but_no_link',
+            ),
+          );
+        },
+        complete: () => {
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate(
+              'message.dataset_uploaded_and_linked',
+            ),
+          );
+        },
+      });
   }
 
   uploadFile(): void {
@@ -96,14 +135,23 @@ export class UploadDatasetComponent {
       )
       .subscribe({
         next: (response) => {
-          console.log(response);
+          if (this.modelId && response.data?.id) {
+            this.linkDatasetToModel(response.data);
+          }
         },
         error: (error) => {
-          console.log(error);
-          this.snackBarService.openSnackBar('Upload failed');
+          console.error(error);
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate('message.upload_failed'),
+          );
         },
         complete: () => {
-          this.snackBarService.openSnackBar('Upload success!');
+          if (this.modelId) {
+            return;
+          }
+          this.snackBarService.openSnackBar(
+            this.translocoService.translate('message.upload_success'),
+          );
         },
       });
   }

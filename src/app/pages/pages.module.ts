@@ -26,6 +26,7 @@ import { ModelUploadComponent } from '../components/model-upload/model-upload.co
 import { ModelDatasetsComponent } from './model-detail/model-datasets/model-datasets.component';
 import { ModelValidationComponent } from './model-detail/model-validation/model-validation.component';
 import { ModelDatasetLinkComponent } from '../components/model-dataset-link/model-dataset-link.component';
+import { UploadDatasetComponent } from '../components/dataset-upload/dataset-upload.component';
 
 @NgModule({
   imports: [
@@ -39,6 +40,7 @@ import { ModelDatasetLinkComponent } from '../components/model-dataset-link/mode
     MatTooltip,
     ModelUploadComponent,
     ModelDatasetLinkComponent,
+    UploadDatasetComponent,
   ],
   providers: [],
   declarations: [

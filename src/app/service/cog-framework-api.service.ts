@@ -62,6 +62,7 @@ export class CogFrameworkApiService {
     );
   }
 
+  // TODO Currently does not exist in the API, remove comment when implemented
   getDatasetDetailById(id: string): Observable<DataSetDetailInfo> {
     return this.httpClient.get<DataSetDetailInfo>(
       `${this.baseURL}/dataset/details?id=${id}`,
