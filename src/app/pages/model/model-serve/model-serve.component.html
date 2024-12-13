@@ -1,73 +1,28 @@
 <div class="dialog-container">
-  <p>
-    <span class="dialog-heading"
-      >Confirm Serving model <strong>{{ model.name }} </strong>? </span
-    ><b> </b>
-  </p>
-
-  <hr />
-
+  <h2 mat-dialog-title>Serve Model</h2>
   <mat-dialog-content>
-    <mat-form-field class="input-search" appearance="outline">
-      <mat-label>Model isvc Name</mat-label>
-
+    <p>
+      To serve model {{ model.name }} version {{ model.version }}, enter unique
+      Model InferenceService name
+    </p>
+    <mat-form-field appearance="outline">
+      <mat-label>Model isvc name</mat-label>
       <input
         matInput
-        placeholder="isvc_name"
-        [(ngModel)]="model_isvc_name"
-        name="isvc_name"
+        placeholder="InferenceService"
+        [(ngModel)]="modelIsvcName"
+        name="isvc name"
         required
         minlength="2"
         #model_isvc="ngModel"
       />
+      <mat-hint>Enter at least 2 characters</mat-hint>
     </mat-form-field>
-    <div
-      *ngIf="model_isvc.invalid && (model_isvc.dirty || model_isvc.touched)"
-      class="text-danger"
-    >
-      <small *ngIf="model_isvc.errors?.['required']"
-        >Model isvc name is required.</small
-      >
-      <small *ngIf="model_isvc.errors?.['minlength']">
-        model_isvc_name must be at least 2 characters long.
-      </small>
-    </div>
-
-    <br />
-
-    <mat-form-field class="input-search" appearance="outline">
-      <mat-label>Model Vesrion</mat-label>
-      <input
-        matInput
-        placeholder="version"
-        [(ngModel)]="version"
-        name="modelName"
-        required
-        minlength="1"
-        #model_version="ngModel"
-      />
-    </mat-form-field>
-
-    <div
-      *ngIf="
-        model_version.invalid && (model_version.dirty || model_version.touched)
-      "
-      class="text-danger"
-    >
-      <small *ngIf="model_version.errors?.['required']"
-        >Model Version is required.</small
-      >
-      <small *ngIf="model_version.errors?.['minlength']">
-        Model Version must be at least 1 characters long.
-      </small>
-    </div>
   </mat-dialog-content>
-  <hr />
-  <span class="text-info note">Note: it will start serving model </span>
 
   <div align="end" class="pt-3" mat-dialog-actions>
     <button
-      [disabled]="model_isvc.invalid && model_version.invalid"
+      [disabled]="model_isvc.invalid"
       (click)="serveModel()"
       color="warn"
       mat-button
@@ -76,6 +31,6 @@
       Ok
     </button>
 
-    <button (click)="closeDialog()" mat-button>Cancel</button>
+    <button mat-dialog-close mat-button>Cancel</button>
   </div>
 </div>
