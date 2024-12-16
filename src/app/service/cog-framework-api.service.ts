@@ -160,7 +160,7 @@ export class CogFrameworkApiService {
 
   serveModel(modelServe: ModelServe): Observable<ModelServeResponse> {
     return this.httpClient.post<ModelServeResponse>(
-      `${this.baseURL}/models/deploy`,
+      `${this.baseURL}/models/service/deploy`,
       modelServe,
     );
   }

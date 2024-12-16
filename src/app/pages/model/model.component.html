@@ -20,9 +20,9 @@
   <mat-card>
     <mat-card-header>
       <mat-card-title-group>
-        <mat-card-title>{{
-          t('title._search_result_list', { name })
-        }}</mat-card-title>
+        <mat-card-title
+          >{{ t('title._search_result_list', { name }) }}
+        </mat-card-title>
       </mat-card-title-group>
     </mat-card-header>
     <mat-card-content>
@@ -44,7 +44,13 @@
           <td mat-cell *matCellDef="let element">{{ element.name }}</td>
         </ng-container>
 
-        <!-- Weight Column -->
+        <ng-container matColumnDef="version">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ t('label.version') }}
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.version }}</td>
+        </ng-container>
+
         <ng-container matColumnDef="creationTime">
           <th mat-header-cell *matHeaderCellDef>
             {{ t('label.creationTime') }}
@@ -68,12 +74,12 @@
           <td mat-cell *matCellDef="let element">
             <div>
               <mat-spinner
-                [diameter]="16"
+                [diameter]="20"
                 class="animate-spin"
-                *ngIf="element.isDeployed"
+                *ngIf="element.isDeploing"
               ></mat-spinner>
               <button
-                *ngIf="!element.isDeployed"
+                *ngIf="!element.isDeploing"
                 mat-icon-button
                 [matTooltip]="t('hint._serve', { name })"
                 (click)="modelServe(element)"
