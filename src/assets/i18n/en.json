@@ -51,6 +51,7 @@
     "model_name": "model name",
     "model_id": "model id",
     "value": "value",
+    "version": "version",
     "description": "description",
     "creationTime": "creation time",
     "author": "author",
