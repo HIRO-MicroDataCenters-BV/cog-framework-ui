@@ -8,7 +8,6 @@ import { Model } from '../../../model/ModelInfo';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
 import { ModelServe } from '../../../model/ModelServe';
 
 @Component({
@@ -19,15 +18,13 @@ import { ModelServe } from '../../../model/ModelServe';
     MatDialogModule,
     MatInputModule,
     FormsModule,
-    NgIf,
     ReactiveFormsModule,
   ],
   templateUrl: './model-serve.component.html',
   styleUrl: './model-serve.component.scss',
 })
 export class ModelServeComponent {
-  model_isvc_name: string | undefined;
-  version: number | undefined;
+  modelIsvcName: string | undefined;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public model: Model,
@@ -35,20 +32,17 @@ export class ModelServeComponent {
   ) {}
 
   serveModel(): void {
-    if (this.version && this.model_isvc_name) {
-      const modelServe: ModelServe = {
-        model_name: this.model.name,
-        isvc_name: this.model_isvc_name,
-        version: this.version,
-      };
-      this.dialogRef.close({
-        modelServeData: modelServe,
-        model: this.model,
-      });
+    if (!this.modelIsvcName) {
+      return;
     }
-  }
-
-  closeDialog(): void {
-    this.dialogRef.close();
+    const modelServe: ModelServe = {
+      model_name: this.model.name,
+      isvc_name: this.modelIsvcName,
+      version: Number(this.model.version),
+    };
+    this.dialogRef.close({
+      modelServeData: modelServe,
+      model: this.model,
+    });
   }
 }

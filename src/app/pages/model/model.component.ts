@@ -34,7 +34,9 @@ import { SnackBarService } from '../../service/snackbar.service';
 const MODEL_DATA: Model[] = [];
 
 interface Error {
-  detail?: string;
+  error?: {
+    detail?: string;
+  };
   message?: string;
   error_message?: string;
 }
@@ -69,6 +71,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [
     'id',
     'name',
+    'version',
     'creationTime',
     'author',
     'action',
@@ -128,7 +131,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
   }
 
   getError(error: Error): void {
-    const msg = error?.message ?? error?.detail ?? error?.error_message;
+    const msg = error?.error?.detail ?? error?.message ?? error?.error_message;
     if (msg) {
       this.snackBarService.openSnackBar(msg);
     }
@@ -202,7 +205,7 @@ export class ModelComponent implements OnInit, AfterViewInit {
       if (!result) {
         return;
       }
-      result.model.isDeployed = true;
+      result.model.isDeploing = true;
       const response = this.cogFrameworkApiService.serveModel(
         result.modelServeData,
       );
@@ -215,11 +218,11 @@ export class ModelComponent implements OnInit, AfterViewInit {
           );
         },
         error: (e) => {
-          this.getError(e.error.errors[0]);
-          result.model.isDeployed = false;
+          this.getError(e);
+          delete result.model.isDeploing;
         },
         complete: () => {
-          result.model.isDeployed = false;
+          delete result.model.isDeploing;
         },
       });
     });
