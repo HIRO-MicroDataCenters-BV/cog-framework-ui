@@ -1,8 +1,0 @@
-<div class="model-detail" *ngIf="modelDetailData">
-  <mat-card class="col-12">
-    <app-data-header [hasFilter]="false" [tabs]="tabs" [tabPanel]="tabPanel" />
-  </mat-card>
-  <mat-tab-nav-panel class="col-12" #tabPanel>
-    <router-outlet (activate)="onOutletLoaded($event)"> </router-outlet>
-  </mat-tab-nav-panel>
-</div>

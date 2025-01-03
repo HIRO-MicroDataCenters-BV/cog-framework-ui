@@ -1,10 +1,17 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Nuxt dev/build outputs
+.output/
+.data/
+.nuxt/
+.nitro/
+.cache/
+dist/
+
+# Logs
+logs
+*.log
+
 
 # Node
 /node_modules
@@ -12,10 +19,11 @@ npm-debug.log
 yarn-error.log
 
 # IDEs and editors
-.idea/
 .project
 .classpath
 .c9/
+.fleet/
+.idea/
 *.launch
 .settings/
 *.sublime-workspace

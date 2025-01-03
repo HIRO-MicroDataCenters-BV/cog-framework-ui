@@ -38,10 +38,14 @@ FROM nginx:stable-alpine AS nginx
 
 COPY --from=build /usr/src/app/dist/cog-framework-ui/browser /usr/share/nginx/html/cogui
 
+COPY --from=build /usr/src/app/.output /usr/share/nginx/html/cogui
+
 COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
 COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
 
 EXPOSE 80
+
+CMD [ "node", ".output/server/index.mjs" ]
 
 COPY entrypoint.sh /entrypoint.sh
 
