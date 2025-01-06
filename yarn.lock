@@ -3945,6 +3945,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cog-framework-ui@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "cog-framework-ui@workspace:."
+  dependencies:
+    "@nuxt/eslint": "npm:0.7.4"
+    "@nuxt/fonts": "npm:0.10.3"
+    "@nuxtjs/color-mode": "npm:^3.5.2"
+    "@nuxtjs/i18n": "npm:9.1.1"
+    "@nuxtjs/tailwindcss": "npm:6.12.2"
+    "@vue-flow/core": "npm:^1.41.6"
+    "@vueuse/nuxt": "npm:12.2.0"
+    class-variance-authority: "npm:^0.7.1"
+    clsx: "npm:^2.1.1"
+    eslint: "npm:^8.57.0 || ^9.0.0"
+    lucide-vue-next: "npm:^0.469.0"
+    nuxt: "npm:^3.14.1592"
+    radix-vue: "npm:^1.9.11"
+    shadcn-nuxt: "npm:0.11.3"
+    tailwind-merge: "npm:^2.5.5"
+    tailwindcss-animate: "npm:^1.0.7"
+    typescript: "npm:latest"
+    vue: "npm:latest"
+    vue-router: "npm:latest"
+  languageName: unknown
+  linkType: soft
+
 "color-convert@npm:^2.0.1":
   version: 2.0.1
   resolution: "color-convert@npm:2.0.1"
@@ -7699,6 +7725,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "nuxt-app@workspace:.":
   version: 0.0.0-use.local
   resolution: "nuxt-app@workspace:."
@@ -7744,6 +7771,11 @@ __metadata:
 "nuxt@npm:^3.15.1":
   version: 3.15.1
   resolution: "nuxt@npm:3.15.1"
+=======
+"nuxt@npm:^3.14.1592":
+  version: 3.14.1592
+  resolution: "nuxt@npm:3.14.1592"
+>>>>>>> 037045995fdebf9a019d0104ede75a6c51e78099
   dependencies:
     "@nuxt/devalue": "npm:^2.0.2"
     "@nuxt/devtools": "npm:^1.7.0"
