@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
     "@vueuse/nuxt",
     "@nuxt/eslint",
+    "nuxt-zod-i18n",
   ],
   i18n: {
     vueI18n: "./i18n.config.ts",

@@ -4,6 +4,9 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       welcome: "well welll welll",
+      zodI18n: {
+        errors: {},
+      },
     },
   },
 }));
