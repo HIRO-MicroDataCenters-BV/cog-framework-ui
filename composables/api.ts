@@ -1,3 +1,5 @@
+import { apiResponseSchema } from "~/schemas/response.schema";
+
 export const useApi = () => {
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
@@ -69,7 +71,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/models?${q}`);
+      const res = await request(`/models?${q}`);
+      return apiResponseSchema.parse(res);
     },
     registerModel: async (data: unknown) => {
       return request(`/models`, "POST", data);

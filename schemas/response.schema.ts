@@ -9,7 +9,10 @@ const paginationSchema = z.object({
 export const apiResponseSchema = z.object({
   status_code: z.number(),
   message: z.string(),
-  data: z.union([z.object({}).passthrough(), z.array(z.any())]),
+  data: z.union([
+    z.array(z.object({}).passthrough()),
+    z.object({}).passthrough(),
+  ]),
   pagination: paginationSchema.optional(),
 });
 
