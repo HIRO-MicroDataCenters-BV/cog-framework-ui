@@ -13,7 +13,11 @@ export const apiResponseSchema = z.object({
     .union([z.array(z.object({}).passthrough()), z.object({}).passthrough()])
     .optional(),
   pagination: paginationSchema.optional(),
-  detail: z.string().optional(),
+});
+
+export const apiErrorResponseSchema = z.object({
+  detail: z.string(),
 });
 
 export type ApiResponse = z.output<typeof apiResponseSchema>;
+export type ApiErrorResponse = z.output<typeof apiErrorResponseSchema>;
