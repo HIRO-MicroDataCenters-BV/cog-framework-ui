@@ -1,3 +1,5 @@
+import { apiResponseSchema } from "~/schemas/response.schema";
+
 export const useApi = () => {
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
@@ -69,7 +71,9 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/models?${q}`);
+      const res = await request(`/models?${q}`);
+      console.log(res);
+      return apiResponseSchema.parse(res);
     },
     registerModel: async (data: unknown) => {
       return request(`/models`, "POST", data);
@@ -86,7 +90,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/models/details?${q}`);
+      const res = await request(`/models/details?${q}`);
+      return apiResponseSchema.parse(res);
     },
     downloadModelFile: async (
       params: { model_id?: number; model_name?: string } = {}
@@ -174,7 +179,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/datasets?${q}`);
+      const res = await request(`/datasets?${q}`);
+      return apiResponseSchema.parse(res);
     },
     registerDataset: async ({
       files,
@@ -213,22 +219,29 @@ export const useApi = () => {
       return request(`/datasets/table/register`, "POST", data);
     },
     fetchTables: async (url: string) => {
-      return request(`/dataset/tables?url=${url}`);
+      const res = await request(`/dataset/tables?url=${url}`);
+      return apiResponseSchema.parse(res);
     },
     datasetKafkaRegister: async (data: unknown) => {
       return request(`/datasets/kafka/register`, "POST", data);
     },
     fetchKafkaServerDetails: async (server_id: number) => {
-      return request(`/datasets/kafka/server/details?server_id=${server_id}`);
+      const res = await request(
+        `/datasets/kafka/server/details?server_id=${server_id}`
+      );
+      return apiResponseSchema.parse(res);
     },
     fetchKafkaDatasetDetails: async (dataset_id: number) => {
-      return request(`/datasets/${dataset_id}/kafka`);
+      const res = await request(`/datasets/${dataset_id}/kafka`);
+      return apiResponseSchema.parse(res);
     },
     fetchFileDatasetsDetails: async (dataset_id: number) => {
-      return request(`/datasets/${dataset_id}/file`);
+      const res = await request(`/datasets/${dataset_id}/file`);
+      return apiResponseSchema.parse(res);
     },
     fetchTableDetailsForDatasets: async (dataset_id: number) => {
-      return request(`/datasets/${dataset_id}/table`);
+      const res = await request(`/datasets/${dataset_id}/table`);
+      return apiResponseSchema.parse(res);
     },
     getMetricsDetails: async (
       params: { model_id?: number; model_name?: string } = {}
@@ -236,7 +249,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/validation/metrics?${q}`);
+      const res = await request(`/validation/metrics?${q}`);
+      return apiResponseSchema.parse(res);
     },
     uploadMetricsDetails: async (data: unknown) => {
       return request(`/validation/metrics`, "POST", data);
@@ -247,7 +261,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/validation/artifacts?${q}`);
+      const res = await request(`/validation/artifacts?${q}`);
+      return apiResponseSchema.parse(res);
     },
     uploadValidationArtifact: async (data: unknown) => {
       return request(`/validation/artifact`, "POST", data);
@@ -261,16 +276,19 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/models/recommend?${q}`);
+      const res = await request(`/models/recommend?${q}`);
+      return apiResponseSchema.parse(res);
     },
     postPipelineDetails: async (data: unknown) => {
       return request(`/pipeline`, "POST", data);
     },
     getPipelineByModelId: async (model_id: number) => {
-      return request(`/pipeline/${model_id}`);
+      const res = await request(`/pipeline/${model_id}`);
+      return apiResponseSchema.parse(res);
     },
     getRunDetailsByPipelineId: async (pipeline_id: string) => {
-      return request(`/pipeline/runs/${pipeline_id}`);
+      const res = await request(`/pipeline/runs/${pipeline_id}`);
+      return apiResponseSchema.parse(res);
     },
     deleteRunDetailsByPipelineId: async (pipeline_id: string) => {
       return request(`/pipeline/runs/${pipeline_id}`, "DELETE");
@@ -279,7 +297,8 @@ export const useApi = () => {
       return request(`/pipeline/${pipeline_id}`, "DELETE");
     },
     listPipelinesByName: async (pipeline_name: string) => {
-      return request(`/pipelines?pipeline_name=${pipeline_name}`);
+      const res = await request(`/pipelines?pipeline_name=${pipeline_name}`);
+      return apiResponseSchema.parse(res);
     },
     getInferenceLogsByServiceName: async (params: {
       namespace: string;
@@ -289,7 +308,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/inferenceservice/logs?${q}`);
+      const res = await request(`/inferenceservice/logs?${q}`);
+      return apiResponseSchema.parse(res);
     },
     getPipelineComponentByPipeline: async (
       params: { pipeline_id?: string; pipeline_name?: string } = {}
@@ -297,7 +317,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/pipelines/component?${q}`);
+      const res = await request(`/pipelines/component?${q}`);
+      return apiResponseSchema.parse(res);
     },
     getPipelineComponentByRun: async (
       params: { run_id?: string; run_name?: string } = {}
@@ -305,7 +326,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/pipelines/component/run?${q}`);
+      const res = await request(`/pipelines/component/run?${q}`);
+      return apiResponseSchema.parse(res);
     },
     getPipelineTask: async (params: {
       task_id: string;
@@ -315,7 +337,8 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>
       ).toString();
-      return request(`/pipelines/task?${q}`);
+      const res = await request(`/pipelines/task?${q}`);
+      return apiResponseSchema.parse(res);
     },
     healthCheck: async () => {
       return request(`/health`);

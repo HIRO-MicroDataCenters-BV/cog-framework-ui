@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   i18n: {
     vueI18n: "./i18n.config.ts",
   },
+  experimental: { appManifest: true },
   eslint: {
     config: {
       stylistic: true,
