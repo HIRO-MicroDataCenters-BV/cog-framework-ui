@@ -1,4 +1,7 @@
-import { apiResponseSchema } from "~/schemas/response.schema";
+import {
+  apiErrorResponseSchema,
+  apiResponseSchema,
+} from "~/schemas/response.schema";
 
 export const useApi = () => {
   const config = useRuntimeConfig();
@@ -33,18 +36,19 @@ export const useApi = () => {
 
     try {
       const res = await fetch(`${baseUrl}${url}`, opts);
+      const data = await res.json();
       if (!res.ok) {
         switch (res.status) {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
             return null;
-            break;
-          default:
-            return await res.json();
         }
       }
-      return await res.json();
+      console.log("res", res.status);
+      return res.status >= 400 && res.status < 600
+        ? apiErrorResponseSchema.parse(data)
+        : apiResponseSchema.parse(data);
     } catch (err) {
       console.error("Fetch error:", err);
       throw err;
@@ -52,15 +56,6 @@ export const useApi = () => {
   };
 
   return {
-    login: async (username: string, password: string) => {
-      const data = { username, password };
-      const res = await request(`/auth/login`, "POST", data);
-      if (res.token) {
-        useLocalStorage(accessTokenKey, res.token);
-        token.value = res.token;
-      }
-      return res;
-    },
     getModels: async (
       params: {
         model_id?: number;
@@ -72,8 +67,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/models?${q}`);
-      console.log(res);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     registerModel: async (data: unknown) => {
       return request(`/models`, "POST", data);
@@ -91,7 +85,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/models/details?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     downloadModelFile: async (
       params: { model_id?: number; model_name?: string } = {}
@@ -180,7 +174,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/datasets?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     registerDataset: async ({
       files,
@@ -220,7 +214,7 @@ export const useApi = () => {
     },
     fetchTables: async (url: string) => {
       const res = await request(`/dataset/tables?url=${url}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     datasetKafkaRegister: async (data: unknown) => {
       return request(`/datasets/kafka/register`, "POST", data);
@@ -229,19 +223,19 @@ export const useApi = () => {
       const res = await request(
         `/datasets/kafka/server/details?server_id=${server_id}`
       );
-      return apiResponseSchema.parse(res);
+      return res;
     },
     fetchKafkaDatasetDetails: async (dataset_id: number) => {
       const res = await request(`/datasets/${dataset_id}/kafka`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     fetchFileDatasetsDetails: async (dataset_id: number) => {
       const res = await request(`/datasets/${dataset_id}/file`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     fetchTableDetailsForDatasets: async (dataset_id: number) => {
       const res = await request(`/datasets/${dataset_id}/table`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getMetricsDetails: async (
       params: { model_id?: number; model_name?: string } = {}
@@ -250,7 +244,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/validation/metrics?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     uploadMetricsDetails: async (data: unknown) => {
       return request(`/validation/metrics`, "POST", data);
@@ -262,7 +256,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/validation/artifacts?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     uploadValidationArtifact: async (data: unknown) => {
       return request(`/validation/artifact`, "POST", data);
@@ -277,18 +271,18 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/models/recommend?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     postPipelineDetails: async (data: unknown) => {
       return request(`/pipeline`, "POST", data);
     },
     getPipelineByModelId: async (model_id: number) => {
       const res = await request(`/pipeline/${model_id}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getRunDetailsByPipelineId: async (pipeline_id: string) => {
       const res = await request(`/pipeline/runs/${pipeline_id}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     deleteRunDetailsByPipelineId: async (pipeline_id: string) => {
       return request(`/pipeline/runs/${pipeline_id}`, "DELETE");
@@ -298,7 +292,7 @@ export const useApi = () => {
     },
     listPipelinesByName: async (pipeline_name: string) => {
       const res = await request(`/pipelines?pipeline_name=${pipeline_name}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getInferenceLogsByServiceName: async (params: {
       namespace: string;
@@ -309,7 +303,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/inferenceservice/logs?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getPipelineComponentByPipeline: async (
       params: { pipeline_id?: string; pipeline_name?: string } = {}
@@ -318,7 +312,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/pipelines/component?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getPipelineComponentByRun: async (
       params: { run_id?: string; run_name?: string } = {}
@@ -327,7 +321,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/pipelines/component/run?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     getPipelineTask: async (params: {
       task_id: string;
@@ -338,7 +332,7 @@ export const useApi = () => {
         params as Record<string, string>
       ).toString();
       const res = await request(`/pipelines/task?${q}`);
-      return apiResponseSchema.parse(res);
+      return res;
     },
     healthCheck: async () => {
       return request(`/health`);
