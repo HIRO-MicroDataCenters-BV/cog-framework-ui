@@ -45,7 +45,6 @@ export const useApi = () => {
             return null;
         }
       }
-      console.log("res", res.status);
       return res.status >= 400 && res.status < 600
         ? apiErrorResponseSchema.parse(data)
         : apiResponseSchema.parse(data);
