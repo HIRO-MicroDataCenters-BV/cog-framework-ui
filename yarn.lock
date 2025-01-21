@@ -2305,10 +2305,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/table-core@npm:8.20.5":
+  version: 8.20.5
+  resolution: "@tanstack/table-core@npm:8.20.5"
+  checksum: 10c0/3c27b5debd61b6bd9bfbb40bfc7c5d5af90873ae1a566b20e3bf2d2f4f2e9a78061c081aacc5259a00e256f8df506ec250eb5472f5c01ff04baf9918b554982b
+  languageName: node
+  linkType: hard
+
 "@tanstack/virtual-core@npm:3.11.2":
   version: 3.11.2
   resolution: "@tanstack/virtual-core@npm:3.11.2"
   checksum: 10c0/38f1047127c6b1d07fe95becb7a12e66fb7c59d37ec0359e4ab339f837c6b906e1adff026ebd12849ba851d3f118d491014205c6b3c6ed8568cc232a798aeaaf
+  languageName: node
+  linkType: hard
+
+"@tanstack/vue-table@npm:^8.20.5":
+  version: 8.20.5
+  resolution: "@tanstack/vue-table@npm:8.20.5"
+  dependencies:
+    "@tanstack/table-core": "npm:8.20.5"
+  peerDependencies:
+    vue: ">=3.2"
+  checksum: 10c0/17f787355778e70de28010641cb6165e251c2edc77a1e57acf1ca48354df1a788e0a1b18f2adde785299f2d65c4d10e27c0d8e511be5379e585ab7f1c4f15e13
   languageName: node
   linkType: hard
 
@@ -3721,6 +3739,7 @@ __metadata:
     "@nuxtjs/color-mode": "npm:^3.5.2"
     "@nuxtjs/i18n": "npm:9.1.1"
     "@nuxtjs/tailwindcss": "npm:6.12.2"
+    "@tanstack/vue-table": "npm:^8.20.5"
     "@vue-flow/core": "npm:^1.41.7"
     "@vueuse/nuxt": "npm:12.3.0"
     class-variance-authority: "npm:^0.7.1"
