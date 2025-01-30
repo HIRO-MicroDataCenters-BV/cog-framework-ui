@@ -17,9 +17,10 @@ WORKDIR /usr/src/app
 # Create a stage for building the application.
 FROM base AS build
 
+ARG NUXT_PUBLIC_API_BASE=/cogapi
+
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage bind mounts to package.json and yarn.lock to avoid having to copy them
-# Leverage a cache mount to /pnpm/store to speed up subsequent builds.
 # into this layer.
 RUN corepack enable
 RUN --mount=type=bind,source=package.json,target=package.json \
@@ -36,16 +37,12 @@ RUN yarn build
 ################################################################################
 FROM nginx:stable-alpine AS nginx
 
-COPY --from=build /usr/src/app/dist/cog-framework-ui/browser /usr/share/nginx/html/cogui
-
-COPY --from=build /usr/src/app/.output /usr/share/nginx/html/cogui
+COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/cogui
 
 COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
 COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
 
 EXPOSE 80
-
-CMD [ "node", ".output/server/index.mjs" ]
 
 COPY entrypoint.sh /entrypoint.sh
 
