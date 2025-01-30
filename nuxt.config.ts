@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     },
   },
   nitro: {
+    preset: 'github-pages',
     runtimeConfig: {
       app: {
         baseURL: '/cogui/',
