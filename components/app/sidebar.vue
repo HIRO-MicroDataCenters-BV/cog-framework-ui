@@ -1,5 +1,5 @@
 <template>
-  <div class="w-64 h-full bg-gray-500">
+  <div class="w-64 h-full bg-neutral-50">
     sidebar
   </div>
 </template>
