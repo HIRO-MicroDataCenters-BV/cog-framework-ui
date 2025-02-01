@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Icon :smart-icon{name="lucide:box"}/>
     <slot />
   </div>
 </template>
