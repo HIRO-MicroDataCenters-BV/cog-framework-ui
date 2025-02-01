@@ -503,6 +503,13 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/retry/-/retry-0.4.1.tgz"
   integrity sha512-c7hNEllBlenFTHBky65mhq8WD2kbN9Q6gk0bTk8lSBvc554jpXSkST1iePudpt7+A/AQvuHs9EMqjHDXMY1lrA==
 
+"@iconify-json/lucide@^1.2.25":
+  version "1.2.25"
+  resolved "https://registry.npmjs.org/@iconify-json/lucide/-/lucide-1.2.25.tgz"
+  integrity sha512-OsHihLfqdjxwoLWDEnGesrYbCG6VCCoLvmb1U6UJhggsppW+D3DUY/LhhcppZM4Yw3AM4USDIn/gkzqjdRYgEw==
+  dependencies:
+    "@iconify/types" "*"
+
 "@iconify/collections@^1.0.496":
   version "1.0.512"
   resolved "https://registry.npmjs.org/@iconify/collections/-/collections-1.0.512.tgz"

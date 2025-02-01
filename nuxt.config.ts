@@ -11,7 +11,13 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "nuxt-zod-i18n",
     "nuxt-schema-org",
+    '@nuxt/icon',
   ],
+  icon: {
+    serverBundle: {
+      collections: ['lucide']
+    }
+  },
   i18n: {
     vueI18n: "./i18n.config.ts",
   },
