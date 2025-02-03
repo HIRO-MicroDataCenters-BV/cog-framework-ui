@@ -38,36 +38,42 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ env.IMAGE_TAG }}
-  restart-pods:
-    needs: [build]
+
+  wierd-voodoo:
+    needs: build  # This ensures update-resource runs only after build completes
     runs-on: ubuntu-latest
 
+    container:
+      image: hiroregistry/juju-cd:latest  # Your pre-built Docker image with Juju
+
     env:
-      DEPLOYMENT_NAME: ${{ github.ref == 'refs/heads/main' && 'cog-ui' || 'cog-ui-dev' }}
+      JUJU_API_ENDPOINTS: ${{ secrets.JUJU_API_ENDPOINTS }}
+      JUJU_RESOURCE_IMAGE: docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{  vars.DOCKERHUB_REPOSITORY }}:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+      JUJU_APP_NAME: ${{ vars.JUJU_APP_NAME }}
+      JUJU_RESOURCE_NAME: ${{ vars.JUJU_RESOURCE_NAME }}
+      JUJU_CON: ${{ vars.JUJU_CONTROLLER }}
+      JUJU_USERNAME: ${{ secrets.JUJU_USERNAME }}
+      JUJU_PASSWORD: ${{ secrets.JUJU_PASSWORD }}
 
     steps:
-      # Configure AWS credentials for kubectl
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      # Install eksctl to manage EKS cluster
-      - name: Install eksctl
+      - name: Set JUJU_APP_NAME dynamically
         run: |
-          curl --silent --location "https://github.com/eksctl-io/eksctl/releases/download/v0.190.0/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "JUJU_APP_NAME=${{ vars.JUJU_APP_NAME }}" >> $GITHUB_ENV
+          else
+            echo "JUJU_APP_NAME=${{ vars.JUJU_APP_NAME }}-dev" >> $GITHUB_ENV
+          fi
 
-      # Update kubeconfig to use the EKS cluster
-      - name: Update Kubeconfig for EKS
+      - name: Updating destination Model
+        shell: bash
         run: |
-          eksctl utils write-kubeconfig --cluster hirokube --region us-east-2
-          kubectl get svc
-
-      # Restart Kubernetes Pods to pull the latest image
-      - name: Restart Deployment Pods
-        run: |
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }} -n adminh # Updated with your deployment name 
-          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} -n adminh  # Monitor the rollout status
+          export HOME=/root
+          /usr/local/bin/entrypoint.sh
+          juju switch kubeflow
+          echo "Switched to kubeflow model."
+          echo "Attaching resource to Juju application..."
+          echo juju attach-resource $JUJU_APP_NAME $JUJU_RESOURCE_NAME=$JUJU_RESOURCE_IMAGE
+          juju attach-resource $JUJU_APP_NAME $JUJU_RESOURCE_NAME=$JUJU_RESOURCE_IMAGE
