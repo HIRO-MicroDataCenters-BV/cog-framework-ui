@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  app:
+  - apiVersion: v2
+    appVersion: 0.0.1-dev.1.nuxt.c922868e
+    created: "2025-02-03T15:08:01.347479799Z"
+    description: A frontend web service template for reuse.
+    digest: 818fc55158b2d13abf998fdc424e2d3cd2dab0147b03cd3882366b75a19b7b8c
+    name: app
+    type: application
+    urls:
+    - https://HIRO-MicroDataCenters-BV.github.io/cog-framework-ui/helm-charts/app-0.0.1-dev.1.nuxt.c922868e.tgz
+    version: 0.0.1-dev.1.nuxt.c922868e
+generated: "2025-02-03T15:08:01.34704078Z"
