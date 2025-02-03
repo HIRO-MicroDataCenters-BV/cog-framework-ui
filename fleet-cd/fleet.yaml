@@ -3,4 +3,4 @@ helm:
   releaseName: frontend-sandbox-app
   repo: https://HIRO-MicroDataCenters-BV.github.io/cog-framework-ui/helm-charts/
   chart: app
-  version: 0.*.*-*
+  version: ">=0.0.0-0"
