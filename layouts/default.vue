@@ -1,18 +1,25 @@
 <template>
-  <div class="w-full h-full flex flex-row bg-white">
-    <AppSidebar />
-    <div class="flex flex-col flex-auto h-full">
-      <AppHeader />
-      <div class="flex-1 overflow-hidden overflow-y-auto p-6">
+  <SidebarProvider>
+    <AppSidebar/>
+    <SidebarInset>
+      <header class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <div class="flex items-center gap-2 px-4">
+          <SidebarTrigger class="-ml-1" />
+          <Separator orientation="vertical" class="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem class="hidden md:block">
+                <BreadcrumbLink href="#">
+                  {{ $t('menu.dataset_management') }}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
         <slot />
       </div>
-    </div>
-  </div>
+    </SidebarInset>
+  </SidebarProvider>
 </template>
-
-<script lang="ts" setup>
-import { AppHeader } from '#components';
-
-</script>
-
-<style></style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  payment: {
+  item: {
     id: string
   }
 }>()
@@ -20,21 +20,17 @@ function copy(id: string) {
       <Button variant="ghost" class="h-8 w-8 p-0">
         <span class="sr-only">Open menu</span>
         <div class="h-4 w-4">
-            <Icon name="lucide:dot"/><Icon name="lucide:dot"/><Icon name="lucide:dot"/>
+          <Icon name="lucide:dot" />
+          <Icon name="lucide:dot" />
+          <Icon name="lucide:dot" />
         </div>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-      <DropdownMenuItem @click="copy(payment.id)">
-        Copy payment ID
+      <DropdownMenuItem @click="copy(item.id)">
+        Copy ID
       </DropdownMenuItem>
-      <DropdownMenuItem @click="$emit('expand')">
-        Expand
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>View customer</DropdownMenuItem>
-      <DropdownMenuItem>View payment details</DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

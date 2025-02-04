@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type {
-  ColumnDef,
   ColumnFiltersState,
   ExpandedState,
   SortingState,
@@ -34,51 +33,13 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
-import { ArrowUpDown, ChevronDown } from 'lucide-vue-next'
 import { h, ref } from 'vue'
-import DropdownAction from './DataTableDemoColumn.vue'
+import DropdownActions from './itemActions.vue'
 
-export interface Payment {
-  id: string
-  amount: number
-  status: 'pending' | 'processing' | 'success' | 'failed'
-  email: string
-}
+const { t } = useI18n()
+const data = useMock()
 
-const data: Payment[] = [
-  {
-    id: 'm5gr84i9',
-    amount: 316,
-    status: 'success',
-    email: 'ken99@yahoo.com',
-  },
-  {
-    id: '3u1reuv4',
-    amount: 242,
-    status: 'success',
-    email: 'Abe45@gmail.com',
-  },
-  {
-    id: 'derv1ws0',
-    amount: 837,
-    status: 'processing',
-    email: 'Monserrat44@gmail.com',
-  },
-  {
-    id: '5kma53ae',
-    amount: 874,
-    status: 'success',
-    email: 'Silas22@gmail.com',
-  },
-  {
-    id: 'bhqecj4p',
-    amount: 721,
-    status: 'failed',
-    email: 'carmella@hotmail.com',
-  },
-]
-
-const columns: ColumnDef<Payment>[] = [
+const columns = [
   {
     id: 'select',
     header: ({ table }) => h(Checkbox, {
@@ -95,34 +56,30 @@ const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: 'name',
+    header: t('column.name'),
+    cell: ({ row }) => h('div', { class: '' }, row.getValue('name')),
+  },
+  {
+    accessorKey: 'description',
+    header: t('column.description'),
+    cell: ({ row }) => h('div', { class: '' }, row.getValue('description')),
+  },
+
+  {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('status')),
   },
   {
-    accessorKey: 'email',
-    header: ({ column }) => {
-      return h(Button, {
-        variant: 'ghost',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-      }, () => ['Email', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
-    },
-    cell: ({ row }) => h('div', { class: 'lowercase' }, row.getValue('email')),
+    accessorKey: 'type',
+    header: t('column.type'),
+    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('type')),
   },
   {
-    accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, 'Amount'),
-    cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue('amount'))
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(amount)
-
-      return h('div', { class: 'text-right font-medium' }, formatted)
-    },
+    accessorKey: 'last_update',
+    header: t('column.last_update'),
+    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('last_update')),
   },
   {
     id: 'actions',
@@ -130,7 +87,7 @@ const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const payment = row.original
 
-      return h('div', { class: 'relative' }, h(DropdownAction, {
+      return h('div', { class: 'relative' }, h(DropdownActions, {
         payment,
         onExpand: row.toggleExpanded,
       }))
@@ -145,7 +102,7 @@ const rowSelection = ref({})
 const expanded = ref<ExpandedState>({})
 
 const table = useVueTable({
-  data,
+  data: data.value.data,
   columns,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
@@ -165,44 +122,70 @@ const table = useVueTable({
     get expanded() { return expanded.value },
   },
 })
+
+const tabs = useTab()
 </script>
 
 <template>
   <div class="w-full">
+    <div>
+      <h1 class="text-lg font-semibold mb-4">
+        {{ $t('subtitle.datasets') }}
+      </h1>
+      <div class="frame grid gap-4 auto-cols-max grid-flow-col">
+        <div class="frame-item" v-for="item in data.stat" :key="item.key">
+          <div class="frame-item-label uppercase text-zinc-500 mb-2 text-sm">
+            {{ item.label }}
+          </div>
+          <div class="frame-item-content flex items-center">
+            <Icon :name="item.icon" :class="`h-4 w-4 mr-2 ${item.color}`" />
+            <span class="stat-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="flex gap-2 items-center py-4">
-      <Input
-        class="max-w-sm"
-        placeholder="Filter emails..."
-        :model-value="table.getColumn('email')?.getFilterValue() as string"
-        @update:model-value=" table.getColumn('email')?.setFilterValue($event)"
-      />
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" class="ml-auto">
-            Columns <ChevronDown class="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuCheckboxItem
-            v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-            :key="column.id"
-            class="capitalize"
-            :checked="column.getIsVisible()"
-            @update:checked="(value) => {
-              column.toggleVisibility(!!value)
-            }"
-          >
-            {{ column.id }}
-          </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div class="flex-auto">
+        <Input class="w-64" type="search" :placeholder="$t('placeholder.search')" v
+          :model-value="table.getColumn('name')?.getFilterValue() as string"
+          @update:model-value=" table.getColumn('name')?.setFilterValue($event)" />
+      </div>
+      <div class="flex gap-2">
+        <Tabs default-value="all">
+          <TabsList class="flex">
+            <TabsTrigger v-for="item in tabs.dataset_management" :key="item.key" :value="item.value">
+              <div class="flex items-center">
+                <Icon v-if="item.icon" :name="item.icon" class="h-4 w-4 mr-2" />
+                <span>{{ item.title }}</span>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" class="ml-auto">
+              {{ $t('action.filters') }}
+              <Icon name="lucide:chevron-down" class="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuCheckboxItem v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+              :key="column.id" class="capitalize" :checked="column.getIsVisible()" @update:checked="(value) => {
+                column.toggleVisibility(!!value)
+              }">
+              {{ column.id }}
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
     <div class="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                :props="header.getContext()" />
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -223,11 +206,8 @@ const table = useVueTable({
           </template>
 
           <TableRow v-else>
-            <TableCell
-              :colspan="columns.length"
-              class="h-24 text-center"
-            >
-              No results.
+            <TableCell :colspan="columns.length" class="h-24 text-center">
+              {{ $t('hint.no_results') }}
             </TableCell>
           </TableRow>
         </TableBody>
@@ -236,25 +216,17 @@ const table = useVueTable({
 
     <div class="flex items-center justify-end space-x-2 py-4">
       <div class="flex-1 text-sm text-muted-foreground">
-        {{ table.getFilteredSelectedRowModel().rows.length }} of
-        {{ table.getFilteredRowModel().rows.length }} row(s) selected.
+        {{ table.getFilteredSelectedRowModel().rows.length }} {{ $t('hint.of') }}
+        {{ table.getFilteredRowModel().rows.length }} {{ $t('hint.rows_selected') }}
       </div>
       <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
-          Previous
+        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
+          <Icon name="lucide:chevron-left" />
+          <span>{{ $t('action.previous') }}</span>
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
-          Next
+        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()">
+          <span>{{ $t('action.next') }}</span>
+          <Icon name="lucide:chevron-right" />
         </Button>
       </div>
     </div>
