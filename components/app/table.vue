@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { valueUpdater } from '@/utils/index'
+import { valueUpdater } from '~/utils'
 import {
   FlexRender,
   getCoreRowModel,
@@ -133,7 +133,7 @@ const tabs = useTab()
         {{ $t('subtitle.datasets') }}
       </h1>
       <div class="frame grid gap-4 auto-cols-max grid-flow-col">
-        <div class="frame-item" v-for="item in data.stat" :key="item.key">
+        <div v-for="item in data.stat" :key="item.key" class="frame-item">
           <div class="frame-item-label uppercase text-zinc-500 mb-2 text-sm">
             {{ item.label }}
           </div>
@@ -169,7 +169,8 @@ const tabs = useTab()
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+            <DropdownMenuCheckboxItem
+              v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
               :key="column.id" class="capitalize" :checked="column.getIsVisible()" @update:checked="(value) => {
                 column.toggleVisibility(!!value)
               }">
@@ -184,7 +185,9 @@ const tabs = useTab()
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
                 :props="header.getContext()" />
             </TableHead>
           </TableRow>
