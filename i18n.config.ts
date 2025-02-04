@@ -28,7 +28,7 @@ export default defineI18nConfig(() => ({
         streams: "Streams",
       },
       hint: {
-        no_respults: "No results found",
+        no_results: "No results found",
         of: "of",
         rows_selected: "rows selected",
       },
