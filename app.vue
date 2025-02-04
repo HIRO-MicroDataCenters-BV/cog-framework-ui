@@ -1,5 +1,7 @@
 <template>
-  <NuxtLayout><NuxtPage /></NuxtLayout>
+  <div class="h-svh oveflow-hidden">
+    <NuxtLayout><NuxtPage /></NuxtLayout>
+  </div>
 </template>
 
 <script lang="ts" setup>
