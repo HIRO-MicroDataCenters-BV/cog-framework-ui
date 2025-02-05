@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     'nuxt-zod-i18n',
     '@nuxt/icon',
   ],
+  colorMode: {
+    classSuffix: '',
+  },
   icon: {
     serverBundle: {
       collections: ['lucide']
