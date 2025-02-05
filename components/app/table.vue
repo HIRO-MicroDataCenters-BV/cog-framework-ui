@@ -45,12 +45,10 @@ const columns = [
     header: ({ table }) => h(Checkbox, {
       'checked': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
       'onUpdate:checked': value => table.toggleAllPageRowsSelected(!!value),
-      'ariaLabel': 'Select all',
     }),
     cell: ({ row }) => h(Checkbox, {
       'checked': row.getIsSelected(),
       'onUpdate:checked': value => row.toggleSelected(!!value),
-      'ariaLabel': 'Select row',
     }),
     enableSorting: false,
     enableHiding: false,

@@ -35,12 +35,14 @@ const version = 'v1.0.1'
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
                 <SidebarMenuButton :tooltip="item.title">
-                  <div class="flex items-center">
-                    <span class="text-lg mr-2">
-                      <Icon :name="item.icon" />
-                    </span>
-                    <span>{{ item.title }}</span>
-                    <Icon name="lucide:chevron-right" />
+                  <div class="flex items-center justify-between w-full">
+                    <div class="flex items-center">
+                      <span class="text-lg mr-2">
+                        <Icon :name="item.icon" />
+                      </span>
+                      <span>{{ item.title }}</span>
+                    </div>
+                    <Icon class="icon-chevron" name="lucide:chevron-right" />
                   </div>
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -76,3 +78,13 @@ const version = 'v1.0.1'
     <SidebarRail />
   </Sidebar>
 </template>
+
+<style scoped>
+.icon-chevron {
+  transition: transform 0.3s;
+}
+
+[data-state=open] .icon-chevron {
+  @apply rotate-90;
+}
+</style>
