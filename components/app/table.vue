@@ -34,7 +34,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 import { h, ref } from 'vue'
-import DropdownActions from './itemActions.vue'
+//import DropdownActions from './menu/actions.vue'
 
 const { t } = useI18n()
 const data = useMock()
@@ -84,14 +84,18 @@ const columns = [
   {
     id: 'actions',
     enableHiding: false,
+    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('last_update')),
+    /*
     cell: ({ row }) => {
+      
       const payment = row.original
-
       return h('div', { class: 'relative' }, h(DropdownActions, {
         payment,
         onExpand: row.toggleExpanded,
       }))
+      
     },
+    */
   },
 ]
 
@@ -123,7 +127,7 @@ const table = useVueTable({
   },
 })
 
-const tabs = useTab()
+const tabs = uselistTabs()
 </script>
 
 <template>
@@ -169,8 +173,7 @@ const tabs = useTab()
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+            <DropdownMenuCheckboxItem v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
               :key="column.id" class="capitalize" :checked="column.getIsVisible()" @update:checked="(value) => {
                 column.toggleVisibility(!!value)
               }">
@@ -185,9 +188,7 @@ const tabs = useTab()
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
                 :props="header.getContext()" />
             </TableHead>
           </TableRow>

@@ -8,6 +8,7 @@ export default defineI18nConfig(() => ({
       },
       title: {
         platform: "Platform",
+        actions: "Actions",
       },
       subtitle: {
         datasets: "Datasets",
@@ -31,6 +32,7 @@ export default defineI18nConfig(() => ({
         no_results: "No results found",
         of: "of",
         rows_selected: "rows selected",
+        open_menu: "Open menu",
       },
       menu: {
         documentation: "Documentation",

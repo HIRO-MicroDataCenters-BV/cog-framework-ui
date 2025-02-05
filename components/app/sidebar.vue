@@ -1,5 +1,5 @@
 <script setup lang=ts>
-const menu = useMenu()
+const menu = uselistMenus()
 const version = 'v1.0.1'
 </script>
 
@@ -10,12 +10,11 @@ const version = 'v1.0.1'
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <SidebarMenuButton
-                size="lg"
+              <SidebarMenuButton size="lg"
                 class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <img src="/images/logo.svg" class="size-10" >
+                  <img src="/images/logo.svg" class="size-10">
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-semibold">{{ $t('general.project_name') }}</span>
@@ -31,11 +30,7 @@ const version = 'v1.0.1'
       <SidebarGroup>
         <SidebarGroupLabel>{{ $t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <Collapsible
-            v-for="item in menu.main"
-            :key="item.title"
-            as-child
-            :default-open="item.isActive"
+          <Collapsible v-for="item in menu.main" :key="item.title" as-child :default-open="item.isActive"
             class="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
