@@ -2,8 +2,8 @@
   <div>
     <Switch :checked="isDark" @update:checked="toggleTheme">
       <template #thumb>
-        <Icon v-if="isDark" name="lucide:moon" class="size-3" />
-        <Icon v-else name="lucide:sun" class="size-3" />
+        <Icon v-if="isDark" name="lucide:moon" />
+        <Icon v-else name="lucide:sun" />
       </template>
     </Switch>
   </div>
