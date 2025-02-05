@@ -17,6 +17,7 @@
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            <Icon name="cog:more" />
           </div>
           <div class="flex items-center gap-2 ml-auto">
             <AppColorModeSwitch />

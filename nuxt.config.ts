@@ -22,7 +22,13 @@ export default defineNuxtConfig({
   icon: {
     serverBundle: {
       collections: ['lucide']
-    }
+    },
+    customCollections: [
+      {
+        prefix: 'cog',
+        dir: './assets/icons'
+      },
+    ],
   },
   i18n: {
     vueI18n: './i18n.config.ts',

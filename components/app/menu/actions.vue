@@ -1,11 +1,13 @@
 <script setup lang="ts">
 interface Item {
+  key: string,
   title: string,
-  action: string
+  action: () => void
 }
 
-defineProps<{
-  id: string | number,
+
+
+const props = defineProps<{
   items: Item[]
 }>()
 
@@ -19,18 +21,16 @@ defineEmits<{
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
       <Button variant="ghost" class="h-8 w-8 p-0">
-        <span class="sr-only">{{ $('hint.open_menu') }}</span>
+        <span class="sr-only">{{ $t('hint.open_menu') }}</span>
         <div class="h-4 w-4">
-          <Icon name="lucide:dot" />
-          <Icon name="lucide:dot" />
-          <Icon name="lucide:dot" />
+          <Icon name="cog:more" />
         </div>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuLabel>{{ $t('tile.actions') }}</DropdownMenuLabel>
-      <DropdownMenuItem>
-        Copy ID
+      <DropdownMenuLabel>{{ $t('title.actions') }}</DropdownMenuLabel>
+      <DropdownMenuItem v-for="item in props.items" :key="item.key" @click="item.action">
+        {{ item.title }}
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

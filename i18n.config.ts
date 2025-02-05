@@ -21,6 +21,8 @@ export default defineI18nConfig(() => ({
         previous: "Previous",
         next: "Next",
         filters: "Filters",
+        edit: "Edit",
+        delete: "Delete",
       },
       stat: {
         total: "Total",

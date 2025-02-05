@@ -34,11 +34,13 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 import { h, ref } from 'vue'
-//import DropdownActions from './menu/actions.vue'
+import { AppMenuActions } from '#components'
 
 const { t } = useI18n()
 const data = useMock()
 const dayjs = useDayjs()
+
+const type = 'default'
 
 const columns = [
   {
@@ -53,6 +55,11 @@ const columns = [
     }),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: 'id',
+    header: t('column.id'),
+    cell: ({ row }) => h('div', { class: '' }, row.getValue('id')),
   },
   {
     accessorKey: 'name',
@@ -78,23 +85,20 @@ const columns = [
   {
     accessorKey: 'last_update',
     header: t('column.last_update'),
-    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('last_update')),
+    cell: ({ row }) => h('div', { class: 'relative' }, dayjs(row.getValue('last_update')).format('DD/MM/YYYY')),
   },
   {
     id: 'actions',
     enableHiding: false,
-    cell: ({ row }) => h('div', { class: 'capitalize' }, dayjs(row.getValue('last_update')).format('DD/MM/YYYY')),
-    /*
     cell: ({ row }) => {
-      
-      const payment = row.original
-      return h('div', { class: 'relative' }, h(DropdownActions, {
-        payment,
+      const items = useListActions(type, row.getValue('id'))
+      return h('div', { class: 'relative' }, h(AppMenuActions, {
+        items: items.value.default,
         onExpand: row.toggleExpanded,
       }))
-      
+
     },
-    */
+
   },
 ]
 

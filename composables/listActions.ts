@@ -1,19 +1,18 @@
-export const useListActions = () => {
+export const useListActions = (type: string, id: number) => {
   const { t } = useI18n()
+  const actions = useActions(type)
   return useState('listActions', () => {
     return {
-      dataset_management: [
+      default: [
         {
           key: 'edit',
-          value: 'edit',
           title: t('action.edit'),
-          url: '/edit/:id',
+          action: () => actions.edit(id),
         },
         {
           key: 'delete',
-          value: 'delete',
           title: t('action.delete'),
-          url: '/delete/:id',
+          action: () => actions.delete(id),
         },
       ],
     }
