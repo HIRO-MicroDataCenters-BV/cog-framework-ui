@@ -3,12 +3,21 @@ import {
   apiResponseSchema,
 } from "~/schemas/response.schema";
 
+/**
+ * Fetch data from the API
+ * @returns returns the API object
+ */
 export const useApi = () => {
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
   const accessTokenKey = "access_token";
   const token = useLocalStorage(accessTokenKey, null);
 
+  /**
+   * Function to get headers
+   * @param isFormData 
+   * @returns 
+   */
   const getHeaders = (isFormData: boolean = false) => {
     const headers: { "Content-Type"?: string; Authorization?: string } = {};
     if (!isFormData) {
@@ -20,6 +29,13 @@ export const useApi = () => {
     return headers;
   };
 
+  /**
+   * Function to make a request
+   * @param url 
+   * @param method 
+   * @param body 
+   * @returns 
+   */
   const request = async (
     url: string,
     method: string = "GET",

@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/eslint',
     'nuxt-zod-i18n',
+    'dayjs-nuxt',
     '@nuxt/icon',
   ],
   colorMode: {

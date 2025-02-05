@@ -1568,7 +1568,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@npm:3.15.4, @nuxt/kit@npm:^3.12.4, @nuxt/kit@npm:^3.13.2, @nuxt/kit@npm:^3.14.1592, @nuxt/kit@npm:^3.15.0, @nuxt/kit@npm:^3.15.1, @nuxt/kit@npm:^3.15.4":
+"@nuxt/kit@npm:3.15.4, @nuxt/kit@npm:^3.12.4, @nuxt/kit@npm:^3.13.2, @nuxt/kit@npm:^3.14.1592, @nuxt/kit@npm:^3.15.0, @nuxt/kit@npm:^3.15.1, @nuxt/kit@npm:^3.15.4, @nuxt/kit@npm:^3.7.4":
   version: 3.15.4
   resolution: "@nuxt/kit@npm:3.15.4"
   dependencies:
@@ -3718,6 +3718,8 @@ __metadata:
     "@vueuse/nuxt": "npm:12.5.0"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
+    dayjs: "npm:^1.11.13"
+    dayjs-nuxt: "npm:2.1.11"
     eslint: "npm:^9.19.0"
     lucide-vue-next: "npm:^0.474.0"
     nuxt: "npm:^3.15.4"
@@ -4207,6 +4209,23 @@ __metadata:
     d3-selection: "npm:2 - 3"
     d3-transition: "npm:2 - 3"
   checksum: 10c0/ee2036479049e70d8c783d594c444fe00e398246048e3f11a59755cd0e21de62ece3126181b0d7a31bf37bcf32fd726f83ae7dea4495ff86ec7736ce5ad36fd3
+  languageName: node
+  linkType: hard
+
+"dayjs-nuxt@npm:2.1.11":
+  version: 2.1.11
+  resolution: "dayjs-nuxt@npm:2.1.11"
+  dependencies:
+    "@nuxt/kit": "npm:^3.7.4"
+    dayjs: "npm:^1.11.10"
+  checksum: 10c0/cf7d1ef95440f64e4c2d05582ed86c3004b86818483d0e4a037696a0a2389330b8a212a1884d0c42ad4ff3bdee8afc6386bf421c8eee5251c6ea38a220068a25
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.11.10, dayjs@npm:^1.11.13":
+  version: 1.11.13
+  resolution: "dayjs@npm:1.11.13"
+  checksum: 10c0/a3caf6ac8363c7dade9d1ee797848ddcf25c1ace68d9fe8678ecf8ba0675825430de5d793672ec87b24a69bf04a1544b176547b2539982275d5542a7955f35b7
   languageName: node
   linkType: hard
 

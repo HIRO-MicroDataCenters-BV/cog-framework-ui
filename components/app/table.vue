@@ -38,6 +38,7 @@ import { h, ref } from 'vue'
 
 const { t } = useI18n()
 const data = useMock()
+const dayjs = useDayjs()
 
 const columns = [
   {
@@ -82,7 +83,7 @@ const columns = [
   {
     id: 'actions',
     enableHiding: false,
-    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('last_update')),
+    cell: ({ row }) => h('div', { class: 'capitalize' }, dayjs(row.getValue('last_update')).format('DD/MM/YYYY')),
     /*
     cell: ({ row }) => {
       
