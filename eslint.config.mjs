@@ -11,4 +11,7 @@ export default createConfigForNuxt({
   rules: {
     "prettier/prettier": "error",
   },
+  globals: {
+    $t: true,
+  }
 });
