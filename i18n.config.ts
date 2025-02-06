@@ -4,7 +4,7 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       general: {
-        project_name: "Cognetive Engine",
+        project_name: "Cognitive Engine",
       },
       title: {
         platform: "Platform",
