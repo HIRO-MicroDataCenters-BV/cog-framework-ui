@@ -6,6 +6,8 @@ on:
       - main
       - develop
       - nuxt
+    tags:
+      - '**'
   workflow_dispatch:
 
 jobs:
