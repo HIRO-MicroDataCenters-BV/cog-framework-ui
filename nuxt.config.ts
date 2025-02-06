@@ -42,6 +42,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: '',
+      appVersion: '0.0.1',
     },
   },
   nitro: {
