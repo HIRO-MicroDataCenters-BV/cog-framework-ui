@@ -1,6 +1,6 @@
-export const useTab = () => {
+export const uselistTabs = () => {
   const { t } = useI18n()
-  return useState('tab', () => {
+  return useState('listTabs', () => {
     return {
       dataset_management: [
         {

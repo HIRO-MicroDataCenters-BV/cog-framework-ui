@@ -13,12 +13,22 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/eslint',
     'nuxt-zod-i18n',
+    'dayjs-nuxt',
     '@nuxt/icon',
   ],
+  colorMode: {
+    classSuffix: '',
+  },
   icon: {
     serverBundle: {
       collections: ['lucide']
-    }
+    },
+    customCollections: [
+      {
+        prefix: 'cog',
+        dir: './assets/icons'
+      },
+    ],
   },
   i18n: {
     vueI18n: './i18n.config.ts',

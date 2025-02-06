@@ -34,10 +34,13 @@ import {
   useVueTable,
 } from '@tanstack/vue-table'
 import { h, ref } from 'vue'
-import DropdownActions from './itemActions.vue'
+import { AppMenuActions } from '#components'
 
 const { t } = useI18n()
 const data = useMock()
+const dayjs = useDayjs()
+
+const type = 'default'
 
 const columns = [
   {
@@ -45,15 +48,18 @@ const columns = [
     header: ({ table }) => h(Checkbox, {
       'checked': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
       'onUpdate:checked': value => table.toggleAllPageRowsSelected(!!value),
-      'ariaLabel': 'Select all',
     }),
     cell: ({ row }) => h(Checkbox, {
       'checked': row.getIsSelected(),
       'onUpdate:checked': value => row.toggleSelected(!!value),
-      'ariaLabel': 'Select row',
     }),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: 'id',
+    header: t('column.id'),
+    cell: ({ row }) => h('div', { class: '' }, row.getValue('id')),
   },
   {
     accessorKey: 'name',
@@ -79,19 +85,20 @@ const columns = [
   {
     accessorKey: 'last_update',
     header: t('column.last_update'),
-    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('last_update')),
+    cell: ({ row }) => h('div', { class: 'relative' }, dayjs(row.getValue('last_update')).format('DD/MM/YYYY')),
   },
   {
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
-
-      return h('div', { class: 'relative' }, h(DropdownActions, {
-        payment,
+      const items = useListActions(type, row.getValue('id'))
+      return h('div', { class: 'relative' }, h(AppMenuActions, {
+        items: items.value.default,
         onExpand: row.toggleExpanded,
       }))
+
     },
+
   },
 ]
 
@@ -123,7 +130,7 @@ const table = useVueTable({
   },
 })
 
-const tabs = useTab()
+const tabs = uselistTabs()
 </script>
 
 <template>
@@ -169,8 +176,7 @@ const tabs = useTab()
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+            <DropdownMenuCheckboxItem v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
               :key="column.id" class="capitalize" :checked="column.getIsVisible()" @update:checked="(value) => {
                 column.toggleVisibility(!!value)
               }">
@@ -185,9 +191,7 @@ const tabs = useTab()
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
                 :props="header.getContext()" />
             </TableHead>
           </TableRow>

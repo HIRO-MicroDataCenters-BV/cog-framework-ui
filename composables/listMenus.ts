@@ -1,6 +1,6 @@
-export const useMenu = () => {
+export const uselistMenus = () => {
   const { t } = useI18n()
-  return useState('menu', () => {
+  return useState('listMenus', () => {
     return {
       main: [
         {
