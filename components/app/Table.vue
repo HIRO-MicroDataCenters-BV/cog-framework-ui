@@ -36,11 +36,13 @@ import {
 import { h, ref } from 'vue'
 import { AppMenuActions } from '#components'
 
+const type = 'default'
+
 const { t } = useI18n()
 const data = useMock()
 const dayjs = useDayjs()
+const actions = useListActions(type)
 
-const type = 'default'
 
 const columns = [
   {
@@ -91,9 +93,10 @@ const columns = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const items = useListActions(type, row.getValue('id'))
+      const id = row.getValue('id')
       return h('div', { class: 'relative' }, h(AppMenuActions, {
-        items: items.value.default,
+        id,
+        items: actions.value,//items.value,//.default,
         onExpand: row.toggleExpanded,
       }))
 

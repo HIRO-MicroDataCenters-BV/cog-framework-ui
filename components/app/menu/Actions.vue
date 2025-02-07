@@ -2,13 +2,14 @@
 interface Item {
   key: string,
   title: string,
-  action: () => void
+  action: (id: number) => void
 }
 
 
 
 const props = defineProps<{
   items: Item[]
+  id: number
 }>()
 
 defineEmits<{
@@ -29,7 +30,7 @@ defineEmits<{
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuLabel>{{ $t('title.actions') }}</DropdownMenuLabel>
-      <DropdownMenuItem v-for="item in props.items" :key="item.key" @click="item.action">
+      <DropdownMenuItem v-for="item in props.items" :key="item.key" @click="item.action(props.id)">
         {{ item.title }}
       </DropdownMenuItem>
     </DropdownMenuContent>

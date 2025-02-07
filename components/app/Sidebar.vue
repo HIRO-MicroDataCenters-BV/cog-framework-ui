@@ -1,6 +1,7 @@
 <script setup lang=ts>
+const config = useRuntimeConfig()
 const menu = uselistMenus()
-const version = 'v1.0.1'
+const version = config.public.appVersion
 </script>
 
 <template>
@@ -10,8 +11,7 @@ const version = 'v1.0.1'
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <SidebarMenuButton
-                size="lg"
+              <SidebarMenuButton size="lg"
                 class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
@@ -31,8 +31,7 @@ const version = 'v1.0.1'
       <SidebarGroup>
         <SidebarGroupLabel>{{ $t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <Collapsible
-            v-for="item in menu.main" :key="item.title" as-child :default-open="item.isActive"
+          <Collapsible v-for="item in menu.main" :key="item.title" as-child :default-open="item.isActive"
             class="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
