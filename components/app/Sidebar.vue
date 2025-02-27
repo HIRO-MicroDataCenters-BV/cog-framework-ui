@@ -1,7 +1,7 @@
-<script setup lang=ts>
-const config = useRuntimeConfig()
-const menu = uselistMenus()
-const version = config.public.appVersion
+<script setup lang="ts">
+const config = useRuntimeConfig();
+const menu = uselistMenus();
+const version = config.public.appVersion;
 </script>
 
 <template>
@@ -11,14 +11,19 @@ const version = config.public.appVersion
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <SidebarMenuButton size="lg"
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <SidebarMenuButton
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                size="lg"
+              >
                 <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <img src="/images/logo.svg" class="size-10" alt="cog-logo">
+                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+                >
+                  <img src="/images/logo.svg" class="size-10" alt="cog-logo" />
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-semibold">{{ $t('general.project_name') }}</span>
+                  <span class="truncate font-semibold">{{
+                    $t('general.project_name')
+                  }}</span>
                   <span class="truncate text-xs">{{ version }}</span>
                 </div>
               </SidebarMenuButton>
@@ -31,8 +36,13 @@ const version = config.public.appVersion
       <SidebarGroup>
         <SidebarGroupLabel>{{ $t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <Collapsible v-for="item in menu.main" :key="item.title" as-child :default-open="item.isActive"
-            class="group/collapsible">
+          <Collapsible
+            v-for="item in menu.main"
+            :key="item.title"
+            as-child
+            :default-open="item.isActive"
+            class="group/collapsible"
+          >
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
                 <SidebarMenuButton :tooltip="item.title">
@@ -49,7 +59,10 @@ const version = config.public.appVersion
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
+                  <SidebarMenuSubItem
+                    v-for="subItem in item.items"
+                    :key="subItem.title"
+                  >
                     <SidebarMenuSubButton as-child>
                       <a :href="subItem.url">
                         <span>{{ subItem.title }}</span>
@@ -62,7 +75,6 @@ const version = config.public.appVersion
           </Collapsible>
         </SidebarMenu>
       </SidebarGroup>
-
     </SidebarContent>
     <SidebarFooter>
       <SidebarMenu>
@@ -85,7 +97,7 @@ const version = config.public.appVersion
   transition: transform 0.3s;
 }
 
-[data-state=open] .icon-chevron {
+[data-state='open'] .icon-chevron {
   @apply rotate-90;
 }
 </style>

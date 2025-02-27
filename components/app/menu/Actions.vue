@@ -1,21 +1,18 @@
 <script setup lang="ts">
 interface Item {
-  key: string,
-  title: string,
-  action: (id: number) => void
+  key: string;
+  title: string;
+  action: (id: number) => void;
 }
 
-
-
 const props = defineProps<{
-  items: Item[]
-  id: number
-}>()
+  items: Item[];
+  id: number;
+}>();
 
 defineEmits<{
-  (e: 'expand'): void
-}>()
-
+  (e: 'expand'): void;
+}>();
 </script>
 
 <template>
@@ -30,7 +27,11 @@ defineEmits<{
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuLabel>{{ $t('title.actions') }}</DropdownMenuLabel>
-      <DropdownMenuItem v-for="item in props.items" :key="item.key" @click="item.action(props.id)">
+      <DropdownMenuItem
+        v-for="item in props.items"
+        :key="item.key"
+        @click="item.action(props.id)"
+      >
         {{ item.title }}
       </DropdownMenuItem>
     </DropdownMenuContent>
