@@ -3,6 +3,9 @@ export default defineI18nConfig(() => ({
   locale: "en",
   messages: {
     en: {
+      message: {
+        loading: "Loading...",
+      },
       general: {
         project_name: "Cognitive Engine",
       },

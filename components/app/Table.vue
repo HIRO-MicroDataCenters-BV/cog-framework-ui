@@ -179,7 +179,7 @@ const tabs = uselistTabs();
   <div class="w-full">
     <div>
       <h1 class="text-lg font-semibold mb-4">
-        {{ $t('subtitle.datasets') }}
+        {{ t('subtitle.datasets') }}
       </h1>
       <div class="frame grid gap-4 auto-cols-max grid-flow-col">
         <div v-for="item in data.stat" :key="item.key" class="frame-item">
@@ -195,23 +195,14 @@ const tabs = uselistTabs();
     </div>
     <div class="flex gap-2 items-center py-4">
       <div class="flex-auto">
-        <Input
-          class="w-64"
-          type="search"
-          :placeholder="t('placeholder.search')"
-          v
+        <Input class="w-64" type="search" :placeholder="t('placeholder.search')" v
           :model-value="table.getColumn('name')?.getFilterValue() as string"
-          @update:model-value="table.getColumn('name')?.setFilterValue($event)"
-        />
+          @update:model-value="table.getColumn('name')?.setFilterValue($event)" />
       </div>
       <div class="flex gap-2">
         <Tabs default-value="all">
           <TabsList class="flex">
-            <TabsTrigger
-              v-for="item in tabs.dataset_management"
-              :key="item.key"
-              :value="item.value"
-            >
+            <TabsTrigger v-for="item in tabs.dataset_management" :key="item.key" :value="item.value">
               <div class="flex items-center">
                 <Icon v-if="item.icon" :name="item.icon" class="h-4 w-4 mr-2" />
                 <span>{{ item.title }}</span>
@@ -222,24 +213,18 @@ const tabs = uselistTabs();
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="ml-auto">
-              {{ $t('action.filters') }}
+              {{ t('action.filters') }}
               <Icon name="lucide:chevron-down" class="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              v-for="column in table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())"
-              :key="column.id"
-              class="capitalize"
-              :checked="column.getIsVisible()"
-              @update:checked="
-                (value) => {
-                  column.toggleVisibility(!!value);
-                }
-              "
-            >
+            <DropdownMenuCheckboxItem v-for="column in table
+          .getAllColumns()
+          .filter((column) => column.getCanHide())" :key="column.id" class="capitalize"
+              :checked="column.getIsVisible()" @update:checked="(value) => {
+          column.toggleVisibility(!!value);
+        }
+          ">
               {{ column.id }}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
@@ -249,16 +234,10 @@ const tabs = uselistTabs();
     <div class="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-          >
+          <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                :props="header.getContext()" />
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -267,10 +246,7 @@ const tabs = uselistTabs();
             <template v-for="row in table.getRowModel().rows" :key="row.id">
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                  <FlexRender
-                    :render="cell.column.columnDef.cell"
-                    :props="cell.getContext()"
-                  />
+                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                 </TableCell>
               </TableRow>
               <TableRow v-if="row.getIsExpanded()">
@@ -283,7 +259,7 @@ const tabs = uselistTabs();
 
           <TableRow v-else>
             <TableCell :colspan="columns.length" class="h-24 text-center">
-              {{ $t('hint.no_results') }}
+              {{ t('hint.no_results') }}
             </TableCell>
           </TableRow>
         </TableBody>
@@ -293,26 +269,16 @@ const tabs = uselistTabs();
     <div class="flex items-center justify-end space-x-2 py-4">
       <div class="flex-1 text-sm text-muted-foreground">
         {{ table.getFilteredSelectedRowModel().rows.length }}
-        {{ $t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
-        {{ $t('hint.rows_selected') }}
+        {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
+        {{ t('hint.rows_selected') }}
       </div>
       <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
+        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
           <Icon name="lucide:chevron-left" />
-          <span>{{ $t('action.previous') }}</span>
+          <span>{{ t('action.previous') }}</span>
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
-          <span>{{ $t('action.next') }}</span>
+        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()">
+          <span>{{ t('action.next') }}</span>
           <Icon name="lucide:chevron-right" />
         </Button>
       </div>
