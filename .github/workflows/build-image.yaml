@@ -61,8 +61,9 @@ jobs:
           tags: ${{ env.DOCKER_IMAGES }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64, linux/arm64
-
-#      - name: Push docker image for Juju
+          build-args: |
+            NUXT_PUBLIC_APP_VERSION: ${{ env.APP_VERSION }}
+          #      - name: Push docker image for Juju
 #        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
 #        uses: docker/build-push-action@v6
 #        with:
@@ -79,7 +80,6 @@ jobs:
         run: gh release create "${{ env.APP_VERSION }}"
         env:
           GH_TOKEN: ${{ github.token }}
-          NUXT_PUBLIC_APP_VERSION: ${{ env.APP_VERSION }}
 
       - name: Publish Helm charts
         uses: stefanprodan/helm-gh-pages@master
