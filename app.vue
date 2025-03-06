@@ -1,8 +1,14 @@
 <template>
   <div class="h-svh oveflow-hidden">
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <Suspense>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+      <template #fallback>
+        {{ t('message.loading') }}
+      </template>
+    </Suspense>
+
   </div>
 </template>
 
@@ -34,4 +40,5 @@ useHead({
     { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }
   ]
 });
+const { t } = useI18n();
 </script>
