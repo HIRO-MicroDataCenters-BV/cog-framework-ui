@@ -18,6 +18,8 @@ WORKDIR /usr/src/app
 FROM base AS build
 
 ARG NUXT_PUBLIC_API_BASE=/cogapi
+ARG NUXT_PUBLIC_APP_VERSION=1.0.0
+ENV NUXT_PUBLIC_APP_VERSION=$NUXT_PUBLIC_APP_VERSION
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage bind mounts to package.json and yarn.lock to avoid having to copy them
