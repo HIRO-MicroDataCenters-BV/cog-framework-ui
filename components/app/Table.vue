@@ -221,7 +221,7 @@ const tabs = uselistTabs();
             <DropdownMenuCheckboxItem v-for="column in table
           .getAllColumns()
           .filter((column) => column.getCanHide())" :key="column.id" class="capitalize"
-              :checked="column.getIsVisible()" @update:checked="(value) => {
+              :checked="column.getIsVisible()" @update:checked="(value: boolean) => {
           column.toggleVisibility(!!value);
         }
           ">

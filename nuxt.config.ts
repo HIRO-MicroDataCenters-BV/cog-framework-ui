@@ -15,7 +15,12 @@ export default defineNuxtConfig({
     'nuxt-zod-i18n',
     'dayjs-nuxt',
     '@nuxt/icon',
+    '@nuxtjs/color-mode'
   ],
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui'
+  },
   colorMode: {
     classSuffix: '',
   },

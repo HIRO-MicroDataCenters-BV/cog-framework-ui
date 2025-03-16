@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Switch :checked="isDark" @update:checked="toggleTheme">
+    <Switch :model-value="isDark" @update:model-value="toggleTheme">
       <template #thumb>
         <Icon v-if="isDark" name="lucide:moon" />
         <Icon v-else name="lucide:sun" />
