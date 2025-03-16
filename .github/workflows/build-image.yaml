@@ -61,6 +61,8 @@ jobs:
           tags: ${{ env.DOCKER_IMAGES }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64, linux/arm64
+          build-args: |
+            NUXT_PUBLIC_APP_VERSION=${{ env.APP_VERSION }}
 
 #      - name: Push docker image for Juju
 #        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
