@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
   colspan?: number
 }>(), {
   colspan: 1,
+  class: '',
 })
 
 const delegatedProps = computed(() => {
@@ -20,15 +21,11 @@ const delegatedProps = computed(() => {
 
 <template>
   <TableRow>
-    <TableCell
-      :class="
-        cn(
-          'p-4 whitespace-nowrap align-middle text-sm text-foreground',
-          props.class,
-        )
-      "
-      v-bind="delegatedProps"
-    >
+    <TableCell :class="cn(
+        'p-4 whitespace-nowrap align-middle text-sm text-foreground',
+        props.class,
+      )
+        " v-bind="delegatedProps">
       <div class="flex items-center justify-center py-10">
         <slot />
       </div>

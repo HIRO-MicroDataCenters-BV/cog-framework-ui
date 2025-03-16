@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   size: 'sm',
   shape: 'circle',
+  class: ''
 })
 </script>
 

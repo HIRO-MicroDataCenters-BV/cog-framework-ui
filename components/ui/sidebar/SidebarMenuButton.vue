@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<SidebarMenuButtonProps & {
   as: 'button',
   variant: 'default',
   size: 'default',
+  tooltip: undefined,
 })
 
 const { isMobile, state } = useSidebar()
@@ -35,11 +36,7 @@ const delegatedProps = computed(() => {
         <slot />
       </SidebarMenuButtonChild>
     </TooltipTrigger>
-    <TooltipContent
-      side="right"
-      align="center"
-      :hidden="state !== 'collapsed' || isMobile"
-    >
+    <TooltipContent side="right" align="center" :hidden="state !== 'collapsed' || isMobile">
       <template v-if="typeof tooltip === 'string'">
         {{ tooltip }}
       </template>
