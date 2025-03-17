@@ -13,9 +13,12 @@ const version = config.public.appVersion;
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" size="lg">
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                size="lg"
+              >
                 <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+                >
                   <img src="/images/logo.svg" class="size-10" alt="cog-logo" />
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
@@ -34,8 +37,13 @@ const version = config.public.appVersion;
       <SidebarGroup>
         <SidebarGroupLabel>{{ t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <Collapsible v-for="item in menu.main" :key="item.title" as-child :default-open="item.isActive"
-            class="group/collapsible">
+          <Collapsible
+            v-for="item in menu.main"
+            :key="item.title"
+            as-child
+            :default-open="item.isActive"
+            class="group/collapsible"
+          >
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
                 <SidebarMenuButton :tooltip="item.title">
@@ -52,7 +60,10 @@ const version = config.public.appVersion;
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
+                  <SidebarMenuSubItem
+                    v-for="subItem in item.items"
+                    :key="subItem.title"
+                  >
                     <SidebarMenuSubButton as-child>
                       <a :href="subItem.url">
                         <span>{{ subItem.title }}</span>
