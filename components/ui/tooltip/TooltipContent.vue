@@ -6,7 +6,7 @@ import {
   type TooltipContentProps,
   TooltipPortal,
   useForwardPropsEmits,
-} from 'radix-vue';
+} from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
 defineOptions({
@@ -16,8 +16,8 @@ defineOptions({
 const props = withDefaults(
   defineProps<TooltipContentProps & { class?: HTMLAttributes['class'] }>(),
   {
-    class: '',
     sideOffset: 4,
+    class: '',
   },
 );
 

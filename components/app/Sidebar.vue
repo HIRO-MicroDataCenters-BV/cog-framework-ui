@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
 const version = config.public.appVersion;
@@ -22,7 +23,7 @@ const version = config.public.appVersion;
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-semibold">{{
-                    $t('general.project_name')
+                    t('general.project_name')
                   }}</span>
                   <span class="truncate text-xs">{{ version }}</span>
                 </div>
@@ -34,7 +35,7 @@ const version = config.public.appVersion;
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>{{ $t('title.platform') }}</SidebarGroupLabel>
+        <SidebarGroupLabel>{{ t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
           <Collapsible
             v-for="item in menu.main"

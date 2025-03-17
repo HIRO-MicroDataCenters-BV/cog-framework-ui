@@ -6,12 +6,12 @@ import TableRow from './TableRow.vue';
 
 const props = withDefaults(
   defineProps<{
-    class: HTMLAttributes['class'];
+    class?: HTMLAttributes['class'];
     colspan?: number;
   }>(),
   {
-    class: '',
     colspan: 1,
+    class: '',
   },
 );
 
