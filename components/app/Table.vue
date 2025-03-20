@@ -7,24 +7,6 @@ import type {
   ColumnDef,
   Row,
 } from '@tanstack/vue-table';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { valueUpdater } from '~/utils';
 import {
   FlexRender,
@@ -53,8 +35,14 @@ const { t } = useI18n();
 const data = useMock();
 const dayjs = useDayjs();
 const actions = useListActions(type);
+const hasTableFilters = ref(true);
+const toggleTableFilters = () => {
+  hasTableFilters.value = !hasTableFilters.value;
+};
 
 const columns: ColumnDef<DataItem>[] = [
+  /*
+  NOTE: If you want to use the select column, you need to add the following code:
   {
     id: 'select',
     header: ({ table }) =>
@@ -73,6 +61,7 @@ const columns: ColumnDef<DataItem>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+  */
   {
     accessorKey: 'id',
     header: t('column.id'),
@@ -181,71 +170,99 @@ const tabs = uselistTabs();
       <h1 class="text-lg font-semibold mb-4">
         {{ t('subtitle.datasets') }}
       </h1>
-      <div class="frame grid gap-4 auto-cols-max grid-flow-col">
-        <div v-for="item in data.stat" :key="item.key" class="frame-item">
-          <div class="frame-item-label uppercase text-zinc-500 mb-2 text-sm">
-            {{ item.label }}
+      <div class="pb-4 flex">
+        <div class="flex-auto">
+          <div class="frame grid gap-4 auto-cols-max grid-flow-col">
+            <div v-for="item in data.stat" :key="item.key" class="frame-item">
+              <div
+                class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
+              >
+                {{ item.label }}
+              </div>
+              <div class="frame-item-content flex items-center">
+                <Icon :name="item.icon" :class="`h-4 w-4 mr-2 ${item.color}`" />
+                <span class="stat-value">{{ item.value }}</span>
+              </div>
+            </div>
           </div>
-          <div class="frame-item-content flex items-center">
-            <Icon :name="item.icon" :class="`h-4 w-4 mr-2 ${item.color}`" />
-            <span class="stat-value">{{ item.value }}</span>
+        </div>
+        <div class="flex gap-6 items-center">
+          <div class="flex gap-2">
+            <Switch
+              :model-value="hasTableFilters"
+              @update:model-value="toggleTableFilters"
+            />
+            <Label for="airplane-mode">{{ t('label.filters') }}</Label>
           </div>
+          <Button>{{ t('action.add_dataset') }}</Button>
         </div>
       </div>
     </div>
-    <div class="flex gap-2 items-center py-4">
-      <div class="flex-auto">
-        <Input
-          class="w-64"
-          type="search"
-          :placeholder="t('placeholder.search')"
-          v
-          :model-value="table.getColumn('name')?.getFilterValue() as string"
-          @update:model-value="table.getColumn('name')?.setFilterValue($event)"
-        />
-      </div>
-      <div class="flex gap-2">
-        <Tabs default-value="all">
-          <TabsList class="flex">
-            <TabsTrigger
-              v-for="item in tabs.dataset_management"
-              :key="item.key"
-              :value="item.value"
-            >
-              <div class="flex items-center">
-                <Icon v-if="item.icon" :name="item.icon" class="h-4 w-4 mr-2" />
-                <span>{{ item.title }}</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" class="ml-auto">
-              {{ t('action.filters') }}
-              <Icon name="lucide:chevron-down" class="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              v-for="column in table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())"
-              :key="column.id"
-              class="capitalize"
-              :checked="column.getIsVisible()"
-              @update:checked="
-                (value: boolean) => {
-                  column.toggleVisibility(!!value);
-                }
+
+    <!-- table filters-->
+    <div v-if="hasTableFilters">
+      <Separator />
+      <div class="flex gap-2 items-center py-4">
+        <div class="flex-auto flex">
+          <div class="flex gap-2">
+            <Input
+              class="w-64"
+              type="search"
+              :placeholder="t('placeholder.search')"
+              v
+              :model-value="table.getColumn('name')?.getFilterValue() as string"
+              @update:model-value="
+                table.getColumn('name')?.setFilterValue($event)
               "
-            >
-              {{ column.id }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            />
+
+            <Select default-value="all">
+              <SelectTrigger class="w-[180px]">
+                <SelectValue placeholder="Select a fruit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
+                  <SelectItem value="all"
+                    >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
+                  >
+                  <SelectItem
+                    v-for="column in table
+                      .getAllColumns()
+                      .filter((column) => column.getCanHide())"
+                    :key="column.id"
+                    :value="column.id"
+                  >
+                    {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <Tabs default-value="all">
+            <TabsList class="flex">
+              <TabsTrigger
+                v-for="item in tabs.dataset_management"
+                :key="item.key"
+                :value="item.value"
+              >
+                <div class="flex items-center">
+                  <Icon
+                    v-if="item.icon"
+                    :name="item.icon"
+                    class="h-4 w-4 mr-2"
+                  />
+                  <span>{{ item.title }}</span>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
     </div>
+    <!-- end table filters-->
     <div class="rounded-md border">
       <Table>
         <TableHeader>
