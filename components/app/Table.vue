@@ -335,4 +335,5 @@ const tabs = uselistTabs();
       </div>
     </div>
   </div>
+  <AppDialog />
 </template>
