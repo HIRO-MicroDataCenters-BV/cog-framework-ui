@@ -55,22 +55,32 @@ const props = withDefaults(
   },
 );
 
+const emit = defineEmits<{
+  (e: 'on-close'): void;
+}>();
+
 const open = ref(props.open);
+watch(
+  () => props.open,
+  (value) => {
+    open.value = value;
+  },
+);
 const onAction = async (action: string) => {
   const name =
     `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as keyof ActionHandlers;
   if (name in props) {
     const res = await props[name]();
     if (res) {
-      open.value = false;
+      emit('on-close');
     }
   }
   if (action === 'cancel') {
-    open.value = false;
+    emit('on-close');
   }
 };
 const onClose = async () => {
-  open.value = !open.value;
+  emit('on-close');
   return true;
 };
 

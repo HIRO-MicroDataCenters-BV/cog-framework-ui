@@ -162,6 +162,12 @@ const table = useVueTable({
 });
 
 const tabs = uselistTabs();
+
+const openAddDataset = ref(false);
+
+const addDataSet = () => {
+  openAddDataset.value = true;
+};
 </script>
 
 <template>
@@ -194,7 +200,9 @@ const tabs = uselistTabs();
             />
             <Label for="airplane-mode">{{ t('label.filters') }}</Label>
           </div>
-          <Button>{{ t('action.add_dataset') }}</Button>
+          <Button @click="() => addDataSet()">{{
+            t('action.add_dataset')
+          }}</Button>
         </div>
       </div>
     </div>
@@ -335,5 +343,8 @@ const tabs = uselistTabs();
       </div>
     </div>
   </div>
-  <AppDialog />
+  <AppDialog
+    :open="openAddDataset"
+    @on-close="async () => (openAddDataset = false)"
+  />
 </template>
