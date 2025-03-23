@@ -75,6 +75,43 @@
             </FormItem>
           </FormField>
         </template>
+        <template v-if="step == 1">
+          <FormField
+            v-slot="{ componentField }"
+            type="text"
+            name="metadata.name"
+          >
+            <FormItem class="form-item form-item-input">
+              <FormLabel class="label">{{ t('label.name') }}</FormLabel>
+              <FormControl class="field">
+                <Input
+                  type="text"
+                  v-bind="componentField"
+                  :placeholder="t('placeholder.dataset_name')"
+                />
+              </FormControl>
+            </FormItem>
+            <FormMessage />
+          </FormField>
+          <FormField
+            v-slot="{ componentField }"
+            type="textarea"
+            name="metadata.description"
+          >
+            <FormItem class="form-item form-item-input">
+              <FormLabel class="font-normal">{{
+                t('label.description')
+              }}</FormLabel>
+              <FormControl>
+                <Textarea
+                  v-bind="componentField"
+                  :placeholder="t('placeholder.dataset_description')"
+                />
+              </FormControl>
+            </FormItem>
+            <FormMessage />
+          </FormField>
+        </template>
       </form>
     </div>
   </AppDialog>
@@ -155,13 +192,25 @@ const onSubmit = form.handleSubmit((values) => {
 </script>
 
 <style>
+.field {
+  width: 100%;
+}
 .label {
-  @apply mb-1;
+  @apply mb-1 w-full;
 }
 .label-subtitle {
   @apply text-sm text-gray-400;
 }
 .form-item {
   @apply flex space-y-0 gap-x-3;
+}
+.form-item-input {
+  @apply mb-8 w-full flex flex-col;
+}
+.form-item-input label {
+  @apply mb-2;
+}
+textarea {
+  @apply w-full;
 }
 </style>

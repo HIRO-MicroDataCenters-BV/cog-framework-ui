@@ -30,7 +30,7 @@ export default defineI18nConfig(() => ({
         name: 'Name',
         description: 'Description',
         brokerName: 'Broker Name',
-        brokerIPAddress: 'Broker IP Address',
+        broker_ip_address: 'Broker IP Address',
         brokerPort: 'Broker Port',
         topicName: 'Topic Name',
         topicSchema: 'Topic Schema',
@@ -45,6 +45,13 @@ export default defineI18nConfig(() => ({
       },
       placeholder: {
         search: 'Search...',
+        dataset_name: 'Dataset Name',
+        dataset_description: 'Dataset Description',
+        broker_name: 'Broker Name',
+        broker_ip_address: 'Broker IP Address',
+        broker_port: 'Broker Port',
+        topic_name: 'Topic Name',
+        topic_schema: 'Topic Schema',
       },
       action: {
         previous: 'Previous',
