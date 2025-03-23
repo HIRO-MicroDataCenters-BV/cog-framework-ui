@@ -2,7 +2,7 @@
   <Dialog :open="open" @update:open="onClose">
     <DialogContent>
       <SidebarProvider>
-        <Sidebar v-if="props.navigation.length > 0" height="auto" class="pb-4">
+        <Sidebar v-if="props.navigation.length > 0" class="pb-4" height="auto">
           <SidebarHeader>
             <DialogHeader>
               <DialogTitle>{{ props.title }}</DialogTitle>
@@ -11,8 +11,11 @@
           <SidebarContent>
             <SidebarGroup>
               <SidebarMenu>
-                <SidebarMenuItem v-for="item in props.navigation" :key="item">
-                  <SidebarMenuSubButton as-child>
+                <SidebarMenuItem
+                  v-for="(item, index) in props.navigation"
+                  :key="item"
+                >
+                  <SidebarMenuSubButton as-child :is-active="step === index">
                     <Button
                       variant="ghost"
                       :disabled="item === 'back'"
@@ -28,18 +31,19 @@
         </Sidebar>
         <SidebarInset>
           <slot />
+
+          <DialogFooter>
+            <Button
+              v-for="item in props.actions"
+              :key="item"
+              :variant="variantByType(item)"
+              @click="onAction(item)"
+            >
+              {{ t(`action.${item}`) }}
+            </Button>
+          </DialogFooter>
         </SidebarInset>
       </SidebarProvider>
-      <DialogFooter>
-        <Button
-          v-for="item in props.actions"
-          :key="item"
-          :variant="variantByType(item)"
-          @click="onAction(item)"
-        >
-          {{ t(`action.${item}`) }}
-        </Button>
-      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
@@ -55,20 +59,20 @@ const props = withDefaults(
   defineProps<
     {
       open?: boolean;
-      sidebarMenu?: string[] | null;
       type?: string;
       title?: string | null;
       description?: string | null;
       actions?: string[];
       navigation?: string[];
+      step?: number;
     } & ActionHandlers
   >(),
   {
     open: false,
-    sidebarMenu: () => [],
     type: 'default',
     title: null,
     description: null,
+    step: 0,
     navigation: () => [],
     actions: () => ['cancel', 'save'],
     onAction: async () => true,
@@ -79,22 +83,34 @@ const props = withDefaults(
   },
 );
 
-console.log(props.title);
-
 const emit = defineEmits<{
   (e: 'on-close'): void;
 }>();
 
 const open = ref(props.open);
+
+const step = ref(props.step);
+
 watch(
   () => props.open,
   (value) => {
     open.value = value;
   },
 );
+
+watch(
+  () => step,
+  (value) => {
+    console.log('inner', step, value);
+    //open.value = value;
+  },
+);
+
 const onAction = async (action: string) => {
+  console.log('onAction', action);
   const name =
     `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as keyof ActionHandlers;
+  console.log(name, props[name], props);
   if (name in props) {
     const res = await props[name]();
     if (res) {
@@ -112,6 +128,9 @@ const onClose = async () => {
 
 const variantByType = (name: string) => {
   switch (name) {
+    case 'close':
+      return 'outline';
+      break;
     case 'cancel':
       return 'outline';
     case 'delete':

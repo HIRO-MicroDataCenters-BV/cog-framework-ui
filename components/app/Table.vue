@@ -198,7 +198,7 @@ const addDataSet = () => {
               :model-value="hasTableFilters"
               @update:model-value="toggleTableFilters"
             />
-            <Label for="airplane-mode">{{ t('label.filters') }}</Label>
+            <Label class="flex items-center">{{ t('label.filters') }}</Label>
           </div>
           <Button @click="() => addDataSet()">{{
             t('action.add_dataset')
