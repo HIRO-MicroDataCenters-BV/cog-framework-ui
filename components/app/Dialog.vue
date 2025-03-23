@@ -1,7 +1,9 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
     <DialogContent>
-      <SidebarProvider>
+      <SidebarProvider
+        style="--sidebar-width: 10rem; --sidebar-width-mobile: 10rem"
+      >
         <Sidebar v-if="props.navigation.length > 0" class="pb-4" height="auto">
           <SidebarHeader>
             <DialogHeader>
