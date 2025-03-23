@@ -7,8 +7,8 @@
     :step="step"
     @on-next="
       async () => {
-        console.log(step);
         step++;
+        console.log('step next', step);
         return false;
       }
     "
@@ -114,10 +114,10 @@ watch(
 );
 
 watch(
-  () => step,
+  () => step.value,
   (value) => {
-    console.log(step, value);
-    //open.value = value;
+    console.log(value, '!!!');
+    step.value = value;
   },
 );
 

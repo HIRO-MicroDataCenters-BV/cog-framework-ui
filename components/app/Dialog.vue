@@ -111,10 +111,9 @@ watch(
 );
 
 watch(
-  () => step.value,
+  () => props.step,
   (value) => {
-    console.log('inner', step.value, value);
-    //open.value = value;
+    step.value = value;
   },
 );
 
