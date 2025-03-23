@@ -45,7 +45,7 @@
                   </FormItem>
                   <FormItem class="form-item">
                     <FormControl>
-                      <RadioGroupItem value="file" />
+                      <RadioGroupItem value="table" />
                     </FormControl>
                     <FormLabel class="font-normal"
                       ><div class="label">
@@ -58,7 +58,7 @@
                   </FormItem>
                   <FormItem class="form-item">
                     <FormControl>
-                      <RadioGroupItem value="file" />
+                      <RadioGroupItem value="data_stream" />
                     </FormControl>
                     <FormLabel class="font-normal"
                       ><div class="label">
@@ -156,7 +156,7 @@ const onSubmit = form.handleSubmit((values) => {
 
 <style>
 .label {
-  @apply mb-2;
+  @apply mb-1;
 }
 .label-subtitle {
   @apply text-sm text-gray-400;

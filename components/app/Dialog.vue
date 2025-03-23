@@ -17,13 +17,20 @@
                   v-for="(item, index) in props.navigation"
                   :key="item"
                 >
-                  <SidebarMenuSubButton as-child :is-active="step === index">
+                  <SidebarMenuSubButton
+                    as-child
+                    :is-active="step === index"
+                    class="navigation-item"
+                  >
                     <Button
                       variant="ghost"
                       :disabled="item === 'back'"
                       @click="onAction(item)"
                     >
-                      {{ t(`step.${item}`) }}
+                      <span>
+                        <Icon :name="icons[item as keyof typeof icons]" />
+                      </span>
+                      <span>{{ t(`step.${item}`) }}</span>
                     </Button>
                   </SidebarMenuSubButton>
                 </SidebarMenuItem>
@@ -87,8 +94,14 @@ const emit = defineEmits<{
 }>();
 
 const open = ref(props.open);
-
 const step = ref(props.step);
+
+const icons = {
+  type: 'lucide:shapes',
+  metadata: 'lucide:text',
+  source_settings: 'lucide:settings-2',
+  review: 'lucide:circle-check',
+};
 
 watch(
   () => props.open,
@@ -157,4 +170,11 @@ const variantByType = (name: string) => {
 };
 </script>
 
-<style></style>
+<style>
+.navigation-item {
+  @apply font-light items-center;
+}
+.navigation-item[data-active='true'] {
+  @apply font-medium;
+}
+</style>
