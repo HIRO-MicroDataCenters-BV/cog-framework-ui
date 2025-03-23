@@ -5,15 +5,17 @@
     :title="t('title.add_dataset')"
     :actions="actions"
     :step="step"
-    :onNext="
+    @on-next="
       async () => {
         console.log(step);
+        step++;
         return false;
       }
     "
     @on-close="
       async () => {
         await emit('on-close');
+        step = 0;
         return true;
       }
     "

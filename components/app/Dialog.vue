@@ -53,22 +53,16 @@
 <script lang="ts" setup>
 const { t } = useI18n();
 
-interface ActionHandlers {
-  [key: `on${Capitalize<string>}`]: () => Promise<boolean>;
-}
-
 const props = withDefaults(
-  defineProps<
-    {
-      open?: boolean;
-      type?: string;
-      title?: string | null;
-      description?: string | null;
-      actions?: string[];
-      navigation?: string[];
-      step?: number;
-    } & ActionHandlers
-  >(),
+  defineProps<{
+    open?: boolean;
+    type?: string;
+    title?: string | null;
+    description?: string | null;
+    actions?: string[];
+    navigation?: string[];
+    step?: number;
+  }>(),
   {
     open: false,
     type: 'default',
@@ -77,16 +71,19 @@ const props = withDefaults(
     step: 0,
     navigation: () => [],
     actions: () => ['cancel', 'save'],
-    onAction: async () => true,
-    onCancel: async () => true,
-    onDelete: async () => true,
-    onNext: async () => true,
-    onBack: async () => true,
   },
 );
 
 const emit = defineEmits<{
-  (e: 'on-close'): void;
+  (
+    e:
+      | 'on-close'
+      | 'on-save'
+      | 'on-delete'
+      | 'on-actino'
+      | 'on-back'
+      | 'on-next',
+  ): void;
 }>();
 
 const open = ref(props.open);
@@ -101,27 +98,44 @@ watch(
 );
 
 watch(
-  () => step,
+  () => step.value,
   (value) => {
-    console.log('inner', step, value);
+    console.log('inner', step.value, value);
     //open.value = value;
   },
 );
 
 const onAction = async (action: string) => {
   console.log('onAction', action);
+  const name = `on-${action}`;
+  console.log('emit', emit);
+
+  emit(
+    name as
+      | 'on-close'
+      | 'on-save'
+      | 'on-delete'
+      | 'on-actino'
+      | 'on-back'
+      | 'on-next',
+  );
+
+  /*
   const name =
-    `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as keyof ActionHandlers;
+    `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as ActionHandlerName;
   console.log(name, props[name], props);
   if (name in props) {
-    const res = await props[name]();
+    const handler = props[name] as () => Promise<boolean>;
+    const res = await handler();
     if (res) {
       emit('on-close');
     }
+    emit('on-action', action);
   }
   if (action === 'cancel') {
     emit('on-close');
   }
+    */
 };
 const onClose = async () => {
   emit('on-close');
