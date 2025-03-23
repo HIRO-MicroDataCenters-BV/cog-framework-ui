@@ -13,6 +13,13 @@ export default defineI18nConfig(() => ({
         platform: 'Platform',
         actions: 'Actions',
         select_filter: 'Select Filter',
+        add_dataset: 'Add Dataset',
+        add_model: 'Add Model',
+        dataset_management: 'Dataset Management',
+        training_builder: 'Training Builder',
+        runs: 'Runs',
+        model_management: 'Model Management',
+        model_validation: 'Model Validation',
       },
       subtitle: {
         datasets: 'Datasets',
@@ -63,6 +70,12 @@ export default defineI18nConfig(() => ({
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
+      },
+      step: {
+        type: 'Type',
+        metadata: 'Metadata',
+        source_settings: 'Source Settings',
+        review: 'Review',
       },
       tab: {
         all: 'All',
