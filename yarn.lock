@@ -4340,7 +4340,7 @@ __metadata:
     nuxt: "npm:^3.16.0"
     nuxt-zod-i18n: "npm:1.11.5"
     prettier: "npm:^3.5.3"
-    reka-ui: "npm:^2.1.0"
+    reka-ui: "npm:^2.1.1"
     shadcn-nuxt: "npm:1.0.3"
     tailwind-merge: "npm:^3.0.2"
     tailwindcss-animate: "npm:^1.0.7"
@@ -9662,9 +9662,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reka-ui@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "reka-ui@npm:2.1.0"
+"reka-ui@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "reka-ui@npm:2.1.1"
   dependencies:
     "@floating-ui/dom": "npm:^1.6.13"
     "@floating-ui/vue": "npm:^1.1.6"
@@ -9675,10 +9675,10 @@ __metadata:
     "@vueuse/shared": "npm:^12.5.0"
     aria-hidden: "npm:^1.2.4"
     defu: "npm:^6.1.4"
-    ohash: "npm:^1.1.4"
+    ohash: "npm:^2.0.11"
   peerDependencies:
     vue: ">= 3.2.0"
-  checksum: 10c0/1940eba8a612ed411d5282bf7a4db84e99ed5ec485c12c38d9d4ff8c45176f3d7fc51c1e30a634f8856658ac3a485c75c8ecd9f21a9f26fb0461afc97cd695f5
+  checksum: 10c0/c64743d48cc085432f9bda56dd5360774b4450d47b8b674c92ea0acf9db984109e45900f1751baf0fedcef3d56b34333f7bb8967211d16dd74afb4e372c74c01
   languageName: node
   linkType: hard
 
