@@ -1,15 +1,35 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
     <DialogContent>
-      <DialogHeader>
-        <DialogTitle v-if="props.title">{{ props.title }}</DialogTitle>
-        <DialogDescription v-if="props.description">
-          {{ props.description }}
-        </DialogDescription>
-      </DialogHeader>
-      <div>
-        <slot />
-      </div>
+      <SidebarProvider>
+        <Sidebar v-if="props.navigation.length > 0" height="auto" class="pb-4">
+          <SidebarHeader>
+            <DialogHeader>
+              <DialogTitle>{{ props.title }}</DialogTitle>
+            </DialogHeader>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarMenu>
+                <SidebarMenuItem v-for="item in props.navigation" :key="item">
+                  <SidebarMenuSubButton as-child>
+                    <Button
+                      variant="ghost"
+                      :disabled="item === 'back'"
+                      @click="onAction(item)"
+                    >
+                      {{ t(`step.${item}`) }}
+                    </Button>
+                  </SidebarMenuSubButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <slot />
+        </SidebarInset>
+      </SidebarProvider>
       <DialogFooter>
         <Button
           v-for="item in props.actions"
@@ -35,17 +55,21 @@ const props = withDefaults(
   defineProps<
     {
       open?: boolean;
+      sidebarMenu?: string[] | null;
       type?: string;
       title?: string | null;
       description?: string | null;
       actions?: string[];
+      navigation?: string[];
     } & ActionHandlers
   >(),
   {
     open: false,
+    sidebarMenu: () => [],
     type: 'default',
     title: null,
     description: null,
+    navigation: () => [],
     actions: () => ['cancel', 'save'],
     onAction: async () => true,
     onCancel: async () => true,
@@ -54,6 +78,8 @@ const props = withDefaults(
     onBack: async () => true,
   },
 );
+
+console.log(props.title);
 
 const emit = defineEmits<{
   (e: 'on-close'): void;

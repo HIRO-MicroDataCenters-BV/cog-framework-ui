@@ -343,8 +343,8 @@ const addDataSet = () => {
       </div>
     </div>
   </div>
-  <AppDialog
+  <AppDialogDataset
     :open="openAddDataset"
-    @on-close="async () => (openAddDataset = false)"
+    @on-close="() => (openAddDataset = false)"
   />
 </template>
