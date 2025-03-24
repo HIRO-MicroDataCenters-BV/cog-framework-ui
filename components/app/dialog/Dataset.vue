@@ -11,10 +11,15 @@
         return false;
       }
     "
+    @on-back="
+      async () => {
+        step--;
+        return false;
+      }
+    "
     @on-next="
       async () => {
         step++;
-        console.log('step', form.values);
         return false;
       }
     "
@@ -130,11 +135,7 @@
 
         <div v-show="step == 2 && form.values.type == 'file'">
           <div class="field-wrapper">
-            <FormField
-              v-slot="{ componentField }"
-              type="file"
-              name="source_settings.dataset_file"
-            >
+            <FormField type="file" name="source_settings.dataset_file">
               <FormItem class="form-item form-item-input">
                 <FormLabel class="label">{{
                   t('label.dataset_file')
@@ -143,7 +144,7 @@
                   <Input
                     type="file"
                     accept=".csv,.json"
-                    v-bind="componentField"
+                    @change="handleFileChange"
                     :placeholder="t('placeholder.browse')"
                   />
                 </FormControl>
@@ -326,6 +327,130 @@
             </FormField>
           </div>
         </div>
+        <div v-show="step == 3 && form.values.type == 'file'">
+          <Table class="table-review">
+            <TableBody>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.type') }}</TableCell>
+                <TableCell class="td"> {{ form.values.type }} </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.description') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.description }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.data_source') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.dataset_file?.name }}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        <div v-show="step == 3 && form.values.type == 'table'">
+          <Table class="table-review">
+            <TableBody>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.type') }}</TableCell>
+                <TableCell class="td"> {{ form.values.type }} </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.description') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.description }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.db_url') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.database_url }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.table_name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.table_name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.fields') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.selected_fields }}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        <div v-show="step == 3 && form.values.type == 'data_stream'">
+          <Table class="table-review">
+            <TableBody>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.type') }}</TableCell>
+                <TableCell class="td"> {{ form.values.type }} </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.description') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.metadata?.description }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.broker_name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.broker_name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th">
+                  {{ t('label.broker_ip_address') }}</TableCell
+                >
+                <TableCell class="td">
+                  {{ form.values.source_settings?.broker_ip_address }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.broker_port') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.broker_name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.topic_name') }}</TableCell>
+                <TableCell class="td">
+                  {{ form.values.source_settings?.topic_name }}
+                </TableCell>
+              </TableRow>
+              <TableRow class="tr">
+                <TableCell class="th"> {{ t('label.topic_schema') }}</TableCell>
+                <TableCell class="td td-overflow">
+                  <div class="schema">
+                    {{ form.values.source_settings?.topic_schema }}
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
       </form>
     </div>
   </AppDialog>
@@ -368,6 +493,13 @@ watch(
   () => step.value,
   (value) => {
     step.value = value;
+    if (step.value == 0) {
+      actions.value = ['close', 'next'];
+    } else if (step.value == 3) {
+      actions.value = ['back', 'confirm_add'];
+    } else {
+      actions.value = ['back', 'next'];
+    }
   },
 );
 
@@ -385,7 +517,7 @@ const formSchema = toTypedSchema(
       description: z.string(),
     }),
     source_settings: z.object({
-      dataset_file: z.string().optional(),
+      dataset_file: z.any().nullable().optional(),
       broker_name: z.string().optional(),
       broker_ip_address: z.string().optional(),
       broker_port: z.string().optional(),
@@ -415,6 +547,15 @@ const form = useForm({
     },
   },
 });
+
+const handleFileChange = (event: Event) => {
+  const file = (event.target as HTMLInputElement)?.files?.[0];
+  if (file) {
+    // Instead of trying to set the value directly (which causes the error),
+    // we store the file object in the form values
+    form.setFieldValue('source_settings.dataset_file', file);
+  }
+};
 
 const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
@@ -448,5 +589,23 @@ textarea {
 }
 [role='alert'] {
   @apply text-xs;
+}
+.table-review {
+  @apply w-full;
+}
+.table-review tr {
+  @apply border-none;
+}
+.table-review .th,
+.table-review .td {
+  @apply text-left pb-4 pr-8 border-none;
+}
+.table-review .th {
+  @apply text-gray-400;
+}
+.table-review .schema {
+  @apply overflow-hidden overflow-y-auto;
+  max-height: 10rem;
+  width: 100%;
 }
 </style>

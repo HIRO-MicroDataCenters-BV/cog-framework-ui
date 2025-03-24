@@ -41,6 +41,9 @@ export default defineI18nConfig(() => ({
         database_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Selected Fields',
+        fields: 'Fields',
+        db_url: 'DB URL',
+        data_source: 'Data Source',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -78,6 +81,7 @@ export default defineI18nConfig(() => ({
         remove: 'Remove',
         select: 'Select',
         test_connection: 'Test Connection',
+        confirm_add: 'Confirm & Add',
       },
       stat: {
         total: 'Total',

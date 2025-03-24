@@ -90,6 +90,7 @@ const _EVENT_TYPES = [
   'on-back',
   'on-next',
   'on-set-step',
+  'on-confirm-add',
 ] as const;
 
 type EventType = (typeof _EVENT_TYPES)[number];
@@ -102,7 +103,8 @@ const emit = defineEmits<{
       | 'on-delete'
       | 'on-action'
       | 'on-back'
-      | 'on-next',
+      | 'on-next'
+      | 'on-confirm-add',
     value: string | number | boolean,
   ): void;
   (e: 'on-set-step', value: number): void;
@@ -144,22 +146,6 @@ const onAction = async (action: string) => {
   if (action === 'cancel' || action === 'close') {
     emit('on-close', false);
   }
-  /*
-  const name =
-    `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as ActionHandlerName;
-  console.log(name, props[name], props);
-  if (name in props) {
-    const handler = props[name] as () => Promise<boolean>;
-    const res = await handler();
-    if (res) {
-      emit('on-close');
-    }
-    emit('on-action', action);
-  }
-  if (action === 'cancel') {
-    emit('on-close');
-  }
-    */
 };
 
 const onSetStep = async (index: number) => {
@@ -175,7 +161,8 @@ const variantByActionType = (name: string) => {
   switch (name) {
     case 'close':
       return 'outline';
-      break;
+    case 'back':
+      return 'outline';
     case 'cancel':
       return 'outline';
     case 'delete':
