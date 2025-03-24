@@ -45,7 +45,8 @@
             <Button
               v-for="item in props.actions"
               :key="item"
-              :variant="variantByType(item)"
+              :variant="variantByActionType(item)"
+              :type="typeByActionType(item)"
               @click="onAction(item)"
             >
               {{ t(`action.${item}`) }}
@@ -170,7 +171,7 @@ const onClose = async () => {
   return true;
 };
 
-const variantByType = (name: string) => {
+const variantByActionType = (name: string) => {
   switch (name) {
     case 'close':
       return 'outline';
@@ -181,6 +182,15 @@ const variantByType = (name: string) => {
       return 'destructive';
     default:
       return 'default';
+  }
+};
+
+const typeByActionType = (name: string) => {
+  switch (name) {
+    case 'save':
+      return 'submit';
+    default:
+      return 'button';
   }
 };
 </script>

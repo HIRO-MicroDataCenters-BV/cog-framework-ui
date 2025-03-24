@@ -14,6 +14,7 @@
     @on-next="
       async () => {
         step++;
+        console.log('step', form.values);
         return false;
       }
     "
@@ -26,7 +27,6 @@
     "
     @on-save="
       async () => {
-        onSubmit();
         return false;
       }
     "
@@ -132,7 +132,7 @@
             <FormField
               v-slot="{ componentField }"
               type="text"
-              name="source_settings.brokerName"
+              name="source_settings.broker_name"
             >
               <FormItem class="form-item form-item-input">
                 <FormLabel class="label">{{
@@ -154,7 +154,7 @@
               <FormField
                 v-slot="{ componentField }"
                 type="text"
-                name="source_settings.brokerIPAddress"
+                name="source_settings.broker_ip_address"
               >
                 <FormItem class="form-item form-item-input">
                   <FormLabel class="label">{{
@@ -175,7 +175,7 @@
               <FormField
                 v-slot="{ componentField }"
                 type="text"
-                name="source_settings.brokerPort"
+                name="source_settings.broker_port"
               >
                 <FormItem class="form-item form-item-input">
                   <FormLabel class="label">{{
@@ -197,7 +197,7 @@
             <FormField
               v-slot="{ componentField }"
               type="text"
-              name="source_settings.topicName"
+              name="source_settings.topic_name"
             >
               <FormItem class="form-item form-item-input">
                 <FormLabel class="label">{{ t('label.topic_name') }}</FormLabel>
@@ -216,7 +216,7 @@
             <FormField
               v-slot="{ componentField }"
               type="textarea"
-              name="metadata.topicSchema"
+              name="metadata.topic_schema"
             >
               <FormItem class="form-item form-item-input">
                 <FormLabel class="font-normal">{{
@@ -292,17 +292,31 @@ const formSchema = toTypedSchema(
       description: z.string(),
     }),
     source_settings: z.object({
-      brokerName: z.string(),
-      brokerIPAddress: z.string(),
-      brokerPort: z.string(),
-      topicName: z.string(),
-      topicSchema: z.string(),
+      broker_name: z.string(),
+      broker_ip_address: z.string(),
+      broker_port: z.string(),
+      topic_name: z.string(),
+      topic_schema: z.string(),
     }),
   }),
 );
 
 const form = useForm({
   validationSchema: formSchema,
+  initialValues: {
+    type: 'file',
+    metadata: {
+      name: '',
+      description: '',
+    },
+    source_settings: {
+      broker_name: '',
+      broker_ip_address: '',
+      broker_port: '',
+      topic_name: '',
+      topic_schema: '',
+    },
+  },
 });
 
 const onSubmit = form.handleSubmit((values) => {
