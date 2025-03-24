@@ -37,6 +37,10 @@ export default defineI18nConfig(() => ({
         file: 'File',
         table: 'Table',
         data_stream: 'Data Stream',
+        dataset_file: 'Dataset File',
+        database_url: 'Database URL',
+        table_name: 'Table Name',
+        selected_fields: 'Selected Fields',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -52,6 +56,10 @@ export default defineI18nConfig(() => ({
         broker_port: 'Broker Port',
         topic_name: 'Topic Name',
         topic_schema: 'Topic Schema',
+        browse: 'Browse...',
+        database_url: 'Database URL',
+        table_name: 'Table Name',
+        selected_fields: 'Enter field, separated by commas',
       },
       action: {
         previous: 'Previous',

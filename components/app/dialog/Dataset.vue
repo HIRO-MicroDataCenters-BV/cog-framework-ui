@@ -33,7 +33,6 @@
   >
     <div class="mb-8">
       <form @submit="onSubmit">
-        <Button type="submit">submit</Button>
         <div v-show="step == 0">
           <FormField v-slot="{ componentField }" type="radio" name="type">
             <FormItem class="space-y-3">
@@ -128,7 +127,100 @@
             </FormField>
           </div>
         </div>
-        <div v-show="step == 2">
+
+        <div v-show="step == 2 && form.values.type == 'file'">
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="file"
+              name="source_settings.dataset_file"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{
+                  t('label.dataset_file')
+                }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="file"
+                    accept=".csv,.json"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.browse')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+        </div>
+
+        <div v-show="step == 2 && form.values.type == 'table'">
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="source_settings.database_url"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{
+                  t('label.database_url')
+                }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    accept=".csv,.json"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.database_url')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="source_settings.table_name"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{ t('label.table_name') }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    accept=".csv,.json"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.table_name')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="source_settings.selected_fields"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{
+                  t('label.selected_fields')
+                }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    accept=".csv,.json"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.selected_fields')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+        </div>
+
+        <div v-show="step == 2 && form.values.type == 'data_stream'">
           <div class="field-wrapper">
             <FormField
               v-slot="{ componentField }"
@@ -293,11 +385,15 @@ const formSchema = toTypedSchema(
       description: z.string(),
     }),
     source_settings: z.object({
-      broker_name: z.string(),
-      broker_ip_address: z.string(),
-      broker_port: z.string(),
-      topic_name: z.string(),
-      topic_schema: z.string(),
+      dataset_file: z.string().optional(),
+      broker_name: z.string().optional(),
+      broker_ip_address: z.string().optional(),
+      broker_port: z.string().optional(),
+      topic_name: z.string().optional(),
+      topic_schema: z.string().optional(),
+      database_url: z.string().optional(),
+      table_name: z.string().optional(),
+      selected_fields: z.string().optional(),
     }),
   }),
 );
