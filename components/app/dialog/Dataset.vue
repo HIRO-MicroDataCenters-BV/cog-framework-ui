@@ -33,7 +33,8 @@
   >
     <div class="mb-8">
       <form @submit="onSubmit">
-        <template v-if="step == 0">
+        <Button type="submit">submit</Button>
+        <div v-show="step == 0">
           <FormField v-slot="{ componentField }" type="radio" name="type">
             <FormItem class="space-y-3">
               <FormControl>
@@ -85,8 +86,8 @@
               <FormMessage />
             </FormItem>
           </FormField>
-        </template>
-        <template v-if="step == 1">
+        </div>
+        <div v-show="step == 1">
           <div class="field-wrapper">
             <FormField
               v-slot="{ componentField }"
@@ -126,8 +127,8 @@
               <FormMessage />
             </FormField>
           </div>
-        </template>
-        <template v-if="step == 2">
+        </div>
+        <div v-show="step == 2">
           <div class="field-wrapper">
             <FormField
               v-slot="{ componentField }"
@@ -216,7 +217,7 @@
             <FormField
               v-slot="{ componentField }"
               type="textarea"
-              name="metadata.topic_schema"
+              name="source_settings.topic_schema"
             >
               <FormItem class="form-item form-item-input">
                 <FormLabel class="font-normal">{{
@@ -232,7 +233,7 @@
               <FormMessage />
             </FormField>
           </div>
-        </template>
+        </div>
       </form>
     </div>
   </AppDialog>
@@ -321,7 +322,6 @@ const form = useForm({
 
 const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
-  step.value++;
 });
 </script>
 
