@@ -81,16 +81,19 @@ const props = withDefaults(
   },
 );
 
+const _EVENT_TYPES = [
+  'on-close',
+  'on-save',
+  'on-delete',
+  'on-action',
+  'on-back',
+  'on-next',
+] as const;
+
+type EventType = (typeof _EVENT_TYPES)[number];
+
 const emit = defineEmits<{
-  (
-    e:
-      | 'on-close'
-      | 'on-save'
-      | 'on-delete'
-      | 'on-actino'
-      | 'on-back'
-      | 'on-next',
-  ): void;
+  (e: EventType): void;
 }>();
 
 const open = ref(props.open);
@@ -118,20 +121,13 @@ watch(
 );
 
 const onAction = async (action: string) => {
-  console.log('onAction', action);
-  const name = `on-${action}`;
-  console.log('emit', emit);
+  const name = `on-${action}` as EventType;
 
-  emit(
-    name as
-      | 'on-close'
-      | 'on-save'
-      | 'on-delete'
-      | 'on-actino'
-      | 'on-back'
-      | 'on-next',
-  );
+  emit(name);
 
+  if (action === 'cancel' || action === 'close') {
+    emit('on-close');
+  }
   /*
   const name =
     `on${action.charAt(0).toUpperCase()}${action.slice(1)}` as ActionHandlerName;

@@ -8,7 +8,6 @@
     @on-next="
       async () => {
         step++;
-        console.log('step next', step);
         return false;
       }
     "
@@ -17,6 +16,12 @@
         await emit('on-close');
         step = 0;
         return true;
+      }
+    "
+    @on-save="
+      async () => {
+        onSubmit();
+        return false;
       }
     "
   >
@@ -76,41 +81,151 @@
           </FormField>
         </template>
         <template v-if="step == 1">
-          <FormField
-            v-slot="{ componentField }"
-            type="text"
-            name="metadata.name"
-          >
-            <FormItem class="form-item form-item-input">
-              <FormLabel class="label">{{ t('label.name') }}</FormLabel>
-              <FormControl class="field">
-                <Input
-                  type="text"
-                  v-bind="componentField"
-                  :placeholder="t('placeholder.dataset_name')"
-                />
-              </FormControl>
-            </FormItem>
-            <FormMessage />
-          </FormField>
-          <FormField
-            v-slot="{ componentField }"
-            type="textarea"
-            name="metadata.description"
-          >
-            <FormItem class="form-item form-item-input">
-              <FormLabel class="font-normal">{{
-                t('label.description')
-              }}</FormLabel>
-              <FormControl>
-                <Textarea
-                  v-bind="componentField"
-                  :placeholder="t('placeholder.dataset_description')"
-                />
-              </FormControl>
-            </FormItem>
-            <FormMessage />
-          </FormField>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="metadata.name"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{ t('label.name') }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.dataset_name')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="textarea"
+              name="metadata.description"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="font-normal">{{
+                  t('label.description')
+                }}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.dataset_description')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+        </template>
+        <template v-if="step == 2">
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="source_settings.brokerName"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{
+                  t('label.broker_name')
+                }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.broker_name')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+          <div class="flex gap-2">
+            <div class="field-wrapper">
+              <FormField
+                v-slot="{ componentField }"
+                type="text"
+                name="source_settings.brokerIPAddress"
+              >
+                <FormItem class="form-item form-item-input">
+                  <FormLabel class="label">{{
+                    t('label.broker_ip_address')
+                  }}</FormLabel>
+                  <FormControl class="field">
+                    <Input
+                      type="text"
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.broker_ip_address')"
+                    />
+                  </FormControl>
+                </FormItem>
+                <FormMessage />
+              </FormField>
+            </div>
+            <div class="field-wrapper">
+              <FormField
+                v-slot="{ componentField }"
+                type="text"
+                name="source_settings.brokerPort"
+              >
+                <FormItem class="form-item form-item-input">
+                  <FormLabel class="label">{{
+                    t('label.broker_port')
+                  }}</FormLabel>
+                  <FormControl class="field">
+                    <Input
+                      type="number"
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.broker_port')"
+                    />
+                  </FormControl>
+                </FormItem>
+                <FormMessage />
+              </FormField>
+            </div>
+          </div>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="source_settings.topicName"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="label">{{ t('label.topic_name') }}</FormLabel>
+                <FormControl class="field">
+                  <Input
+                    type="text"
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.topic_name')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
+          <div class="field-wrapper">
+            <FormField
+              v-slot="{ componentField }"
+              type="textarea"
+              name="metadata.topicSchema"
+            >
+              <FormItem class="form-item form-item-input">
+                <FormLabel class="font-normal">{{
+                  t('label.topic_schema')
+                }}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    v-bind="componentField"
+                    :placeholder="t('placeholder.topic_schema')"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormMessage />
+            </FormField>
+          </div>
         </template>
       </form>
     </div>
@@ -153,7 +268,6 @@ watch(
 watch(
   () => step.value,
   (value) => {
-    console.log(value, '!!!');
     step.value = value;
   },
 );
@@ -195,6 +309,9 @@ const onSubmit = form.handleSubmit((values) => {
 .field {
   width: 100%;
 }
+.field-wrapper {
+  @apply mb-6;
+}
 .label {
   @apply mb-1 w-full;
 }
@@ -205,12 +322,15 @@ const onSubmit = form.handleSubmit((values) => {
   @apply flex space-y-0 gap-x-3;
 }
 .form-item-input {
-  @apply mb-8 w-full flex flex-col;
+  @apply mb-1 w-full flex flex-col;
 }
 .form-item-input label {
   @apply mb-2;
 }
 textarea {
   @apply w-full;
+}
+[role='alert'] {
+  @apply text-xs;
 }
 </style>
