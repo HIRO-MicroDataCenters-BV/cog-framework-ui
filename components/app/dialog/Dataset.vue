@@ -5,6 +5,12 @@
     :title="t('title.add_dataset')"
     :actions="actions"
     :step="step"
+    @on-set-step="
+      async (value: number) => {
+        step = value;
+        return false;
+      }
+    "
     @on-next="
       async () => {
         step++;

@@ -25,7 +25,7 @@
                     <Button
                       variant="ghost"
                       :disabled="item === 'back'"
-                      @click="onAction(item)"
+                      @click="onSetStep(index)"
                     >
                       <span>
                         <Icon :name="icons[item as keyof typeof icons]" />
@@ -88,12 +88,23 @@ const _EVENT_TYPES = [
   'on-action',
   'on-back',
   'on-next',
+  'on-set-step',
 ] as const;
 
 type EventType = (typeof _EVENT_TYPES)[number];
 
 const emit = defineEmits<{
-  (e: EventType): void;
+  (
+    e:
+      | 'on-close'
+      | 'on-save'
+      | 'on-delete'
+      | 'on-action'
+      | 'on-back'
+      | 'on-next',
+    value: string | number | boolean,
+  ): void;
+  (e: 'on-set-step', value: number): void;
 }>();
 
 const open = ref(props.open);
@@ -123,10 +134,14 @@ watch(
 const onAction = async (action: string) => {
   const name = `on-${action}` as EventType;
 
-  emit(name);
+  if (name === 'on-set-step') {
+    emit(name, 0);
+  } else {
+    emit(name as Exclude<EventType, 'on-set-step'>, false);
+  }
 
   if (action === 'cancel' || action === 'close') {
-    emit('on-close');
+    emit('on-close', false);
   }
   /*
   const name =
@@ -145,8 +160,13 @@ const onAction = async (action: string) => {
   }
     */
 };
+
+const onSetStep = async (index: number) => {
+  emit('on-set-step', index);
+  step.value = index;
+};
 const onClose = async () => {
-  emit('on-close');
+  emit('on-close', false);
   return true;
 };
 
