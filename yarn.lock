@@ -3139,6 +3139,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vee-validate/zod@npm:^4.15.0":
+  version: 4.15.0
+  resolution: "@vee-validate/zod@npm:4.15.0"
+  dependencies:
+    type-fest: "npm:^4.8.3"
+    vee-validate: "npm:4.15.0"
+  peerDependencies:
+    zod: ^3.24.0
+  checksum: 10c0/c298f74b07427155a18d56b8ca41fd86ce5ecdecbf8664b54d08dcf7a8ea23026c902f0af2247c5c05e9492657fc27a7f6d2c9acfa365986370e3f85a824819e
+  languageName: node
+  linkType: hard
+
 "@vercel/nft@npm:^0.29.2":
   version: 0.29.2
   resolution: "@vercel/nft@npm:0.29.2"
@@ -3354,6 +3366,15 @@ __metadata:
   version: 6.6.4
   resolution: "@vue/devtools-api@npm:6.6.4"
   checksum: 10c0/0a993ae23618166e1bee5a7c14cebd8312752b93c143cbdd48fb2d0f7ade070d0e6baf757cd920d4681fef8f9acf29515162160f38cc7410f9a684d2df21b6de
+  languageName: node
+  linkType: hard
+
+"@vue/devtools-api@npm:^7.5.2":
+  version: 7.7.2
+  resolution: "@vue/devtools-api@npm:7.7.2"
+  dependencies:
+    "@vue/devtools-kit": "npm:^7.7.2"
+  checksum: 10c0/418d3c868143a91518bc846965f7c8a955f072b8526d0f739f4d7dc00b13a0f56b214d876bfff338dc841762b526a1a4c11b5e8b0ab6dd7f3250a694ec8dfbe3
   languageName: node
   linkType: hard
 
@@ -4305,6 +4326,7 @@ __metadata:
     "@nuxtjs/i18n": "npm:9.3.1"
     "@nuxtjs/tailwindcss": "npm:6.13.2"
     "@tanstack/vue-table": "npm:^8.21.2"
+    "@vee-validate/zod": "npm:^4.15.0"
     "@vue-flow/core": "npm:^1.42.3"
     "@vueuse/core": "npm:^13.0.0"
     "@vueuse/nuxt": "npm:13.0.0"
@@ -4318,11 +4340,12 @@ __metadata:
     nuxt: "npm:^3.16.0"
     nuxt-zod-i18n: "npm:1.11.5"
     prettier: "npm:^3.5.3"
-    reka-ui: "npm:^2.1.0"
+    reka-ui: "npm:^2.1.1"
     shadcn-nuxt: "npm:1.0.3"
     tailwind-merge: "npm:^3.0.2"
     tailwindcss-animate: "npm:^1.0.7"
     typescript: "npm:^5.7.3"
+    vee-validate: "npm:^4.15.0"
     vue: "npm:^3.5.13"
     vue-router: "npm:^4.5.0"
     zod: "npm:^3.24.2"
@@ -9639,9 +9662,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reka-ui@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "reka-ui@npm:2.1.0"
+"reka-ui@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "reka-ui@npm:2.1.1"
   dependencies:
     "@floating-ui/dom": "npm:^1.6.13"
     "@floating-ui/vue": "npm:^1.1.6"
@@ -9652,10 +9675,10 @@ __metadata:
     "@vueuse/shared": "npm:^12.5.0"
     aria-hidden: "npm:^1.2.4"
     defu: "npm:^6.1.4"
-    ohash: "npm:^1.1.4"
+    ohash: "npm:^2.0.11"
   peerDependencies:
     vue: ">= 3.2.0"
-  checksum: 10c0/1940eba8a612ed411d5282bf7a4db84e99ed5ec485c12c38d9d4ff8c45176f3d7fc51c1e30a634f8856658ac3a485c75c8ecd9f21a9f26fb0461afc97cd695f5
+  checksum: 10c0/c64743d48cc085432f9bda56dd5360774b4450d47b8b674c92ea0acf9db984109e45900f1751baf0fedcef3d56b34333f7bb8967211d16dd74afb4e372c74c01
   languageName: node
   linkType: hard
 
@@ -10855,7 +10878,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.6.0":
+"type-fest@npm:^4.6.0, type-fest@npm:^4.8.3":
   version: 4.37.0
   resolution: "type-fest@npm:4.37.0"
   checksum: 10c0/5bad189f66fbe3431e5d36befa08cab6010e56be68b7467530b7ef94c3cf81ef775a8ac3047c8bbda4dd3159929285870357498d7bc1df062714f9c5c3a84926
@@ -11409,6 +11432,18 @@ __metadata:
   version: 1.1.2
   resolution: "vary@npm:1.1.2"
   checksum: 10c0/f15d588d79f3675135ba783c91a4083dcd290a2a5be9fcb6514220a1634e23df116847b1cc51f66bfb0644cf9353b2abb7815ae499bab06e46dd33c1a6bf1f4f
+  languageName: node
+  linkType: hard
+
+"vee-validate@npm:4.15.0, vee-validate@npm:^4.15.0":
+  version: 4.15.0
+  resolution: "vee-validate@npm:4.15.0"
+  dependencies:
+    "@vue/devtools-api": "npm:^7.5.2"
+    type-fest: "npm:^4.8.3"
+  peerDependencies:
+    vue: ^3.4.26
+  checksum: 10c0/5ea7318f92cd724a9c6999bc65c6cc589818355fd7d0860807e1e2b70be2ccd3a199e1d3892cfa33dfa0a29c6ccaae91d5c2f2f3f69a6cba37292287607e68f3
   languageName: node
   linkType: hard
 

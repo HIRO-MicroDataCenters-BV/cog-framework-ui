@@ -1,5 +1,5 @@
 export const useMock = () => {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   return useState('mock', () => {
     return {
@@ -18,11 +18,11 @@ export const useMock = () => {
           label: t('stat.files'),
           color: 'text-blue-500',
         },
-        databases: {
-          key: 'databases',
+        tables: {
+          key: 'tables',
           value: 13,
           icon: 'lucide:database',
-          label: t('stat.databases'),
+          label: t('stat.tables'),
           color: 'text-violet-500',
         },
         streams: {
@@ -74,7 +74,7 @@ export const useMock = () => {
           type: 'file',
           last_update: '2021-09-05',
         },
-      ]
-    }
-  })
-}
+      ],
+    };
+  });
+};

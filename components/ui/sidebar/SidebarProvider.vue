@@ -17,11 +17,13 @@ const props = withDefaults(
     defaultOpen?: boolean;
     open?: boolean;
     class?: HTMLAttributes['class'];
+    height?: string;
   }>(),
   {
     defaultOpen: true,
     open: undefined,
     class: '',
+    height: 'svh',
   },
 );
 
@@ -89,7 +91,7 @@ provideSidebarContext({
       }"
       :class="
         cn(
-          'group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar',
+          `group/sidebar-wrapper flex min-h-${props.height} w-full has-[[data-variant=inset]]:bg-sidebar`,
           props.class,
         )
       "
