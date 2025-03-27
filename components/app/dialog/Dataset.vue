@@ -327,126 +327,15 @@
             </FormField>
           </div>
         </div>
-        <div v-show="step == 3 && form.values.type == 'file'">
+        <div v-show="step == 3">
           <Table class="table-review">
             <TableBody>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.type') }}</TableCell>
-                <TableCell class="td"> {{ form.values.type }} </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.description') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.description }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.data_source') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.dataset_file?.name }}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-        <div v-show="step == 3 && form.values.type == 'table'">
-          <Table class="table-review">
-            <TableBody>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.type') }}</TableCell>
-                <TableCell class="td"> {{ form.values.type }} </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.description') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.description }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.db_url') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.database_url }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.table_name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.table_name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.fields') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.selected_fields }}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-        <div v-show="step == 3 && form.values.type == 'data_stream'">
-          <Table class="table-review">
-            <TableBody>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.type') }}</TableCell>
-                <TableCell class="td"> {{ form.values.type }} </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.description') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.metadata?.description }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.broker_name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.broker_name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th">
-                  {{ t('label.broker_ip_address') }}</TableCell
-                >
-                <TableCell class="td">
-                  {{ form.values.source_settings?.broker_ip_address }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.broker_port') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.broker_name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.topic_name') }}</TableCell>
-                <TableCell class="td">
-                  {{ form.values.source_settings?.topic_name }}
-                </TableCell>
-              </TableRow>
-              <TableRow class="tr">
-                <TableCell class="th"> {{ t('label.topic_schema') }}</TableCell>
-                <TableCell class="td td-overflow">
-                  <div class="schema">
-                    {{ form.values.source_settings?.topic_schema }}
-                  </div>
-                </TableCell>
+              <TableRow
+                v-for="item in getReviewTable(form.values.type)"
+                :key="item.value"
+              >
+                <TableCell class="th">{{ item.label }}</TableCell>
+                <TableCell class="td">{{ item.value }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -481,7 +370,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const actions = ref(['close', 'next']);
 
-const step = ref(0);
+const step = ref(3);
 watch(
   () => props.open,
   (value) => {
@@ -508,6 +397,51 @@ const emit = defineEmits<{
 }>();
 
 const navigation = ref(['type', 'metadata', 'source_settings', 'review']);
+
+const reviewItems = ref({
+  file: [
+    {
+      label: 'data_source',
+      valuePath: 'source_settings.dataset_file.name',
+    },
+  ],
+  table: [
+    {
+      label: 'db_url',
+      valuePath: 'source_settings.database_url',
+    },
+    {
+      label: 'table_name',
+      valuePath: 'source_settings.table_name',
+    },
+    {
+      label: 'fields',
+      valuePath: 'source_settings.selected_fields',
+    },
+  ],
+  data_stream: [
+    {
+      label: 'broker_name',
+      valuePath: 'source_settings.broker_name',
+    },
+    {
+      label: 'broker_ip_address',
+      valuePath: 'source_settings.broker_ip_address',
+    },
+    {
+      label: 'broker_port',
+      valuePath: 'source_settings.broker_port',
+    },
+    {
+      label: 'topic_name',
+      valuePath: 'source_settings.topic_name',
+    },
+    {
+      label: 'topic_schema',
+      valuePath: 'source_settings.topic_schema',
+    },
+  ],
+});
 
 const formSchema = toTypedSchema(
   z.object({
@@ -560,6 +494,35 @@ const handleFileChange = (event: Event) => {
 const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
 });
+
+const getReviewTable = (type: string | undefined) => {
+  if (type) {
+    let list = [
+      {
+        label: 'type',
+        valuePath: 'type',
+      },
+      {
+        label: 'name',
+        valuePath: 'metadata.name',
+      },
+      {
+        label: 'description',
+        valuePath: 'metadata.description',
+      },
+    ];
+    list = [
+      ...list,
+      ...reviewItems.value[type as keyof typeof reviewItems.value],
+    ];
+    return list.map((item) => {
+      return {
+        label: t(`label.${item.label}`),
+        value: useGet(form.values, item.valuePath),
+      };
+    });
+  }
+};
 </script>
 
 <style>

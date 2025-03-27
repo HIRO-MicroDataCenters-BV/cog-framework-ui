@@ -15,23 +15,24 @@ export default defineNuxtConfig({
     'nuxt-zod-i18n',
     'dayjs-nuxt',
     '@nuxt/icon',
-    '@nuxtjs/color-mode'
+    '@nuxtjs/color-mode',
+    'nuxt-lodash',
   ],
   shadcn: {
     prefix: '',
-    componentDir: './components/ui'
+    componentDir: './components/ui',
   },
   colorMode: {
     classSuffix: '',
   },
   icon: {
     serverBundle: {
-      collections: ['lucide']
+      collections: ['lucide'],
     },
     customCollections: [
       {
         prefix: 'cog',
-        dir: './assets/icons'
+        dir: './assets/icons',
       },
     ],
   },
