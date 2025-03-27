@@ -370,7 +370,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const actions = ref(['close', 'next']);
 
-const step = ref(3);
+const step = ref(0);
 watch(
   () => props.open,
   (value) => {
