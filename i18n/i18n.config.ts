@@ -130,6 +130,9 @@ export default defineI18nConfig(() => ({
         updated_at: 'Updated At',
       },
       zodI18n: {
+        validations: {
+          ip: '',
+        },
         errors: {
           invalid_type_received_undefined: 'This field is required',
           invalid_type_received: 'This field is required',
