@@ -144,8 +144,8 @@
                   <Input
                     type="file"
                     accept=".csv,.json"
-                    @change="handleFileChange"
                     :placeholder="t('placeholder.browse')"
+                    @change="handleFileChange"
                   />
                 </FormControl>
               </FormItem>
@@ -330,10 +330,7 @@
         <div v-show="step == 3">
           <Table class="table-review">
             <TableBody>
-              <TableRow
-                v-for="item in getReviewTable(form.values.type)"
-                :key="item.value"
-              >
+              <TableRow v-for="item in getReviewTable()" :key="item.value">
                 <TableCell class="th">{{ item.label }}</TableCell>
                 <TableCell class="td">{{ item.value }}</TableCell>
               </TableRow>
@@ -368,8 +365,6 @@ const props = withDefaults(
 );
 
 const open = ref(props.open);
-const actions = ref(['close', 'next']);
-
 const step = ref(0);
 watch(
   () => props.open,
@@ -378,25 +373,23 @@ watch(
   },
 );
 
-watch(
-  () => step.value,
-  (value) => {
-    step.value = value;
-    if (step.value == 0) {
-      actions.value = ['close', 'next'];
-    } else if (step.value == 3) {
-      actions.value = ['back', 'confirm_add'];
-    } else {
-      actions.value = ['back', 'next'];
-    }
-  },
-);
+const actions = computed(() => {
+  if (step.value === 0) {
+    return ['close', 'next'];
+  } else if (step.value === 3) {
+    return ['back', 'confirm_add'];
+  } else {
+    return ['back', 'next'];
+  }
+});
+
+const navigation = computed(() => {
+  return ['type', 'metadata', 'source_settings', 'review'];
+});
 
 const emit = defineEmits<{
   (e: 'on-close'): void;
 }>();
-
-const navigation = ref(['type', 'metadata', 'source_settings', 'review']);
 
 const reviewItems = ref({
   file: [
@@ -495,7 +488,8 @@ const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
 });
 
-const getReviewTable = (type: string | undefined) => {
+const getReviewTable = () => {
+  const type = form.values.type;
   if (type) {
     let list = [
       {
@@ -522,6 +516,7 @@ const getReviewTable = (type: string | undefined) => {
       };
     });
   }
+  return [];
 };
 </script>
 
