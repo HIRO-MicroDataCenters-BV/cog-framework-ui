@@ -330,7 +330,10 @@
         <div v-show="step == 3">
           <Table class="table-review">
             <TableBody>
-              <TableRow v-for="item in getReviewTable()" :key="item.value">
+              <TableRow
+                v-for="(item, index) in getReviewTable()"
+                :key="`review-item-${index}`"
+              >
                 <TableCell class="th">{{ item.label }}</TableCell>
                 <TableCell class="td">{{ item.value }}</TableCell>
               </TableRow>
@@ -346,6 +349,7 @@
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
+import { getReviewTable as getReviewTableUtil } from '@/utils/getReviewTable';
 
 import {
   FormControl,
@@ -488,35 +492,11 @@ const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
 });
 
+// Function to generate review table based on form values and type
 const getReviewTable = () => {
   const type = form.values.type;
-  if (type) {
-    let list = [
-      {
-        label: 'type',
-        valuePath: 'type',
-      },
-      {
-        label: 'name',
-        valuePath: 'metadata.name',
-      },
-      {
-        label: 'description',
-        valuePath: 'metadata.description',
-      },
-    ];
-    list = [
-      ...list,
-      ...reviewItems.value[type as keyof typeof reviewItems.value],
-    ];
-    return list.map((item) => {
-      return {
-        label: t(`label.${item.label}`),
-        value: useGet(form.values, item.valuePath),
-      };
-    });
-  }
-  return [];
+  // Ensure type is not undefined before passing to utility function
+  return getReviewTableUtil(type || 'file', form.values, reviewItems.value);
 };
 </script>
 
