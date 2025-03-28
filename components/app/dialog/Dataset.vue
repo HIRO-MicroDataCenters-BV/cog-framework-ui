@@ -331,7 +331,11 @@
           <Table class="table-review">
             <TableBody>
               <TableRow
-                v-for="(item, index) in getReviewTable()"
+                v-for="(item, index) in getReviewTable(
+                  form.values.type || 'file',
+                  form.values,
+                  reviewItems,
+                )"
                 :key="`review-item-${index}`"
               >
                 <TableCell class="th">{{ item.label }}</TableCell>
@@ -349,7 +353,7 @@
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
-import { getReviewTable as getReviewTableUtil } from '@/utils/getReviewTable';
+import { getReviewTable } from '@/utils/getReviewTable';
 
 import {
   FormControl,
@@ -482,8 +486,6 @@ const form = useForm({
 const handleFileChange = (event: Event) => {
   const file = (event.target as HTMLInputElement)?.files?.[0];
   if (file) {
-    // Instead of trying to set the value directly (which causes the error),
-    // we store the file object in the form values
     form.setFieldValue('source_settings.dataset_file', file);
   }
 };
@@ -491,13 +493,6 @@ const handleFileChange = (event: Event) => {
 const onSubmit = form.handleSubmit((values) => {
   console.log('Form submitted!', values);
 });
-
-// Function to generate review table based on form values and type
-const getReviewTable = () => {
-  const type = form.values.type;
-  // Ensure type is not undefined before passing to utility function
-  return getReviewTableUtil(type || 'file', form.values, reviewItems.value);
-};
 </script>
 
 <style>
