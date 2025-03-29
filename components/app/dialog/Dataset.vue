@@ -8,6 +8,7 @@
     @on-close="
       async () => {
         await emit('on-close');
+        currentStep = 0;
         return true;
       }
     "
@@ -28,7 +29,7 @@
         currentStep = index;
       }
     "
-    @on-action="(action) => handleAction(action)"
+    @on-action="(action) => handleAction(action as string)"
   >
     <StepForm
       :title="t('title.add_dataset')"

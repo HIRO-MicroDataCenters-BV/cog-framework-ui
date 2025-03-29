@@ -224,7 +224,7 @@
                 v-for="(item, index) in reviewData"
                 :key="`review-item-${index}`"
               >
-                <TableCell class="th">{{ item.label }}</TableCell>
+                <TableCell class="th">{{ t(`label.${item.label}`) }}</TableCell>
                 <TableCell class="td">{{ item.value }}</TableCell>
               </TableRow>
             </TableBody>
@@ -316,7 +316,7 @@ interface ReviewTableItem {
 
 interface StepFormProps {
   title?: string;
-  step: number;
+  step?: number;
   steps: Step[];
   validationSchema: unknown;
   initialValues?: Partial<FormValues>;
@@ -328,6 +328,8 @@ interface StepFormProps {
 interface FormValues {
   [key: string]: unknown;
 }
+
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<StepFormProps>(), {
   title: '',
@@ -401,15 +403,21 @@ const reviewData = computed((): ReviewTableItem[] => {
   const typeField = Object.keys(formValues).find((key) => key === 'type');
   const type = typeField ? formValues[typeField] : null;
 
-  let reviewList: ReviewItem[] = [];
-  if (
-    type &&
-    props.reviewItems &&
-    typeof type === 'string' &&
-    props.reviewItems[type]
-  ) {
-    reviewList = [...reviewList, ...props.reviewItems[type]];
-  }
+  let reviewList: ReviewItem[] = [
+    {
+      label: 'type',
+      valuePath: 'type',
+    },
+    {
+      label: 'name',
+      valuePath: 'metadata.name',
+    },
+    {
+      label: 'description',
+      valuePath: 'metadata.description',
+    },
+  ];
+  reviewList = [...reviewList, ...props.reviewItems[type as string]];
 
   return reviewList.map((item) => {
     console.log('item', item);
@@ -450,11 +458,6 @@ const checkFieldCondition = (field: Field): boolean => {
     default:
       return true;
   }
-};
-
-const onStepChange = (step: number): void => {
-  currentStep.value = step;
-  emit('on-step-change', step, currentActions.value);
 };
 
 const onSubmit = form.handleSubmit((values: FormValues) => {
