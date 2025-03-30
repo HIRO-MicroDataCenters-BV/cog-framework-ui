@@ -248,86 +248,15 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 
-type FieldType =
-  | 'text'
-  | 'textarea'
-  | 'select'
-  | 'radio'
-  | 'checkbox'
-  | 'file'
-  | 'number';
-type ActionType =
-  | 'close'
-  | 'back'
-  | 'next'
-  | 'save'
-  | 'cancel'
-  | 'confirm'
-  | string;
-
-interface FieldOption {
-  value: string | number;
-  label: string;
-  subtitle?: string;
-}
-
-interface FieldCondition {
-  field: string;
-  operator: 'eq' | 'neq' | 'contains' | 'not_contains';
-  value: string | number | boolean;
-}
-
-interface Field {
-  type: FieldType;
-  name: string;
-  label?: string;
-  placeholder?: string;
-  description?: string;
-  options?: FieldOption[];
-  accept?: string;
-  condition?: FieldCondition;
-}
-
-interface FieldRow {
-  fields: Field[];
-}
-
-interface Step {
-  rows: FieldRow[];
-  title?: string;
-  description?: string;
-}
-
-interface ReviewItem {
-  label: string;
-  valuePath: string;
-  value?: string | number | boolean;
-  type?: string;
-}
-
-interface ReviewItemsByType {
-  [key: string]: ReviewItem[];
-}
-
-interface ReviewTableItem {
-  label: string;
-  value: unknown;
-}
-
-interface StepFormProps {
-  title?: string;
-  step?: number;
-  steps: Step[];
-  validationSchema: unknown;
-  initialValues?: Partial<FormValues>;
-  actionLabels?: Record<string, string>;
-  reviewItems?: ReviewItemsByType;
-  showReviewStep?: boolean;
-}
-
-interface FormValues {
-  [key: string]: unknown;
-}
+import type {
+  ActionType,
+  Field,
+  ReviewItem,
+  ReviewItemsByType,
+  ReviewTableItem,
+  StepFormProps,
+  FormValues,
+} from '@/types/form';
 
 const { t } = useI18n();
 
@@ -348,7 +277,6 @@ const props = withDefaults(defineProps<StepFormProps>(), {
 });
 
 const emit = defineEmits<{
-  'on-file-change': [fieldName: string, file: File];
   'on-action': [action: ActionType, values: FormValues];
   'on-submit': [values: FormValues];
   'on-step-change': [step: number, actions: ActionType[]];
@@ -420,7 +348,6 @@ const reviewData = computed((): ReviewTableItem[] => {
   reviewList = [...reviewList, ...props.reviewItems[type as string]];
 
   return reviewList.map((item) => {
-    console.log('item', item);
     return {
       label: item.label,
       value: useGet(formValues, item.valuePath),
@@ -433,8 +360,6 @@ const handleFileChange = (event: Event, fieldName: string): void => {
   const file = target.files?.[0];
   if (file) {
     form.setFieldValue(fieldName, file);
-    emit('on-file-change', fieldName, file);
-    target.value = '';
   }
 };
 

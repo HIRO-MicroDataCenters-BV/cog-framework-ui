@@ -39,11 +39,9 @@
       :review-items="reviewItems"
       :action-labels="actionLabels"
       :step="currentStep"
-      @on-file-change="handleFileChange"
       @on-submit="onSubmit"
       @on-step-change="
         (step, actions) => {
-          console.log('step', step);
           currentStep = step;
           stepFormActions = actions;
         }
@@ -369,12 +367,6 @@ const formSteps = ref([
     ],
   },
 ]);
-
-const handleFileChange = (fieldName: string, file: File) => {
-  if (fieldName === 'source_settings.dataset_file' && file) {
-    form.setFieldValue(fieldName, file);
-  }
-};
 
 const handleAction = (action: string) => {
   if (action === 'close') {
