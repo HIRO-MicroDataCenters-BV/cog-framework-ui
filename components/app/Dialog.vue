@@ -43,7 +43,9 @@
 
           <DialogFooter>
             <Button
-              v-for="item in props.actions"
+              v-for="item in props.stepFormActions.length > 0
+                ? props.stepFormActions
+                : props.actions"
               :key="item"
               :variant="variantByActionType(item)"
               :type="typeByActionType(item)"
@@ -70,6 +72,7 @@ const props = withDefaults(
     actions?: string[];
     navigation?: string[];
     step?: number;
+    stepFormActions?: string[];
   }>(),
   {
     open: false,
@@ -79,6 +82,7 @@ const props = withDefaults(
     step: 0,
     navigation: () => [],
     actions: () => ['cancel', 'save'],
+    stepFormActions: () => [],
   },
 );
 
