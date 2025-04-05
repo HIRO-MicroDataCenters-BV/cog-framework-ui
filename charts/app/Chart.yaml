@@ -1,6 +1,0 @@
-apiVersion: v2
-name: app
-description: A frontend web service template for reuse.
-type: application
-version: ""
-appVersion: ""

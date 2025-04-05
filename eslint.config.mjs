@@ -1,21 +1,6 @@
-import { createConfigForNuxt } from "@nuxt/eslint-config/flat";
-import eslintPluginVue from 'eslint-plugin-vue';
+// @ts-check
+import withNuxt from './.nuxt/eslint.config.mjs'
 
-export default createConfigForNuxt({
-  extends: [
-    "eslint:recommended",
-    "plugin:nuxt/recommended",
-    "plugin:prettier/recommended",
-    ...eslintPluginVue.configs['flat/recommended'],
-    "prettier",
-  ],
-  plugins: ["prettier"],
-  rules: {
-    "prettier/prettier": "error",
-    "eslint-disable-next-line": "off",
-    "vue/html-self-closing": "off",
-  },
-  globals: {
-    $t: true,
-  }
-});
+export default withNuxt(
+  // Your custom configs here
+)
