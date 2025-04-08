@@ -1,5 +1,5 @@
 <template>
-  <div class="step-form-content">
+  <div class="flex-1 pl-4">
     <div class="mb-8">
       <form @submit="onSubmit">
         <template
@@ -14,7 +14,7 @@
               <div
                 :class="{
                   'flex gap-2': row.fields.length > 1,
-                  'field-wrapper': true,
+                  'mb-6': true,
                 }"
               >
                 <template
@@ -24,7 +24,7 @@
                   <div
                     v-if="checkFieldCondition(field)"
                     :class="{
-                      'field-wrapper': row.fields.length === 1,
+                      'mb-6': row.fields.length === 1,
                       'flex-1': row.fields.length > 1,
                     }"
                   >
@@ -46,18 +46,18 @@
                               <FormItem
                                 v-for="option in field.options"
                                 :key="option.value"
-                                class="form-item"
+                                class="flex space-y-0 gap-x-3"
                               >
                                 <FormControl>
                                   <RadioGroupItem :value="option.value" />
                                 </FormControl>
-                                <FormLabel class="font-normal">
-                                  <div class="label">
+                                <FormLabel class="font-normal flex flex-col">
+                                  <div class="mb-1 w-full">
                                     {{ option.label }}
                                   </div>
                                   <div
                                     v-if="option.subtitle"
-                                    class="label-subtitle"
+                                    class="text-sm text-gray-400"
                                   >
                                     {{ option.subtitle }}
                                   </div>
@@ -76,11 +76,13 @@
                         type="text"
                         :name="field.name"
                       >
-                        <FormItem class="form-item form-item-input">
-                          <FormLabel v-if="field.label" class="label">{{
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
-                          <FormControl class="field">
+                          <FormControl class="w-full">
                             <Input
                               type="text"
                               v-bind="componentField"
@@ -98,11 +100,13 @@
                         type="number"
                         :name="field.name"
                       >
-                        <FormItem class="form-item form-item-input">
-                          <FormLabel v-if="field.label" class="label">{{
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
-                          <FormControl class="field">
+                          <FormControl class="w-full">
                             <Input
                               type="number"
                               v-bind="componentField"
@@ -120,14 +124,19 @@
                         type="textarea"
                         :name="field.name"
                       >
-                        <FormItem class="form-item form-item-input">
-                          <FormLabel v-if="field.label" class="font-normal">{{
-                            field.label
-                          }}</FormLabel>
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel
+                            v-if="field.label"
+                            class="font-normal mb-2"
+                            >{{ field.label }}</FormLabel
+                          >
                           <FormControl>
                             <Textarea
                               v-bind="componentField"
                               :placeholder="field.placeholder || ''"
+                              class="w-full"
                             />
                           </FormControl>
                         </FormItem>
@@ -137,11 +146,13 @@
 
                     <template v-else-if="field.type === 'file'">
                       <FormField type="file" :name="field.name">
-                        <FormItem class="form-item form-item-input">
-                          <FormLabel v-if="field.label" class="label">{{
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
-                          <FormControl class="field">
+                          <FormControl class="w-full">
                             <Input
                               type="file"
                               :accept="field.accept || '.csv,.json'"
@@ -162,8 +173,10 @@
                         type="select"
                         :name="field.name"
                       >
-                        <FormItem class="form-item form-item-input">
-                          <FormLabel v-if="field.label" class="label">{{
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
                           <Select v-bind="componentField">
@@ -199,7 +212,7 @@
                           <FormControl>
                             <Checkbox v-bind="componentField" />
                           </FormControl>
-                          <div class="space-y-1 leading-none">
+                          <div class="space-y-1 leading-none flex">
                             <FormLabel v-if="field.label">{{
                               field.label
                             }}</FormLabel>
@@ -218,14 +231,19 @@
         </template>
 
         <div v-show="currentStep === steps.length && showReviewStep">
-          <Table class="table-review table-fixed">
+          <Table class="w-full table-fixed">
             <TableBody>
               <TableRow
                 v-for="(item, index) in reviewData"
                 :key="`review-item-${index}`"
               >
-                <TableCell class="th">{{ t(`label.${item.label}`) }}</TableCell>
-                <TableCell class="td">{{ item.value }}</TableCell>
+                <TableCell
+                  class="text-left pb-4 pr-8 border-none text-gray-400"
+                  >{{ t(`label.${item.label}`) }}</TableCell
+                >
+                <TableCell class="text-left pb-4 pr-8 border-none">{{
+                  item.value
+                }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -295,7 +313,7 @@ const currentActions = computed(() => {
   const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
 
   if (currentStep.value === 0) {
-    return ['close', 'next'];
+    return ['next'];
   } else if (currentStep.value === totalSteps - 1) {
     return ['back', 'confirm'];
   } else {
@@ -389,79 +407,3 @@ const onSubmit = form.handleSubmit((values: FormValues) => {
   emit('on-submit', values);
 });
 </script>
-
-<style>
-.step-form-container {
-  @apply flex;
-}
-/*
-.step-form-sidebar {
-  w-40
-  @apply border-r pr-4;
-}
-.step-form-sidebar-header {
-  @apply mb-4;
-}
-
-.step-form-title {
-  @apply text-lg font-medium;
-}
-.step-form-content {
-  @apply flex-1 pl-4;
-}
-.step-form-footer {
-  @apply flex justify-end space-x-2;
-}
-.step-form-sidebar-menu-button {
-  @apply font-light items-center;
-}
-.step-form-sidebar-menu-button.is-active {
-  @apply font-medium;
-}
-.field {
-  width: 100%;
-}
-.field-wrapper {
-  @apply mb-6;
-}
-.label {
-  @apply mb-1 w-full;
-}
-.label-subtitle {
-  @apply text-sm text-gray-400;
-}
-.form-item {
-  @apply flex space-y-0 gap-x-3;
-}
-.form-item-input {
-  @apply mb-1 w-full flex flex-col;
-}
-.form-item-input label {
-  @apply mb-2;
-}
-textarea {
-  @apply w-full;
-}
-[role='alert'] {
-  @apply text-xs;
-}
-.table-review {
-  @apply w-full;
-}
-.table-review tr {
-  @apply border-none;
-}
-.table-review .th,
-.table-review .td {
-  @apply text-left pb-4 pr-8 border-none;
-}
-.table-review .th {
-  @apply text-gray-400;
-}
-.table-review .schema {
-  @apply overflow-hidden overflow-y-auto;
-  max-height: 10rem;
-  width: 100%;
-}
-  */
-</style>
