@@ -1,8 +1,14 @@
 export const useListActions = (type: string) => {
-  const { t } = useI18n()
-  const actions = useActions(type)
+  const { t } = useI18n();
+  const actions = useActions(type);
 
-  const items: { [key: string]: { key: string; title: string; action: (id: number) => Promise<boolean>; }[] } = {
+  const items: {
+    [key: string]: {
+      key: string;
+      title: string;
+      action: (id: number) => Promise<boolean>;
+    }[];
+  } = {
     default: [
       {
         key: 'edit',
@@ -15,8 +21,8 @@ export const useListActions = (type: string) => {
         action: (id: number) => actions.delete(id),
       },
     ],
-  }
+  };
   return useState('listActions', () => {
-    return items[type] || items.default
-  })
-}
+    return items[type] || items.default;
+  });
+};

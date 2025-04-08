@@ -1,21 +1,29 @@
-import { createConfigForNuxt } from "@nuxt/eslint-config/flat";
-import eslintPluginVue from 'eslint-plugin-vue';
+// @ts-check
+import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
+import withNuxt from './.nuxt/eslint.config.mjs';
 
-export default createConfigForNuxt({
-  extends: [
-    "eslint:recommended",
-    "plugin:nuxt/recommended",
-    "plugin:prettier/recommended",
-    ...eslintPluginVue.configs['flat/recommended'],
-    "prettier",
-  ],
-  plugins: ["prettier"],
-  rules: {
-    "prettier/prettier": "error",
-    "eslint-disable-next-line": "off",
-    "vue/html-self-closing": "off",
+export default withNuxt(
+  // Основная конфигурация ESLint
+  {
+    plugins: {
+      prettier: prettierPlugin,
+    },
+    rules: {
+      'prettier/prettier': 'error',
+      'vue/html-self-closing': [
+        'error',
+        {
+          html: {
+            void: 'always',
+            normal: 'always',
+            component: 'always',
+          },
+        },
+      ],
+      'vue/multi-word-component-names': 'off',
+    },
   },
-  globals: {
-    $t: true,
-  }
-});
+  // Добавляем конфигурацию Prettier как отдельный элемент массива
+  prettierConfig,
+);

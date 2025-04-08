@@ -45,7 +45,7 @@ jobs:
           ./tools/version.sh "${{ github.sha }}" "${{ env.DOCKER_IMAGE_NAME }}"
           echo "APP_VERSION=$(cat "./VERSION")" >> $GITHUB_ENV
           echo "DOCKER_IMAGES=$(cat "./DOCKER_IMAGES")" >> $GITHUB_ENV
-          echo "DOCKER_TAGS=$(cat "./VERSION_DOCKER")" >> $GITHUB_ENV  
+          echo "DOCKER_TAGS=$(cat "./VERSION_DOCKER")" >> $GITHUB_ENV
 
       - name: Extract Docker metadata
         id: meta
@@ -64,13 +64,13 @@ jobs:
           build-args: |
             NUXT_PUBLIC_APP_VERSION=${{ env.APP_VERSION }}
 
-#      - name: Push docker image for Juju
-#        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
-#        uses: docker/build-push-action@v6
-#        with:
-#          push: true
-#          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.JUJU_IMAGE_TAG }}
-#          platforms: linux/amd64, linux/arm64
+      #      - name: Push docker image for Juju
+      #        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
+      #        uses: docker/build-push-action@v6
+      #        with:
+      #          push: true
+      #          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.JUJU_IMAGE_TAG }}
+      #          platforms: linux/amd64, linux/arm64
 
       - name: Configure Git
         run: |
@@ -87,4 +87,4 @@ jobs:
         uses: stefanprodan/helm-gh-pages@master
         with:
           token: ${{ github.token }}
-          target_dir: "./helm-charts/"
+          target_dir: './helm-charts/'

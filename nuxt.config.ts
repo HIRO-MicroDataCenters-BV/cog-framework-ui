@@ -1,29 +1,46 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite';
+
 export default defineNuxtConfig({
-  app: {
-    baseURL: '/cogui/',
-  },
-  compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
   modules: [
-    '@nuxtjs/i18n',
-    '@nuxtjs/tailwindcss',
-    '@nuxt/fonts',
-    'shadcn-nuxt',
-    '@vueuse/nuxt',
     '@nuxt/eslint',
+    '@nuxt/fonts',
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@nuxt/scripts',
+    'shadcn-nuxt',
+    '@nuxtjs/i18n',
+    '@vueuse/nuxt',
     'nuxt-zod-i18n',
     'dayjs-nuxt',
-    '@nuxt/icon',
     '@nuxtjs/color-mode',
-    'nuxt-lodash',
   ],
-  shadcn: {
-    prefix: '',
-    componentDir: './components/ui',
-  },
+  ssr: false,
+  devtools: { enabled: true },
+  css: ['~/assets/css/tailwind.css'],
   colorMode: {
     classSuffix: '',
+  },
+  compatibilityDate: '2024-11-01',
+  nitro: {
+    preset: 'github-pages',
+    runtimeConfig: {
+      app: {
+        baseURL: '/cogui/',
+      },
+    },
+    baseURL: '/cogui/',
+  },
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  eslint: {
+    config: {
+      stylistic: true,
+    },
+  },
+  i18n: {
+    vueI18n: './i18n.config.ts',
   },
   icon: {
     serverBundle: {
@@ -36,28 +53,8 @@ export default defineNuxtConfig({
       },
     ],
   },
-  i18n: {
-    vueI18n: './i18n.config.ts',
-  },
-  ssr: false,
-  eslint: {
-    config: {
-      stylistic: true,
-    },
-  },
-  runtimeConfig: {
-    public: {
-      apiBase: '',
-      appVersion: '0.0.1',
-    },
-  },
-  nitro: {
-    preset: 'github-pages',
-    runtimeConfig: {
-      app: {
-        baseURL: '/cogui/',
-      },
-    },
-    baseURL: '/cogui/',
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui',
   },
 });

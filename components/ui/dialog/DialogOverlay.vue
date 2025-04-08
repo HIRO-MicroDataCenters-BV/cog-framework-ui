@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { TabsList, type TabsListProps } from 'reka-ui';
+import { DialogOverlay, type DialogOverlayProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 import { cn } from '@/lib/utils';
 
 const props = defineProps<
-  TabsListProps & { class?: HTMLAttributes['class'] }
+  DialogOverlayProps & { class?: HTMLAttributes['class'] }
 >();
 
 const delegatedProps = computed(() => {
@@ -15,16 +15,16 @@ const delegatedProps = computed(() => {
 </script>
 
 <template>
-  <TabsList
-    data-slot="tabs-list"
+  <DialogOverlay
+    data-slot="dialog-overlay"
     v-bind="delegatedProps"
     :class="
       cn(
-        'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80',
         props.class,
       )
     "
   >
     <slot />
-  </TabsList>
+  </DialogOverlay>
 </template>

@@ -1,10 +1,14 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
-    <DialogContent>
+    <DialogContent class="overflow-hidden h-138 max-h-full">
       <SidebarProvider
-        style="--sidebar-width: 10rem; --sidebar-width-mobile: 10rem"
+        style="
+          --sidebar-width: 10rem;
+          --sidebar-width-mobile: 10rem;
+          --height: auto;
+        "
       >
-        <Sidebar v-if="props.navigation.length > 0" class="pb-4" height="auto">
+        <Sidebar v-if="props.navigation.length > 0" class="pb-4">
           <SidebarHeader>
             <DialogHeader>
               <DialogTitle>{{ props.title }}</DialogTitle>
@@ -42,17 +46,28 @@
           <slot />
 
           <DialogFooter>
-            <Button
-              v-for="item in props.stepFormActions.length > 0
-                ? props.stepFormActions
-                : props.actions"
-              :key="item"
-              :variant="variantByActionType(item)"
-              :type="typeByActionType(item)"
-              @click="onAction(item)"
-            >
-              {{ t(`action.${item}`) }}
-            </Button>
+            <div class="flex gap-2 w-full">
+              <div class="flex-1">
+                <DialogClose as-child>
+                  <Button type="button" variant="outline">
+                    {{ t(`action.close`) }}
+                  </Button>
+                </DialogClose>
+              </div>
+              <div class="flex gap-2">
+                <Button
+                  v-for="item in props.stepFormActions.length > 0
+                    ? props.stepFormActions
+                    : props.actions"
+                  :key="item"
+                  :variant="variantByActionType(item)"
+                  :type="typeByActionType(item)"
+                  @click="onAction(item)"
+                >
+                  {{ t(`action.${item}`) }}
+                </Button>
+              </div>
+            </div>
           </DialogFooter>
         </SidebarInset>
       </SidebarProvider>
@@ -187,10 +202,12 @@ const typeByActionType = (name: string) => {
 </script>
 
 <style>
+/*
 .navigation-item {
   @apply font-light items-center;
 }
 .navigation-item[data-active='true'] {
   @apply font-medium;
 }
+  */
 </style>

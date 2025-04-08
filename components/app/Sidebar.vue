@@ -97,8 +97,9 @@ const version = config.public.appVersion;
 .icon-chevron {
   transition: transform 0.3s;
 }
-
+/*
 [data-state='open'] .icon-chevron {
   @apply rotate-90;
 }
+  */
 </style>

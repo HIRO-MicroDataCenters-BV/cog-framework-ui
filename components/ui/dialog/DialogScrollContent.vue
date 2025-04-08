@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { X } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next';
 import {
   DialogClose,
   DialogContent,
@@ -9,19 +8,22 @@ import {
   DialogOverlay,
   DialogPortal,
   useForwardPropsEmits,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+import { cn } from '@/lib/utils';
 
-const props = defineProps<DialogContentProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<DialogContentEmits>()
+const props = defineProps<
+  DialogContentProps & { class?: HTMLAttributes['class'] }
+>();
+const emits = defineEmits<DialogContentEmits>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, ...delegated } = props;
 
-  return delegated
-})
+  return delegated;
+});
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
@@ -37,18 +39,23 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
           )
         "
         v-bind="forwarded"
-        @pointer-down-outside="(event) => {
-          const originalEvent = event.detail.originalEvent;
-          const target = originalEvent.target as HTMLElement;
-          if (originalEvent.offsetX > target.clientWidth || originalEvent.offsetY > target.clientHeight) {
-            event.preventDefault();
+        @pointer-down-outside="
+          (event) => {
+            const originalEvent = event.detail.originalEvent;
+            const target = originalEvent.target as HTMLElement;
+            if (
+              originalEvent.offsetX > target.clientWidth ||
+              originalEvent.offsetY > target.clientHeight
+            ) {
+              event.preventDefault();
+            }
           }
-        }"
+        "
       >
         <slot />
 
         <DialogClose
-          class="absolute top-3 right-3 p-0.5 transition-colors rounded-md hover:bg-secondary"
+          class="absolute top-4 right-4 p-0.5 transition-colors rounded-md hover:bg-secondary"
         >
           <X class="w-4 h-4" />
           <span class="sr-only">Close</span>
