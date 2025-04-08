@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const runDetailsSchema = z.object({
   uuid: z.string(),

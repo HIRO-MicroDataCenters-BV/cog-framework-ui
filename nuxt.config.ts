@@ -2,9 +2,6 @@
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
-
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -18,12 +15,32 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     '@nuxtjs/color-mode',
   ],
-  shadcn: {
-    prefix: '',
-    componentDir: './components/ui',
-  },
+  ssr: false,
+  devtools: { enabled: true },
+  css: ['~/assets/css/tailwind.css'],
   colorMode: {
     classSuffix: '',
+  },
+  compatibilityDate: '2024-11-01',
+  nitro: {
+    preset: 'github-pages',
+    runtimeConfig: {
+      app: {
+        baseURL: '/cogui/',
+      },
+    },
+    baseURL: '/cogui/',
+  },
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  eslint: {
+    config: {
+      stylistic: true,
+    },
+  },
+  i18n: {
+    vueI18n: './i18n.config.ts',
   },
   icon: {
     serverBundle: {
@@ -36,26 +53,8 @@ export default defineNuxtConfig({
       },
     ],
   },
-  ssr: false,
-  eslint: {
-    config: {
-      stylistic: true,
-    },
-  },
-  i18n: {
-    vueI18n: './i18n.config.ts',
-  },
-  css: ['~/assets/css/tailwind.css'],
-  vite: {
-    plugins: [tailwindcss()],
-  },
-  nitro: {
-    preset: 'github-pages',
-    runtimeConfig: {
-      app: {
-        baseURL: '/cogui/',
-      },
-    },
-    baseURL: '/cogui/',
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui',
   },
 });

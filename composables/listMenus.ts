@@ -1,5 +1,5 @@
 export const uselistMenus = () => {
-  const { t } = useI18n()
+  const { t } = useI18n();
   return useState('listMenus', () => {
     return {
       main: [
@@ -7,7 +7,7 @@ export const uselistMenus = () => {
           key: 'dataset_management',
           title: t('menu.dataset_management'),
           url: '/dataset-management',
-          icon: "lucide:table-2",
+          icon: 'lucide:table-2',
           items: [
             {
               key: 'all',
@@ -21,7 +21,7 @@ export const uselistMenus = () => {
           key: 'training_builder',
           title: t('menu.training_builder'),
           url: '/training-builder',
-          icon: "lucide:network",
+          icon: 'lucide:network',
           items: [
             {
               key: 'all',
@@ -35,7 +35,7 @@ export const uselistMenus = () => {
           key: 'runs',
           title: t('menu.runs'),
           url: '/runs',
-          icon: "lucide:play",
+          icon: 'lucide:play',
           items: [
             {
               key: 'all',
@@ -49,7 +49,7 @@ export const uselistMenus = () => {
           key: 'model_management',
           title: t('menu.model_management'),
           url: '/model-management',
-          icon: "lucide:package",
+          icon: 'lucide:package',
           items: [
             {
               key: 'all',
@@ -63,7 +63,7 @@ export const uselistMenus = () => {
           key: 'model_validation',
           title: t('menu.model_validation'),
           url: '/model-validation',
-          icon: "lucide:package-check",
+          icon: 'lucide:package-check',
           items: [
             {
               key: 'all',
@@ -77,7 +77,7 @@ export const uselistMenus = () => {
           key: 'model_serving',
           title: t('menu.model_serving'),
           url: '/model-serving',
-          icon: "lucide:server",
+          icon: 'lucide:server',
           items: [
             {
               key: 'all',
@@ -93,15 +93,15 @@ export const uselistMenus = () => {
           key: 'documentation',
           title: t('menu.documentation'),
           url: '#',
-          icon: "lucide:book-open",
+          icon: 'lucide:book-open',
         },
         {
           key: 'support',
           title: t('menu.support'),
           url: '#',
-          icon: "lucide:life-buoy",
+          icon: 'lucide:life-buoy',
         },
       ],
-    }
-  })
-}
+    };
+  });
+};

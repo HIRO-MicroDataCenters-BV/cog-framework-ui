@@ -1,50 +1,50 @@
 /**
  * Function to use actions
- * @param type 
- * @returns 
+ * @param type
+ * @returns
  */
 export const useActions = (type: string) => {
-  //const api = useApi()
+  // const api = useApi()
   return {
     /**
-     * 
-     * @param id 
-     * @returns 
+     *
+     * @param id
+     * @returns
      */
     view: async (id: number) => {
-      console.log('view', id, type)
-      return true
-      //await api.viewDataset
+      console.log('view', id, type);
+      return true;
+      // await api.viewDataset
     },
     /**
-     * 
-     * @param data 
-     * @returns 
+     *
+     * @param data
+     * @returns
      */
     create: async (data: unknown) => {
-      console.log('create', data, type)
-      return true
-      //await api.createDataset
+      console.log('create', data, type);
+      return true;
+      // await api.createDataset
     },
     /**
-     * 
-     * @param id 
-     * @returns 
+     *
+     * @param id
+     * @returns
      */
     edit: async (id: number) => {
-      console.log('edit', id, type)
-      return true
-      //await api.editDataset(id)
+      console.log('edit', id, type);
+      return true;
+      // await api.editDataset(id)
     },
     /**
-     * 
-     * @param id 
-     * @returns 
+     *
+     * @param id
+     * @returns
      */
     delete: async (id: number) => {
-      console.log('delete', id, type)
-      return true
-      //await api.deleteDataset(id)
-    }
-  }
-}
+      console.log('delete', id, type);
+      return true;
+      // await api.deleteDataset(id)
+    },
+  };
+};

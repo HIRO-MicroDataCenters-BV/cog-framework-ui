@@ -7,7 +7,6 @@ import type {
   ColumnDef,
   Row,
 } from '@tanstack/vue-table';
-import { valueUpdater } from '~/utils';
 import {
   FlexRender,
   getCoreRowModel,
@@ -18,6 +17,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table';
 import { h, ref } from 'vue';
+import { valueUpdater } from '~/utils';
 import { AppMenuActions } from '#components';
 
 interface DataItem {
@@ -207,7 +207,7 @@ const addDataSet = () => {
       </div>
     </div>
 
-    <!-- table filters-->
+    <!-- table filters -->
     <div v-if="hasTableFilters">
       <Separator />
       <div class="flex gap-2 items-center py-4">
@@ -270,7 +270,7 @@ const addDataSet = () => {
         </div>
       </div>
     </div>
-    <!-- end table filters-->
+    <!-- end table filters -->
     <div class="rounded-md border">
       <Table>
         <TableHeader>

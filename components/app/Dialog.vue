@@ -83,7 +83,7 @@ const props = withDefaults(
     navigation: () => [],
     actions: () => ['cancel', 'save'],
     stepFormActions: () => [],
-  }
+  },
 );
 
 const _EVENT_TYPES = [
@@ -109,7 +109,7 @@ const emit = defineEmits<{
       | 'on-back'
       | 'on-next'
       | 'on-confirm-add',
-    value: string | number | boolean
+    value: string | number | boolean,
   ): void;
   (e: 'on-set-step', value: number): void;
 }>();
@@ -128,14 +128,14 @@ watch(
   () => props.open,
   (value) => {
     open.value = value;
-  }
+  },
 );
 
 watch(
   () => props.step,
   (value) => {
     step.value = value;
-  }
+  },
 );
 
 const onAction = async (action: string) => {

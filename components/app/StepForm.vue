@@ -265,7 +265,7 @@ const props = withDefaults(defineProps<StepFormProps>(), {
   step: 0,
   showReviewStep: true,
   initialValues: () => ({}),
-  reviewItems: () => ({} as ReviewItemsByType),
+  reviewItems: () => ({}) as ReviewItemsByType,
   actionLabels: () => ({
     close: 'Close',
     back: 'Back',
@@ -308,7 +308,7 @@ watch(
   (actions) => {
     emit('update-actions', actions);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -316,14 +316,14 @@ watch(
   (step) => {
     emit('on-step-change', step, currentActions.value);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
   () => props.step,
   (value) => {
     currentStep.value = value;
-  }
+  },
 );
 
 const reviewData = computed((): ReviewTableItem[] => {

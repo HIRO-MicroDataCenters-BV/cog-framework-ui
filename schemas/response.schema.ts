@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const paginationSchema = z.object({
   total_items: z.number(),
