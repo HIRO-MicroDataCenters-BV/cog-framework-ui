@@ -82,23 +82,23 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const res = await request(`/cogapi/models?${q}`);
+      const res = await request(`/models?${q}`);
       return res;
     },
     registerModel: async (data: unknown) => {
-      return request(`/cogapi/models`, 'POST', data);
+      return request(`/models`, 'POST', data);
     },
     updateModel: async (id: number, data: unknown) => {
-      return request(`/cogapi/models/${id}`, 'PUT', data);
+      return request(`/models/${id}`, 'PUT', data);
     },
     deleteModel: async (id: number) => {
-      return request(`/cogapi/models/${id}`, 'DELETE');
+      return request(`/models/${id}`, 'DELETE');
     },
     getModelDetails: async (params: { id?: number; name?: string } = {}) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const res = await request(`/cogapi/models/details?${q}`);
+      const res = await request(`/models/details?${q}`);
       return res;
     },
     downloadModelFile: async (
@@ -107,7 +107,7 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      return request(`/cogapi/models/file?${q}`);
+      return request(`/models/file?${q}`);
     },
     uploadModelFile: async ({
       files,
@@ -125,7 +125,7 @@ export const useApi = () => {
       data.append('model_id', model_id);
       data.append('file_type', file_type);
       data.append('file_description', file_description);
-      return request(`/cogapi/models/file`, 'POST', data);
+      return request(`/models/file`, 'POST', data);
     },
     updateModelFile: async ({
       files,
@@ -143,21 +143,19 @@ export const useApi = () => {
       data.append('model_id', model_id);
       data.append('file_id', file_id);
       data.append('file_description', file_description);
-      return request(`/cogapi/models/file/version`, 'PUT', data);
+      return request(`/models/file/version`, 'PUT', data);
     },
     fetchModelFileDetails: async (file_name: string, model_id: number) => {
-      return request(
-        `/cogapi/models/file/${file_name}/details?model_id=${model_id}`,
-      );
+      return request(`/models/file/${file_name}/details?model_id=${model_id}`);
     },
     deleteModelFile: async (file_id: number) => {
-      return request(`/cogapi/models/file/${file_id}`, 'DELETE');
+      return request(`/models/file/${file_id}`, 'DELETE');
     },
     fetchModelUri: async (uri: string) => {
-      return request(`/cogapi/models/uri?uri=${uri}`);
+      return request(`/models/uri?uri=${uri}`);
     },
     registerModelUri: async (data: unknown) => {
-      return request(`/cogapi/models/uri`, 'POST', data);
+      return request(`/models/uri`, 'POST', data);
     },
     saveModelDetails: async ({
       files,
@@ -175,16 +173,13 @@ export const useApi = () => {
       data.append('model_name', model_name);
       data.append('file_type', file_type);
       data.append('description', description);
-      return request(`/cogapi/models/save`, 'POST', data);
+      return request(`/models/save`, 'POST', data);
     },
     deployModelToCogflow: async (data: unknown) => {
-      return request(`/cogapi/models/service/deploy`, 'POST', data);
+      return request(`/models/service/deploy`, 'POST', data);
     },
     undeployModel: async (svc_name: string) => {
-      return request(
-        `/cogapi/models/service/undeploy?svc_name=${svc_name}`,
-        'DELETE',
-      );
+      return request(`/models/service/undeploy?svc_name=${svc_name}`, 'DELETE');
     },
     fetchDatasets: async (
       params: { name?: string; dataset_id?: number; last_days?: number } = {},
@@ -289,7 +284,7 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const res = await request(`/cogapi/models/recommend?${q}`);
+      const res = await request(`/models/recommend?${q}`);
       return res;
     },
     postPipelineDetails: async (data: unknown) => {
