@@ -12,6 +12,14 @@ export const uselistMenus = () => {
           isActive: false,
         },
         {
+          key: 'model_management',
+          title: t('menu.model_management'),
+          url: '/model-management',
+          icon: 'lucide:package',
+          items: [],
+          isActive: false,
+        },
+        {
           key: 'training_builder',
           title: t('menu.training_builder'),
           url: '/training-builder',
@@ -39,20 +47,7 @@ export const uselistMenus = () => {
           ],
           isActive: false,
         },
-        {
-          key: 'model_management',
-          title: t('menu.model_management'),
-          url: '/model-management',
-          icon: 'lucide:package',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
-          isActive: false,
-        },
+
         {
           key: 'model_validation',
           title: t('menu.model_validation'),

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { fetchDatasets } = useApi();
 
+const title = 'datasets';
+
 const columns = [
   {
     id: 'dataset_id',
@@ -22,7 +24,5 @@ const columns = [
 </script>
 
 <template>
-  <div class="p-4">
-    <AppTable :columns="columns" :data-source="fetchDatasets" />
-  </div>
+  <AppTable :columns="columns" :data-source="fetchDatasets" :title="title" />
 </template>

@@ -21,6 +21,7 @@ import { AppMenuActions } from '#components';
 import type { DataItem, SearchFilter } from '~/types/table.types';
 
 const props = defineProps({
+  title: '',
   dataSource: {
     type: Function as PropType<(params: any) => Promise<any>>,
     required: true,
@@ -29,6 +30,7 @@ const props = defineProps({
 });
 
 const type = 'default';
+const mock = useMock();
 
 const { t } = useI18n();
 const data = ref<DataItem[]>([]);
@@ -57,6 +59,8 @@ const toggleTableFilters = () => {
 
 const selectedFilterColumn = ref('all');
 const searchValue = ref('');
+
+const stat = ref(mock.value.stat);
 
 const route = useRoute();
 const router = useRouter();
@@ -91,6 +95,7 @@ const getColumns = (list) => {
 
 const columns = ref(getColumns(props.columns));
 
+console.log('stat', stat);
 const table = useVueTable({
   data: data.value,
   columns: columns.value,
@@ -281,12 +286,12 @@ onMounted(() => {
   <div class="w-full">
     <div>
       <h1 class="text-lg font-semibold mb-4">
-        {{ t('subtitle.datasets') }}
+        {{ t(`subtitle.${props.title}`) }}
       </h1>
       <div class="pb-4 flex">
         <div class="flex-auto">
           <div class="frame grid gap-4 auto-cols-max grid-flow-col">
-            <div v-for="item in data.stat" :key="item.key" class="frame-item">
+            <div v-for="item in stat" :key="item.key" class="frame-item">
               <div
                 class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
               >
