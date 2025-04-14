@@ -12,6 +12,7 @@ export const useApi = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  console.log('base', baseUrl);
 
   /**
    * Function to get headers

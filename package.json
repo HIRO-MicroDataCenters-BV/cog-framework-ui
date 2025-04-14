@@ -34,6 +34,7 @@
     "dayjs-nuxt": "2.1.11",
     "eslint": "^9.0.0",
     "lucide-vue-next": "^0.487.0",
+    "mdn-data": "^2.20.0",
     "nuxt": "^3.16.2",
     "nuxt-zod-i18n": "1.11.5",
     "reka-ui": "^2.2.0",

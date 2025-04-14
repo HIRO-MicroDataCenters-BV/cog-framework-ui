@@ -96,6 +96,7 @@ export default defineI18nConfig(() => ({
         open_menu: 'Open menu',
         in: 'in',
         all: 'All',
+        page: 'Page',
       },
       menu: {
         documentation: 'Documentation',
