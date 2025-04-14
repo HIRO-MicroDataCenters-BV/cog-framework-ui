@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const dayjs = useDayjs();
 const { fetchDatasets } = useApi();
 
 const title = 'datasets';

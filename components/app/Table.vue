@@ -27,13 +27,17 @@ const props = defineProps({
     required: true,
   },
   columns: [],
+  pageSize: {
+    type: Number,
+    default: 10,
+  },
 });
 
 const type = 'default';
 const mock = useMock();
 
 const { t } = useI18n();
-const data = ref<DataItem[]>([]);
+const data = shallowRef([]);
 const totalItems = ref(0);
 
 const dayjs = useDayjs();
@@ -41,16 +45,17 @@ const actions = useListActions(type);
 const api = useApi();
 const hasTableFilters = ref(true);
 const fetchData = async () => {
-  const { data: tableData } = await props.dataSource({
+  const { data: tableData, pagination } = await props.dataSource({
     page: table.getState().pagination.pageIndex + 1,
-    limit: table.getState().pagination.pageSize,
+    limit: props.pageSize,
     ...(searchValue.value &&
       selectedFilterColumn.value && {
         [selectedFilterColumn.value]: searchValue.value,
       }),
   });
-  data.value = tableData?.data ?? [];
-  totalItems.value = tableData?.total ?? 0;
+  data.value = tableData ?? [];
+  console.log(table, table.getRowModel().rows, data.value, pagination);
+  totalItems.value = pagination.total_items ?? 0;
 };
 
 const toggleTableFilters = () => {
@@ -83,9 +88,9 @@ const currentPage = ref<number>(
 );
 
 const getColumns = (list) => {
-  console.log('list', list);
   return list.map((item) => {
     return {
+      id: item.id,
       accessorKey: item.id,
       header: t(`column.${item.id}`),
       cell: item.cell,
@@ -97,7 +102,7 @@ const columns = ref(getColumns(props.columns));
 
 console.log('stat', stat);
 const table = useVueTable({
-  data: data.value,
+  data,
   columns: columns.value,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
@@ -111,7 +116,7 @@ const table = useVueTable({
   onRowSelectionChange: (updaterOrValue) =>
     valueUpdater(updaterOrValue, rowSelection),
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
-  manualPagination: false,
+  manualPagination: true,
   globalFilterFn: (row, columnId, filterValue) => {
     // Получаем информацию о фильтре из состояния
     const searchFilter = columnFilters.value.find(
@@ -128,7 +133,7 @@ const table = useVueTable({
   initialState: {
     pagination: {
       pageIndex: currentPage.value,
-      pageSize: 10,
+      pageSize: props.pageSize,
     },
   },
   onPaginationChange: (updater) => {
@@ -154,7 +159,7 @@ const table = useVueTable({
     get pagination() {
       return {
         pageIndex: currentPage.value,
-        pageSize: 10,
+        pageSize: props.pageSize,
       };
     },
   },
@@ -200,20 +205,13 @@ const updateUrlParams = () => {
   }
   isUpdatingFromState = true;
   router.replace({ query }).then(() => {
-    // Сбрасываем флаг после обновления URL
     setTimeout(() => {
       isUpdatingFromState = false;
     }, 100);
+    fetchData();
   });
 };
-watch(
-  [columnFilters, columnVisibility, currentPage],
-  () => {
-    updateUrlParams();
-  },
-  { deep: true },
-);
-let isUpdatingFromState = false;
+
 watch(
   () => route.query,
   (newQuery) => {
@@ -265,11 +263,22 @@ watch(
     } finally {
       setTimeout(() => {
         isUpdatingFromState = false;
+        fetchData();
       }, 100);
     }
   },
   { deep: true },
 );
+
+watch(
+  () => props.pageSize,
+  (newPageSize) => {
+    table.setPageSize(newPageSize);
+    currentPage.value = 0;
+    fetchData();
+  },
+);
+
 onMounted(() => {
   fetchData();
   /*
@@ -445,7 +454,8 @@ onMounted(() => {
         </Button>
         <span class="mx-2">
           {{ t('hint.page') }} {{ table.getState().pagination.pageIndex + 1 }}
-          {{ t('hint.of') }} {{ table.getPageCount() }}
+          {{ t('hint.of') }}
+          {{ Math.ceil(totalItems.value / props.pageSize) || 1 }}
         </span>
         <Button
           variant="outline"

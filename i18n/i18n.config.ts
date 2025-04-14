@@ -1,3 +1,5 @@
+import { version } from 'vue';
+
 export default defineI18nConfig(() => ({
   legacy: false,
   locale: 'en',
@@ -23,6 +25,10 @@ export default defineI18nConfig(() => ({
       },
       subtitle: {
         datasets: 'Datasets',
+        models: 'Models',
+        runs: 'Runs',
+        validation: 'Validation',
+        serving: 'Serving',
       },
       label: {
         filters: 'Filters',
@@ -131,6 +137,9 @@ export default defineI18nConfig(() => ({
         last_update: 'Last Update',
         created_at: 'Created At',
         updated_at: 'Updated At',
+        version: 'Version',
+        last_modified_time: 'Last Modified',
+        register_date: 'Registred Date',
       },
       zodI18n: {
         validations: {
