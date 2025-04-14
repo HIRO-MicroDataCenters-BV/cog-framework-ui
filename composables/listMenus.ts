@@ -8,13 +8,7 @@ export const uselistMenus = () => {
           title: t('menu.dataset_management'),
           url: '/dataset-management',
           icon: 'lucide:table-2',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
+          items: [],
           isActive: false,
         },
         {

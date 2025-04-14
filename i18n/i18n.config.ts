@@ -122,9 +122,11 @@ export default defineI18nConfig(() => ({
       },
       column: {
         id: 'ID',
+        dataset_id: 'ID',
         name: 'Name',
         description: 'Description',
         type: 'Type',
+        dataset_type: 'Type',
         status: 'Status',
         last_update: 'Last Update',
         created_at: 'Created At',
