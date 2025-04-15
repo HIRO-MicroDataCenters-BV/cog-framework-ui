@@ -13,18 +13,25 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { h, ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { valueUpdater } from '~/utils';
-//import { AppMenuActions } from '#components';
-import type { SearchFilter } from '~/types/table.types';
+/*
+import { AppMenuActions } from '#components';
+*/
+import type {
+  SearchFilter,
+  TableColumn,
+  TableDataResponse,
+  DataItem,
+} from '~/types/table.types';
 
 const props = defineProps({
   title: String,
   dataSource: {
-    type: Function as PropType<(params: any) => Promise<any>>,
+    type: Function as PropType<(params: unknown) => Promise<TableDataResponse>>,
     required: true,
   },
-  columns: Array,
+  columns: Array as PropType<TableColumn[]>,
   pageSize: {
     type: Number,
     default: 10,
@@ -34,7 +41,7 @@ const props = defineProps({
 const mock = useMock();
 
 const { t } = useI18n();
-const data = shallowRef([]);
+const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
 
 const hasTableFilters = ref(true);
@@ -61,7 +68,9 @@ const searchValue = ref('');
 const stat = ref(mock.value.stat);
 
 const route = useRoute();
+/*
 const router = useRouter();
+*/
 
 const columnFilters = ref<ColumnFiltersState>(
   route.query.filters
@@ -80,7 +89,7 @@ const currentPage = ref<number>(
   route.query.page ? parseInt(route.query.page as string) : 0,
 );
 
-const getColumns = (list) => {
+const getColumns = (list: TableColumn[]) => {
   return list.map((item) => {
     return {
       id: item.id,
@@ -91,7 +100,7 @@ const getColumns = (list) => {
   });
 };
 
-const columns = ref(getColumns(props.columns));
+const columns = ref(getColumns(props.columns ?? []));
 const table = useVueTable({
   data,
   columns: columns.value,
@@ -108,7 +117,7 @@ const table = useVueTable({
     valueUpdater(updaterOrValue, rowSelection),
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
   manualPagination: true,
-  globalFilterFn: (row, columnId, filterValue) => {
+  globalFilterFn: (row, columnId) => {
     // Получаем информацию о фильтре из состояния
     const searchFilter = columnFilters.value.find(
       (filter) => filter.id === 'search',
@@ -176,7 +185,7 @@ const applySearchFilter = () => {
     value: searchValue.value,
     column: selectedFilterColumn.value,
   };
-  columnFilters.value.push(searchFilter as any);
+  columnFilters.value.push(searchFilter as unknown as SearchFilter);
 };
 /*
 const updateUrlParams = () => {
@@ -249,6 +258,7 @@ watch(
         table.setPageIndex(0);
       }
     } catch (error) {
+      console.error('Error parsing query parameters:', error);
       columnFilters.value = [];
       columnVisibility.value = {};
       currentPage.value = 0;
@@ -328,10 +338,10 @@ onMounted(() => {
         <div class="flex-auto flex">
           <div class="flex gap-2">
             <Input
+              v-model="searchValue"
               class="w-64"
               type="search"
               :placeholder="t('placeholder.search')"
-              v-model="searchValue"
               @update:model-value="applySearchFilter"
             />
 
@@ -448,7 +458,7 @@ onMounted(() => {
         <span class="mx-2">
           {{ t('hint.page') }} {{ table.getState().pagination.pageIndex + 1 }}
           {{ t('hint.of') }}
-          {{ Math.ceil(totalItems.value / props.pageSize) || 1 }}
+          {{ Math.ceil(totalItems / props.pageSize) || 1 }}
         </span>
         <Button
           variant="outline"

@@ -37,59 +37,54 @@ const version = config.public.appVersion;
       <SidebarGroup>
         <SidebarGroupLabel>{{ t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <template v-for="item in menu.main" :key="item.title" as-child>
-            <template v-if="item.items.length === 0">
+          <template v-for="item in menu.main" :key="item.title">
+            <SidebarMenuItem v-if="item.items.length === 0">
+              <SidebarMenuButton as-child>
+                <a :href="item.url">
+                  <span class="text-lg">
+                    <Icon :name="item.icon" />
+                  </span>
+                  <span>{{ item.title }}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <Collapsible
+              v-else
+              as-child
+              :default-open="item.isActive"
+              class="group/collapsible"
+            >
               <SidebarMenuItem>
-                <SidebarMenuButton as-child>
-                  <a :href="item.url">
-                    <span class="text-lg">
-                      <Icon :name="item.icon" />
-                    </span>
-                    <span>{{ item.title }}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </template>
-            <template v-else>
-              <Collapsible
-                as-child
-                :default-open="item.isActive"
-                class="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger as-child>
-                    <SidebarMenuButton :tooltip="item.title">
-                      <div class="flex items-center justify-between w-full">
-                        <div class="flex items-center">
-                          <span class="text-lg mr-2">
-                            <Icon :name="item.icon" />
-                          </span>
-                          <span>{{ item.title }}</span>
-                        </div>
-                        <Icon
-                          class="icon-chevron"
-                          name="lucide:chevron-right"
-                        />
+                <CollapsibleTrigger as-child>
+                  <SidebarMenuButton :tooltip="item.title">
+                    <div class="flex items-center justify-between w-full">
+                      <div class="flex items-center">
+                        <span class="text-lg mr-2">
+                          <Icon :name="item.icon" />
+                        </span>
+                        <span>{{ item.title }}</span>
                       </div>
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem
-                        v-for="subItem in item.items"
-                        :key="subItem.title"
-                      >
-                        <SidebarMenuSubButton as-child>
-                          <a :href="subItem.url">
-                            <span>{{ subItem.title }}</span>
-                          </a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </template>
+                      <Icon class="icon-chevron" name="lucide:chevron-right" />
+                    </div>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem
+                      v-for="subItem in item.items"
+                      :key="subItem.title"
+                    >
+                      <SidebarMenuSubButton as-child>
+                        <a :href="subItem.url">
+                          <span>{{ subItem.title }}</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
           </template>
         </SidebarMenu>
       </SidebarGroup>
