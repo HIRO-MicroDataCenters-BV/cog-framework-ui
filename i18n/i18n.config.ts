@@ -69,6 +69,7 @@ export default defineI18nConfig(() => ({
         database_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Enter field, separated by commas',
+        select_filter: 'Select Filter',
       },
       action: {
         previous: 'Previous',

@@ -3,8 +3,6 @@ import type {
   ColumnFiltersState,
   ExpandedState,
   VisibilityState,
-  ColumnDef,
-  Row,
 } from '@tanstack/vue-table';
 import {
   FlexRender,
@@ -17,32 +15,28 @@ import {
 } from '@tanstack/vue-table';
 import { h, ref, watch, onMounted } from 'vue';
 import { valueUpdater } from '~/utils';
-import { AppMenuActions } from '#components';
-import type { DataItem, SearchFilter } from '~/types/table.types';
+//import { AppMenuActions } from '#components';
+import type { SearchFilter } from '~/types/table.types';
 
 const props = defineProps({
-  title: '',
+  title: String,
   dataSource: {
     type: Function as PropType<(params: any) => Promise<any>>,
     required: true,
   },
-  columns: [],
+  columns: Array,
   pageSize: {
     type: Number,
     default: 10,
   },
 });
 
-const type = 'default';
 const mock = useMock();
 
 const { t } = useI18n();
 const data = shallowRef([]);
 const totalItems = ref(0);
 
-const dayjs = useDayjs();
-const actions = useListActions(type);
-const api = useApi();
 const hasTableFilters = ref(true);
 const fetchData = async () => {
   const { data: tableData, pagination } = await props.dataSource({
@@ -54,8 +48,7 @@ const fetchData = async () => {
       }),
   });
   data.value = tableData ?? [];
-  console.log(table, table.getRowModel().rows, data.value, pagination);
-  totalItems.value = pagination.total_items ?? 0;
+  totalItems.value = pagination?.total_items ?? 0;
 };
 
 const toggleTableFilters = () => {
@@ -99,8 +92,6 @@ const getColumns = (list) => {
 };
 
 const columns = ref(getColumns(props.columns));
-
-console.log('stat', stat);
 const table = useVueTable({
   data,
   columns: columns.value,
@@ -168,6 +159,7 @@ const table = useVueTable({
 const tabs = uselistTabs();
 
 const openAddDataset = ref(false);
+const isUpdatingFromState = ref(false);
 
 const addDataSet = () => {
   openAddDataset.value = true;
@@ -186,8 +178,9 @@ const applySearchFilter = () => {
   };
   columnFilters.value.push(searchFilter as any);
 };
+/*
 const updateUrlParams = () => {
-  if (isUpdatingFromState) return;
+  if (isUpdatingFromState.value) return;
 
   const query: Record<string, string> = {};
   if (columnFilters.value.length > 0) {
@@ -203,20 +196,20 @@ const updateUrlParams = () => {
   if (currentPage.value > 0) {
     query.page = currentPage.value.toString();
   }
-  isUpdatingFromState = true;
+  isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
     setTimeout(() => {
-      isUpdatingFromState = false;
+      isUpdatingFromState.value = false;
     }, 100);
     fetchData();
   });
 };
-
+*/
 watch(
   () => route.query,
   (newQuery) => {
-    if (isUpdatingFromState) return;
-    isUpdatingFromState = true;
+    if (isUpdatingFromState.value) return;
+    isUpdatingFromState.value = true;
     try {
       if (newQuery.filters) {
         columnFilters.value = JSON.parse(
@@ -262,7 +255,7 @@ watch(
       table.setPageIndex(0);
     } finally {
       setTimeout(() => {
-        isUpdatingFromState = false;
+        isUpdatingFromState.value = false;
         fetchData();
       }, 100);
     }

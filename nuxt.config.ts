@@ -21,6 +21,11 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
   },
+  runtimeConfig: {
+    public: {
+      apiBase: '/cogui/',
+    },
+  },
   compatibilityDate: '2024-11-01',
   nitro: {
     preset: 'github-pages',
@@ -56,10 +61,5 @@ export default defineNuxtConfig({
   shadcn: {
     prefix: '',
     componentDir: './components/ui',
-  },
-  runtimeConfig: {
-    public: {
-      apiBase: '/cogui/',
-    },
   },
 });

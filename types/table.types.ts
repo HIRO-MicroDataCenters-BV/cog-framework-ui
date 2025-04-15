@@ -1,10 +1,3 @@
-/**
- * Типы и интерфейсы для работы с таблицами
- */
-
-/**
- * Интерфейс для элемента данных таблицы
- */
 export interface DataItem {
   id: string;
   name: string;
@@ -14,11 +7,22 @@ export interface DataItem {
   last_update: string;
 }
 
-/**
- * Расширенный тип фильтра для поддержки свойства column
- */
 export interface SearchFilter {
   id: string;
   value: unknown;
   column?: string;
+}
+
+export interface TableColumn {
+  id: string;
+  cell?: (props: unknown) => unknown;
+}
+
+export interface TableDataResponse {
+  data: DataItem[];
+  pagination?: {
+    total_items: number;
+    page: number;
+    limit: number;
+  };
 }
