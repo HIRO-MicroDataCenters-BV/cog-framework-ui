@@ -9,9 +9,12 @@
       </template>
     </Suspense>
   </div>
+  <Toaster position="top-right" expand rich-colors />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { Toaster } from '@/components/ui/sonner';
+
 useHead({
   title: 'COG',
   meta: [

@@ -41,8 +41,11 @@ export const useApi = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
+    options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
+    const showToast = options?.showToast !== false; // По умолчанию показываем уведомления
+    const { success, error } = useToast();
 
     const opts: RequestInit = {
       method,
@@ -59,14 +62,25 @@ export const useApi = () => {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
+            if (showToast) error('error.unauthorized');
             return null;
         }
       }
-      return res.status >= 400 && res.status < 600
-        ? apiErrorResponseSchema.parse(data)
-        : apiResponseSchema.parse(data);
+
+      const result =
+        res.status >= 400 && res.status < 600
+          ? apiErrorResponseSchema.parse(data)
+          : apiResponseSchema.parse(data);
+
+      // Показываем уведомление об успехе для не-GET запросов
+      if (showToast && method !== 'GET' && res.ok) {
+        success('success.operation_completed', { id: result?.data?.id });
+      }
+
+      return result;
     } catch (err) {
       console.error('Fetch error:', err);
+      if (showToast) error(err, 'error.connection_error');
       throw err;
     }
   };

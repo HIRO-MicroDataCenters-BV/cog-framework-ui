@@ -96,6 +96,27 @@ export default defineI18nConfig(() => ({
         tables: 'Tables',
         streams: 'Streams',
       },
+      toast: {
+        success: {
+          dataset_added: 'Dataset {name} successfully added',
+          model_added: 'Model successfully added',
+          operation_completed: 'Operation completed successfully',
+          data_saved: 'Data saved successfully',
+        },
+        error: {
+          unknown: 'An unknown error occurred',
+          dataset_add_failed: 'Failed to add dataset',
+          model_add_failed: 'Failed to add model',
+          operation_failed: 'Operation failed',
+          connection_error: 'Connection error',
+        },
+        info: {
+          operation_in_progress: 'Operation in progress',
+        },
+        warning: {
+          validation_error: 'Please check the form for errors',
+        },
+      },
       hint: {
         no_results: 'No results found',
         of: 'of',
