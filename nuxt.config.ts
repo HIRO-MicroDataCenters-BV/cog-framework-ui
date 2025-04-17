@@ -21,6 +21,11 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
   },
+  runtimeConfig: {
+    public: {
+      apiBase: '/cogui/',
+    },
+  },
   compatibilityDate: '2024-11-01',
   nitro: {
     preset: 'github-pages',

@@ -12,6 +12,7 @@ export const useApi = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  console.log('base', baseUrl);
 
   /**
    * Function to get headers
@@ -40,8 +41,11 @@ export const useApi = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
+    options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
+    const showToast = options?.showToast !== false; // По умолчанию показываем уведомления
+    const { success, error } = useToast();
 
     const opts: RequestInit = {
       method,
@@ -58,14 +62,25 @@ export const useApi = () => {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
+            if (showToast) error('error.unauthorized');
             return null;
         }
       }
-      return res.status >= 400 && res.status < 600
-        ? apiErrorResponseSchema.parse(data)
-        : apiResponseSchema.parse(data);
+
+      const result =
+        res.status >= 400 && res.status < 600
+          ? apiErrorResponseSchema.parse(data)
+          : apiResponseSchema.parse(data);
+
+      // Показываем уведомление об успехе для не-GET запросов
+      if (showToast && method !== 'GET' && res.ok) {
+        success('success.operation_completed', { id: result?.data?.id });
+      }
+
+      return result;
     } catch (err) {
       console.error('Fetch error:', err);
+      if (showToast) error(err, 'error.connection_error');
       throw err;
     }
   };
@@ -73,9 +88,9 @@ export const useApi = () => {
   return {
     getModels: async (
       params: {
-        model_id?: number;
+        id?: number;
         last_days?: number;
-        model_name?: string;
+        name?: string;
       } = {},
     ) => {
       const q = new URLSearchParams(
@@ -87,15 +102,13 @@ export const useApi = () => {
     registerModel: async (data: unknown) => {
       return request(`/models`, 'POST', data);
     },
-    updateModel: async (model_id: number, data: unknown) => {
-      return request(`/models/${model_id}`, 'PUT', data);
+    updateModel: async (id: number, data: unknown) => {
+      return request(`/models/${id}`, 'PUT', data);
     },
-    deleteModel: async (model_id: number) => {
-      return request(`/models/${model_id}`, 'DELETE');
+    deleteModel: async (id: number) => {
+      return request(`/models/${id}`, 'DELETE');
     },
-    getModelDetails: async (
-      params: { model_id?: number; model_name?: string } = {},
-    ) => {
+    getModelDetails: async (params: { id?: number; name?: string } = {}) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();

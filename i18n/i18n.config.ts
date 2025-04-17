@@ -1,3 +1,5 @@
+import { version } from 'vue';
+
 export default defineI18nConfig(() => ({
   legacy: false,
   locale: 'en',
@@ -23,6 +25,10 @@ export default defineI18nConfig(() => ({
       },
       subtitle: {
         datasets: 'Datasets',
+        models: 'Models',
+        runs: 'Runs',
+        validation: 'Validation',
+        serving: 'Serving',
       },
       label: {
         filters: 'Filters',
@@ -63,6 +69,7 @@ export default defineI18nConfig(() => ({
         database_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Enter field, separated by commas',
+        select_filter: 'Select Filter',
       },
       action: {
         previous: 'Previous',
@@ -89,6 +96,27 @@ export default defineI18nConfig(() => ({
         tables: 'Tables',
         streams: 'Streams',
       },
+      toast: {
+        success: {
+          dataset_added: 'Dataset {name} successfully added',
+          model_added: 'Model successfully added',
+          operation_completed: 'Operation completed successfully',
+          data_saved: 'Data saved successfully',
+        },
+        error: {
+          unknown: 'An unknown error occurred',
+          dataset_add_failed: 'Failed to add dataset',
+          model_add_failed: 'Failed to add model',
+          operation_failed: 'Operation failed',
+          connection_error: 'Connection error',
+        },
+        info: {
+          operation_in_progress: 'Operation in progress',
+        },
+        warning: {
+          validation_error: 'Please check the form for errors',
+        },
+      },
       hint: {
         no_results: 'No results found',
         of: 'of',
@@ -96,6 +124,7 @@ export default defineI18nConfig(() => ({
         open_menu: 'Open menu',
         in: 'in',
         all: 'All',
+        page: 'Page',
       },
       menu: {
         documentation: 'Documentation',
@@ -121,13 +150,18 @@ export default defineI18nConfig(() => ({
       },
       column: {
         id: 'ID',
+        dataset_id: 'ID',
         name: 'Name',
         description: 'Description',
         type: 'Type',
+        dataset_type: 'Type',
         status: 'Status',
         last_update: 'Last Update',
         created_at: 'Created At',
         updated_at: 'Updated At',
+        version: 'Version',
+        last_modified_time: 'Last Modified',
+        register_date: 'Registred Date',
       },
       zodI18n: {
         validations: {

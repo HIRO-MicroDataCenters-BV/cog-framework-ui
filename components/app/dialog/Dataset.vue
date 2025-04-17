@@ -56,6 +56,8 @@ import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
 import StepForm from '@/components/app/StepForm.vue';
+import { useApi } from '@/composables/api';
+import { useToast } from '@/composables/toast';
 
 const { t } = useI18n();
 const props = withDefaults(
@@ -381,7 +383,56 @@ const handleAction = (action: string) => {
 };
 
 const onSubmit = async (values: typeof form.values) => {
-  console.log('Form submitted!', values);
+  const toast = useToast();
+  try {
+    const { registerDataset, datasetTableRegister, datasetKafkaRegister } =
+      useApi();
+    let response;
+
+    if (values.type === 'file') {
+      const files = values.source_settings.dataset_file
+        ? [values.source_settings.dataset_file]
+        : [];
+      response = await registerDataset({
+        files,
+        name: values.metadata.name,
+        dataset_type: '1',
+        description: values.metadata.description,
+      });
+    } else if (values.type === 'table') {
+      response = await datasetTableRegister({
+        dataset_name: values.metadata.name,
+        description: values.metadata.description,
+        database_url: values.source_settings.database_url,
+        table_name: values.source_settings.table_name,
+        selected_fields: values.source_settings.selected_fields,
+      });
+    } else if (values.type === 'data_stream') {
+      response = await datasetKafkaRegister({
+        dataset_name: values.metadata.name,
+        description: values.metadata.description,
+        broker_name: values.source_settings.broker_name,
+        broker_ip_address: values.source_settings.broker_ip_address,
+        broker_port: values.source_settings.broker_port,
+        topic_name: values.source_settings.topic_name,
+        topic_schema: values.source_settings.topic_schema,
+      });
+    }
+
+    if (response?.data) {
+      toast.success('success.dataset_added', {
+        id: response.data.id,
+        name: values.metadata.name,
+      });
+    } else {
+      toast.success('success.dataset_added', { name: values.metadata.name });
+    }
+
+    emit('on-close');
+  } catch (error) {
+    console.error('Error submitting dataset:', error);
+    toast.error(error, 'error.dataset_add_failed');
+  }
 };
 </script>
 
