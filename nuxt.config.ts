@@ -62,4 +62,7 @@ export default defineNuxtConfig({
     prefix: '',
     componentDir: './components/ui',
   },
+  app: {
+    baseURL: '/cogui/',
+  },
 });
