@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:inspector": "npx @eslint/config-inspector@latest",
-    "format": "prettier . --write ."
+    "format": "prettier --write '**/*.ts' '**/*.js' '**/*.vue'"
   },
   "dependencies": {
     "@nuxt/eslint": "1.3.0",
