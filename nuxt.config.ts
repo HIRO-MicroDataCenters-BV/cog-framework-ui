@@ -17,6 +17,9 @@ export default defineNuxtConfig({
   ],
   ssr: false,
   devtools: { enabled: true },
+  app: {
+    baseURL: '/cogui/',
+  },
   css: ['~/assets/css/tailwind.css'],
   colorMode: {
     classSuffix: '',
@@ -61,8 +64,5 @@ export default defineNuxtConfig({
   shadcn: {
     prefix: '',
     componentDir: './components/ui',
-  },
-  app: {
-    baseURL: '/cogui/',
   },
 });

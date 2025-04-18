@@ -6,7 +6,7 @@ export const uselistMenus = () => {
         {
           key: 'dataset_management',
           title: t('menu.dataset_management'),
-          url: '/dataset-management',
+          url: 'dataset-management',
           icon: 'lucide:table-2',
           items: [],
           isActive: false,
@@ -14,7 +14,7 @@ export const uselistMenus = () => {
         {
           key: 'model_management',
           title: t('menu.model_management'),
-          url: '/model-management',
+          url: 'model-management',
           icon: 'lucide:package',
           items: [],
           isActive: false,
@@ -22,7 +22,7 @@ export const uselistMenus = () => {
         {
           key: 'training_builder',
           title: t('menu.training_builder'),
-          url: '/training-builder',
+          url: 'training-builder',
           icon: 'lucide:network',
           items: [
             {
@@ -36,7 +36,7 @@ export const uselistMenus = () => {
         {
           key: 'runs',
           title: t('menu.runs'),
-          url: '/runs',
+          url: 'runs',
           icon: 'lucide:play',
           items: [
             {
@@ -51,7 +51,7 @@ export const uselistMenus = () => {
         {
           key: 'model_validation',
           title: t('menu.model_validation'),
-          url: '/model-validation',
+          url: 'model-validation',
           icon: 'lucide:package-check',
           items: [
             {
@@ -65,7 +65,7 @@ export const uselistMenus = () => {
         {
           key: 'model_serving',
           title: t('menu.model_serving'),
-          url: '/model-serving',
+          url: 'model-serving',
           icon: 'lucide:server',
           items: [
             {
