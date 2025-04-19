@@ -110,6 +110,7 @@ const _EVENT_TYPES = [
   'on-next',
   'on-set-step',
   'on-confirm-add',
+  'on-confirm',
 ] as const;
 
 type EventType = (typeof _EVENT_TYPES)[number];
@@ -123,7 +124,8 @@ const emit = defineEmits<{
       | 'on-action'
       | 'on-back'
       | 'on-next'
-      | 'on-confirm-add',
+      | 'on-confirm-add'
+      | 'on-confirm',
     value: string | number | boolean,
   ): void;
   (e: 'on-set-step', value: number): void;
@@ -155,16 +157,24 @@ watch(
 
 const onAction = async (action: string) => {
   const name = `on-${action}` as EventType;
-
   if (name === 'on-set-step') {
     emit(name, 0);
   } else {
-    emit(name as Exclude<EventType, 'on-set-step'>, false);
+    console.log('onAction', name);
+    emit(name as Exclude<EventType, 'on-set-step'>, action);
+
+    // Если действие - confirm, также отправляем событие on-confirm
+    if (action === 'confirm') {
+      emit('on-confirm', true);
+    }
   }
 
+  // Автоматически закрываем диалог только для действий cancel и close
+  // Для confirm только отправляем событие, родительский компонент сам решит закрывать диалог или нет
   if (action === 'cancel' || action === 'close') {
     emit('on-close', false);
   }
+  // Удалено автоматическое закрытие для confirm
 };
 
 const onSetStep = async (index: number) => {

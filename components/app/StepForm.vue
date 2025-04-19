@@ -405,5 +405,9 @@ const checkFieldCondition = (field: Field): boolean => {
 
 const onSubmit = form.handleSubmit((values: FormValues) => {
   emit('on-submit', values);
+  const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
+  if (currentStep.value === totalSteps - 1) {
+    emit('on-confirm', values);
+  }
 });
 </script>

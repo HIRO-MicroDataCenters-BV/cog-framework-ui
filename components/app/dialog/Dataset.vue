@@ -81,6 +81,7 @@ watch(
 
 const emit = defineEmits<{
   (e: 'on-close'): void;
+  (e: 'on-confirm'): void;
 }>();
 
 const reviewItems = ref({
@@ -371,6 +372,7 @@ const formSteps = ref([
 ]);
 
 const handleAction = (action: string) => {
+  console.log('handleAction called with action:', action);
   if (action === 'close') {
     emit('on-close');
   } else if (action === 'back') {
@@ -378,6 +380,7 @@ const handleAction = (action: string) => {
   } else if (action === 'next') {
     currentStep.value++;
   } else if (action === 'confirm') {
+    console.log('Нажата кнопка подтверждения, отправляем форму...');
     form.handleSubmit(onSubmit)();
   }
 };
@@ -388,27 +391,32 @@ const onSubmit = async (values: typeof form.values) => {
     const { registerDataset, datasetTableRegister, datasetKafkaRegister } =
       useApi();
     let response;
+    let requestData;
 
     if (values.type === 'file') {
       const files = values.source_settings.dataset_file
         ? [values.source_settings.dataset_file]
         : [];
-      response = await registerDataset({
+      requestData = {
         files,
         name: values.metadata.name,
         dataset_type: '1',
         description: values.metadata.description,
-      });
+      };
+      console.log('Отправка запроса для файлового датасета:', requestData);
+      response = await registerDataset(requestData);
     } else if (values.type === 'table') {
-      response = await datasetTableRegister({
+      requestData = {
         dataset_name: values.metadata.name,
         description: values.metadata.description,
         database_url: values.source_settings.database_url,
         table_name: values.source_settings.table_name,
         selected_fields: values.source_settings.selected_fields,
-      });
+      };
+      console.log('Отправка запроса для табличного датасета:', requestData);
+      response = await datasetTableRegister(requestData);
     } else if (values.type === 'data_stream') {
-      response = await datasetKafkaRegister({
+      requestData = {
         dataset_name: values.metadata.name,
         description: values.metadata.description,
         broker_name: values.source_settings.broker_name,
@@ -416,7 +424,9 @@ const onSubmit = async (values: typeof form.values) => {
         broker_port: values.source_settings.broker_port,
         topic_name: values.source_settings.topic_name,
         topic_schema: values.source_settings.topic_schema,
-      });
+      };
+      console.log('Отправка запроса для потокового датасета:', requestData);
+      response = await datasetKafkaRegister(requestData);
     }
 
     if (response?.data) {
