@@ -1,7 +1,7 @@
 <template>
   <div class="flex-1 pl-4">
     <div class="mb-8">
-      <form @submit="onSubmit">
+      <form>
         <template
           v-for="(item, stepIndex) in Array.isArray(steps) ? steps : []"
           :key="stepIndex"
@@ -289,8 +289,6 @@ const props = withDefaults(defineProps<StepFormProps>(), {
     back: 'Back',
     next: 'Next',
     save: 'Save',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
   }),
 });
 
@@ -298,16 +296,32 @@ const emit = defineEmits<{
   'on-action': [action: ActionType, values: FormValues];
   'on-submit': [values: FormValues];
   'on-step-change': [step: number, actions: ActionType[]];
-  'on-confirm': [values: FormValues];
   'update-actions': [actions: ActionType[]];
 }>();
 
 const currentStep = ref(props.step);
 
+const isLastStep = ref(false)
+
 const form = useForm<FormValues>({
   validationSchema: props.validationSchema,
   initialValues: props.initialValues || {},
 });
+
+const handleAction = (action: ActionType) => {
+  
+  if (action === 'next') {
+    currentStep.value++;
+    emit('on-step-change', currentStep.value, currentActions.value);
+  } else if (action === 'back' && currentStep.value > 0) {
+    currentStep.value--;
+    emit('on-step-change', currentStep.value, currentActions.value);
+  } else if (action === 'submit') {
+    onSubmit();
+  }
+
+  emit('on-action', action, form.values);
+};
 
 const currentActions = computed(() => {
   const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
@@ -315,7 +329,7 @@ const currentActions = computed(() => {
   if (currentStep.value === 0) {
     return ['next'];
   } else if (currentStep.value === totalSteps - 1) {
-    return ['back', 'confirm'];
+    return ['back', 'submit'];
   } else {
     return ['back', 'next'];
   }
@@ -331,8 +345,9 @@ watch(
 
 watch(
   currentStep,
-  (step) => {
-    emit('on-step-change', step, currentActions.value);
+  (value) => {
+    emit('on-step-change', value, currentActions.value);
+    isLastStep.value = (value === props.steps.length)
   },
   { immediate: true },
 );
@@ -340,8 +355,22 @@ watch(
 watch(
   () => props.step,
   (value) => {
-    currentStep.value = value;
+    if (value !== undefined && value !== currentStep.value) {
+      currentStep.value = value;
+      
+    }
   },
+  { immediate: true }
+);
+
+watch(
+  () => isLastStep.value,
+  (value) => {
+    if (value) {
+      onSubmit();
+    }
+  },
+  { immediate: true },
 );
 
 const reviewData = computed((): ReviewTableItem[] => {
@@ -363,7 +392,7 @@ const reviewData = computed((): ReviewTableItem[] => {
       valuePath: 'metadata.description',
     },
   ];
-  reviewList = [...reviewList, ...props.reviewItems[type as string]];
+  reviewList = [...reviewList, ...(props.reviewItems[type as string] || [])];
 
   return reviewList.map((item) => {
     return {
@@ -404,10 +433,9 @@ const checkFieldCondition = (field: Field): boolean => {
 };
 
 const onSubmit = form.handleSubmit((values: FormValues) => {
+  console.log('Form values:', values);
   emit('on-submit', values);
-  const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
-  if (currentStep.value === totalSteps - 1) {
-    emit('on-confirm', values);
-  }
 });
+
+
 </script>

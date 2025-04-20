@@ -89,6 +89,7 @@ export default defineI18nConfig(() => ({
         select: 'Select',
         test_connection: 'Test Connection',
         confirm_add: 'Confirm & Add',
+        submit: 'Submit',
       },
       stat: {
         total: 'Total',

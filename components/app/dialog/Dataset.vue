@@ -7,6 +7,7 @@
     :step="currentStep"
     @on-close="handleClose"
     @on-action="handleAction"
+    @on-set-step="handleSetStep"
   >
     <StepForm
       :title="t('title.add_dataset')"
@@ -17,7 +18,6 @@
       :action-labels="actionLabels"
       :step="currentStep"
       @on-submit="onSubmit"
-      @on-confirm="onSubmit"
       @on-step-change="handleStepChange"
       @update-actions="(actions) => (stepFormActions = actions)"
     />
@@ -27,6 +27,7 @@
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
 import StepForm from '@/components/app/StepForm.vue';
+import type { ActionType, FormValues } from '@/types/form';
 import {
   datasetFormSchema,
   datasetFormInitialValues,
@@ -61,7 +62,7 @@ watch(
 
 const emit = defineEmits<{
   (e: 'on-close'): void;
-  (e: 'on-confirm'): void;
+  (e: 'on-confirm', value: string | number | boolean): void;
 }>();
 
 const reviewItems = ref(datasetReviewItems);
@@ -83,35 +84,29 @@ const handleClose = async () => {
   return true;
 };
 
-const handleStepChange = (step: number, actions: string[]) => {
+const handleSetStep = (step: number, actions: ActionType[]) => {
   currentStep.value = step;
   stepFormActions.value = actions;
 };
 
 const handleAction = (action: string | number | boolean) => {
+  console.log('action', action);
   if (action === 'close') {
     handleClose();
-  } else if (action === 'confirm') {
-    form.handleSubmit(onSubmit)();
-  } else if (
-    action === 'save' &&
-    currentStep.value === formNavigation.length - 1
-  ) {
-    form.handleSubmit(onSubmit)();
+  } else {
+    console.log('currentStep.value', currentStep.value);
   }
 };
 
-const onSubmit = async (values: typeof form.values | undefined) => {
-  if (!values) {
-    return undefined;
-  }
+const onSubmit = async (values: FormValues) => {
+  console.log('onSubmit values);
   try {
-    const res = await submitDatasetForm(values);
+    const response = await submitDatasetForm(values);
     emit('on-close');
-    return res;
+    return response;
   } catch (error) {
     if (!(error instanceof Error && error.message.includes('validation'))) {
-      currentStep.value = 0;
+      //currentStep.value = 0;
     }
     return undefined;
   }

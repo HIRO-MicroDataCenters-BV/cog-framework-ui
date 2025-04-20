@@ -11,9 +11,7 @@ export type ActionType =
   | 'close'
   | 'back'
   | 'next'
-  | 'save'
-  | 'cancel'
-  | 'confirm'
+  | 'submit'
   | string;
 
 export interface FieldOption {

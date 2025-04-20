@@ -197,13 +197,11 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
     },
   ]);
 
-// Навигация для формы
 export const datasetFormNavigation = ['type', 'metadata', 'source_settings'];
 
-// Метки действий
 export const getDatasetActionLabels = (t: (key: string) => string) => ({
   close: t('action.close'),
   back: t('action.back'),
   next: t('action.next'),
-  confirm: t('action.confirm_add'),
+  submit: t('action.submit'),
 });

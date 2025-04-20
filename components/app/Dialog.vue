@@ -154,15 +154,18 @@ watch(
 
 const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
-
   switch (action) {
     case 'back':
-      emit('on-set-step', step.value - 1);
       step.value--;
-    case 'next':
-      emit('on-set-step', step.value + 1);
-      step.value++;
+      emit('on-set-step', step.value);
+      emit('on-action', action);
       break;
+    case 'next':
+      step.value++;
+      emit('on-set-step', step.value);
+      emit('on-action', action);
+      break;
+    
     default:
       emit(name, name === 'on-set-step' ? 0 : action);
       break;
@@ -193,13 +196,6 @@ const variantByActionType = (name: string) => {
   }
 };
 const typeByActionType = (name: string, currentStep = step.value) => {
-  if (
-    (name === 'save' || name === 'confirm') &&
-    currentStep === props.navigation.length - 1
-  ) {
-    return 'submit';
-  }
-
   switch (name) {
     case 'sumbit':
       return 'submit';
@@ -211,9 +207,10 @@ const typeByActionType = (name: string, currentStep = step.value) => {
 
 <style>
 .navigation-item {
-  @apply font-light items-center;
+  @apply items-center;
+  font-weight: 300;
 }
 .navigation-item[data-active='true'] {
-  @apply font-medium;
+  font-weight: 700;
 }
 </style>
