@@ -99,7 +99,7 @@ const handleAction = (action: string | number | boolean) => {
 };
 
 const onSubmit = async (values: FormValues) => {
-  console.log('onSubmit values);
+  console.log('onSubmit', values);
   try {
     const response = await submitDatasetForm(values);
     emit('on-close');
