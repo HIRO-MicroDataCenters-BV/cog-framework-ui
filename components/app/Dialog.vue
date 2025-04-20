@@ -154,18 +154,16 @@ watch(
 
 const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
+  emit('on-action', action);
   switch (action) {
     case 'back':
       step.value--;
       emit('on-set-step', step.value);
-      emit('on-action', action);
       break;
     case 'next':
       step.value++;
       emit('on-set-step', step.value);
-      emit('on-action', action);
       break;
-    
     default:
       emit(name, name === 'on-set-step' ? 0 : action);
       break;

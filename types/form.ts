@@ -67,6 +67,7 @@ export interface StepFormProps {
   title?: string;
   step?: number;
   steps: Step[];
+  isSubmit?: boolean;
   validationSchema: unknown;
   initialValues?: Partial<FormValues>;
   actionLabels?: Record<string, string>;

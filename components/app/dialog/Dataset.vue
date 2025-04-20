@@ -17,6 +17,7 @@
       :review-items="reviewItems"
       :action-labels="actionLabels"
       :step="currentStep"
+      :is-submit="isSubmit"
       @on-submit="onSubmit"
       @on-step-change="handleStepChange"
       @update-actions="(actions) => (stepFormActions = actions)"
@@ -53,6 +54,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const currentStep = ref(0);
 const stepFormActions = ref<string[]>([]);
+const isSubmit = ref(false);
 watch(
   () => props.open,
   (value) => {
@@ -90,16 +92,15 @@ const handleSetStep = (step: number, actions: ActionType[]) => {
 };
 
 const handleAction = (action: string | number | boolean) => {
-  console.log('action', action);
+  isSubmit.value = false;
   if (action === 'close') {
     handleClose();
-  } else {
-    console.log('currentStep.value', currentStep.value);
+  } else if(action === 'submit') {
+    isSubmit.value = true;
   }
 };
 
 const onSubmit = async (values: FormValues) => {
-  console.log('onSubmit', values);
   try {
     const response = await submitDatasetForm(values);
     emit('on-close');

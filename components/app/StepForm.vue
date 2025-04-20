@@ -282,6 +282,7 @@ const props = withDefaults(defineProps<StepFormProps>(), {
   title: '',
   step: 0,
   showReviewStep: true,
+  isSubmit: false,
   initialValues: () => ({}),
   reviewItems: () => ({}) as ReviewItemsByType,
   actionLabels: () => ({
@@ -298,10 +299,7 @@ const emit = defineEmits<{
   'on-step-change': [step: number, actions: ActionType[]];
   'update-actions': [actions: ActionType[]];
 }>();
-
 const currentStep = ref(props.step);
-
-const isLastStep = ref(false)
 
 const form = useForm<FormValues>({
   validationSchema: props.validationSchema,
@@ -347,7 +345,16 @@ watch(
   currentStep,
   (value) => {
     emit('on-step-change', value, currentActions.value);
-    isLastStep.value = (value === props.steps.length)
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.isSubmit,
+  (value) => {
+    if (value) {
+      onSubmit();
+    }
   },
   { immediate: true },
 );
@@ -357,20 +364,9 @@ watch(
   (value) => {
     if (value !== undefined && value !== currentStep.value) {
       currentStep.value = value;
-      
     }
   },
   { immediate: true }
-);
-
-watch(
-  () => isLastStep.value,
-  (value) => {
-    if (value) {
-      onSubmit();
-    }
-  },
-  { immediate: true },
 );
 
 const reviewData = computed((): ReviewTableItem[] => {
