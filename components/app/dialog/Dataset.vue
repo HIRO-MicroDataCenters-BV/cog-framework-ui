@@ -69,7 +69,7 @@ const formSchema = datasetFormSchema;
 
 const form = useForm({
   validationSchema: formSchema,
-  initialValues: datasetFormInitialValues,
+  //initialValues: datasetFormInitialValues,
 });
 
 const formNavigation = datasetFormNavigation;
@@ -88,7 +88,7 @@ const handleStepChange = (step: number, actions: string[]) => {
   stepFormActions.value = actions;
 };
 
-const handleAction = (action: string) => {
+const handleAction = (action: string | number | boolean) => {
   if (action === 'close') {
     handleClose();
   } else if (action === 'confirm') {
@@ -102,10 +102,13 @@ const handleAction = (action: string) => {
 };
 
 const onSubmit = async (values: typeof form.values | undefined) => {
+  if (!values) {
+    return undefined;
+  }
   try {
-    const response = await submitDatasetForm(values);
+    const res = await submitDatasetForm(values);
     emit('on-close');
-    return response;
+    return res;
   } catch (error) {
     if (!(error instanceof Error && error.message.includes('validation'))) {
       currentStep.value = 0;
