@@ -10,7 +10,11 @@ export const apiResponseSchema = z.object({
   status_code: z.number().optional(),
   message: z.string().optional(),
   data: z
-    .union([z.array(z.object({}).passthrough()), z.object({}).passthrough()])
+    .union([
+      z.array(z.object({}).passthrough()),
+      z.object({}).passthrough(),
+      z.null(),
+    ])
     .optional(),
   pagination: paginationSchema.optional(),
 });

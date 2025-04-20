@@ -61,7 +61,7 @@
                     : props.actions"
                   :key="item"
                   :variant="variantByActionType(item)"
-                  :type="typeByActionType(item)"
+                  :type="typeByActionType(item, step)"
                   @click="onAction(item)"
                 >
                   {{ t(`action.${item}`) }}
@@ -104,13 +104,11 @@ const props = withDefaults(
 const _EVENT_TYPES = [
   'on-close',
   'on-save',
-  'on-delete',
   'on-action',
   'on-back',
   'on-next',
   'on-set-step',
-  'on-confirm-add',
-  'on-confirm',
+  'on-submit',
 ] as const;
 
 type EventType = (typeof _EVENT_TYPES)[number];
@@ -120,12 +118,11 @@ const emit = defineEmits<{
     e:
       | 'on-close'
       | 'on-save'
-      | 'on-delete'
       | 'on-action'
       | 'on-back'
       | 'on-next'
-      | 'on-confirm-add'
-      | 'on-confirm',
+      | 'on-set-step'
+      | 'on-submit',
     value: string | number | boolean,
   ): void;
   (e: 'on-set-step', value: number): void;
@@ -155,32 +152,28 @@ watch(
   },
 );
 
-const onAction = async (action: string) => {
+const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
-  if (name === 'on-set-step') {
-    emit(name, 0);
-  } else {
-    console.log('onAction', name);
-    emit(name as Exclude<EventType, 'on-set-step'>, action);
 
-    // Если действие - confirm, также отправляем событие on-confirm
-    if (action === 'confirm') {
-      emit('on-confirm', true);
-    }
+  switch (action) {
+    case 'back':
+      emit('on-set-step', step.value - 1);
+      step.value--;
+    case 'next':
+      emit('on-set-step', step.value + 1);
+      step.value++;
+      break;
+    default:
+      emit(name, name === 'on-set-step' ? 0 : action);
+      break;
   }
-
-  // Автоматически закрываем диалог только для действий cancel и close
-  // Для confirm только отправляем событие, родительский компонент сам решит закрывать диалог или нет
-  if (action === 'cancel' || action === 'close') {
-    emit('on-close', false);
-  }
-  // Удалено автоматическое закрытие для confirm
 };
 
 const onSetStep = async (index: number) => {
   emit('on-set-step', index);
   step.value = index;
 };
+
 const onClose = async () => {
   emit('on-close', false);
   return true;
@@ -189,21 +182,26 @@ const onClose = async () => {
 const variantByActionType = (name: string) => {
   switch (name) {
     case 'close':
-      return 'outline';
     case 'back':
-      return 'outline';
     case 'cancel':
       return 'outline';
-    case 'delete':
-      return 'destructive';
+    case 'next':
+    case 'submit':
+      return 'default';
     default:
       return 'default';
   }
 };
+const typeByActionType = (name: string, currentStep = step.value) => {
+  if (
+    (name === 'save' || name === 'confirm') &&
+    currentStep === props.navigation.length - 1
+  ) {
+    return 'submit';
+  }
 
-const typeByActionType = (name: string) => {
   switch (name) {
-    case 'save':
+    case 'sumbit':
       return 'submit';
     default:
       return 'button';
@@ -212,12 +210,10 @@ const typeByActionType = (name: string) => {
 </script>
 
 <style>
-/*
 .navigation-item {
   @apply font-light items-center;
 }
 .navigation-item[data-active='true'] {
   @apply font-medium;
 }
-  */
 </style>

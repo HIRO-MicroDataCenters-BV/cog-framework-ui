@@ -44,7 +44,7 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast !== false; // По умолчанию показываем уведомления
+    const showToast = options?.showToast !== false;
     const { success, error } = useToast();
 
     const opts: RequestInit = {
@@ -72,8 +72,7 @@ export const useApi = () => {
           ? apiErrorResponseSchema.parse(data)
           : apiResponseSchema.parse(data);
 
-      // Показываем уведомление об успехе для не-GET запросов
-      if (showToast && method !== 'GET' && res.ok) {
+      if (showToast && method !== 'GET' && res.ok && result) {
         success('success.operation_completed', { id: result?.data?.id });
       }
 
