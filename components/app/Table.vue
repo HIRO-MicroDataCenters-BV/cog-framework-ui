@@ -118,7 +118,6 @@ const table = useVueTable({
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
   manualPagination: true,
   globalFilterFn: (row, columnId) => {
-    // Получаем информацию о фильтре из состояния
     const searchFilter = columnFilters.value.find(
       (filter) => filter.id === 'search',
     ) as SearchFilter | undefined;

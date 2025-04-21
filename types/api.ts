@@ -16,7 +16,7 @@ export interface TableDatasetValues extends FormValues {
     description?: string;
   };
   source_settings?: {
-    database_url?: string;
+    db_url?: string;
     table_name?: string;
     selected_fields?: string;
   };
@@ -48,19 +48,21 @@ export interface DatasetFormValues extends FormValues {
 export interface FileDatasetRegisterParams {
   files: File[];
   name: string;
-  dataset_type: string;
+  dataset_type: number;
   description: string;
 }
 
 export interface TableDatasetRegisterParams {
-  dataset_name: string;
+  dataset_type: number;
+  name: string;
   description: string;
-  database_url: string;
+  db_url: string;
   table_name: string;
   selected_fields: string;
 }
 
 export interface StreamDatasetRegisterParams {
+  dataset_type: number;
   dataset_name: string;
   description: string;
   broker_name: string;

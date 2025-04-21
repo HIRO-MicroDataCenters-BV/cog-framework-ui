@@ -81,9 +81,9 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'text',
-              name: 'source_settings.database_url',
-              label: t('label.database_url'),
-              placeholder: t('placeholder.database_url'),
+              name: 'source_settings.db_url',
+              label: t('label.db_url'),
+              placeholder: t('placeholder.db_url'),
               condition: {
                 field: 'type',
                 operator: 'eq',

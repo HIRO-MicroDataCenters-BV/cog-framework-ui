@@ -15,7 +15,7 @@ export const datasetFormSchema = toTypedSchema(
       broker_port: z.number().optional(),
       topic_name: z.string().optional(),
       topic_schema: z.string().optional(),
-      database_url: z.string().optional(),
+      db_url: z.string().optional(),
       table_name: z.string().optional(),
       selected_fields: z.string().optional(),
     }),
@@ -47,7 +47,7 @@ export const datasetReviewItems = {
   table: [
     {
       label: 'db_url',
-      valuePath: 'source_settings.database_url',
+      valuePath: 'source_settings.db_url',
     },
     {
       label: 'table_name',

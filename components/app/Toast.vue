@@ -64,8 +64,6 @@ const showWarning = (message: string, data?: Record<string, unknown>) => {
     duration: 4000,
   });
 };
-
-// Экспортируем функции для использования в других компонентах
 defineExpose({
   success: showSuccess,
   error: showError,

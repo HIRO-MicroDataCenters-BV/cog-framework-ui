@@ -19,7 +19,6 @@
       :step="currentStep"
       :is-submit="isSubmit"
       @on-submit="onSubmit"
-      @on-step-change="handleStepChange"
       @update-actions="(actions) => (stepFormActions = actions)"
     />
   </AppDialog>
@@ -86,21 +85,22 @@ const handleClose = async () => {
   return true;
 };
 
-const handleSetStep = (step: number, actions: ActionType[]) => {
+const handleSetStep = (step: number) => {
   currentStep.value = step;
-  stepFormActions.value = actions;
 };
 
 const handleAction = (action: string | number | boolean) => {
+  console.log('handleAction', action);
   isSubmit.value = false;
   if (action === 'close') {
     handleClose();
-  } else if(action === 'submit') {
+  } else if (action === 'submit') {
     isSubmit.value = true;
   }
 };
 
 const onSubmit = async (values: FormValues) => {
+  console.log('onSubmit', values);
   try {
     const response = await submitDatasetForm(values);
     emit('on-close');
