@@ -3,7 +3,7 @@ import type { ToastData, ToastError } from '~/types/toast.types';
 
 export const useToast = () => {
   const { t } = useI18n();
-
+  console.log('useToast');
   const success = (message: string, data?: ToastData) => {
     const translatedMessage = message.startsWith('toast.success.')
       ? t(message, data || {})

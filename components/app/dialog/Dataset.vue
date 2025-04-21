@@ -27,12 +27,11 @@
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
 import StepForm from '@/components/app/StepForm.vue';
-import type { ActionType, FormValues } from '@/types/form';
+import type { FormValues } from '@/types/form';
 import {
   datasetFormSchema,
-  datasetFormInitialValues,
   datasetReviewItems,
-} from '@/components/forms/dataset/schema';
+} from '@/schemas/dataset-form.schema';
 import {
   getDatasetFormSteps,
   datasetFormNavigation,
@@ -107,8 +106,7 @@ const onSubmit = async (values: FormValues) => {
     emit('on-close');
 
     return response;
-  } catch (error) {
-    console.log(error);
+  } catch (_) {
     currentStep.value = 0;
     return undefined;
   }
