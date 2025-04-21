@@ -162,6 +162,9 @@ export default defineI18nConfig(() => ({
         version: 'Version',
         last_modified_time: 'Last Modified',
         register_date: 'Registred Date',
+        dataset_name: 'Dataset Name',
+        data_source_type: 'Data Source Type',
+        train_and_inference_type: 'Train and Inference Type',
       },
       zodI18n: {
         validations: {

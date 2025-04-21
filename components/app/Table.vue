@@ -400,7 +400,7 @@ onMounted(() => {
     </div>
     <!-- end table filters -->
     <div class="flex-grow overflow-auto flex flex-col">
-      <Table class="h-full border-b">
+      <Table class="border-b">
         <TableHeader class="sticky top-0 bg-sidebar-background">
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
