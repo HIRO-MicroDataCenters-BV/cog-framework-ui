@@ -69,7 +69,7 @@ const emit = defineEmits<{
 const reviewItems = ref(datasetReviewItems);
 const formSchema = datasetFormSchema;
 
-const form = useForm({
+const form = useForm<FormValues>({
   validationSchema: formSchema,
   //initialValues: datasetFormInitialValues,
 });
@@ -101,14 +101,15 @@ const handleAction = (action: string | number | boolean) => {
 
 const onSubmit = async (values: FormValues) => {
   console.log('onSubmit', values);
+  isSubmit.value = false;
   try {
     const response = await submitDatasetForm(values);
     emit('on-close');
+
     return response;
   } catch (error) {
-    if (!(error instanceof Error && error.message.includes('validation'))) {
-      //currentStep.value = 0;
-    }
+    console.log(error);
+    currentStep.value = 0;
     return undefined;
   }
 };

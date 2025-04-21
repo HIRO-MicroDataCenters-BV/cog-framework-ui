@@ -197,7 +197,12 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
     },
   ]);
 
-export const datasetFormNavigation = ['type', 'metadata', 'source_settings'];
+export const datasetFormNavigation = [
+  'type',
+  'metadata',
+  'source_settings',
+  'review',
+];
 
 export const getDatasetActionLabels = (t: (key: string) => string) => ({
   close: t('action.close'),
