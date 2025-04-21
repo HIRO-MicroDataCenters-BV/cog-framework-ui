@@ -12,7 +12,6 @@ export const useApi = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
-  console.log('base', baseUrl);
 
   /**
    * Function to get headers
@@ -45,7 +44,7 @@ export const useApi = () => {
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast !== false;
-    //const { success, error } = useToast();
+    const toaster = useToaster();
 
     const opts: RequestInit = {
       method,
@@ -62,7 +61,7 @@ export const useApi = () => {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
-            //if (showToast) error('error.unauthorized');
+            if (showToast) toaster.show('error', 'unauthorized');
             return null;
         }
       }
@@ -71,15 +70,10 @@ export const useApi = () => {
         res.status >= 400 && res.status < 600
           ? apiErrorResponseSchema.parse(data)
           : apiResponseSchema.parse(data);
-      /*
-      if (showToast && method !== 'GET' && res.ok && result) {
-        success('success.operation_completed', { id: result?.data?.id });
-      }
-    */
       return result;
     } catch (err) {
       console.error('Fetch error:', err);
-      //if (showToast) error(err, 'error.connection_error');
+      if (showToast) toaster.show('error', 'error.connection_error');
       throw err;
     }
   };

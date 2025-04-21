@@ -6,7 +6,27 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       message: {
+        no_data: 'No data available',
         loading: 'Loading...',
+        success: {
+          dataset_added: 'Dataset {name} successfully added',
+          model_added: 'Model successfully added',
+          operation_completed: 'Operation completed successfully',
+          data_saved: 'Data saved successfully',
+        },
+        error: {
+          unknown: 'An unknown error occurred',
+          dataset_add_failed: 'Failed to add dataset',
+          model_add_failed: 'Failed to add model',
+          connection_error: 'Connection error',
+          unauthorized: 'Unauthorized',
+        },
+        info: {
+          operation_in_progress: 'Operation in progress',
+        },
+        warning: {
+          validation_error: 'Please check the form for errors',
+        },
       },
       general: {
         project_name: 'Cognitive Engine',
@@ -166,6 +186,7 @@ export default defineI18nConfig(() => ({
         data_source_type: 'Data Source Type',
         train_and_inference_type: 'Train and Inference Type',
       },
+
       zodI18n: {
         validations: {
           ip: '',

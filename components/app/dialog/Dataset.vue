@@ -37,7 +37,6 @@ import {
   datasetFormNavigation,
   getDatasetActionLabels,
 } from '@/components/forms/dataset/steps';
-import { submitDatasetForm } from '@/components/forms/dataset/handlers';
 
 const { t } = useI18n();
 const props = withDefaults(
@@ -102,6 +101,7 @@ const onSubmit = async (values: FormValues) => {
   console.log('onSubmit', values);
   isSubmit.value = false;
   try {
+    const { submitDatasetForm } = useDatasetForm();
     const response = await submitDatasetForm(values);
     emit('on-close');
 
