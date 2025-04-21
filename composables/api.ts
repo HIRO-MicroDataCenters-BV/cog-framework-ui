@@ -12,7 +12,6 @@ export const useApi = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
-  console.log('base', baseUrl);
 
   /**
    * Function to get headers
@@ -44,8 +43,8 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast !== false; // По умолчанию показываем уведомления
-    const { success, error } = useToast();
+    const showToast = options?.showToast !== false;
+    const toaster = useToaster();
 
     const opts: RequestInit = {
       method,
@@ -62,7 +61,7 @@ export const useApi = () => {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
-            if (showToast) error('error.unauthorized');
+            if (showToast) toaster.show('error', 'unauthorized');
             return null;
         }
       }
@@ -71,16 +70,10 @@ export const useApi = () => {
         res.status >= 400 && res.status < 600
           ? apiErrorResponseSchema.parse(data)
           : apiResponseSchema.parse(data);
-
-      // Показываем уведомление об успехе для не-GET запросов
-      if (showToast && method !== 'GET' && res.ok) {
-        success('success.operation_completed', { id: result?.data?.id });
-      }
-
       return result;
     } catch (err) {
       console.error('Fetch error:', err);
-      if (showToast) error(err, 'error.connection_error');
+      if (showToast) toaster.show('error', 'error.connection_error');
       throw err;
     }
   };
@@ -204,7 +197,7 @@ export const useApi = () => {
       const res = await request(`/datasets?${q}`);
       return res;
     },
-    registerDataset: async ({
+    datasetFileUpdate: async ({
       files,
       name,
       dataset_type,
@@ -212,15 +205,33 @@ export const useApi = () => {
     }: {
       files: File[];
       name: string;
-      dataset_type: string;
+      dataset_type: number;
       description: string;
     }) => {
       const data = new FormData();
       files.forEach((file) => data.append('files', file));
-      data.append('dataset_name', name);
-      data.append('dataset_type', dataset_type);
+      data.append('name', name);
+      data.append('dataset_type', dataset_type.toString());
       data.append('description', description);
-      return request(`/datasets`, 'POST', data);
+      return request(`/datasets/file`, 'PUT', data);
+    },
+    datasetFileRegister: async ({
+      files,
+      name,
+      dataset_type,
+      description,
+    }: {
+      files: File[];
+      name: string;
+      dataset_type: number;
+      description: string;
+    }) => {
+      const data = new FormData();
+      files.forEach((file) => data.append('files', file));
+      data.append('name', name);
+      data.append('dataset_type', dataset_type.toString());
+      data.append('description', description);
+      return request(`/datasets/file`, 'POST', data);
     },
     deleteDataset: async (dataset_id: number) => {
       return request(`/datasets/${dataset_id}`, 'DELETE');
@@ -235,17 +246,18 @@ export const useApi = () => {
       );
     },
     datasetTableUpdate: async (data: unknown) => {
-      return request(`/datasets/table/register`, 'PUT', data);
+      return request(`/datasets/table`, 'PUT', data);
     },
     datasetTableRegister: async (data: unknown) => {
-      return request(`/datasets/table/register`, 'POST', data);
+      console.log('data', data);
+      return request(`/datasets/table`, 'POST', data);
     },
     fetchTables: async (url: string) => {
       const res = await request(`/dataset/tables?url=${url}`);
       return res;
     },
     datasetKafkaRegister: async (data: unknown) => {
-      return request(`/datasets/kafka/register`, 'POST', data);
+      return request(`/datasets/kafka`, 'POST', data);
     },
     fetchKafkaServerDetails: async (server_id: number) => {
       const res = await request(

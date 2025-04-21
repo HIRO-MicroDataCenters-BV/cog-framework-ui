@@ -118,7 +118,6 @@ const table = useVueTable({
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
   manualPagination: true,
   globalFilterFn: (row, columnId) => {
-    // Получаем информацию о фильтре из состояния
     const searchFilter = columnFilters.value.find(
       (filter) => filter.id === 'search',
     ) as SearchFilter | undefined;
@@ -295,109 +294,114 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full">
-    <div>
-      <h1 class="text-lg font-semibold mb-4">
-        {{ t(`subtitle.${props.title}`) }}
-      </h1>
-      <div class="pb-4 flex">
-        <div class="flex-auto">
-          <div class="frame grid gap-4 auto-cols-max grid-flow-col">
-            <div v-for="item in stat" :key="item.key" class="frame-item">
-              <div
-                class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
-              >
-                {{ item.label }}
-              </div>
-              <div class="frame-item-content flex items-center">
-                <Icon :name="item.icon" :class="`h-4 w-4 mr-2 ${item.color}`" />
-                <span class="stat-value">{{ item.value }}</span>
+  <div class="w-full flex flex-col" style="height: calc(100vh - 80px)">
+    <div class="p-4">
+      <div>
+        <h1 class="text-lg font-semibold mb-4">
+          {{ t(`subtitle.${props.title}`) }}
+        </h1>
+        <div class="pb-4 flex">
+          <div class="flex-auto">
+            <div class="frame grid gap-4 auto-cols-max grid-flow-col">
+              <div v-for="item in stat" :key="item.key" class="frame-item">
+                <div
+                  class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
+                >
+                  {{ item.label }}
+                </div>
+                <div class="frame-item-content flex items-center">
+                  <Icon
+                    :name="item.icon"
+                    :class="`h-4 w-4 mr-2 ${item.color}`"
+                  />
+                  <span class="stat-value">{{ item.value }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="flex gap-6 items-center">
-          <div class="flex gap-2">
-            <Switch
-              :model-value="hasTableFilters"
-              @update:model-value="toggleTableFilters"
-            />
-            <Label class="flex items-center">{{ t('label.filters') }}</Label>
+          <div class="flex gap-6 items-center">
+            <div class="flex gap-2">
+              <Switch
+                :model-value="hasTableFilters"
+                @update:model-value="toggleTableFilters"
+              />
+              <Label class="flex items-center">{{ t('label.filters') }}</Label>
+            </div>
+            <Button @click="() => addDataSet()">{{
+              t('action.add_dataset')
+            }}</Button>
           </div>
-          <Button @click="() => addDataSet()">{{
-            t('action.add_dataset')
-          }}</Button>
         </div>
       </div>
-    </div>
 
-    <!-- table filters -->
-    <div v-if="hasTableFilters">
-      <Separator />
-      <div class="flex gap-2 items-center py-4">
-        <div class="flex-auto flex">
-          <div class="flex gap-2">
-            <Input
-              v-model="searchValue"
-              class="w-64"
-              type="search"
-              :placeholder="t('placeholder.search')"
-              @update:model-value="applySearchFilter"
-            />
+      <!-- table filters -->
+      <div v-if="hasTableFilters">
+        <Separator />
+        <div class="flex gap-2 items-center py-4">
+          <div class="flex-auto flex">
+            <div class="flex gap-2">
+              <Input
+                v-model="searchValue"
+                class="w-64"
+                type="search"
+                :placeholder="t('placeholder.search')"
+                @update:model-value="applySearchFilter"
+              />
 
-            <Select
-              v-model="selectedFilterColumn"
-              @update:model-value="applySearchFilter"
-            >
-              <SelectTrigger class="w-[180px]">
-                <SelectValue :placeholder="t('placeholder.select_filter')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
-                  <SelectItem value="all"
-                    >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
-                  >
-                  <SelectItem
-                    v-for="column in table
-                      .getAllColumns()
-                      .filter((column) => column.getCanHide())"
-                    :key="column.id"
-                    :value="column.id"
-                  >
-                    {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <Tabs default-value="all">
-            <TabsList class="flex">
-              <TabsTrigger
-                v-for="item in tabs.dataset_management"
-                :key="item.key"
-                :value="item.value"
+              <Select
+                v-model="selectedFilterColumn"
+                @update:model-value="applySearchFilter"
               >
-                <div class="flex items-center">
-                  <Icon
-                    v-if="item.icon"
-                    :name="item.icon"
-                    class="h-4 w-4 mr-2"
-                  />
-                  <span>{{ item.title }}</span>
-                </div>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+                <SelectTrigger class="w-[180px]">
+                  <SelectValue :placeholder="t('placeholder.select_filter')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
+                    <SelectItem value="all"
+                      >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
+                    >
+                    <SelectItem
+                      v-for="column in table
+                        .getAllColumns()
+                        .filter((column) => column.getCanHide())"
+                      :key="column.id"
+                      :value="column.id"
+                    >
+                      {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <Tabs default-value="all">
+              <TabsList class="flex">
+                <TabsTrigger
+                  v-for="item in tabs.dataset_management"
+                  :key="item.key"
+                  :value="item.value"
+                >
+                  <div class="flex items-center">
+                    <Icon
+                      v-if="item.icon"
+                      :name="item.icon"
+                      class="h-4 w-4 mr-2"
+                    />
+                    <span>{{ item.title }}</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
     </div>
     <!-- end table filters -->
-    <div class="rounded-md border">
-      <Table>
-        <TableHeader>
+    <div class="flex-grow overflow-auto flex flex-col">
+      <Table class="border-b">
+        <TableHeader class="sticky top-0 bg-sidebar-background">
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
@@ -439,7 +443,9 @@ onMounted(() => {
       </Table>
     </div>
 
-    <div class="flex items-center justify-end space-x-2 py-4">
+    <div
+      class="flex items-center justify-end space-x-2 py-4 p-4 bg-sidebar-background sticky bottom-0"
+    >
       <div class="flex-1 text-sm text-muted-foreground">
         {{ table.getFilteredSelectedRowModel().rows.length }}
         {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}

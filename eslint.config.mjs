@@ -4,7 +4,6 @@ import prettierConfig from 'eslint-config-prettier';
 import withNuxt from './.nuxt/eslint.config.mjs';
 
 export default withNuxt(
-  // Основная конфигурация ESLint
   {
     plugins: {
       prettier: prettierPlugin,
@@ -25,6 +24,5 @@ export default withNuxt(
       '@typescript-eslint/no-unused-vars': 'off',
     },
   },
-  // Добавляем конфигурацию Prettier как отдельный элемент массива
   prettierConfig,
 );

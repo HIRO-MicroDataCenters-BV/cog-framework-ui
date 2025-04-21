@@ -6,7 +6,27 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       message: {
+        no_data: 'No data available',
         loading: 'Loading...',
+        success: {
+          dataset_added: 'Dataset {name} successfully added',
+          model_added: 'Model successfully added',
+          operation_completed: 'Operation completed successfully',
+          data_saved: 'Data saved successfully',
+        },
+        error: {
+          unknown: 'An unknown error occurred',
+          dataset_add_failed: 'Failed to add dataset',
+          model_add_failed: 'Failed to add model',
+          connection_error: 'Connection error',
+          unauthorized: 'Unauthorized',
+        },
+        info: {
+          operation_in_progress: 'Operation in progress',
+        },
+        warning: {
+          validation_error: 'Please check the form for errors',
+        },
       },
       general: {
         project_name: 'Cognitive Engine',
@@ -44,11 +64,10 @@ export default defineI18nConfig(() => ({
         table: 'Table',
         data_stream: 'Data Stream',
         dataset_file: 'Dataset File',
-        database_url: 'Database URL',
+        db_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Selected Fields',
         fields: 'Fields',
-        db_url: 'DB URL',
         data_source: 'Data Source',
       },
       label_subtitle: {
@@ -66,7 +85,7 @@ export default defineI18nConfig(() => ({
         topic_name: 'Topic Name',
         topic_schema: 'Topic Schema',
         browse: 'Browse...',
-        database_url: 'Database URL',
+        db_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Enter field, separated by commas',
         select_filter: 'Select Filter',
@@ -89,6 +108,7 @@ export default defineI18nConfig(() => ({
         select: 'Select',
         test_connection: 'Test Connection',
         confirm_add: 'Confirm & Add',
+        submit: 'Submit',
       },
       stat: {
         total: 'Total',
@@ -162,7 +182,11 @@ export default defineI18nConfig(() => ({
         version: 'Version',
         last_modified_time: 'Last Modified',
         register_date: 'Registred Date',
+        dataset_name: 'Dataset Name',
+        data_source_type: 'Data Source Type',
+        train_and_inference_type: 'Train and Inference Type',
       },
+
       zodI18n: {
         validations: {
           ip: '',

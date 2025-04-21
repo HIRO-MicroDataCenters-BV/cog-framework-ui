@@ -61,7 +61,7 @@
                     : props.actions"
                   :key="item"
                   :variant="variantByActionType(item)"
-                  :type="typeByActionType(item)"
+                  :type="typeByActionType(item, step)"
                   @click="onAction(item)"
                 >
                   {{ t(`action.${item}`) }}
@@ -104,12 +104,11 @@ const props = withDefaults(
 const _EVENT_TYPES = [
   'on-close',
   'on-save',
-  'on-delete',
   'on-action',
   'on-back',
   'on-next',
   'on-set-step',
-  'on-confirm-add',
+  'on-submit',
 ] as const;
 
 type EventType = (typeof _EVENT_TYPES)[number];
@@ -119,11 +118,11 @@ const emit = defineEmits<{
     e:
       | 'on-close'
       | 'on-save'
-      | 'on-delete'
       | 'on-action'
       | 'on-back'
       | 'on-next'
-      | 'on-confirm-add',
+      | 'on-set-step'
+      | 'on-submit',
     value: string | number | boolean,
   ): void;
   (e: 'on-set-step', value: number): void;
@@ -153,17 +152,21 @@ watch(
   },
 );
 
-const onAction = async (action: string) => {
+const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
-
-  if (name === 'on-set-step') {
-    emit(name, 0);
-  } else {
-    emit(name as Exclude<EventType, 'on-set-step'>, false);
-  }
-
-  if (action === 'cancel' || action === 'close') {
-    emit('on-close', false);
+  emit('on-action', action);
+  switch (action) {
+    case 'back':
+      step.value--;
+      emit('on-set-step', step.value);
+      break;
+    case 'next':
+      step.value++;
+      emit('on-set-step', step.value);
+      break;
+    default:
+      emit(name, name === 'on-set-step' ? 0 : action);
+      break;
   }
 };
 
@@ -171,6 +174,7 @@ const onSetStep = async (index: number) => {
   emit('on-set-step', index);
   step.value = index;
 };
+
 const onClose = async () => {
   emit('on-close', false);
   return true;
@@ -179,21 +183,19 @@ const onClose = async () => {
 const variantByActionType = (name: string) => {
   switch (name) {
     case 'close':
-      return 'outline';
     case 'back':
-      return 'outline';
     case 'cancel':
       return 'outline';
-    case 'delete':
-      return 'destructive';
+    case 'next':
+    case 'submit':
+      return 'default';
     default:
       return 'default';
   }
 };
-
-const typeByActionType = (name: string) => {
+const typeByActionType = (name: string, currentStep = step.value) => {
   switch (name) {
-    case 'save':
+    case 'sumbit':
       return 'submit';
     default:
       return 'button';
@@ -202,12 +204,11 @@ const typeByActionType = (name: string) => {
 </script>
 
 <style>
-/*
 .navigation-item {
-  @apply font-light items-center;
+  @apply items-center;
+  font-weight: 300;
 }
 .navigation-item[data-active='true'] {
-  @apply font-medium;
+  font-weight: 700;
 }
-  */
 </style>

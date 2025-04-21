@@ -7,14 +7,7 @@ export type FieldType =
   | 'file'
   | 'number';
 
-export type ActionType =
-  | 'close'
-  | 'back'
-  | 'next'
-  | 'save'
-  | 'cancel'
-  | 'confirm'
-  | string;
+export type ActionType = 'close' | 'back' | 'next' | 'submit' | string;
 
 export interface FieldOption {
   value: string | number;
@@ -69,6 +62,7 @@ export interface StepFormProps {
   title?: string;
   step?: number;
   steps: Step[];
+  isSubmit?: boolean;
   validationSchema: unknown;
   initialValues?: Partial<FormValues>;
   actionLabels?: Record<string, string>;

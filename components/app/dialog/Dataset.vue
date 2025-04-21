@@ -5,31 +5,9 @@
     :step-form-actions="stepFormActions"
     :navigation="formNavigation"
     :step="currentStep"
-    @on-close="
-      async () => {
-        await emit('on-close');
-        currentStep = 0;
-        return true;
-      }
-    "
-    @on-next="
-      async () => {
-        currentStep++;
-        return true;
-      }
-    "
-    @on-back="
-      async () => {
-        currentStep--;
-        return true;
-      }
-    "
-    @on-set-step="
-      async (index) => {
-        currentStep = index;
-      }
-    "
-    @on-action="(action) => handleAction(action as string)"
+    @on-close="handleClose"
+    @on-action="handleAction"
+    @on-set-step="handleSetStep"
   >
     <StepForm
       :title="t('title.add_dataset')"
@@ -39,13 +17,8 @@
       :review-items="reviewItems"
       :action-labels="actionLabels"
       :step="currentStep"
+      :is-submit="isSubmit"
       @on-submit="onSubmit"
-      @on-step-change="
-        (step, actions) => {
-          currentStep = step;
-          stepFormActions = actions;
-        }
-      "
       @update-actions="(actions) => (stepFormActions = actions)"
     />
   </AppDialog>
@@ -53,11 +26,17 @@
 
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
-import * as z from 'zod';
 import StepForm from '@/components/app/StepForm.vue';
-import { useApi } from '@/composables/api';
-import { useToast } from '@/composables/toast';
+import type { FormValues } from '@/types/form';
+import {
+  datasetFormSchema,
+  datasetReviewItems,
+} from '@/schemas/dataset-form.schema';
+import {
+  getDatasetFormSteps,
+  datasetFormNavigation,
+  getDatasetActionLabels,
+} from '@/components/forms/dataset/steps';
 
 const { t } = useI18n();
 const props = withDefaults(
@@ -72,6 +51,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const currentStep = ref(0);
 const stepFormActions = ref<string[]>([]);
+const isSubmit = ref(false);
 watch(
   () => props.open,
   (value) => {
@@ -81,361 +61,54 @@ watch(
 
 const emit = defineEmits<{
   (e: 'on-close'): void;
+  (e: 'on-confirm', value: string | number | boolean): void;
 }>();
 
-const reviewItems = ref({
-  file: [
-    {
-      label: 'data_source',
-      valuePath: 'source_settings.dataset_file.name',
-    },
-  ],
-  table: [
-    {
-      label: 'db_url',
-      valuePath: 'source_settings.database_url',
-    },
-    {
-      label: 'table_name',
-      valuePath: 'source_settings.table_name',
-    },
-    {
-      label: 'fields',
-      valuePath: 'source_settings.selected_fields',
-    },
-  ],
-  data_stream: [
-    {
-      label: 'broker_name',
-      valuePath: 'source_settings.broker_name',
-    },
-    {
-      label: 'broker_ip_address',
-      valuePath: 'source_settings.broker_ip_address',
-    },
-    {
-      label: 'broker_port',
-      valuePath: 'source_settings.broker_port',
-    },
-    {
-      label: 'topic_name',
-      valuePath: 'source_settings.topic_name',
-    },
-    {
-      label: 'topic_schema',
-      valuePath: 'source_settings.topic_schema',
-    },
-  ],
-});
+const reviewItems = ref(datasetReviewItems);
+const formSchema = datasetFormSchema;
 
-const formSchema = toTypedSchema(
-  z.object({
-    type: z.enum(['file', 'table', 'data_stream']),
-    metadata: z.object({
-      name: z.string(),
-      description: z.string(),
-    }),
-    source_settings: z.object({
-      dataset_file: z.any().nullable().optional(),
-      broker_name: z.string().optional(),
-      broker_ip_address: z.string().ip().optional(),
-      broker_port: z.number().optional(),
-      topic_name: z.string().optional(),
-      topic_schema: z.string().optional(),
-      database_url: z.string().optional(),
-      table_name: z.string().optional(),
-      selected_fields: z.string().optional(),
-    }),
-  }),
-);
-
-const form = useForm({
+const form = useForm<FormValues>({
   validationSchema: formSchema,
-  initialValues: {
-    type: 'file',
-    metadata: {
-      name: '',
-      description: '',
-    },
-    source_settings: {
-      broker_name: '',
-      broker_ip_address: '',
-      broker_port: 0,
-      topic_name: '',
-      topic_schema: '',
-    },
-  },
+  // initialValues: datasetFormInitialValues,
 });
 
-// Define navigation items for the form
-const formNavigation = ['type', 'metadata', 'source_settings'];
+const formNavigation = datasetFormNavigation;
+const actionLabels = getDatasetActionLabels(t);
 
-// Define action labels
-const actionLabels = {
-  close: t('action.close'),
-  back: t('action.back'),
-  next: t('action.next'),
-  confirm: t('action.confirm_add'),
+const formSteps = getDatasetFormSteps(t);
+
+const handleClose = async () => {
+  await emit('on-close');
+  currentStep.value = 0;
+  return true;
 };
 
-const formSteps = ref([
-  {
-    rows: [
-      {
-        fields: [
-          {
-            type: 'radio',
-            name: 'type',
-            options: [
-              {
-                value: 'file',
-                label: t('label.file'),
-                subtitle: t('label_subtitle.file'),
-              },
-              {
-                value: 'table',
-                label: t('label.table'),
-                subtitle: t('label_subtitle.table'),
-              },
-              {
-                value: 'data_stream',
-                label: t('label.data_stream'),
-                subtitle: t('label_subtitle.data_stream'),
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    rows: [
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'metadata.name',
-            label: t('label.name'),
-            placeholder: t('placeholder.dataset_name'),
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'textarea',
-            name: 'metadata.description',
-            label: t('label.description'),
-            placeholder: t('placeholder.dataset_description'),
-          },
-        ],
-      },
-    ],
-  },
-  {
-    rows: [
-      {
-        fields: [
-          {
-            type: 'file',
-            name: 'source_settings.dataset_file',
-            label: t('label.dataset_file'),
-            placeholder: t('placeholder.browse'),
-            accept: '.csv,.json',
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'file',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.database_url',
-            label: t('label.database_url'),
-            placeholder: t('placeholder.database_url'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'table',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.table_name',
-            label: t('label.table_name'),
-            placeholder: t('placeholder.table_name'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'table',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.selected_fields',
-            label: t('label.selected_fields'),
-            placeholder: t('placeholder.selected_fields'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'table',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.broker_name',
-            label: t('label.broker_name'),
-            placeholder: t('placeholder.broker_name'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'data_stream',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.broker_ip_address',
-            label: t('label.broker_ip_address'),
-            placeholder: t('placeholder.broker_ip_address'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'data_stream',
-            },
-          },
-          {
-            type: 'number',
-            name: 'source_settings.broker_port',
-            label: t('label.broker_port'),
-            placeholder: t('placeholder.broker_port'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'data_stream',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'text',
-            name: 'source_settings.topic_name',
-            label: t('label.topic_name'),
-            placeholder: t('placeholder.topic_name'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'data_stream',
-            },
-          },
-        ],
-      },
-      {
-        fields: [
-          {
-            type: 'textarea',
-            name: 'source_settings.topic_schema',
-            label: t('label.topic_schema'),
-            placeholder: t('placeholder.topic_schema'),
-            condition: {
-              field: 'type',
-              operator: 'eq',
-              value: 'data_stream',
-            },
-          },
-        ],
-      },
-    ],
-  },
-]);
+const handleSetStep = (step: number) => {
+  currentStep.value = step;
+};
 
-const handleAction = (action: string) => {
+const handleAction = (action: string | number | boolean) => {
+  console.log('handleAction', action);
+  isSubmit.value = false;
   if (action === 'close') {
-    emit('on-close');
-  } else if (action === 'back') {
-    currentStep.value--;
-  } else if (action === 'next') {
-    currentStep.value++;
-  } else if (action === 'confirm') {
-    form.handleSubmit(onSubmit)();
+    handleClose();
+  } else if (action === 'submit') {
+    isSubmit.value = true;
   }
 };
 
-const onSubmit = async (values: typeof form.values) => {
-  const toast = useToast();
+const onSubmit = async (values: FormValues) => {
+  console.log('onSubmit', values);
+  isSubmit.value = false;
   try {
-    const { registerDataset, datasetTableRegister, datasetKafkaRegister } =
-      useApi();
-    let response;
-
-    if (values.type === 'file') {
-      const files = values.source_settings.dataset_file
-        ? [values.source_settings.dataset_file]
-        : [];
-      response = await registerDataset({
-        files,
-        name: values.metadata.name,
-        dataset_type: '1',
-        description: values.metadata.description,
-      });
-    } else if (values.type === 'table') {
-      response = await datasetTableRegister({
-        dataset_name: values.metadata.name,
-        description: values.metadata.description,
-        database_url: values.source_settings.database_url,
-        table_name: values.source_settings.table_name,
-        selected_fields: values.source_settings.selected_fields,
-      });
-    } else if (values.type === 'data_stream') {
-      response = await datasetKafkaRegister({
-        dataset_name: values.metadata.name,
-        description: values.metadata.description,
-        broker_name: values.source_settings.broker_name,
-        broker_ip_address: values.source_settings.broker_ip_address,
-        broker_port: values.source_settings.broker_port,
-        topic_name: values.source_settings.topic_name,
-        topic_schema: values.source_settings.topic_schema,
-      });
-    }
-
-    if (response?.data) {
-      toast.success('success.dataset_added', {
-        id: response.data.id,
-        name: values.metadata.name,
-      });
-    } else {
-      toast.success('success.dataset_added', { name: values.metadata.name });
-    }
-
+    const { submitDatasetForm } = useDatasetForm();
+    const response = await submitDatasetForm(values);
     emit('on-close');
-  } catch (error) {
-    console.error('Error submitting dataset:', error);
-    toast.error(error, 'error.dataset_add_failed');
+
+    return response;
+  } catch (_) {
+    currentStep.value = 0;
+    return undefined;
   }
 };
 </script>
-
-<style>
-/* Styles are now handled by the StepForm component */
-</style>
