@@ -7,12 +7,7 @@ export type FieldType =
   | 'file'
   | 'number';
 
-export type ActionType =
-  | 'close'
-  | 'back'
-  | 'next'
-  | 'submit'
-  | string;
+export type ActionType = 'close' | 'back' | 'next' | 'submit' | string;
 
 export interface FieldOption {
   value: string | number;

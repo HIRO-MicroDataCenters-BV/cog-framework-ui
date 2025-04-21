@@ -1,7 +1,5 @@
 import type { ApiResponse, ApiErrorResponse } from '@/schemas/response.schema';
 
-type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
-
 import type {
   FileDatasetValues,
   TableDatasetValues,
@@ -11,6 +9,8 @@ import type {
   TableDatasetRegisterParams,
   StreamDatasetRegisterParams,
 } from '@/types/api';
+
+type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
 
 export const useRegisterFileDataset = () => {
   const registerFileDataset = async (

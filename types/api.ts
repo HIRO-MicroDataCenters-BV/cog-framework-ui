@@ -42,7 +42,7 @@ export interface DatasetFormValues extends FormValues {
     name?: string;
     description?: string;
   };
-  source_settings?: Record<string, any>;
+  source_settings?: Record<string, unknown>;
 }
 
 export interface FileDatasetRegisterParams {

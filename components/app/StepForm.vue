@@ -307,7 +307,6 @@ const form = useForm<FormValues>({
 });
 
 const handleAction = (action: ActionType) => {
-  
   if (action === 'next') {
     currentStep.value++;
     emit('on-step-change', currentStep.value, currentActions.value);
@@ -366,7 +365,7 @@ watch(
       currentStep.value = value;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const reviewData = computed((): ReviewTableItem[] => {
@@ -432,6 +431,4 @@ const onSubmit = form.handleSubmit((values: FormValues) => {
   console.log('Form values:', values);
   emit('on-submit', values);
 });
-
-
 </script>
