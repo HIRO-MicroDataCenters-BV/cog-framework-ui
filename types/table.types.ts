@@ -13,6 +13,12 @@ export interface SearchFilter {
   column?: string;
 }
 
+export interface SearchFilterParams {
+  id: string;
+  value: string;
+  column: string;
+}
+
 export interface TableColumn {
   id: string;
   cell?: (props: unknown) => unknown;
