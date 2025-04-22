@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { MoreHorizontal } from 'lucide-vue-next'
-import { PaginationEllipsis, type PaginationEllipsisProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
+import { MoreHorizontal } from 'lucide-vue-next';
+import { PaginationEllipsis, type PaginationEllipsisProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+import { cn } from '@/lib/utils';
 
-const props = defineProps<PaginationEllipsisProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<
+  PaginationEllipsisProps & { class?: HTMLAttributes['class'] }
+>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, ...delegated } = props;
 
-  return delegated
-})
+  return delegated;
+});
 </script>
 
 <template>

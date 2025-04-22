@@ -47,7 +47,7 @@ const pageSize = ref(props.pageSize);
 
 const hasTableFilters = ref(true);
 const fetchData = async () => {
-  const params: Record<string, any> = {
+  const params: Record<string, unknown> = {
     page: table.getState().pagination.pageIndex + 1,
     limit: pageSize.value,
   };
