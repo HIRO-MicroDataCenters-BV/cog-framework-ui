@@ -17,7 +17,11 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  totalPages: {
+  pageSize: {
+    type: Number,
+    required: true,
+  },
+  totalItems: {
     type: Number,
     required: true,
   },
@@ -31,20 +35,39 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['previousPage', 'nextPage']);
+const emit = defineEmits(['on-prev-page', 'on-next-page', 'on-set-page']);
+
+const handlePrevPage = () => {
+  if (props.canPreviousPage) {
+    emit('on-prev-page');
+  }
+};
+
+const handleNextPage = () => {
+  if (props.canNextPage) {
+    emit('on-next-page');
+  }
+};
+
+const handleSetPage = (page) => {
+  emit('on-set-page', page);
+};
+
+const handleFirstPage = () => {
+  emit('on-set-page', 0);
+};
+
+const handleLastPage = () => {
+  emit('on-set-page', Math.ceil(totalItems.value / pageSize.value) - 1);
+};
 </script>
 
 <template>
   <div class="flex items-center justify-end space-x-2">
-    <Pagination
-      :current-page="currentPage"
-      :total-pages="totalPages"
-      :sibling-count="1"
-      :boundary-count="1"
-    >
+    <Pagination :items-per-page="props.pageSize" :total="props.totalItems">
       <PaginationContent v-slot="{ items }" class="flex items-center gap-1">
-        <PaginationFirst />
-        <PaginationPrevious />
+        <PaginationFirst @click="handleFirstPage" />
+        <PaginationPrevious @click="handlePrevPage" />
 
         <template v-for="(item, index) in items">
           <PaginationItem
@@ -55,7 +78,8 @@ const emit = defineEmits(['previousPage', 'nextPage']);
           >
             <Button
               class="w-10 h-10 p-0"
-              :variant="item.value === page ? 'default' : 'outline'"
+              :variant="item.value === currentPage ? 'default' : 'outline'"
+              @click="handleSetPage(item.value)"
             >
               {{ item.value }}
             </Button>
@@ -63,8 +87,8 @@ const emit = defineEmits(['previousPage', 'nextPage']);
           <PaginationEllipsis v-else :key="item.type" :index="index" />
         </template>
 
-        <PaginationNext />
-        <PaginationLast />
+        <PaginationNext @click="handleNextPage" />
+        <PaginationLast @click="handleLastPage" />
       </PaginationContent>
     </Pagination>
   </div>

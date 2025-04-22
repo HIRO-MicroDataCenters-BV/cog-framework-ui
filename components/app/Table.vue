@@ -43,24 +43,23 @@ const mock = useMock();
 const { t } = useI18n();
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
+const pageSize = ref(props.pageSize);
 
 const hasTableFilters = ref(true);
 const fetchData = async () => {
   const params: Record<string, any> = {
     page: table.getState().pagination.pageIndex + 1,
-    limit: props.pageSize,
+    limit: pageSize.value,
   };
 
-  // Использование параметров из URL
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
   } else if (searchValue.value && selectedFilterColumn.value) {
     params[selectedFilterColumn.value] = searchValue.value;
   }
 
-  // Если есть параметры page и limit в URL, используем их
   if (route.query.page) {
-    params.page = parseInt(route.query.page as string) + 1; // +1 потому что в URL индекс начинается с 0
+    params.page = parseInt(route.query.page as string);
   }
   if (route.query.limit) {
     params.limit = parseInt(route.query.limit as string);
@@ -68,7 +67,17 @@ const fetchData = async () => {
 
   const { data: tableData, pagination } = await props.dataSource(params);
   data.value = tableData ?? [];
+  pageSize.value = pagination?.limit ?? 0;
   totalItems.value = pagination?.total_items ?? 0;
+
+  if (pagination) {
+    const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
+    table.setPageSize(pageSize.value);
+    if (currentPage.value >= totalPages) {
+      currentPage.value = totalPages - 1;
+      table.setPageIndex(currentPage.value);
+    }
+  }
 };
 
 const toggleTableFilters = () => {
@@ -151,17 +160,18 @@ const table = useVueTable({
   initialState: {
     pagination: {
       pageIndex: currentPage.value,
-      pageSize: props.pageSize,
+      pageSize: pageSize.value,
     },
   },
+
   onPaginationChange: (updater) => {
     const newPagination =
       typeof updater === 'function'
         ? updater(table.getState().pagination)
         : updater;
     currentPage.value = newPagination.pageIndex;
-    updateUrlParams();
   },
+
   state: {
     get columnFilters() {
       return columnFilters.value;
@@ -178,7 +188,7 @@ const table = useVueTable({
     get pagination() {
       return {
         pageIndex: currentPage.value,
-        pageSize: props.pageSize,
+        pageSize: pageSize.value,
       };
     },
   },
@@ -219,13 +229,11 @@ const updateUrlParams = () => {
     query.q = filter.value;
     query.column = filter.column;
   }
+  query.page = (currentPage.value + 1).toString();
 
-  if (currentPage.value > 0) {
-    query.page = currentPage.value.toString();
-  }
-
-  if (props.pageSize) {
-    query.limit = props.pageSize.toString();
+  if (pageSize.value) {
+    query.limit = pageSize.value.toString();
+    table.setPageSize(pageSize.value);
   }
 
   isUpdatingFromState.value = true;
@@ -235,6 +243,10 @@ const updateUrlParams = () => {
     }, 100);
     fetchData();
   });
+};
+
+const setPage = (page: number) => {
+  currentPage.value = page;
 };
 
 watch(
@@ -288,7 +300,6 @@ watch(
         }
       }
     } catch (error) {
-      console.error('Error parsing query parameters:', error);
       columnFilters.value = [];
       columnVisibility.value = {};
       currentPage.value = 0;
@@ -304,11 +315,13 @@ watch(
 );
 
 watch(
-  () => props.pageSize,
+  () => currentPage.value,
   (newPageSize) => {
+    /*
     table.setPageSize(newPageSize);
     currentPage.value = 0;
     fetchData();
+    */
   },
 );
 
@@ -477,12 +490,28 @@ onMounted(() => {
           {{ t('hint.rows_selected') }}
         </div>
         <AppTablePagination
-          :current-page="table.getState().pagination.pageIndex"
-          :total-pages="Math.ceil(totalItems / props.pageSize) || 1"
+          :current-page="currentPage"
+          :total-items="Math.ceil(totalItems / pageSize)"
+          :page-size="table.getPageCount()"
           :can-previous-page="table.getCanPreviousPage()"
           :can-next-page="table.getCanNextPage()"
-          @previous-page="table.previousPage()"
-          @next-page="table.nextPage()"
+          @on-prev-page="
+            () => {
+              table.previousPage();
+              updateUrlParams();
+            }
+          "
+          @on-next-page="
+            () => {
+              table.nextPage();
+              updateUrlParams();
+            }
+          "
+          @on-set-page="
+            (page) => {
+              table.setPageIndex(page);
+            }
+          "
         />
       </div>
     </div>
