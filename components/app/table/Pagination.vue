@@ -35,18 +35,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['on-prev-page', 'on-next-page', 'on-set-page']);
+const emit = defineEmits(['on-set-page']);
 
 const handlePrevPage = () => {
-  if (props.canPreviousPage) {
-    emit('on-prev-page');
-  }
+  emit('on-set-page', props.currentPage - 1);
 };
 
 const handleNextPage = () => {
-  if (props.canNextPage) {
-    emit('on-next-page');
-  }
+  emit('on-set-page', props.currentPage + 1);
 };
 
 const handleSetPage = (page) => {
@@ -54,11 +50,12 @@ const handleSetPage = (page) => {
 };
 
 const handleFirstPage = () => {
-  emit('on-set-page', 0);
+  emit('on-set-page', 1);
 };
 
 const handleLastPage = () => {
-  emit('on-set-page', Math.ceil(totalItems.value / pageSize.value) - 1);
+  const value = Math.ceil(props.totalItems / props.pageSize);
+  emit('on-set-page', value);
 };
 </script>
 

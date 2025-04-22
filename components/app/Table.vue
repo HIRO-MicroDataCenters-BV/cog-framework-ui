@@ -74,7 +74,6 @@ const fetchData = async () => {
     const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
     table.setPageSize(pageSize.value);
     if (currentPage.value >= totalPages) {
-      currentPage.value = totalPages - 1;
       table.setPageIndex(currentPage.value);
     }
   }
@@ -169,7 +168,15 @@ const table = useVueTable({
       typeof updater === 'function'
         ? updater(table.getState().pagination)
         : updater;
-    currentPage.value = newPagination.pageIndex;
+
+    if (newPagination.pageIndex !== currentPage.value) {
+      currentPage.value = newPagination.pageIndex;
+      const query = { ...route.query };
+      query.page = currentPage.value.toString();
+      router.replace({
+        query,
+      });
+    }
   },
 
   state: {
@@ -235,7 +242,6 @@ const updateUrlParams = () => {
     query.limit = pageSize.value.toString();
     table.setPageSize(pageSize.value);
   }
-
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
     setTimeout(() => {
@@ -312,17 +318,6 @@ watch(
     }
   },
   { deep: true },
-);
-
-watch(
-  () => currentPage.value,
-  (newPageSize) => {
-    /*
-    table.setPageSize(newPageSize);
-    currentPage.value = 0;
-    fetchData();
-    */
-  },
 );
 
 onMounted(() => {
@@ -489,24 +484,13 @@ onMounted(() => {
           {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
           {{ t('hint.rows_selected') }}
         </div>
+        {{ currentPage }}
         <AppTablePagination
           :current-page="currentPage"
           :total-items="Math.ceil(totalItems / pageSize)"
           :page-size="table.getPageCount()"
           :can-previous-page="table.getCanPreviousPage()"
           :can-next-page="table.getCanNextPage()"
-          @on-prev-page="
-            () => {
-              table.previousPage();
-              updateUrlParams();
-            }
-          "
-          @on-next-page="
-            () => {
-              table.nextPage();
-              updateUrlParams();
-            }
-          "
           @on-set-page="
             (page) => {
               table.setPageIndex(page);
