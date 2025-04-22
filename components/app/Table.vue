@@ -26,7 +26,6 @@ import type {
 } from '~/types/table.types';
 
 const props = defineProps({
-  title: String,
   dataSource: {
     type: Function as PropType<(params: unknown) => Promise<TableDataResponse>>,
     required: true,
@@ -297,9 +296,6 @@ onMounted(() => {
   <div class="w-full flex flex-col" style="height: calc(100vh - 80px)">
     <div class="p-4">
       <div>
-        <h1 class="text-lg font-semibold mb-4">
-          {{ t(`subtitle.${props.title}`) }}
-        </h1>
         <div class="pb-4 flex">
           <div class="flex-auto">
             <div class="frame grid gap-4 auto-cols-max grid-flow-col">

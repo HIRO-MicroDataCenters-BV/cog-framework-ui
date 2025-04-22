@@ -44,8 +44,8 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
       },
       subtitle: {
-        datasets: 'Datasets',
-        models: 'Models',
+        dataset_management: 'Datasets',
+        model_management: 'Models',
         runs: 'Runs',
         validation: 'Validation',
         serving: 'Serving',

@@ -8,7 +8,7 @@ import type {
   FileDatasetRegisterParams,
   TableDatasetRegisterParams,
   StreamDatasetRegisterParams,
-} from '@/types/api';
+} from '~/types/api.types';
 
 type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
 

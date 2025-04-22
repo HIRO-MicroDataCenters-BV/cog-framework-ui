@@ -274,7 +274,7 @@ import type {
   ReviewTableItem,
   StepFormProps,
   FormValues,
-} from '@/types/form';
+} from '~/types/form.types';
 
 const { t } = useI18n();
 

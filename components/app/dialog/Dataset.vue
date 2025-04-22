@@ -27,7 +27,7 @@
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
 import StepForm from '@/components/app/StepForm.vue';
-import type { FormValues } from '@/types/form';
+import type { FormValues } from '~/types/form.types';
 import {
   datasetFormSchema,
   datasetReviewItems,
