@@ -73,7 +73,7 @@ export const useApi = () => {
       return result;
     } catch (err) {
       console.error('Fetch error:', err);
-      if (showToast) toaster.show('error', 'error.connection_error');
+      if (showToast) toaster.show('error', 'connection_error');
       throw err;
     }
   };

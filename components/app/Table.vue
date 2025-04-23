@@ -20,13 +20,13 @@ import { AppMenuActions } from '#components';
 */
 import type {
   SearchFilter,
+  SearchFilterParams,
   TableColumn,
   TableDataResponse,
   DataItem,
 } from '~/types/table.types';
 
 const props = defineProps({
-  title: String,
   dataSource: {
     type: Function as PropType<(params: unknown) => Promise<TableDataResponse>>,
     required: true,
@@ -41,36 +41,63 @@ const props = defineProps({
 const mock = useMock();
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
+const pageSize = ref(props.pageSize);
 
 const hasTableFilters = ref(true);
+
+const selectedFilterColumn = ref((route.query.column as string) || 'all');
+const searchValue = ref((route.query.q as string) || '');
+
+const stat = ref(mock.value.stat);
+
+const getFilterColumnName = (columnId: string) => {
+  return columnId.includes('_') ? columnId.split('_')[1] : columnId;
+};
 const fetchData = async () => {
-  const { data: tableData, pagination } = await props.dataSource({
+  const params: Record<string, unknown> = {
     page: table.getState().pagination.pageIndex + 1,
-    limit: props.pageSize,
-    ...(searchValue.value &&
-      selectedFilterColumn.value && {
-        [selectedFilterColumn.value]: searchValue.value,
-      }),
-  });
+    limit: pageSize.value,
+  };
+
+  if (route.query.q && route.query.column) {
+    params[route.query.column as string] = route.query.q;
+  } else if (searchValue.value && selectedFilterColumn.value) {
+    params[selectedFilterColumn.value as string] = searchValue.value;
+  }
+
+  if (route.query.page) {
+    params.page = parseInt(route.query.page as string);
+  }
+  if (route.query.limit) {
+    params.limit = parseInt(route.query.limit as string);
+  }
+
+  if (route.query.column && route.query.q) {
+    params[getFilterColumnName(route.query.column as string)] = route.query.q;
+  }
+
+  const { data: tableData, pagination } = await props.dataSource(params);
   data.value = tableData ?? [];
+  pageSize.value = pagination?.limit ?? 0;
   totalItems.value = pagination?.total_items ?? 0;
+
+  if (pagination) {
+    const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
+    table.setPageSize(pageSize.value);
+    if (currentPage.value >= totalPages) {
+      table.setPageIndex(currentPage.value);
+    }
+  }
 };
 
 const toggleTableFilters = () => {
   hasTableFilters.value = !hasTableFilters.value;
 };
-
-const selectedFilterColumn = ref('all');
-const searchValue = ref('');
-
-const stat = ref(mock.value.stat);
-
-const route = useRoute();
-/*
-const router = useRouter();
-*/
 
 const columnFilters = ref<ColumnFiltersState>(
   route.query.filters
@@ -109,10 +136,18 @@ const table = useVueTable({
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
   getExpandedRowModel: getExpandedRowModel(),
-  onColumnFiltersChange: (updaterOrValue) =>
-    valueUpdater(updaterOrValue, columnFilters),
-  onColumnVisibilityChange: (updaterOrValue) =>
-    valueUpdater(updaterOrValue, columnVisibility),
+  onColumnFiltersChange: (updaterOrValue) => {
+    valueUpdater(updaterOrValue, columnFilters);
+    if (!isUpdatingFromState.value) {
+      updateUrlParams();
+    }
+  },
+  onColumnVisibilityChange: (updaterOrValue) => {
+    valueUpdater(updaterOrValue, columnVisibility);
+    if (!isUpdatingFromState.value) {
+      updateUrlParams();
+    }
+  },
   onRowSelectionChange: (updaterOrValue) =>
     valueUpdater(updaterOrValue, rowSelection),
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
@@ -132,16 +167,26 @@ const table = useVueTable({
   initialState: {
     pagination: {
       pageIndex: currentPage.value,
-      pageSize: props.pageSize,
+      pageSize: pageSize.value,
     },
   },
+
   onPaginationChange: (updater) => {
     const newPagination =
       typeof updater === 'function'
         ? updater(table.getState().pagination)
         : updater;
-    currentPage.value = newPagination.pageIndex;
+
+    if (newPagination.pageIndex !== currentPage.value) {
+      currentPage.value = newPagination.pageIndex;
+      const query = { ...route.query };
+      query.page = currentPage.value.toString();
+      router.replace({
+        query,
+      });
+    }
   },
+
   state: {
     get columnFilters() {
       return columnFilters.value;
@@ -158,7 +203,7 @@ const table = useVueTable({
     get pagination() {
       return {
         pageIndex: currentPage.value,
-        pageSize: props.pageSize,
+        pageSize: pageSize.value,
       };
     },
   },
@@ -173,10 +218,12 @@ const addDataSet = () => {
   openAddDataset.value = true;
 };
 const applySearchFilter = () => {
+  table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
   );
   if (!searchValue.value) {
+    updateUrlParams();
     return;
   }
   const searchFilter: SearchFilter = {
@@ -185,24 +232,23 @@ const applySearchFilter = () => {
     column: selectedFilterColumn.value,
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
+  updateUrlParams();
 };
-/*
+
 const updateUrlParams = () => {
   if (isUpdatingFromState.value) return;
 
   const query: Record<string, string> = {};
   if (columnFilters.value.length > 0) {
-    query.filters = encodeURIComponent(JSON.stringify(columnFilters.value));
+    const filter = columnFilters.value[0] as unknown as SearchFilterParams;
+    query.q = filter.value;
+    query.column = filter.column;
   }
+  query.page = (currentPage.value + 1).toString();
 
-  if (Object.keys(columnVisibility.value).length > 0) {
-    query.visibility = encodeURIComponent(
-      JSON.stringify(columnVisibility.value),
-    );
-  }
-
-  if (currentPage.value > 0) {
-    query.page = currentPage.value.toString();
+  if (pageSize.value) {
+    query.limit = pageSize.value.toString();
+    table.setPageSize(pageSize.value);
   }
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
@@ -212,7 +258,7 @@ const updateUrlParams = () => {
     fetchData();
   });
 };
-*/
+
 watch(
   () => route.query,
   (newQuery) => {
@@ -256,8 +302,14 @@ watch(
         currentPage.value = 0;
         table.setPageIndex(0);
       }
+
+      if (newQuery.limit) {
+        const pageSize = parseInt(newQuery.limit as string);
+        if (pageSize > 0 && pageSize !== props.pageSize) {
+          table.setPageSize(pageSize);
+        }
+      }
     } catch (error) {
-      console.error('Error parsing query parameters:', error);
       columnFilters.value = [];
       columnVisibility.value = {};
       currentPage.value = 0;
@@ -272,24 +324,13 @@ watch(
   { deep: true },
 );
 
-watch(
-  () => props.pageSize,
-  (newPageSize) => {
-    table.setPageSize(newPageSize);
-    currentPage.value = 0;
-    fetchData();
-  },
-);
-
 onMounted(() => {
   fetchData();
-  /*
   setTimeout(() => {
     if (Object.keys(route.query).length === 0) {
       updateUrlParams();
     }
   }, 50);
-  */
 });
 </script>
 
@@ -297,9 +338,6 @@ onMounted(() => {
   <div class="w-full flex flex-col" style="height: calc(100vh - 80px)">
     <div class="p-4">
       <div>
-        <h1 class="text-lg font-semibold mb-4">
-          {{ t(`subtitle.${props.title}`) }}
-        </h1>
         <div class="pb-4 flex">
           <div class="flex-auto">
             <div class="frame grid gap-4 auto-cols-max grid-flow-col">
@@ -443,38 +481,26 @@ onMounted(() => {
       </Table>
     </div>
 
-    <div
-      class="flex items-center justify-end space-x-2 py-4 p-4 bg-sidebar-background sticky bottom-0"
-    >
-      <div class="flex-1 text-sm text-muted-foreground">
-        {{ table.getFilteredSelectedRowModel().rows.length }}
-        {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
-        {{ t('hint.rows_selected') }}
-      </div>
-      <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
-          <Icon name="lucide:chevron-left" />
-          <span>{{ t('action.previous') }}</span>
-        </Button>
-        <span class="mx-2">
-          {{ t('hint.page') }} {{ table.getState().pagination.pageIndex + 1 }}
-          {{ t('hint.of') }}
-          {{ Math.ceil(totalItems / props.pageSize) || 1 }}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
-          <span>{{ t('action.next') }}</span>
-          <Icon name="lucide:chevron-right" />
-        </Button>
+    <div class="py-4 p-4 bg-sidebar-background sticky bottom-0">
+      <div class="flex items-center justify-between">
+        <div class="flex-1 text-sm text-muted-foreground">
+          {{ table.getFilteredSelectedRowModel().rows.length }}
+          {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
+          {{ t('hint.rows_selected') }}
+        </div>
+        {{ currentPage }}
+        <AppTablePagination
+          :current-page="currentPage"
+          :total-items="Math.ceil(totalItems / pageSize)"
+          :page-size="table.getPageCount()"
+          :can-previous-page="table.getCanPreviousPage()"
+          :can-next-page="table.getCanNextPage()"
+          @on-set-page="
+            (page) => {
+              table.setPageIndex(page);
+            }
+          "
+        />
       </div>
     </div>
   </div>

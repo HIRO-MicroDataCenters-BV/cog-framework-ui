@@ -2,33 +2,24 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
-      <header
-        class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
-      >
-        <div class="flex items-center gap-2 px-4 justify-between w-full">
-          <div class="flex items-center gap-2">
-            <SidebarTrigger class="-ml-1" />
-            <Separator orientation="vertical" class="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem class="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    {{ $t('menu.dataset_management') }}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          <div class="flex items-center gap-2 ml-auto">
-            <AppColorModeSwitch />
+      <AppContent>
+        <AppHeader />
+        <div class="flex flex-1 flex-col gap-4 h-full">
+          <div class="h-full flex flex-col flex-grow">
+            <div class="px-4">
+              <h1 class="text-lg font-semibold mb-4">
+                {{ t(`subtitle.${page.section}`) }}
+              </h1>
+            </div>
+            <slot />
           </div>
         </div>
-      </header>
-      <div class="flex flex-1 flex-col gap-4 h-full">
-        <div class="h-full flex flex-col flex-grow">
-          <slot />
-        </div>
-      </div>
+      </AppContent>
     </SidebarInset>
   </SidebarProvider>
 </template>
+
+<script lang="ts" setup>
+const { t } = useI18n();
+const { page } = useApp();
+</script>

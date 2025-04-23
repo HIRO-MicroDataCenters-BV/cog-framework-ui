@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import type { TableRowType } from '~/types/row.types';
+import type { TableRowType } from '@/types/row.types';
 
 const dayjs = useDayjs();
+const { setPage } = useApp();
 const { fetchDatasets } = useApi();
 
-const title = 'datasets';
+setPage({
+  section: 'dataset_management',
+});
 
 const columns = [
   {
@@ -37,10 +40,5 @@ const columns = [
 </script>
 
 <template>
-  <AppTable
-    :columns="columns"
-    :data-source="fetchDatasets"
-    :title="title"
-    class="flex-grow"
-  />
+  <AppTable :columns="columns" :data-source="fetchDatasets" class="flex-grow" />
 </template>

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import type { TableRowType } from '~/types/row.types';
+import type { TableRowType } from '@/types/row.types';
 
 const dayjs = useDayjs();
 const { getModels } = useApi();
+const { setPage } = useApp();
 
-const title = 'models';
+setPage({
+  section: 'model_management',
+});
 
 const columns = [
   {
@@ -41,5 +44,5 @@ const columns = [
 </script>
 
 <template>
-  <AppTable :columns="columns" :data-source="getModels" :title="title" />
+  <AppTable :columns="columns" :data-source="getModels" />
 </template>
