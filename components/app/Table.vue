@@ -41,11 +41,23 @@ const props = defineProps({
 const mock = useMock();
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
 const pageSize = ref(props.pageSize);
 
 const hasTableFilters = ref(true);
+
+const selectedFilterColumn = ref((route.query.column as string) || 'all');
+const searchValue = ref((route.query.q as string) || '');
+
+const stat = ref(mock.value.stat);
+
+const getFilterColumnName = (columnId: string) => {
+  return columnId.includes('_') ? columnId.split('_')[1] : columnId;
+};
 const fetchData = async () => {
   const params: Record<string, unknown> = {
     page: table.getState().pagination.pageIndex + 1,
@@ -55,7 +67,7 @@ const fetchData = async () => {
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
   } else if (searchValue.value && selectedFilterColumn.value) {
-    params[selectedFilterColumn.value] = searchValue.value;
+    params[selectedFilterColumn.value as string] = searchValue.value;
   }
 
   if (route.query.page) {
@@ -63,6 +75,10 @@ const fetchData = async () => {
   }
   if (route.query.limit) {
     params.limit = parseInt(route.query.limit as string);
+  }
+
+  if (route.query.column && route.query.q) {
+    params[getFilterColumnName(route.query.column as string)] = route.query.q;
   }
 
   const { data: tableData, pagination } = await props.dataSource(params);
@@ -82,14 +98,6 @@ const fetchData = async () => {
 const toggleTableFilters = () => {
   hasTableFilters.value = !hasTableFilters.value;
 };
-
-const selectedFilterColumn = ref('all');
-const searchValue = ref('');
-
-const stat = ref(mock.value.stat);
-
-const route = useRoute();
-const router = useRouter();
 
 const columnFilters = ref<ColumnFiltersState>(
   route.query.filters
@@ -210,6 +218,7 @@ const addDataSet = () => {
   openAddDataset.value = true;
 };
 const applySearchFilter = () => {
+  table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
   );
@@ -232,7 +241,6 @@ const updateUrlParams = () => {
   const query: Record<string, string> = {};
   if (columnFilters.value.length > 0) {
     const filter = columnFilters.value[0] as unknown as SearchFilterParams;
-
     query.q = filter.value;
     query.column = filter.column;
   }
@@ -249,10 +257,6 @@ const updateUrlParams = () => {
     }, 100);
     fetchData();
   });
-};
-
-const setPage = (page: number) => {
-  currentPage.value = page;
 };
 
 watch(
