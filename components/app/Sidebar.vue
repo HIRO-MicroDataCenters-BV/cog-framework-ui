@@ -3,6 +3,7 @@ const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
 const version = config.public.appVersion;
+const baseUrl = config.app.baseURL;
 </script>
 
 <template>
@@ -40,7 +41,7 @@ const version = config.public.appVersion;
           <template v-for="item in menu.main" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton as-child>
-                <a :href="item.url">
+                <a :href="`${baseUrl}${item.url}`">
                   <span class="text-lg">
                     <Icon :name="item.icon" />
                   </span>
@@ -76,7 +77,7 @@ const version = config.public.appVersion;
                       :key="subItem.title"
                     >
                       <SidebarMenuSubButton as-child>
-                        <a :href="subItem.url">
+                        <a :href="`${baseUrl}${subItem.url}`">
                           <span>{{ subItem.title }}</span>
                         </a>
                       </SidebarMenuSubButton>
@@ -109,9 +110,4 @@ const version = config.public.appVersion;
 .icon-chevron {
   transition: transform 0.3s;
 }
-/*
-[data-state='open'] .icon-chevron {
-  @apply rotate-90;
-}
-  */
 </style>
