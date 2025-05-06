@@ -88,3 +88,59 @@ jobs:
         with:
           token: ${{ github.token }}
           target_dir: './helm-charts/'
+      # <<< ADDED: export image_name and image_tag as outputs
+      - name: Set build outputs
+        id: set_output
+        run: |
+          echo "image_name=${{ env.DOCKER_IMAGE_NAME }}" >> $GITHUB_OUTPUT   # <<< ADDED
+          echo "image_tag=${{ env.APP_VERSION }}" >> $GITHUB_OUTPUT         # <<< ADDED
+
+    outputs:
+      image_name: ${{ steps.set_output.outputs.image_name }}               # <<< ADDED
+      image_tag: ${{ steps.set_output.outputs.image_tag }}                 # <<< ADDED
+
+  update-resource:
+    needs: build
+    runs-on: ubuntu-latest
+
+    container:
+      image: hiroregistry/juju-cd:latest
+
+    env:
+      JUJU_API_ENDPOINTS: ${{ secrets.JUJU_API_ENDPOINTS }}
+      # <<< CHANGED: use build outputs instead of digest
+      JUJU_RESOURCE_IMAGE: docker.io/${{ needs.build.outputs.image_name }}:${{ needs.build.outputs.image_tag }}  # <<< UPDATED
+      JUJU_APP_NAME: ${{ vars.JUJU_APP_NAME }}
+      JUJU_RESOURCE_NAME: ${{ vars.JUJU_RESOURCE_NAME }}
+      JUJU_CON: ${{ vars.JUJU_CONTROLLER }}
+      JUJU_USERNAME: ${{ secrets.JUJU_USERNAME }}
+      JUJU_PASSWORD: ${{ secrets.JUJU_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set JUJU_APP_NAME dynamically
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "JUJU_APP_NAME=${{ vars.JUJU_APP_NAME }}" >> $GITHUB_ENV
+          else
+            echo "JUJU_APP_NAME=${{ vars.JUJU_APP_NAME }}-dev" >> $GITHUB_ENV
+          fi
+
+      - name: Handle Conditional CA Cert
+        id: set_ca_cert
+        run: |
+          if [ -n "${{ secrets.JUJU_CA_CERT }}" ]; then
+            echo "JUJU_CA_CERT=${{ secrets.JUJU_CA_CERT }}" >> $GITHUB_ENV
+          fi
+
+      - name: Updating destination Model
+        shell: bash
+        run: |
+          export HOME=/root
+          /usr/local/bin/entrypoint.sh
+          juju switch kubeflow
+          echo "Switched to kubeflow model."
+          echo "Attaching resource to Juju application using tag..."
+          juju attach-resource $JUJU_APP_NAME $JUJU_RESOURCE_NAME=$JUJU_RESOURCE_IMAGE
