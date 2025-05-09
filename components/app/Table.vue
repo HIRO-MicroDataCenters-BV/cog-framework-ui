@@ -506,9 +506,11 @@ onMounted(() => {
   </div>
   <AppDialogDataset
     :open="openAddDataset"
-    @on-close="() => {
-      openAddDataset = false
-      fetchData()
-    }"
+    @on-close="
+      () => {
+        openAddDataset = false;
+        fetchData();
+      }
+    "
   />
 </template>
