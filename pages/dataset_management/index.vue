@@ -7,6 +7,15 @@ const dayjs = useDayjs();
 const { setPage, page } = useApp();
 const { fetchDatasets } = useApi();
 
+const tableRef = ref();
+
+const {
+  deleteDatasetFile,
+  deleteDatasetBroker,
+  deleteDatasetTopic,
+  deleteDatasetMessage,
+} = useApi();
+
 setPage({
   section: 'dataset_management',
 });
@@ -49,10 +58,49 @@ const columns = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
-      const id = row.id;
+      const id = parseInt(row.getValue('id'));
 
       return h(DropdownAction, {
+        title: row.getValue('dataset_name') as string,
         id,
+        items: [
+          {
+            key: 'delete_file',
+            label: 'delete_file',
+            hasConfirmation: true,
+            action: async () => {
+              await deleteDatasetFile(id);
+              tableRef.value.fetchData();
+            },
+          },
+          {
+            key: 'delete_broker',
+            label: 'delete_broker',
+            hasConfirmation: true,
+            action: async () => {
+              await deleteDatasetBroker(id);
+              tableRef.value.fetchData();
+            },
+          },
+          {
+            key: 'delete_topic',
+            label: 'delete_topic',
+            hasConfirmation: true,
+            action: async () => {
+              await deleteDatasetTopic(id);
+              tableRef.value.fetchData();
+            },
+          },
+          {
+            key: 'delete_message',
+            label: 'delete_message',
+            hasConfirmation: true,
+            action: async () => {
+              await deleteDatasetMessage(id);
+              tableRef.value.fetchData();
+            },
+          },
+        ],
       });
     },
   },
@@ -60,5 +108,10 @@ const columns = [
 </script>
 
 <template>
-  <AppTable :columns="columns" :data-source="fetchDatasets" class="flex-grow" />
+  <AppTable
+    ref="tableRef"
+    :columns="columns"
+    :data-source="fetchDatasets"
+    class="flex-grow"
+  />
 </template>

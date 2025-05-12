@@ -336,6 +336,8 @@ onMounted(() => {
     }
   }, 50);
 });
+
+defineExpose({ fetchData });
 </script>
 
 <template>

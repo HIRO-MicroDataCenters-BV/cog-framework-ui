@@ -42,6 +42,11 @@ export default defineI18nConfig(() => ({
         runs: 'Runs',
         model_management: 'Model Management',
         model_validation: 'Model Validation',
+        are_you_sure: 'Are you sure?',
+      },
+      alert: {
+        delete_dataset:
+          'Are you sure you want to delete this dataset "{name}"?',
       },
       subtitle: {
         dataset_management: 'Datasets',
@@ -114,6 +119,10 @@ export default defineI18nConfig(() => ({
         test_connection: 'Test Connection',
         confirm_add: 'Confirm & Add',
         submit: 'Submit',
+        delete_topic: 'Delete Topic',
+        delete_broker: 'Delete Broker',
+        delete_message: 'Delete Message',
+        delete_file: 'Delete File',
       },
       stat: {
         total: 'Total',

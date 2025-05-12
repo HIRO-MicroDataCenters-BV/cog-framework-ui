@@ -14,7 +14,7 @@ export const uselistMenus = () => {
         {
           key: 'model_management',
           title: t('menu.model_management'),
-          url: 'model-management',
+          url: 'model_management',
           icon: 'lucide:package',
           items: [],
           isActive: false,
