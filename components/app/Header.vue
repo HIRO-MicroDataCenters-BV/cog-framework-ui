@@ -15,7 +15,9 @@
             </BreadcrumbItem>
             <template v-if="page.title != ''">
               <BreadcrumbSeparator />
-              <BreadcrumbItem class="hidden md:block">{{ page.title }}</BreadcrumbItem>
+              <BreadcrumbItem class="hidden md:block">{{
+                page.title
+              }}</BreadcrumbItem>
             </template>
           </BreadcrumbList>
         </Breadcrumb>

@@ -16,7 +16,7 @@ export const useApp = () => {
     page.value = {
       section: value.section || '',
       title: value.title || '',
-      subtitle: value.subtitle || ''
+      subtitle: value.subtitle || '',
     };
   };
   return {
