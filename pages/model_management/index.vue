@@ -3,11 +3,13 @@ import type { TableRowType } from '@/types/row.types';
 
 const dayjs = useDayjs();
 const { getModels } = useApi();
-const { setPage } = useApp();
+const { setPage, page } = useApp();
 
 setPage({
   section: 'model_management',
 });
+
+const baseUrl = page.value.section;
 
 const columns = [
   {
@@ -16,7 +18,12 @@ const columns = [
   },
   {
     id: 'name',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('name'),
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'a',
+        { href: `${baseUrl}/${row.getValue('id')}` },
+        row.getValue('name'),
+      ),
   },
   {
     id: 'version',
