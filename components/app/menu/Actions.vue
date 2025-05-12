@@ -19,7 +19,7 @@ defineEmits<{
 
 const isOpenDelete = ref(false);
 
-const action = ref()
+const action = ref();
 </script>
 
 <template>
@@ -34,25 +34,24 @@ const action = ref()
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuLabel>{{ $t('title.actions') }}</DropdownMenuLabel>
-      
-      <template v-for="item in props.items"
-      :key="item.key">
-      <DropdownMenuItem
-        
-        @click="() => {
-          action = item.action;
-          if (item.hasConfirmation) {
-            if(item.key.includes('delete')) {
-              isOpenDelete = true;
+
+      <template v-for="item in props.items" :key="item.key">
+        <DropdownMenuItem
+          @click="
+            () => {
+              action = item.action;
+              if (item.hasConfirmation) {
+                if (item.key.includes('delete')) {
+                  isOpenDelete = true;
+                }
+              } else {
+                action();
+              }
             }
-          } else {
-            action()
-          }
-        }"
-      >
-        {{ t(`action.${item.key}`) }}
-      </DropdownMenuItem>
-      
+          "
+        >
+          {{ t(`action.${item.key}`) }}
+        </DropdownMenuItem>
       </template>
     </DropdownMenuContent>
   </DropdownMenu>
@@ -67,7 +66,15 @@ const action = ref()
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>{{ $t('action.cancel') }}</AlertDialogCancel>
-        <AlertDialogAction variant="destructive" @click="()=>{action()}">{{ $t('action.delete') }}</AlertDialogAction>
+        <AlertDialogAction
+          variant="destructive"
+          @click="
+            () => {
+              action();
+            }
+          "
+          >{{ $t('action.delete') }}</AlertDialogAction
+        >
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

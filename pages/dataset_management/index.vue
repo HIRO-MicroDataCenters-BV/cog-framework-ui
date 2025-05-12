@@ -108,5 +108,10 @@ const columns = [
 </script>
 
 <template>
-  <AppTable ref="tableRef" :columns="columns" :data-source="fetchDatasets" class="flex-grow" />
+  <AppTable
+    ref="tableRef"
+    :columns="columns"
+    :data-source="fetchDatasets"
+    class="flex-grow"
+  />
 </template>

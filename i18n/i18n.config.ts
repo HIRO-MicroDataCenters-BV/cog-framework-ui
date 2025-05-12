@@ -45,7 +45,8 @@ export default defineI18nConfig(() => ({
         are_you_sure: 'Are you sure?',
       },
       alert: {
-        delete_dataset: 'Are you sure you want to delete this dataset "{name}"?',
+        delete_dataset:
+          'Are you sure you want to delete this dataset "{name}"?',
       },
       subtitle: {
         dataset_management: 'Datasets',
