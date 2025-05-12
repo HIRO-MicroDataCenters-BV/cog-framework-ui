@@ -21,7 +21,7 @@ defineEmits<{
       <Button variant="ghost" class="h-8 w-8 p-0">
         <span class="sr-only">{{ $t('hint.open_menu') }}</span>
         <div class="h-4 w-4">
-          <Icon name="cog:more" />
+          <Icon name="lucide:ellipsis" />
         </div>
       </Button>
     </DropdownMenuTrigger>

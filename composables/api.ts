@@ -189,7 +189,7 @@ export const useApi = () => {
       return request(`/models/service/undeploy?svc_name=${svc_name}`, 'DELETE');
     },
     fetchDatasets: async (
-      params: { name?: string; dataset_id?: number; last_days?: number } = {},
+      params: { name?: string; id?: number; last_days?: number } = {},
     ) => {
       const q = new URLSearchParams(
         params as Record<string, string>,

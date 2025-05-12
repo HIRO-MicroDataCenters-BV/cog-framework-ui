@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
 
+import DropdownAction from '@/components/app/menu/Actions.vue';
+
 const dayjs = useDayjs();
-const { setPage } = useApp();
+const { setPage, page } = useApp();
 const { fetchDatasets } = useApi();
 
 setPage({
   section: 'dataset_management',
 });
+
+const baseUrl = page.value.section;
 
 const columns = [
   {
@@ -16,7 +20,12 @@ const columns = [
   },
   {
     id: 'dataset_name',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('dataset_name'),
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'a',
+        { href: `${baseUrl}/${row.getValue('id')}` },
+        row.getValue('dataset_name'),
+      ),
   },
   {
     id: 'description',
@@ -35,6 +44,17 @@ const columns = [
     id: 'created_at',
     cell: ({ row }: { row: TableRowType }) =>
       dayjs(row.getValue<string>('created_at')).format('DD.MM.YYYY'),
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      const id = row.id;
+
+      return h(DropdownAction, {
+        id,
+      });
+    },
   },
 ];
 </script>

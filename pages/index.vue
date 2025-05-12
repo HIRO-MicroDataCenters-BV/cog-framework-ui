@@ -1,5 +1,3 @@
-<template>
-  <div></div>
-</template>
-
-<style></style>
+<script setup>
+await navigateTo('/dataset_management');
+</script>
