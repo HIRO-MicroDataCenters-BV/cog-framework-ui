@@ -69,6 +69,11 @@ export default defineI18nConfig(() => ({
         selected_fields: 'Selected Fields',
         fields: 'Fields',
         data_source: 'Data Source',
+        last_modified_time: 'Last Modified Time',
+        register_date_time: 'Register Date Time',
+        train_and_inference_type: 'Train and Inference Type',
+        user_id: 'User ID',
+        data_source_type: 'Data Source Type',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -185,6 +190,7 @@ export default defineI18nConfig(() => ({
         dataset_name: 'Dataset Name',
         data_source_type: 'Data Source Type',
         train_and_inference_type: 'Train and Inference Type',
+        actions: 'Actions',
       },
 
       zodI18n: {

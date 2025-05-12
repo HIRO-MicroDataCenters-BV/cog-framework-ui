@@ -6,7 +6,7 @@ export const uselistMenus = () => {
         {
           key: 'dataset_management',
           title: t('menu.dataset_management'),
-          url: 'dataset-management',
+          url: 'dataset_management',
           icon: 'lucide:table-2',
           items: [],
           isActive: false,

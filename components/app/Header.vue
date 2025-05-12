@@ -9,10 +9,14 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink href="#">
+              <BreadcrumbLink href="../">
                 {{ $t(`menu.${page.section}`) }}
               </BreadcrumbLink>
             </BreadcrumbItem>
+            <template v-if="page.title != ''">
+              <BreadcrumbSeparator />
+              <BreadcrumbItem class="hidden md:block">{{ page.title }}</BreadcrumbItem>
+            </template>
           </BreadcrumbList>
         </Breadcrumb>
       </div>

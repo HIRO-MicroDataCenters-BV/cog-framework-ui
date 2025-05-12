@@ -36,6 +36,10 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  class: {
+    type: String,
+    default: '',
+  },
 });
 
 const mock = useMock();
@@ -335,7 +339,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full flex flex-col" style="height: calc(100vh - 80px)">
+  <div :class="['w-full flex flex-col', props.class]" style="height: calc(100vh - 80px)">
     <div class="p-4">
       <div>
         <div class="pb-4 flex">
