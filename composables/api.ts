@@ -72,9 +72,13 @@ export const useApi = () => {
           : apiResponseSchema.parse(data);
       return result;
     } catch (err) {
-      console.error('Fetch error:', err);
-      if (showToast) toaster.show('error', 'connection_error');
-      throw err;
+      if (method === 'DELETE') {
+        return;
+      } else {
+        console.error('Fetch error:', err);
+        if (showToast) toaster.show('error', 'connection_error');
+        throw err;
+      }
     }
   };
 
@@ -233,8 +237,17 @@ export const useApi = () => {
       data.append('description', description);
       return request(`/datasets/file`, 'POST', data);
     },
-    deleteDataset: async (dataset_id: number) => {
-      return request(`/datasets/${dataset_id}`, 'DELETE');
+    deleteDatasetFile: async (id: number) => {
+      return request(`/datasets/file/${id}`, 'DELETE');
+    },
+    deleteDatasetBroker: async (id: number) => {
+      return request(`/datasets/broker/${id}`, 'DELETE');
+    },
+    deleteDatasetTopic: async (id: number) => {
+      return request(`/datasets/broker/${id}`, 'DELETE');
+    },
+    deleteDatasetMessage: async (id: number) => {
+      return request(`/datasets/message/${id}`, 'DELETE');
     },
     linkDatasetModel: async (dataset_id: number, model_id: number) => {
       return request(`/datasets/${dataset_id}/models/${model_id}/link`, 'POST');
