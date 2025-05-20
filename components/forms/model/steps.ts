@@ -32,7 +32,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'text',
-              name: 'metadata.name',
+              name: 'name',
               label: t('label.name'),
               placeholder: t('placeholder.model_name'),
             },
@@ -42,9 +42,29 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'textarea',
-              name: 'metadata.description',
+              name: 'file_description',
               label: t('label.description'),
               placeholder: t('placeholder.model_description'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'file',
+              },
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'textarea',
+              name: 'description',
+              label: t('label.description'),
+              placeholder: t('placeholder.model_description'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'data_stream',
+              },
             },
           ],
         },
@@ -52,7 +72,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'text',
-              name: 'metadata.model_id',
+              name: 'model_id',
               label: t('label.model_id'),
               placeholder: t('placeholder.model_id'),
             },
@@ -62,7 +82,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'select',
-              name: 'metadata.file_type',
+              name: 'file_type',
               label: t('label.file_type'),
               placeholder: t('placeholder.file_type'),
               options: [
