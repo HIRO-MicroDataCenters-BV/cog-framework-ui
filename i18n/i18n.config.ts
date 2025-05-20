@@ -123,6 +123,12 @@ export default defineI18nConfig(() => ({
         delete_broker: 'Delete Broker',
         delete_message: 'Delete Message',
         delete_file: 'Delete File',
+        add_dataset_management: 'Add Dataset',
+        add_model_management: 'Add Model',
+        add_training_builder: 'Add Training Builder',
+        add_runs: 'Add Runs',
+        add_model_validation: 'Add Model Validation',
+        add_model_serving: 'Add Model Serving',
       },
       stat: {
         total: 'Total',
