@@ -71,7 +71,7 @@ export interface StepFormProps {
 }
 
 export interface FormValues {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface FormField {

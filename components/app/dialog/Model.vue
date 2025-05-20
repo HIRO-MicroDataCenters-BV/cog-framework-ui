@@ -98,8 +98,8 @@ const onSubmit = async (values: FormValues) => {
   console.log('onSubmit', values);
   isSubmit.value = false;
   try {
-    const { submitDatasetForm } = useDatasetForm();
-    const response = await submitDatasetForm(values);
+    const { submitModelForm } = useModelForm();
+    const response = await submitModelForm(values);
     emit('on-close');
 
     return response;
