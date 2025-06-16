@@ -1,9 +1,3 @@
-import { ref } from 'vue';
-
-/**
- * Шаги формы для создания датасета
- * @param t - функция перевода i18n
- */
 export const getDatasetFormSteps = (t: (key: string) => string) =>
   ref([
     {

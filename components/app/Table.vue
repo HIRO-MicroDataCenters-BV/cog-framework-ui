@@ -25,6 +25,8 @@ import type {
   TableDataResponse,
   DataItem,
 } from '~/types/table.types';
+import AppDialogDataset from '~/components/app/dialog/Dataset.vue';
+import AppDialogModel from '~/components/app/dialog/Model.vue';
 
 const props = defineProps({
   dataSource: {
@@ -47,6 +49,7 @@ const mock = useMock();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const { page } = useApp();
 
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
@@ -216,11 +219,9 @@ const table = useVueTable({
 const tabs = uselistTabs();
 
 const openAddDataset = ref(false);
+const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
-const addDataSet = () => {
-  openAddDataset.value = true;
-};
 const applySearchFilter = () => {
   table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
@@ -328,6 +329,18 @@ watch(
   { deep: true },
 );
 
+const add = () => {
+  const section = page.value.section;
+  switch (section) {
+    case 'dataset_management':
+      openAddDataset.value = true;
+      break;
+    case 'model_management':
+      openAddModel.value = true;
+      break;
+  }
+};
+
 onMounted(() => {
   fetchData();
   setTimeout(() => {
@@ -374,8 +387,8 @@ defineExpose({ fetchData });
               />
               <Label class="flex items-center">{{ t('label.filters') }}</Label>
             </div>
-            <Button @click="() => addDataSet()">{{
-              t('action.add_dataset')
+            <Button @click="() => add()">{{
+              t(`action.add_${page.section}`)
             }}</Button>
           </div>
         </div>
@@ -447,7 +460,12 @@ defineExpose({ fetchData });
     </div>
     <!-- end table filters -->
     <div class="flex-grow overflow-auto flex flex-col">
-      <Table class="border-b">
+      <Table
+        :data-source="dataSource"
+        :columns="columns"
+        :page-size="pageSize"
+        class="border-b"
+      >
         <TableHeader class="sticky top-0 bg-sidebar-background">
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
@@ -518,6 +536,15 @@ defineExpose({ fetchData });
     @on-close="
       () => {
         openAddDataset = false;
+        fetchData();
+      }
+    "
+  />
+  <AppDialogModel
+    :open="openAddModel"
+    @on-close="
+      () => {
+        openAddModel = false;
         fetchData();
       }
     "
