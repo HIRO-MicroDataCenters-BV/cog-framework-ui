@@ -32,7 +32,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'text',
-              name: 'name',
+              name: 'metadata.name',
               label: t('label.name'),
               placeholder: t('placeholder.model_name'),
             },
@@ -42,29 +42,9 @@ export const getModelFormSteps = (t: (key: string) => string) =>
           fields: [
             {
               type: 'textarea',
-              name: 'file_description',
+              name: 'metadata.description',
               label: t('label.description'),
-              placeholder: t('placeholder.model_description'),
-              condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'file',
-              },
-            },
-          ],
-        },
-        {
-          fields: [
-            {
-              type: 'textarea',
-              name: 'description',
-              label: t('label.description'),
-              placeholder: t('placeholder.model_description'),
-              condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'data_stream',
-              },
+              placeholder: t('placeholder.description'),
             },
           ],
         },
@@ -75,6 +55,16 @@ export const getModelFormSteps = (t: (key: string) => string) =>
               name: 'model_id',
               label: t('label.model_id'),
               placeholder: t('placeholder.model_id'),
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'number',
+              name: 'version',
+              label: t('label.version'),
+              placeholder: t('placeholder.version'),
             },
           ],
         },
@@ -101,7 +91,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
             {
               type: 'file',
               name: 'source_settings.dataset_file',
-              label: t('label.dataset_file'),
+              label: t('label.file'),
               placeholder: t('placeholder.browse'),
               accept: '.csv,.json',
               condition: {

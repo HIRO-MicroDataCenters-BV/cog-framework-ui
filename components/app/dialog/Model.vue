@@ -1,26 +1,10 @@
 <template>
-  <AppDialog
-    :open="open"
-    :title="t('title.add_model')"
-    :step-form-actions="stepFormActions"
-    :navigation="formNavigation"
-    :step="currentStep"
-    @on-close="handleClose"
-    @on-action="handleAction"
-    @on-set-step="handleSetStep"
-  >
-    <StepForm
-      :title="t('title.add_model')"
-      :steps="formSteps"
-      :validation-schema="formSchema"
-      :initial-values="form.values"
-      :review-items="reviewItems"
-      :action-labels="actionLabels"
-      :step="currentStep"
-      :is-submit="isSubmit"
-      @on-submit="onSubmit"
-      @update-actions="(actions) => (stepFormActions = actions)"
-    />
+  <AppDialog :open="open" :title="t('title.add_model')" :step-form-actions="stepFormActions"
+    :navigation="formNavigation" :step="currentStep" @on-close="handleClose" @on-action="handleAction"
+    @on-set-step="handleSetStep">
+    <StepForm :title="t('title.add_model')" :steps="formSteps" :validation-schema="formSchema"
+      :initial-values="form.values" :review-items="reviewItems" :action-labels="actionLabels" :step="currentStep"
+      :is-submit="isSubmit" @on-submit="onSubmit" @update-actions="(actions) => (stepFormActions = actions)" />
   </AppDialog>
 </template>
 
@@ -85,7 +69,7 @@ const handleSetStep = (step: number) => {
 };
 
 const handleAction = (action: string | number | boolean) => {
-  console.log('handleAction', action);
+  console.log('handleAction model', action);
   isSubmit.value = false;
   if (action === 'close') {
     handleClose();

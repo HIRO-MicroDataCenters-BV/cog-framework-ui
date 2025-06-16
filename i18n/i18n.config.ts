@@ -56,6 +56,8 @@ export default defineI18nConfig(() => ({
         serving: 'Serving',
       },
       label: {
+        version: 'Version',
+        files: 'Files',
         filters: 'Filters',
         type: 'Type',
         name: 'Name',
@@ -93,7 +95,10 @@ export default defineI18nConfig(() => ({
         data_stream: 'Ingest real-time data from a streaming source.',
       },
       placeholder: {
+        name: 'Enter a name',
+        version: 'Version',
         search: 'Search...',
+        description: 'Enter a description',
         dataset_name: 'Dataset Name',
         dataset_description: 'Dataset Description',
         broker_name: 'Broker Name',

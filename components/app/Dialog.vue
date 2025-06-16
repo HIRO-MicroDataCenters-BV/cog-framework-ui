@@ -1,13 +1,11 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
     <DialogContent class="overflow-hidden h-138 max-h-full">
-      <SidebarProvider
-        style="
+      <SidebarProvider style="
           --sidebar-width: 10rem;
           --sidebar-width-mobile: 10rem;
           --height: auto;
-        "
-      >
+        ">
         <Sidebar v-if="props.navigation.length > 0" class="pb-4">
           <SidebarHeader>
             <DialogHeader>
@@ -17,20 +15,9 @@
           <SidebarContent>
             <SidebarGroup>
               <SidebarMenu>
-                <SidebarMenuItem
-                  v-for="(item, index) in props.navigation"
-                  :key="item"
-                >
-                  <SidebarMenuSubButton
-                    as-child
-                    :is-active="step === index"
-                    class="navigation-item"
-                  >
-                    <Button
-                      variant="ghost"
-                      :disabled="item === 'back'"
-                      @click="onSetStep(index)"
-                    >
+                <SidebarMenuItem v-for="(item, index) in props.navigation" :key="item">
+                  <SidebarMenuSubButton as-child :is-active="step === index" class="navigation-item">
+                    <Button variant="ghost" :disabled="item === 'back'" @click="onSetStep(index)">
                       <span>
                         <Icon :name="icons[item as keyof typeof icons]" />
                       </span>
@@ -55,15 +42,10 @@
                 </DialogClose>
               </div>
               <div class="flex gap-2">
-                <Button
-                  v-for="item in props.stepFormActions.length > 0
-                    ? props.stepFormActions
-                    : props.actions"
-                  :key="item"
-                  :variant="variantByActionType(item)"
-                  :type="typeByActionType(item, step)"
-                  @click="onAction(item)"
-                >
+                <Button v-for="item in props.stepFormActions.length > 0
+                  ? props.stepFormActions
+                  : props.actions" :key="item" :variant="variantByActionType(item)"
+                  :type="typeByActionType(item, step)" @click="onAction(item)">
                   {{ t(`action.${item}`) }}
                 </Button>
               </div>
@@ -155,6 +137,7 @@ watch(
 const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
   emit('on-action', action);
+  console.log('foo', name)
   switch (action) {
     case 'back':
       step.value--;
@@ -208,6 +191,7 @@ const typeByActionType = (name: string, currentStep = step.value) => {
   @apply items-center;
   font-weight: 300;
 }
+
 .navigation-item[data-active='true'] {
   font-weight: 700;
 }
