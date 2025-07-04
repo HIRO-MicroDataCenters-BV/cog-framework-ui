@@ -4,6 +4,21 @@ const config = useRuntimeConfig();
 const menu = uselistMenus();
 const version = config.public.appVersion;
 const baseUrl = config.app.baseURL;
+
+const route = useRoute()
+const query = computed(() => route.query)
+import { useStorage } from '@vueuse/core'
+import { useSidebar } from '../ui/sidebar';
+
+const isIframe = useStorage('is_iframe', query.value.is_iframe === '1', localStorage)
+
+const { setOpen } = useSidebar()
+watch(() => query.value.is_iframe, (newValue) => {
+  isIframe.value = newValue === '1'
+}, { immediate: true })
+
+setOpen(!isIframe.value)
+
 </script>
 
 <template>
@@ -14,12 +29,9 @@ const baseUrl = config.app.baseURL;
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                size="lg"
-              >
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" size="lg">
                 <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-                >
+                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <img src="/images/logo.svg" class="size-10" alt="cog-logo" />
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
@@ -50,12 +62,7 @@ const baseUrl = config.app.baseURL;
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            <Collapsible
-              v-else
-              as-child
-              :default-open="item.isActive"
-              class="group/collapsible"
-            >
+            <Collapsible v-else as-child :default-open="item.isActive" class="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
                   <SidebarMenuButton :tooltip="item.title">
@@ -72,10 +79,7 @@ const baseUrl = config.app.baseURL;
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    <SidebarMenuSubItem
-                      v-for="subItem in item.items"
-                      :key="subItem.title"
-                    >
+                    <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                       <SidebarMenuSubButton as-child>
                         <a :href="`${baseUrl}${subItem.url}`">
                           <span>{{ subItem.title }}</span>
