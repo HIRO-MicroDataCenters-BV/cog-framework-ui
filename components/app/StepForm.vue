@@ -2,28 +2,52 @@
   <div class="flex-1 pl-4">
     <div class="mb-8">
       <form>
-        <template v-for="(item, stepIndex) in Array.isArray(steps) ? steps : []" :key="stepIndex">
+        <template
+          v-for="(item, stepIndex) in Array.isArray(steps) ? steps : []"
+          :key="stepIndex"
+        >
           <div v-show="currentStep === stepIndex">
-            <template v-for="(row, rowIndex) in item.rows" :key="`${stepIndex}-${rowIndex}`">
-              <div :class="{
-                'flex gap-2': row.fields.length > 1,
-                'mb-6': true,
-              }">
-                <template v-for="field in row.fields" :key="`${stepIndex}-${rowIndex}-${field.name}`">
-                  <div v-if="checkFieldCondition(field)" :class="{
-                    'mb-6': row.fields.length === 1,
-                    'flex-1': row.fields.length > 1,
-                  }">
+            <template
+              v-for="(row, rowIndex) in item.rows"
+              :key="`${stepIndex}-${rowIndex}`"
+            >
+              <div
+                :class="{
+                  'flex gap-2': row.fields.length > 1,
+                  'mb-6': true,
+                }"
+              >
+                <template
+                  v-for="field in row.fields"
+                  :key="`${stepIndex}-${rowIndex}-${field.name}`"
+                >
+                  <div
+                    v-if="checkFieldCondition(field)"
+                    :class="{
+                      'mb-6': row.fields.length === 1,
+                      'flex-1': row.fields.length > 1,
+                    }"
+                  >
                     <template v-if="field.type === 'radio'">
-                      <FormField v-slot="{ componentField }" type="radio" :name="field.name">
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="radio"
+                        :name="field.name"
+                      >
                         <FormItem class="space-y-3">
                           <FormLabel v-if="field.label">{{
                             field.label
                           }}</FormLabel>
                           <FormControl>
-                            <RadioGroup class="flex flex-col space-y-1" v-bind="componentField">
-                              <FormItem v-for="option in field.options" :key="option.value"
-                                class="flex space-y-0 gap-x-3">
+                            <RadioGroup
+                              class="flex flex-col space-y-1"
+                              v-bind="componentField"
+                            >
+                              <FormItem
+                                v-for="option in field.options"
+                                :key="option.value"
+                                class="flex space-y-0 gap-x-3"
+                              >
                                 <FormControl>
                                   <RadioGroupItem :value="option.value" />
                                 </FormControl>
@@ -31,7 +55,10 @@
                                   <div class="mb-1 w-full">
                                     {{ option.label }}
                                   </div>
-                                  <div v-if="option.subtitle" class="text-sm text-gray-400">
+                                  <div
+                                    v-if="option.subtitle"
+                                    class="text-sm text-gray-400"
+                                  >
                                     {{ option.subtitle }}
                                   </div>
                                 </FormLabel>
@@ -44,13 +71,23 @@
                     </template>
 
                     <template v-else-if="field.type === 'text'">
-                      <FormField v-slot="{ componentField }" type="text" :name="field.name">
-                        <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="text"
+                        :name="field.name"
+                      >
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
                           <FormControl class="w-full">
-                            <Input type="text" v-bind="componentField" :placeholder="field.placeholder || ''" />
+                            <Input
+                              type="text"
+                              v-bind="componentField"
+                              :placeholder="field.placeholder || ''"
+                            />
                           </FormControl>
                         </FormItem>
                         <FormMessage />
@@ -58,13 +95,23 @@
                     </template>
 
                     <template v-else-if="field.type === 'number'">
-                      <FormField v-slot="{ componentField }" type="number" :name="field.name">
-                        <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="number"
+                        :name="field.name"
+                      >
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
                           <FormControl class="w-full">
-                            <Input type="number" v-bind="componentField" :placeholder="field.placeholder || ''" />
+                            <Input
+                              type="number"
+                              v-bind="componentField"
+                              :placeholder="field.placeholder || ''"
+                            />
                           </FormControl>
                         </FormItem>
                         <FormMessage />
@@ -72,11 +119,25 @@
                     </template>
 
                     <template v-else-if="field.type === 'textarea'">
-                      <FormField v-slot="{ componentField }" type="textarea" :name="field.name">
-                        <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
-                          <FormLabel v-if="field.label" class="font-normal mb-2">{{ field.label }}</FormLabel>
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="textarea"
+                        :name="field.name"
+                      >
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
+                          <FormLabel
+                            v-if="field.label"
+                            class="font-normal mb-2"
+                            >{{ field.label }}</FormLabel
+                          >
                           <FormControl>
-                            <Textarea v-bind="componentField" :placeholder="field.placeholder || ''" class="w-full" />
+                            <Textarea
+                              v-bind="componentField"
+                              :placeholder="field.placeholder || ''"
+                              class="w-full"
+                            />
                           </FormControl>
                         </FormItem>
                         <FormMessage />
@@ -85,15 +146,21 @@
 
                     <template v-else-if="field.type === 'file'">
                       <FormField type="file" :name="field.name">
-                        <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
                           <FormControl class="w-full">
-                            <Input type="file" :accept="field.accept || '.csv,.json'"
-                              :placeholder="field.placeholder || ''" @change="
+                            <Input
+                              type="file"
+                              :accept="field.accept || '.csv,.json'"
+                              :placeholder="field.placeholder || ''"
+                              @change="
                                 (e: Event) => handleFileChange(e, field.name)
-                              " />
+                              "
+                            />
                           </FormControl>
                         </FormItem>
                         <FormMessage />
@@ -101,17 +168,29 @@
                     </template>
 
                     <template v-else-if="field.type === 'select'">
-                      <FormField v-slot="{ componentField }" type="select" :name="field.name">
-                        <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="select"
+                        :name="field.name"
+                      >
+                        <FormItem
+                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                        >
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
                           }}</FormLabel>
                           <Select v-bind="componentField">
                             <SelectTrigger>
-                              <SelectValue :placeholder="field.placeholder || ''" />
+                              <SelectValue
+                                :placeholder="field.placeholder || ''"
+                              />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem v-for="option in field.options" :key="option.value" :value="option.value">
+                              <SelectItem
+                                v-for="option in field.options"
+                                :key="option.value"
+                                :value="option.value"
+                              >
                                 {{ option.label }}
                               </SelectItem>
                             </SelectContent>
@@ -122,8 +201,14 @@
                     </template>
 
                     <template v-else-if="field.type === 'checkbox'">
-                      <FormField v-slot="{ componentField }" type="checkbox" :name="field.name">
-                        <FormItem class="flex flex-row items-start space-x-3 space-y-0 p-4">
+                      <FormField
+                        v-slot="{ componentField }"
+                        type="checkbox"
+                        :name="field.name"
+                      >
+                        <FormItem
+                          class="flex flex-row items-start space-x-3 space-y-0 p-4"
+                        >
                           <FormControl>
                             <Checkbox v-bind="componentField" />
                           </FormControl>
@@ -148,8 +233,12 @@
         <div v-show="currentStep === steps.length && showReviewStep">
           <Table class="w-full table-fixed">
             <TableBody>
-              <TableRow v-for="(item, index) in reviewData" :key="`review-item-${index}`">
-                <TableCell class="text-left pb-4 pr-8 border-none text-gray-400">{{ t(`label.${item.label}`) }}
+              <TableRow
+                v-for="(item, index) in reviewData"
+                :key="`review-item-${index}`"
+              >
+                <TableCell class="text-left pb-4 pr-8 border-none text-gray-400"
+                  >{{ t(`label.${item.label}`) }}
                 </TableCell>
                 <TableCell class="text-left pb-4 pr-8 border-none">{{
                   item.value
@@ -269,8 +358,8 @@ watch(
     console.log('isSubmit', value);
     if (value) {
       console.log('submit', form, form.values);
-      form.submitForm()
-      console.log('after form submit')
+      form.submitForm();
+      console.log('after form submit');
       onSubmit();
     }
   },
@@ -287,7 +376,7 @@ watch(
   { immediate: true },
 );
 
-console.log('step')
+console.log('step');
 const reviewData = computed((): ReviewTableItem[] => {
   console.log('reviewData', form.values);
   const formValues = form.values;
@@ -310,7 +399,7 @@ const reviewData = computed((): ReviewTableItem[] => {
   ];
   reviewList = [...reviewList, ...(props.reviewItems[type as string] || [])];
   console.log('reviewList', reviewList);
-  console.log('props.reviewItems[type as string]', props.reviewItems)
+  console.log('props.reviewItems[type as string]', props.reviewItems);
   return reviewList.map((item) => {
     return {
       label: item.label,

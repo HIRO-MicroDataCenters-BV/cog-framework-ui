@@ -5,10 +5,12 @@ import type { ReviewItemsByType } from '~/types/form.types';
 export const modelFormSchema = toTypedSchema(
   z.object({
     type: z.enum(['file', 'datastream']).optional(),
-    metadata: z.object({
-      name: z.string().optional(),
-      description: z.string().optional(),
-    }).optional(),
+    metadata: z
+      .object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+      })
+      .optional(),
     file: z
       .object({
         model_id: z.string().optional(),
@@ -23,7 +25,7 @@ export const modelFormSchema = toTypedSchema(
         uri: z.string().optional(),
       })
       .optional(),
-  })
+  }),
 );
 
 export const modelReviewItems: ReviewItemsByType = {
