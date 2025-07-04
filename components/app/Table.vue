@@ -60,7 +60,38 @@ const hasTableFilters = ref(true);
 const selectedFilterColumn = ref((route.query.column as string) || 'all');
 const searchValue = ref((route.query.q as string) || '');
 
-const stat = ref(mock.value.stat);
+const stat = ref(
+  {
+    total: {
+      key: 'total',
+      value: 0,
+      icon: 'lucide:table-2',
+      label: t('stat.total'),
+      color: 'primary',
+    },
+    files: {
+      key: 'files',
+      value: 0,
+      icon: 'lucide:table',
+      label: t('stat.files'),
+      color: 'text-blue-500',
+    },
+    tables: {
+      key: 'tables',
+      value: 0,
+      icon: 'lucide:database',
+      label: t('stat.tables'),
+      color: 'text-violet-500',
+    },
+    streams: {
+      key: 'streams',
+      value: 0,
+      icon: 'lucide:circle-dot',
+      label: t('stat.streams'),
+      color: 'text-green-500',
+    },
+  },
+);
 
 const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
@@ -354,26 +385,18 @@ defineExpose({ fetchData });
 </script>
 
 <template>
-  <div
-    :class="['w-full flex flex-col', props.class]"
-    style="height: calc(100vh - 80px)"
-  >
+  <div :class="['w-full flex flex-col', props.class]" style="height: calc(100vh - 80px)">
     <div class="p-4">
       <div>
         <div class="pb-4 flex">
           <div class="flex-auto">
             <div class="frame grid gap-4 auto-cols-max grid-flow-col">
               <div v-for="item in stat" :key="item.key" class="frame-item">
-                <div
-                  class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
-                >
+                <div class="frame-item-label uppercase text-zinc-500 mb-2 text-sm">
                   {{ item.label }}
                 </div>
                 <div class="frame-item-content flex items-center">
-                  <Icon
-                    :name="item.icon"
-                    :class="`h-4 w-4 mr-2 ${item.color}`"
-                  />
+                  <Icon :name="item.icon" :class="`h-4 w-4 mr-2 ${item.color}`" />
                   <span class="stat-value">{{ item.value }}</span>
                 </div>
               </div>
@@ -381,10 +404,7 @@ defineExpose({ fetchData });
           </div>
           <div class="flex gap-6 items-center">
             <div class="flex gap-2">
-              <Switch
-                :model-value="hasTableFilters"
-                @update:model-value="toggleTableFilters"
-              />
+              <Switch :model-value="hasTableFilters" @update:model-value="toggleTableFilters" />
               <Label class="flex items-center">{{ t('label.filters') }}</Label>
             </div>
             <Button @click="() => add()">{{
@@ -400,34 +420,20 @@ defineExpose({ fetchData });
         <div class="flex gap-2 items-center py-4">
           <div class="flex-auto flex">
             <div class="flex gap-2">
-              <Input
-                v-model="searchValue"
-                class="w-64"
-                type="search"
-                :placeholder="t('placeholder.search')"
-                @update:model-value="applySearchFilter"
-              />
+              <Input v-model="searchValue" class="w-64" type="search" :placeholder="t('placeholder.search')"
+                @update:model-value="applySearchFilter" />
 
-              <Select
-                v-model="selectedFilterColumn"
-                @update:model-value="applySearchFilter"
-              >
+              <Select v-model="selectedFilterColumn" @update:model-value="applySearchFilter">
                 <SelectTrigger class="w-[180px]">
                   <SelectValue :placeholder="t('placeholder.select_filter')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
-                    <SelectItem value="all"
-                      >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
-                    >
-                    <SelectItem
-                      v-for="column in table
-                        .getAllColumns()
-                        .filter((column) => column.getCanHide())"
-                      :key="column.id"
-                      :value="column.id"
-                    >
+                    <SelectItem value="all">{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem>
+                    <SelectItem v-for="column in table
+                      .getAllColumns()
+                      .filter((column) => column.getCanHide())" :key="column.id" :value="column.id">
                       {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
                     </SelectItem>
                   </SelectGroup>
@@ -438,17 +444,9 @@ defineExpose({ fetchData });
           <div class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
-                <TabsTrigger
-                  v-for="item in tabs.dataset_management"
-                  :key="item.key"
-                  :value="item.value"
-                >
+                <TabsTrigger v-for="item in tabs.dataset_management" :key="item.key" :value="item.value">
                   <div class="flex items-center">
-                    <Icon
-                      v-if="item.icon"
-                      :name="item.icon"
-                      class="h-4 w-4 mr-2"
-                    />
+                    <Icon v-if="item.icon" :name="item.icon" class="h-4 w-4 mr-2" />
                     <span>{{ item.title }}</span>
                   </div>
                 </TabsTrigger>
@@ -460,23 +458,12 @@ defineExpose({ fetchData });
     </div>
     <!-- end table filters -->
     <div class="flex-grow overflow-auto flex flex-col">
-      <Table
-        :data-source="dataSource"
-        :columns="columns"
-        :page-size="pageSize"
-        class="border-b"
-      >
+      <Table :data-source="dataSource" :columns="columns" :page-size="pageSize" class="border-b">
         <TableHeader class="sticky top-0 bg-sidebar-background">
-          <TableRow
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-          >
+          <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                :props="header.getContext()" />
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -485,10 +472,7 @@ defineExpose({ fetchData });
             <template v-for="row in table.getRowModel().rows" :key="row.id">
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                  <FlexRender
-                    :render="cell.column.columnDef.cell"
-                    :props="cell.getContext()"
-                  />
+                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                 </TableCell>
               </TableRow>
               <TableRow v-if="row.getIsExpanded()">
@@ -516,37 +500,26 @@ defineExpose({ fetchData });
           {{ t('hint.rows_selected') }}
         </div>
         {{ currentPage }}
-        <AppTablePagination
-          :current-page="currentPage"
-          :total-items="Math.ceil(totalItems / pageSize)"
-          :page-size="table.getPageCount()"
-          :can-previous-page="table.getCanPreviousPage()"
-          :can-next-page="table.getCanNextPage()"
-          @on-set-page="
+        <AppTablePagination :current-page="currentPage" :total-items="Math.ceil(totalItems / pageSize)"
+          :page-size="table.getPageCount()" :can-previous-page="table.getCanPreviousPage()"
+          :can-next-page="table.getCanNextPage()" @on-set-page="
             (page) => {
               table.setPageIndex(page);
             }
-          "
-        />
+          " />
       </div>
     </div>
   </div>
-  <AppDialogDataset
-    :open="openAddDataset"
-    @on-close="
-      () => {
-        openAddDataset = false;
-        fetchData();
-      }
-    "
-  />
-  <AppDialogModel
-    :open="openAddModel"
-    @on-close="
-      () => {
-        openAddModel = false;
-        fetchData();
-      }
-    "
-  />
+  <AppDialogDataset :open="openAddDataset" @on-close="
+    () => {
+      openAddDataset = false;
+      fetchData();
+    }
+  " />
+  <AppDialogModel :open="openAddModel" @on-close="
+    () => {
+      openAddModel = false;
+      fetchData();
+    }
+  " />
 </template>

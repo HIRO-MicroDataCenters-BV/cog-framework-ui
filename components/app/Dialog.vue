@@ -117,6 +117,8 @@ const icons = {
   type: 'lucide:shapes',
   metadata: 'lucide:text',
   source_settings: 'lucide:settings-2',
+  file: 'lucide:file',
+  datastream: 'lucide:database',
   review: 'lucide:circle-check',
 };
 

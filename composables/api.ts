@@ -181,7 +181,7 @@ export const useApi = () => {
     }) => {
       const data = new FormData();
       files.forEach((file) => data.append('files', file));
-      data.append('model_name', model_name);
+      data.append('name', model_name);
       data.append('file_type', file_type);
       data.append('description', description);
       return request(`/models/save`, 'POST', data);

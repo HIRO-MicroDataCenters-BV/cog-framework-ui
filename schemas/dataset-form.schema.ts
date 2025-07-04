@@ -3,22 +3,22 @@ import * as z from 'zod';
 
 export const datasetFormSchema = toTypedSchema(
   z.object({
-    type: z.enum(['file', 'table', 'data_stream']),
+    type: z.enum(['file', 'table', 'data_stream']).optional(),
     metadata: z.object({
-      name: z.string(),
-      description: z.string(),
-    }),
+      name: z.string().optional(),
+      description: z.string().optional(),
+    }).optional(),
     source_settings: z.object({
       dataset_file: z.any().nullable().optional(),
       broker_name: z.string().optional(),
-      broker_ip_address: z.string().ip().optional(),
+      broker_ip_address: z.string().optional(),
       broker_port: z.number().optional(),
       topic_name: z.string().optional(),
       topic_schema: z.string().optional(),
       db_url: z.string().optional(),
       table_name: z.string().optional(),
       selected_fields: z.string().optional(),
-    }),
+    }).optional(),
   }),
 );
 

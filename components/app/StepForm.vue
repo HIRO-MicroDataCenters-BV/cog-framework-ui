@@ -19,7 +19,7 @@
                         <FormItem class="space-y-3">
                           <FormLabel v-if="field.label">{{
                             field.label
-                            }}</FormLabel>
+                          }}</FormLabel>
                           <FormControl>
                             <RadioGroup class="flex flex-col space-y-1" v-bind="componentField">
                               <FormItem v-for="option in field.options" :key="option.value"
@@ -48,7 +48,7 @@
                         <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
-                            }}</FormLabel>
+                          }}</FormLabel>
                           <FormControl class="w-full">
                             <Input type="text" v-bind="componentField" :placeholder="field.placeholder || ''" />
                           </FormControl>
@@ -62,7 +62,7 @@
                         <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
-                            }}</FormLabel>
+                          }}</FormLabel>
                           <FormControl class="w-full">
                             <Input type="number" v-bind="componentField" :placeholder="field.placeholder || ''" />
                           </FormControl>
@@ -88,7 +88,7 @@
                         <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
-                            }}</FormLabel>
+                          }}</FormLabel>
                           <FormControl class="w-full">
                             <Input type="file" :accept="field.accept || '.csv,.json'"
                               :placeholder="field.placeholder || ''" @change="
@@ -105,7 +105,7 @@
                         <FormItem class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col">
                           <FormLabel v-if="field.label" class="mb-1 w-full">{{
                             field.label
-                            }}</FormLabel>
+                          }}</FormLabel>
                           <Select v-bind="componentField">
                             <SelectTrigger>
                               <SelectValue :placeholder="field.placeholder || ''" />
@@ -130,7 +130,7 @@
                           <div class="space-y-1 leading-none flex">
                             <FormLabel v-if="field.label">{{
                               field.label
-                              }}</FormLabel>
+                            }}</FormLabel>
                             <FormDescription v-if="field.description">
                               {{ field.description }}
                             </FormDescription>
@@ -153,7 +153,7 @@
                 </TableCell>
                 <TableCell class="text-left pb-4 pr-8 border-none">{{
                   item.value
-                  }}</TableCell>
+                }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -270,6 +270,7 @@ watch(
     if (value) {
       console.log('submit', form, form.values);
       form.submitForm()
+      console.log('after form submit')
       onSubmit();
     }
   },
@@ -321,8 +322,10 @@ const reviewData = computed((): ReviewTableItem[] => {
 const handleFileChange = (event: Event, fieldName: string): void => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  if (file) {
-    form.setFieldValue(fieldName, file);
+  if (fieldName.includes('files')) {
+    form.setFieldValue(fieldName, file ? [file] : []);
+  } else {
+    form.setFieldValue(fieldName, file || null);
   }
 };
 
