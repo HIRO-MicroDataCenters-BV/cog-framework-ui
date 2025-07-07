@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite';
-const URL_PREFIX = process.env.URL_PREFIX || ''
+
+const URL_PREFIX = process.env.URL_PREFIX || '';
 
 export default defineNuxtConfig({
   modules: [
