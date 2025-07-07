@@ -28,5 +28,4 @@
 <script lang="ts" setup>
 const { t } = useI18n();
 const { page } = useApp();
-console.log(page);
 </script>

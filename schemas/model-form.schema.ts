@@ -1,38 +1,44 @@
 import { z } from 'zod';
+import { toTypedSchema } from '@vee-validate/zod';
 import type { ReviewItemsByType } from '~/types/form.types';
 
-export const modelFormSchema = z.object({
-  type: z.enum(['file', 'datastream']),
-  file: z
-    .object({
-      model_id: z.string().min(1, 'Required'),
-      file_type: z.number().min(0).max(1),
-      file_description: z.string().min(1, 'Required'),
-      files: z.array(z.any()).min(1, 'At least one file is required'),
-    })
-    .optional(),
-  datastream: z
-    .object({
-      model_id: z.string().min(1, 'Required'),
-      file_type: z.number().min(0).max(1),
-      description: z.string().min(1, 'Required'),
-      uri: z.string().url('Must be a valid URL'),
-    })
-    .optional(),
-});
+export const modelFormSchema = toTypedSchema(
+  z.object({
+    type: z.enum(['file', 'datastream']).optional(),
+    metadata: z
+      .object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+      })
+      .optional(),
+    file: z
+      .object({
+        model_id: z.string().optional(),
+        file_type: z.number().optional(),
+        files: z.any().optional(),
+      })
+      .optional(),
+    datastream: z
+      .object({
+        model_id: z.string().optional(),
+        file_type: z.number().optional(),
+        uri: z.string().optional(),
+      })
+      .optional(),
+  }),
+);
 
 export const modelReviewItems: ReviewItemsByType = {
-  type: [{ label: 'Type', valuePath: 'type' }],
   file: [
-    { label: 'Model ID', valuePath: 'file.model_id' },
-    { label: 'File Type', valuePath: 'file.file_type' },
-    { label: 'Description', valuePath: 'file.file_description' },
-    { label: 'Files', valuePath: 'file.files' },
+    { label: 'type', valuePath: 'type' },
+    { label: 'file_type', valuePath: 'file.file_type' },
+    { label: 'description', valuePath: 'metadata.description' },
   ],
   datastream: [
-    { label: 'Model ID', valuePath: 'datastream.model_id' },
-    { label: 'File Type', valuePath: 'datastream.file_type' },
-    { label: 'Description', valuePath: 'datastream.description' },
-    { label: 'URI', valuePath: 'datastream.uri' },
+    { label: 'type', valuePath: 'type' },
+    { label: 'model_id', valuePath: 'datastream.model_id' },
+    { label: 'file_type', valuePath: 'datastream.file_type' },
+    { label: 'uri', valuePath: 'datastream.uri' },
+    { label: 'description', valuePath: 'metadata.description' },
   ],
 };

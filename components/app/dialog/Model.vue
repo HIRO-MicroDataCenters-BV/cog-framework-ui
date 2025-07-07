@@ -85,7 +85,7 @@ const handleSetStep = (step: number) => {
 };
 
 const handleAction = (action: string | number | boolean) => {
-  console.log('handleAction', action);
+  console.log('handleAction model', action);
   isSubmit.value = false;
   if (action === 'close') {
     handleClose();

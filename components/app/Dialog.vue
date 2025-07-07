@@ -135,6 +135,8 @@ const icons = {
   type: 'lucide:shapes',
   metadata: 'lucide:text',
   source_settings: 'lucide:settings-2',
+  file: 'lucide:file',
+  datastream: 'lucide:database',
   review: 'lucide:circle-check',
 };
 
@@ -155,6 +157,7 @@ watch(
 const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
   emit('on-action', action);
+  console.log('foo', name);
   switch (action) {
     case 'back':
       step.value--;
@@ -208,6 +211,7 @@ const typeByActionType = (name: string, currentStep = step.value) => {
   @apply items-center;
   font-weight: 300;
 }
+
 .navigation-item[data-active='true'] {
   font-weight: 700;
 }

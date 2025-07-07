@@ -1,6 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite';
 
+const URL_PREFIX = process.env.URL_PREFIX || '';
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
@@ -18,7 +20,7 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   app: {
-    baseURL: '/cogui/',
+    baseURL: process.env.URL_PREFIX,
   },
   css: ['~/assets/css/tailwind.css'],
   colorMode: {
@@ -26,7 +28,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: '/cogui/',
+      apiBase: URL_PREFIX,
     },
   },
   compatibilityDate: '2024-11-01',
@@ -34,10 +36,10 @@ export default defineNuxtConfig({
     preset: 'github-pages',
     runtimeConfig: {
       app: {
-        baseURL: '/cogui/',
+        baseURL: URL_PREFIX,
       },
     },
-    baseURL: '/cogui/',
+    baseURL: URL_PREFIX,
   },
   vite: {
     plugins: [tailwindcss()],

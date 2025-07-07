@@ -60,7 +60,36 @@ const hasTableFilters = ref(true);
 const selectedFilterColumn = ref((route.query.column as string) || 'all');
 const searchValue = ref((route.query.q as string) || '');
 
-const stat = ref(mock.value.stat);
+const stat = ref({
+  total: {
+    key: 'total',
+    value: 0,
+    icon: 'lucide:table-2',
+    label: t('stat.total'),
+    color: 'primary',
+  },
+  files: {
+    key: 'files',
+    value: 0,
+    icon: 'lucide:table',
+    label: t('stat.files'),
+    color: 'text-blue-500',
+  },
+  tables: {
+    key: 'tables',
+    value: 0,
+    icon: 'lucide:database',
+    label: t('stat.tables'),
+    color: 'text-violet-500',
+  },
+  streams: {
+    key: 'streams',
+    value: 0,
+    icon: 'lucide:circle-dot',
+    label: t('stat.streams'),
+    color: 'text-green-500',
+  },
+});
 
 const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;

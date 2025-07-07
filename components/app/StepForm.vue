@@ -237,10 +237,9 @@
                 v-for="(item, index) in reviewData"
                 :key="`review-item-${index}`"
               >
-                <TableCell
-                  class="text-left pb-4 pr-8 border-none text-gray-400"
-                  >{{ t(`label.${item.label}`) }}</TableCell
-                >
+                <TableCell class="text-left pb-4 pr-8 border-none text-gray-400"
+                  >{{ t(`label.${item.label}`) }}
+                </TableCell>
                 <TableCell class="text-left pb-4 pr-8 border-none">{{
                   item.value
                 }}</TableCell>
@@ -307,13 +306,18 @@ const form = useForm<FormValues>({
 });
 
 const handleAction = (action: ActionType) => {
+  console.log('handleAction', action);
   if (action === 'next') {
+    console.log('next');
     currentStep.value++;
     emit('on-step-change', currentStep.value, currentActions.value);
   } else if (action === 'back' && currentStep.value > 0) {
+    console.log('back');
     currentStep.value--;
     emit('on-step-change', currentStep.value, currentActions.value);
-  } else if (action === 'submit') {
+  }
+  if (action === 'submit') {
+    console.log('submit');
     onSubmit();
   }
 
@@ -351,7 +355,11 @@ watch(
 watch(
   () => props.isSubmit,
   (value) => {
+    console.log('isSubmit', value);
     if (value) {
+      console.log('submit', form, form.values);
+      form.submitForm();
+      console.log('after form submit');
       onSubmit();
     }
   },
@@ -368,7 +376,9 @@ watch(
   { immediate: true },
 );
 
+console.log('step');
 const reviewData = computed((): ReviewTableItem[] => {
+  console.log('reviewData', form.values);
   const formValues = form.values;
   const typeField = Object.keys(formValues).find((key) => key === 'type');
   const type = typeField ? formValues[typeField] : null;
@@ -388,7 +398,8 @@ const reviewData = computed((): ReviewTableItem[] => {
     },
   ];
   reviewList = [...reviewList, ...(props.reviewItems[type as string] || [])];
-
+  console.log('reviewList', reviewList);
+  console.log('props.reviewItems[type as string]', props.reviewItems);
   return reviewList.map((item) => {
     return {
       label: item.label,
@@ -400,8 +411,10 @@ const reviewData = computed((): ReviewTableItem[] => {
 const handleFileChange = (event: Event, fieldName: string): void => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  if (file) {
-    form.setFieldValue(fieldName, file);
+  if (fieldName.includes('files')) {
+    form.setFieldValue(fieldName, file ? [file] : []);
+  } else {
+    form.setFieldValue(fieldName, file || null);
   }
 };
 

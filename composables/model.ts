@@ -2,23 +2,24 @@ import { useApi } from './api';
 import type { FormValues } from '~/types/form.types';
 
 export interface ModelFormValues extends FormValues {
-  type: 'file' | 'data_stream';
-  file?: {
-    model_id: string;
-    file_type: number;
-    file_description: string;
-    files: File[];
+  type?: 'file' | 'datastream';
+  metadata?: {
+    name?: string;
+    description?: string;
   };
-  data_stream?: {
-    model_id: string;
-    file_type: number;
-    description: string;
-    uri: string;
+  file?: {
+    file_type?: number;
+    files?: File[];
+  };
+  datastream?: {
+    model_id?: string;
+    file_type?: number;
+    uri?: string;
   };
 }
 
 export const useModelForm = () => {
-  const { uploadModelFile, registerModelUri } = useApi();
+  const { saveModelDetails, registerModelUri } = useApi();
 
   const submitModelForm = async (values: ModelFormValues) => {
     try {
@@ -29,22 +30,22 @@ export const useModelForm = () => {
           if (!values.file?.files?.length) {
             throw new Error('error.no_file_selected');
           }
-          res = await uploadModelFile({
+          res = await saveModelDetails({
             files: values.file.files,
-            model_id: values.file.model_id,
-            file_type: values.file.file_type.toString(),
-            file_description: values.file.file_description,
+            model_name: values.metadata?.name || '',
+            file_type: values.file.file_type?.toString() || '0',
+            description: values.metadata?.description || '',
           });
           break;
-        case 'data_stream':
-          if (!values.uri) {
+        case 'datastream':
+          if (!values.datastream?.uri) {
             throw new Error('error.no_uri_provided');
           }
           res = await registerModelUri({
-            model_id: values.model_id,
-            file_type: values.file_type,
-            description: values.description,
-            uri: values.uri,
+            model_id: values.datastream.model_id || '',
+            file_type: values.datastream.file_type || 0,
+            description: values.metadata?.description || '',
+            uri: values.datastream.uri || '',
           });
           break;
         default:

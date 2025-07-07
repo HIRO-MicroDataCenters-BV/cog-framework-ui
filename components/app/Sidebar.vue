@@ -1,9 +1,32 @@
 <script setup lang="ts">
+import { useStorage } from '@vueuse/core';
+import { useSidebar } from '../ui/sidebar';
+
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
 const version = config.public.appVersion;
 const baseUrl = config.app.baseURL;
+
+const route = useRoute();
+const query = computed(() => route.query);
+
+const isIframe = useStorage(
+  'is_iframe',
+  query.value.is_iframe === '1',
+  localStorage,
+);
+
+const { setOpen } = useSidebar();
+watch(
+  () => query.value.is_iframe,
+  (newValue) => {
+    isIframe.value = newValue === '1';
+  },
+  { immediate: true },
+);
+
+setOpen(!isIframe.value);
 </script>
 
 <template>
