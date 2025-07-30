@@ -22,6 +22,8 @@ setPage({
 
 const baseUrl = page.value.section;
 
+const tabs = uselistTabs().value.dataset_management;
+
 const columns = [
   {
     id: 'id',
@@ -112,6 +114,7 @@ const columns = [
     ref="tableRef"
     :columns="columns"
     :data-source="fetchDatasets"
+    :tabs="tabs"
     class="flex-grow"
   />
 </template>

@@ -38,13 +38,34 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  tabs: {
+    type: Array as PropType<
+      {
+        key: string;
+        value: string;
+        title: string;
+        url: string;
+        icon: string | null;
+      }[]
+    >,
+    default: () => [],
+  },
+  hasStats: {
+    type: Boolean,
+    default: true,
+  },
+  hasSearch: {
+    type: Boolean,
+    default: true,
+  },
   class: {
     type: String,
     default: '',
   },
 });
 
-const mock = useMock();
+const hasStats = ref(props.hasStats);
+const hasSearch = ref(props.hasSearch);
 
 const { t } = useI18n();
 const route = useRoute();
@@ -59,6 +80,8 @@ const hasTableFilters = ref(true);
 
 const selectedFilterColumn = ref((route.query.column as string) || 'all');
 const searchValue = ref((route.query.q as string) || '');
+
+const tabs = ref(props.tabs);
 
 const stat = ref({
   total: {
@@ -245,7 +268,7 @@ const table = useVueTable({
   },
 });
 
-const tabs = uselistTabs();
+//const tabs = uselistTabs();
 
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
@@ -391,7 +414,10 @@ defineExpose({ fetchData });
       <div>
         <div class="pb-4 flex">
           <div class="flex-auto">
-            <div class="frame grid gap-4 auto-cols-max grid-flow-col">
+            <div
+              v-if="hasStats"
+              class="frame grid gap-4 auto-cols-max grid-flow-col"
+            >
               <div v-for="item in stat" :key="item.key" class="frame-item">
                 <div
                   class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
@@ -427,7 +453,7 @@ defineExpose({ fetchData });
       <div v-if="hasTableFilters">
         <Separator />
         <div class="flex gap-2 items-center py-4">
-          <div class="flex-auto flex">
+          <div v-if="hasSearch" class="flex-auto flex">
             <div class="flex gap-2">
               <Input
                 v-model="searchValue"
@@ -464,11 +490,11 @@ defineExpose({ fetchData });
               </Select>
             </div>
           </div>
-          <div class="flex gap-2">
+          <div v-if="tabs.length > 0" class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
                 <TabsTrigger
-                  v-for="item in tabs.dataset_management"
+                  v-for="item in tabs"
                   :key="item.key"
                   :value="item.value"
                 >

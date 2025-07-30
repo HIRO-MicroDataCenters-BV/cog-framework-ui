@@ -48,8 +48,15 @@ const columns = [
       dayjs(row.getValue<string>('register_date')).format('DD.MM.YYYY'),
   },
 ];
+
+const tabs = uselistTabs().value.model_management;
 </script>
 
 <template>
-  <AppTable :columns="columns" :data-source="getModels" />
+  <AppTable
+    :columns="columns"
+    :data-source="getModels"
+    :tabs="tabs"
+    :has-stats="false"
+  />
 </template>
