@@ -306,18 +306,14 @@ const form = useForm<FormValues>({
 });
 
 const handleAction = (action: ActionType) => {
-  console.log('handleAction', action);
   if (action === 'next') {
-    console.log('next');
     currentStep.value++;
     emit('on-step-change', currentStep.value, currentActions.value);
   } else if (action === 'back' && currentStep.value > 0) {
-    console.log('back');
     currentStep.value--;
     emit('on-step-change', currentStep.value, currentActions.value);
   }
   if (action === 'submit') {
-    console.log('submit');
     onSubmit();
   }
 
@@ -355,11 +351,8 @@ watch(
 watch(
   () => props.isSubmit,
   (value) => {
-    console.log('isSubmit', value);
     if (value) {
-      console.log('submit', form, form.values);
       form.submitForm();
-      console.log('after form submit');
       onSubmit();
     }
   },
@@ -376,9 +369,7 @@ watch(
   { immediate: true },
 );
 
-console.log('step');
 const reviewData = computed((): ReviewTableItem[] => {
-  console.log('reviewData', form.values);
   const formValues = form.values;
   const typeField = Object.keys(formValues).find((key) => key === 'type');
   const type = typeField ? formValues[typeField] : null;
@@ -398,8 +389,6 @@ const reviewData = computed((): ReviewTableItem[] => {
     },
   ];
   reviewList = [...reviewList, ...(props.reviewItems[type as string] || [])];
-  console.log('reviewList', reviewList);
-  console.log('props.reviewItems[type as string]', props.reviewItems);
   return reviewList.map((item) => {
     return {
       label: item.label,
@@ -441,7 +430,6 @@ const checkFieldCondition = (field: Field): boolean => {
 };
 
 const onSubmit = form.handleSubmit((values: FormValues) => {
-  console.log('Form values:', values);
   emit('on-submit', values);
 });
 </script>
