@@ -93,11 +93,13 @@ jobs:
         id: set_output
         run: |
           echo "image_name=${{ env.DOCKER_IMAGE_NAME }}" >> $GITHUB_OUTPUT   # <<< ADDED
-          echo "image_tag=${{ env.APP_VERSION }}" >> $GITHUB_OUTPUT         # <<< ADDED
+          # <<< CHANGED: use DOCKER_TAGS instead of APP_VERSION
+          DOCKER_TAG=$(echo "${{ env.DOCKER_TAGS }}" | cut -d',' -f1)
+          echo "image_tag=${DOCKER_TAG}" >> $GITHUB_OUTPUT         # <<< CHANGED
 
     outputs:
-      image_name: ${{ steps.set_output.outputs.image_name }}               # <<< ADDED
-      image_tag: ${{ steps.set_output.outputs.image_tag }}                 # <<< ADDED
+      image_name: ${{ steps.set_output.outputs.image_name }} # <<< ADDED
+      image_tag: ${{ steps.set_output.outputs.image_tag }} # <<< ADDED
 
   update-resource:
     needs: build
@@ -109,7 +111,7 @@ jobs:
     env:
       JUJU_API_ENDPOINTS: ${{ secrets.JUJU_API_ENDPOINTS }}
       # <<< CHANGED: use build outputs instead of digest
-      JUJU_RESOURCE_IMAGE: docker.io/${{ needs.build.outputs.image_name }}:${{ needs.build.outputs.image_tag }}  # <<< UPDATED
+      JUJU_RESOURCE_IMAGE: docker.io/${{ needs.build.outputs.image_name }}:${{ needs.build.outputs.image_tag }} # <<< UPDATED
       JUJU_APP_NAME: ${{ vars.JUJU_APP_NAME }}
       JUJU_RESOURCE_NAME: ${{ vars.JUJU_RESOURCE_NAME }}
       JUJU_CON: ${{ vars.JUJU_CONTROLLER }}
