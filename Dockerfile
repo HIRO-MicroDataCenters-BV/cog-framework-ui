@@ -39,7 +39,7 @@ RUN yarn build
 ################################################################################
 FROM nginx:stable-alpine AS nginx
 
-COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/cogui
+COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/uidev
 
 COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
 COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
