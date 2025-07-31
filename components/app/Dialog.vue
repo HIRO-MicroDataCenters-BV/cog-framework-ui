@@ -157,7 +157,6 @@ watch(
 const onAction = async (action: string | number | boolean) => {
   const name = `on-${action}` as EventType;
   emit('on-action', action);
-  console.log('foo', name);
   switch (action) {
     case 'back':
       step.value--;
