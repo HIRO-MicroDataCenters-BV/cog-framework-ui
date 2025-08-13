@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { PrimitiveProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-import type { BadgeVariants, StatusType } from '.';
 import { CheckCircle, Loader, XCircle, Clock } from 'lucide-vue-next';
 import { reactiveOmit } from '@vueuse/core';
 import { Primitive } from 'reka-ui';
-import { cn } from '@/lib/utils';
+import type { BadgeVariants, StatusType } from '.';
 import { badgeVariants, statusConfig } from '.';
+import { cn } from '@/lib/utils';
 
 const props = defineProps<
   PrimitiveProps & {
