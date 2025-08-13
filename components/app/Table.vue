@@ -24,13 +24,18 @@ import type {
   TableColumn,
   TableDataResponse,
   DataItem,
+  ApiTableResponse,
 } from '~/types/table.types';
 import AppDialogDataset from '~/components/app/dialog/Dataset.vue';
 import AppDialogModel from '~/components/app/dialog/Model.vue';
 
 const props = defineProps({
   dataSource: {
-    type: Function as PropType<(params: unknown) => Promise<TableDataResponse>>,
+    type: Function as PropType<
+      (
+        params?: Record<string, unknown>,
+      ) => Promise<TableDataResponse | ApiTableResponse | null | undefined>
+    >,
     required: true,
   },
   columns: Array as PropType<TableColumn[]>,
@@ -140,8 +145,10 @@ const fetchData = async () => {
     params[getFilterColumnName(route.query.column as string)] = route.query.q;
   }
 
-  const { data: tableData, pagination } = await props.dataSource(params);
-  data.value = tableData ?? [];
+  const response = await props.dataSource(params);
+  const tableData = response?.data;
+  const pagination = response?.pagination;
+  data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
   pageSize.value = pagination?.limit ?? 0;
   totalItems.value = pagination?.total_items ?? 0;
 
@@ -182,11 +189,12 @@ const getColumns = (list: TableColumn[]) => {
       accessorKey: item.id,
       header: t(`column.${item.id}`),
       cell: item.cell,
-    };
+      enableHiding: item.enableHiding,
+    } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
   });
 };
 
-const columns = ref(getColumns(props.columns ?? []));
+const columns = ref(getColumns(props.columns ?? []) as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 const table = useVueTable({
   data,
   columns: columns.value,
@@ -414,6 +422,9 @@ defineExpose({ fetchData });
       <div>
         <div class="pb-4 flex">
           <div class="flex-auto">
+            <div v-if="page.description != ''" class="w-96 max-w-full">
+              <p class="text-sm text-slate-500">{{ page.description }}</p>
+            </div>
             <div
               v-if="hasStats"
               class="frame grid gap-4 auto-cols-max grid-flow-col"
@@ -442,9 +453,10 @@ defineExpose({ fetchData });
               />
               <Label class="flex items-center">{{ t('label.filters') }}</Label>
             </div>
-            <Button @click="() => add()">{{
-              t(`action.add_${page.section}`)
-            }}</Button>
+            <Button @click="() => add()"
+              ><Icon name="lucide:plus"></Icon
+              >{{ t(`action.add_${page.section}`) }}</Button
+            >
           </div>
         </div>
       </div>

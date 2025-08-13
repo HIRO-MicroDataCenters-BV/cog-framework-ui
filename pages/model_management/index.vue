@@ -2,7 +2,7 @@
 import type { TableRowType } from '@/types/row.types';
 
 const dayjs = useDayjs();
-const { getModels } = useApi();
+const { getModelsForTable } = useApi();
 const { setPage, page } = useApp();
 
 setPage({
@@ -55,8 +55,8 @@ const tabs = uselistTabs().value.model_management;
 <template>
   <AppTable
     :columns="columns"
-    :data-source="getModels"
+    :data-source="getModelsForTable"
     :tabs="tabs"
-    :has-stats="false"
+    class="flex-grow"
   />
 </template>

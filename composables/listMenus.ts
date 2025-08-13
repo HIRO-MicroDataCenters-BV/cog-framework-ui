@@ -5,9 +5,17 @@ export const uselistMenus = () => {
       main: [
         {
           key: 'dataset_management',
-          title: t('menu.dataset_management'),
+          title: t('menu.datasets'),
           url: 'dataset_management',
           icon: 'lucide:table-2',
+          items: [],
+          isActive: false,
+        },
+        {
+          key: 'pipelines',
+          title: t('menu.pipelines'),
+          url: 'pipelines',
+          icon: 'lucide:route',
           items: [],
           isActive: false,
         },
@@ -17,63 +25,6 @@ export const uselistMenus = () => {
           url: 'model_management',
           icon: 'lucide:package',
           items: [],
-          isActive: false,
-        },
-        {
-          key: 'training_builder',
-          title: t('menu.training_builder'),
-          url: 'training-builder',
-          icon: 'lucide:network',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
-          isActive: false,
-        },
-        {
-          key: 'runs',
-          title: t('menu.runs'),
-          url: 'runs',
-          icon: 'lucide:play',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
-          isActive: false,
-        },
-
-        {
-          key: 'model_validation',
-          title: t('menu.model_validation'),
-          url: 'model-validation',
-          icon: 'lucide:package-check',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
-          isActive: false,
-        },
-        {
-          key: 'model_serving',
-          title: t('menu.model_serving'),
-          url: 'model-serving',
-          icon: 'lucide:server',
-          items: [
-            {
-              key: 'all',
-              title: t('tab.all'),
-              url: '/all',
-            },
-          ],
           isActive: false,
         },
       ],
@@ -89,6 +40,50 @@ export const uselistMenus = () => {
           title: t('menu.support'),
           url: '#',
           icon: 'lucide:life-buoy',
+        },
+        {
+          key: 'settings',
+          title: t('menu.settings'),
+          url: '#',
+          icon: 'lucide:cog',
+        },
+      ],
+      user: [
+        {
+          key: 'profile',
+          title: t('action.profile'),
+          url: '#',
+          icon: 'lucide:user',
+        },
+        {
+          key: 'settings',
+          title: t('menu.settings'),
+          url: '#',
+          icon: 'lucide:settings',
+        },
+        {
+          key: 'notifications',
+          title: t('action.notifications'),
+          url: '#',
+          icon: 'lucide:bell',
+        },
+        {
+          key: 'help',
+          title: t('action.help'),
+          url: '#',
+          icon: 'lucide:help-circle',
+        },
+        {
+          key: 'documentation',
+          title: t('menu.documentation'),
+          url: '#',
+          icon: 'lucide:book-open',
+        },
+        {
+          key: 'logout',
+          title: t('action.logout'),
+          url: '#',
+          icon: 'lucide:log-out',
         },
       ],
     };

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core';
 import { useSidebar } from '../ui/sidebar';
+import NavUser from './NavUser.vue';
 
 const { t } = useI18n();
 const config = useRuntimeConfig();
@@ -47,9 +48,11 @@ setOpen(!isIframe.value);
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-semibold">{{
+                    t('general.main_project_name')
+                  }}</span>
+                  <span class="truncate text-xs">{{
                     t('general.project_name')
                   }}</span>
-                  <span class="truncate text-xs">{{ version }}</span>
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
@@ -124,6 +127,7 @@ setOpen(!isIframe.value);
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
+      <NavUser />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

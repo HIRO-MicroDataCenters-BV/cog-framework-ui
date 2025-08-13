@@ -5,7 +5,7 @@ import DropdownAction from '@/components/app/menu/Actions.vue';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
-const { fetchDatasets } = useApi();
+const { getDatasetsForTable } = useApi();
 
 const tableRef = ref();
 
@@ -113,7 +113,7 @@ const columns = [
   <AppTable
     ref="tableRef"
     :columns="columns"
-    :data-source="fetchDatasets"
+    :data-source="getDatasetsForTable"
     :tabs="tabs"
     class="flex-grow"
   />
