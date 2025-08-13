@@ -13,7 +13,7 @@
                 }}</template>
                 <template v-else>{{ page.title }}</template>
               </h1>
-              <p v-if="page.subtitle != ''" class="text-sm text-gray-500 mb-4">
+              <p v-if="page.subtitle != ''" class="text-sm text-gray-500">
                 {{ page.subtitle }}
               </p>
             </div>

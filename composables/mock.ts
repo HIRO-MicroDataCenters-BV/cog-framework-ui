@@ -75,6 +75,21 @@ export const useMock = () => {
           last_update: '2021-09-05',
         },
       ],
+      user: {
+        id: 1,
+        email: 'john.doe@company.com',
+        full_name: 'John Doe',
+        user_name: 'john.doe',
+        org_id: 1,
+        country: 'United States',
+        phone: '+1-555-0123',
+        job_title: 'System Administrator',
+        user_level: 5,
+        password_updated_at: '2024-01-15T10:30:00.000Z',
+        created_at: '2023-06-01T09:00:00.000Z',
+        updated_at: '2024-08-13T14:30:00.000Z',
+        avatar_url: 'https://github.com/shadcn.png',
+      },
     };
   });
 };

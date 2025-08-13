@@ -2,6 +2,7 @@ interface Page {
   section?: string;
   title?: string;
   subtitle?: string;
+  description?: string;
 }
 
 export const useApp = () => {
@@ -10,6 +11,7 @@ export const useApp = () => {
       section: '',
       title: '',
       subtitle: '',
+      description: '',
     };
   });
   const setPage = (value: Page) => {
@@ -17,6 +19,7 @@ export const useApp = () => {
       section: value.section || '',
       title: value.title || '',
       subtitle: value.subtitle || '',
+      description: value.description || '',
     };
   };
   return {
