@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 export { default as Badge } from './Badge.vue';
 
 export const badgeVariants = cva(
-  'inline-flex items-center justify-center rounded-md border px-1.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden opacity-100',
+  'inline-flex items-center justify-center rounded-sm border px-1.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden opacity-100',
   {
     variants: {
       variant: {
@@ -19,11 +19,13 @@ export const badgeVariants = cva(
         completed:
           'border-transparent bg-green-500 text-white [a&]:hover:bg-green-600',
         running:
-          'border-transparent bg-blue-500 text-white [a&]:hover:bg-blue-600',
+          'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:[a&]:hover:bg-gray-600',
         failed:
           'border-transparent bg-red-500 text-white [a&]:hover:bg-red-600',
         pending:
           'border-transparent bg-yellow-500 text-white [a&]:hover:bg-yellow-600',
+        succeeded:
+          'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:[a&]:hover:bg-gray-600',
       },
     },
     defaultVariants: {
@@ -38,19 +40,27 @@ export const statusConfig = {
   completed: {
     variant: 'completed' as const,
     icon: 'CheckCircle',
+    animate: false,
   },
   running: {
     variant: 'running' as const,
-    icon: 'Loader',
+    icon: 'LoaderCircle',
     animate: true,
   },
   failed: {
     variant: 'failed' as const,
-    icon: 'XCircle',
+    icon: 'CircleSlash',
+    animate: false,
   },
   pending: {
     variant: 'pending' as const,
     icon: 'Clock',
+    animate: false,
+  },
+  succeeded: {
+    variant: 'succeeded' as const,
+    icon: 'Check',
+    animate: false,
   },
 } as const;
 

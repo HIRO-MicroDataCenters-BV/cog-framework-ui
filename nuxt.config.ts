@@ -29,6 +29,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: URL_PREFIX,
+      mockEnabled: process.env.MOCK_ENABLED === 'true',
     },
   },
   compatibilityDate: '2024-11-01',

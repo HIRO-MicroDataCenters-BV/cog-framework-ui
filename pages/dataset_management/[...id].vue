@@ -27,7 +27,7 @@
 const { t } = useI18n();
 const dayjs = useDayjs();
 const route = useRoute();
-const { fetchDatasets, getDatasetsForTable } = useApi();
+const { fetchDatasets, getDatasetsForTable } = useApiWithMock();
 const { setPage } = useApp();
 const id = computed(() => parseInt(route.params.id[0]));
 const content = ref();
