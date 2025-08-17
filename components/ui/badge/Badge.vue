@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type { PrimitiveProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-import { CheckCircle, Loader, XCircle, Clock } from 'lucide-vue-next';
+import {
+  CheckCircle,
+  LoaderCircle,
+  CircleSlash,
+  Clock,
+  Check,
+} from 'lucide-vue-next';
 import { reactiveOmit } from '@vueuse/core';
 import { Primitive } from 'reka-ui';
 import type { BadgeVariants, StatusType } from '.';
@@ -39,12 +45,14 @@ const iconComponent = computed(() => {
   switch (config.icon) {
     case 'CheckCircle':
       return CheckCircle;
-    case 'Loader':
-      return Loader;
-    case 'XCircle':
-      return XCircle;
+    case 'LoaderCircle':
+      return LoaderCircle;
+    case 'CircleSlash':
+      return CircleSlash;
     case 'Clock':
       return Clock;
+    case 'Check':
+      return Check;
     default:
       return null;
   }

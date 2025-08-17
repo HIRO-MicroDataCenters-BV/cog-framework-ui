@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
+import { useApiWithMock } from '@/composables/mock';
 
 const dayjs = useDayjs();
-const { getModelsForTable } = useApi();
+const { getModelsForTable } = useApiWithMock();
 const { setPage, page } = useApp();
 
 setPage({

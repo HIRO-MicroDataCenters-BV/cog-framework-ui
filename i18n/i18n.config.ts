@@ -237,6 +237,19 @@ export default defineI18nConfig(() => ({
         data_source_type: 'Data Source Type',
         train_and_inference_type: 'Train and Inference Type',
         actions: 'Actions',
+        run_id: 'Run ID',
+        run_name: 'Run Name',
+        created_on: 'Created On',
+        started_on: 'Started On',
+        duration: 'Duration',
+        created_by: 'Created By',
+      },
+      status: {
+        completed: 'Completed',
+        running: 'Running',
+        failed: 'Failed',
+        pending: 'Pending',
+        succeeded: 'Succeeded',
       },
 
       zodI18n: {

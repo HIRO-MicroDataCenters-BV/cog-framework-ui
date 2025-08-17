@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
+import Badge from '@/components/ui/badge/Badge.vue';
+import { useApiWithMock } from '@/composables/mock';
 
 const { t } = useI18n();
 
 const dayjs = useDayjs();
-const { getAllPipelineRuns } = useApi();
+const { getAllPipelineRuns } = useApiWithMock();
 const { setPage, page } = useApp();
 
 setPage({
@@ -61,7 +63,15 @@ const columns = [
         return duration;
       }
 
-      return calculateDuration(startTime);
+      if (startTime) {
+        const start = new Date(startTime);
+        const now = new Date();
+        const diff = now.getTime() - start.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h ${minutes}m`;
+      }
+      return '-';
     },
   },
   {
@@ -73,32 +83,43 @@ const columns = [
 ];
 
 // Data source function for pipeline runs
-const dataSource = async () => {
+const dataSource = async (params = {}) => {
   try {
     const response = await getAllPipelineRuns();
 
-    if (response && response.data) {
-      if (typeof response.data === 'object' && !Array.isArray(response.data)) {
-        return [response.data];
-      }
-
-      if (Array.isArray(response.data)) {
-        return response.data;
-      }
+    if (response && 'data' in response && response.data) {
+      return {
+        data: Array.isArray(response.data) ? response.data : [response.data],
+        total: Array.isArray(response.data) ? response.data.length : 1,
+        page: 1,
+        pageSize: Array.isArray(response.data) ? response.data.length : 1,
+      };
     }
 
-    return [];
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 10,
+    };
   } catch (error) {
     console.error('Failed to fetch pipeline runs:', error);
-    return [];
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 10,
+    };
   }
 };
 
 const tabs = [
   {
-    id: 'all',
-    label: 'All Runs',
-    count: 0,
+    key: 'all',
+    value: 'all',
+    title: 'All Runs',
+    url: '',
+    icon: null,
   },
 ];
 </script>

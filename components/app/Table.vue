@@ -86,7 +86,11 @@ const hasTableFilters = ref(true);
 const selectedFilterColumn = ref((route.query.column as string) || 'all');
 const searchValue = ref((route.query.q as string) || '');
 
-const tabs = ref(props.tabs);
+const tabs = computed(() => props.tabs || []);
+
+const validTabs = computed(() => {
+  return tabs.value.filter((tab) => tab && tab.key && tab.value && tab.title);
+});
 
 const stat = ref({
   total: {
@@ -502,11 +506,11 @@ defineExpose({ fetchData });
               </Select>
             </div>
           </div>
-          <div v-if="tabs.length > 0" class="flex gap-2">
+          <div v-if="validTabs.length > 0" class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
                 <TabsTrigger
-                  v-for="item in tabs"
+                  v-for="item in validTabs"
                   :key="item.key"
                   :value="item.value"
                 >
