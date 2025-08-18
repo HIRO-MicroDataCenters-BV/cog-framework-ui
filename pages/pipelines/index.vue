@@ -33,15 +33,15 @@ const columns = [
   {
     id: 'created_on',
     cell: ({ row }: { row: TableRowType }) => {
-      const startTime = row.getValue<string>('start_time');
-      return startTime ? dayjs(startTime).format('DD.MM.YYYY HH:mm') : '-';
+      const createdOn = row.getValue<string>('created_on');
+      return createdOn ? dayjs(createdOn).format('DD.MM.YYYY HH:mm') : '-';
     },
   },
   {
     id: 'started_on',
     cell: ({ row }: { row: TableRowType }) => {
-      const startTime = row.getValue<string>('start_time');
-      return startTime ? dayjs(startTime).format('DD.MM.YYYY HH:mm') : '-';
+      const startedOn = row.getValue<string>('started_on');
+      return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
     },
   },
   {
@@ -77,7 +77,7 @@ const columns = [
   {
     id: 'created_by',
     cell: ({ row }: { row: TableRowType }) => {
-      return row.getValue('experiment_id') || '-';
+      return row.getValue('created_by') || '-';
     },
   },
 ];
