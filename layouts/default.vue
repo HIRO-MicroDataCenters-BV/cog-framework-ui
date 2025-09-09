@@ -1,5 +1,5 @@
 <template>
-  <SidebarProvider>
+  <SidebarProvider class="sidebar-wrapper">
     <AppSidebar />
     <SidebarInset>
       <AppContent>
@@ -29,3 +29,11 @@
 const { t } = useI18n();
 const { page } = useApp();
 </script>
+
+<style>
+.sidebar-wrapper {
+  overflow: hidden;
+  width: 100%;
+  height: 100svh;
+}
+</style>
