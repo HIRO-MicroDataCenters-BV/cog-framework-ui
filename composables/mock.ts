@@ -5,7 +5,12 @@ export const useMock = () => {
   return useState('mock', () => {
     return {
       enabled: config.public.mockEnabled || false,
-
+      components: [
+        {
+          id: 1,
+          name: 'Component 1',
+        },
+      ],
       stat: {
         total: {
           key: 'total',

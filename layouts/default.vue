@@ -7,7 +7,7 @@
         <div class="flex flex-1 flex-col gap-4 h-full">
           <div class="h-full flex flex-col flex-grow">
             <div class="px-4">
-              <h1 class="text-lg font-semibold mb-4">
+              <h1 v-if="page.title != ''" class="text-lg font-semibold mb-4">
                 <template v-if="page.title == ''">{{
                   t(`subtitle.${page.section}`)
                 }}</template>

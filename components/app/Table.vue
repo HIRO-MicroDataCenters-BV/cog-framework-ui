@@ -543,7 +543,7 @@ defineExpose({ fetchData });
         class="border-b"
       >
         <TableHeader
-          class="sticky top-0 bg-white border-b border-gray-200 z-1000 shadow-xs"
+          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-1000 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"

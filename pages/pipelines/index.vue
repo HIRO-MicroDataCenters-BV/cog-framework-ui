@@ -74,12 +74,6 @@ const columns = [
       return '-';
     },
   },
-  {
-    id: 'created_by',
-    cell: ({ row }: { row: TableRowType }) => {
-      return row.getValue('created_by') || '-';
-    },
-  },
 ];
 
 // Data source function for pipeline runs
@@ -130,5 +124,6 @@ const tabs = [
     :data-source="dataSource"
     :tabs="tabs"
     :has-stats="false"
+    :has-filters="false"
   />
 </template>
