@@ -36,6 +36,21 @@
   --sidebar-accent-foreground: oklch(0.32 0.047 225);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  .vue-flow__node-default,
+  .vue-flow__node {
+    border: none;
+  }
+  .vue-flow__node-default.selected,
+  .vue-flow__node.selected {
+    border:none;
+  }
+  .vue-flow__viewport{
+    background: white;
+    background-image: radial-gradient(rgba(0,0,0,.2) 1px, transparent 0);
+    background-size: 40px 40px;
+    background-position: -19px -19px;
+  }
 }
 
 .dark {

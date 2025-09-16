@@ -11,14 +11,31 @@
       @edge-update="onEdgeUpdate"
       fit-view
     >
-      <template #node-default="{ data }">
+      <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
-          class="px-4 py-2 bg-background border rounded-lg shadow-sm min-w-[120px]"
+          class="bg-white border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
         >
-          <div class="flex items-center gap-2">
-            <Icon :name="data.icon" class="w-4 h-4" />
-            <span class="text-sm font-medium">{{ data.label }}</span>
+          <div
+            class="flex items-center flex-nowrap gap-2 border-b px-4 py-2 text-gray-700"
+          >
+            <span class="text-sm flex-auto overflow-hidden">{{
+              data.label
+            }}</span>
+            <Badge status="pending"></Badge>
           </div>
+          <div v-if="data.category" class="px-4 py-2">
+            <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
+          </div>
+          <Handle
+            type="target"
+            :position="targetPosition"
+            class="bg-black dark:bg-white rounded"
+          />
+          <Handle
+            type="source"
+            :position="sourcePosition"
+            class="bg-black dark:bg-white rounded"
+          />
         </div>
       </template>
     </VueFlow>
@@ -27,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { VueFlow } from '@vue-flow/core';
+import { VueFlow, Position, Handle } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 
 interface Node {
@@ -36,7 +53,7 @@ interface Node {
   position: { x: number; y: number };
   data: {
     label: string;
-    icon: string;
+    status: string;
     [key: string]: unknown;
   };
 }
@@ -73,13 +90,15 @@ function onDrop(event: DragEvent) {
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
     const newNode: Node = {
-      id: `${component.id}-${Date.now()}`,
-      type: component.id,
+      id: `compoent-${component.id}-${Date.now()}`,
+      type: 'default',
       position,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
       data: {
         label: component.name,
-        icon: component.icon,
-        componentType: component.type,
+        status: component.status,
+        category: component.category,
       },
     };
 
@@ -109,3 +128,5 @@ function onEdgeUpdate(edge: any) {
   emit('edgeUpdate', edge);
 }
 </script>
+
+<style scoped></style>

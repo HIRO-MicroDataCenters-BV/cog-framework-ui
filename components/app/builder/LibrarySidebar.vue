@@ -16,7 +16,7 @@
                     <span class="text-lg mr-2">
                       <Icon name="lucide:folder" />
                     </span>
-                    <span>{{ $t(`builder.categories.${category.id}`) }}</span>
+                    <span class="capitalize">{{ category.name }}</span>
                   </div>
                   <span
                     class="icon-chevron transition-transform duration-200 ease-out"
@@ -55,10 +55,18 @@
 </template>
 
 <script setup lang="ts">
+interface CompoentPath {
+  name: string;
+  type: string | 'CSV' | 'parquet';
+}
 interface Component {
   id: string;
   name: string;
-  type: 'input' | 'processing' | 'output';
+  input_path: CompoentPath[];
+  output_path: CompoentPath[];
+  component_file: string | null;
+  category: string | null;
+  creator: string | null;
 }
 
 interface Category {
@@ -68,79 +76,114 @@ interface Category {
   components: Component[];
 }
 
-const categories: Category[] = [
+const components: Component[] = ref([
   {
-    id: 'inputs',
-    name: 'Inputs',
-    isOpen: true,
-    components: [
+    id: 1,
+    name: 'Preprocess',
+    input_path: [
       {
-        id: 'data-source',
-        name: 'Data Source',
-        type: 'input',
-      },
-      {
-        id: 'file-input',
-        name: 'File Input',
-        type: 'input',
-      },
-      {
-        id: 'api-input',
-        name: 'API Input',
-        type: 'input',
+        name: 'file',
+        type: 'CSV',
       },
     ],
-  },
-  {
-    id: 'processing',
-    name: 'Processing',
-    isOpen: true,
-    components: [
+    output_path: [
       {
-        id: 'filter',
-        name: 'Filter',
-        type: 'processing',
-      },
-      {
-        id: 'transform',
-        name: 'Transform',
-        type: 'processing',
-      },
-      {
-        id: 'aggregate',
-        name: 'Aggregate',
-        type: 'processing',
-      },
-      {
-        id: 'join',
-        name: 'Join',
-        type: 'processing',
+        name: 'output',
+        type: 'parquet',
       },
     ],
+    component_file: null,
+    category: null,
+    creator: null,
   },
   {
-    id: 'outputs',
-    name: 'Outputs',
-    isOpen: true,
-    components: [
+    id: 2,
+    name: 'process',
+    input_path: [
       {
-        id: 'data-sink',
-        name: 'Data Sink',
-        type: 'output',
-      },
-      {
-        id: 'file-output',
-        name: 'File Output',
-        type: 'output',
-      },
-      {
-        id: 'api-output',
-        name: 'API Output',
-        type: 'output',
+        name: 'file',
+        type: 'CSV',
       },
     ],
+    output_path: [
+      {
+        name: 'output',
+        type: 'parquet',
+      },
+    ],
+    component_file: 'process.yaml',
+    category: 'preprocess',
+    creator: 'admin',
   },
-];
+  {
+    id: 3,
+    name: 'string',
+    input_path: [{}],
+    output_path: [{}],
+    component_file: 'string',
+    category: 'string',
+    creator: 'string',
+  },
+  {
+    id: 4,
+    name: 'Preprocess',
+    input_path: [
+      {
+        name: 'file',
+        type: 'CSV',
+      },
+    ],
+    output_path: [
+      {
+        name: 'output',
+        type: 'parquet',
+      },
+    ],
+    component_file:
+      'http://mlflow-minio.kubeflow:9000/mlflow/Preprocess.yaml?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minio%2F20250916%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250916T080921Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4965b08816e78add40ccbc190f485652b9e43778363df8b6a8d84b999315b317',
+    category: null,
+    creator: null,
+  },
+  {
+    id: 5,
+    name: 'Preprocess',
+    input_path: [
+      {
+        name: 'file',
+        type: 'CSV',
+      },
+    ],
+    output_path: [
+      {
+        name: 'output',
+        type: 'parquet',
+      },
+    ],
+    component_file:
+      'http://mlflow-minio.kubeflow:9000/mlflow/Preprocess.yaml?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minio%2F20250916%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250916T081110Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=db5644ddf81a181b3109af36cae70226fe159110b4db1c069ff118af26d3137e',
+    category: 'training',
+    creator: 'sai',
+  },
+]);
+const getCategories = (items: Component[]) => {
+  const list = items.map((item, index) => {
+    return {
+      id: item.category ?? `category-empty`,
+      name: item.category,
+      isOpen: item.category ? false : true,
+      components: components.value.filter(
+        (component: Component) => component.category == item.category,
+      ),
+    };
+  });
+  return list.reduce((items, current) => {
+    if (items.findIndex((object) => object.id === current.id) === -1) {
+      items.push(current);
+    }
+    return items;
+  }, []);
+};
+const categories = ref(getCategories(components.value));
 
 const emit = defineEmits<{
   dragStart: [component: Component];

@@ -66,6 +66,7 @@ export default defineI18nConfig(() => ({
         properties: 'Properties',
         properties_subtitle: 'Configure selected component',
         empty_selection: 'Select a component to configure',
+        category: 'Category',
         categories: {
           inputs: 'Inputs',
           processing: 'Processing',

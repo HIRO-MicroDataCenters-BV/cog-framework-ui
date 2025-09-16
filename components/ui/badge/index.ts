@@ -21,8 +21,7 @@ export const badgeVariants = cva(
         running: 'border-transparent bg-blue-600 text-white',
         failed:
           'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
-        pending:
-          'border-transparent bg-yellow-500 text-white [a&]:hover:bg-yellow-600',
+        pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
         succeeded: 'border-transparent bg-green-700 text-white',
       },
     },
