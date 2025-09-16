@@ -4,12 +4,12 @@
       v-model:nodes="nodes"
       v-model:edges="edges"
       class="w-full h-full"
+      fit-view
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
       @connect="onConnect"
       @edge-update="onEdgeUpdate"
-      fit-view
     >
       <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
@@ -108,12 +108,12 @@ function onDrop(event: DragEvent) {
   }
 }
 
-function onNodeClick(event: any) {
+function onNodeClick(event: unkown) {
   const node = event.node;
   emit('nodeClick', node);
 }
 
-function onConnect(connection: any) {
+function onConnect(connection: unkown) {
   const newEdge: Edge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
@@ -124,7 +124,7 @@ function onConnect(connection: any) {
   emit('connect', newEdge);
 }
 
-function onEdgeUpdate(edge: any) {
+function onEdgeUpdate(edge: unkown) {
   emit('edgeUpdate', edge);
 }
 </script>
