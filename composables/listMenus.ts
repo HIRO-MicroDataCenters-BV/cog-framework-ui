@@ -28,26 +28,7 @@ export const uselistMenus = () => {
           isActive: false,
         },
       ],
-      footer: [
-        {
-          key: 'documentation',
-          title: t('menu.documentation'),
-          url: '#',
-          icon: 'lucide:book-open',
-        },
-        {
-          key: 'support',
-          title: t('menu.support'),
-          url: '#',
-          icon: 'lucide:life-buoy',
-        },
-        {
-          key: 'settings',
-          title: t('menu.settings'),
-          url: '#',
-          icon: 'lucide:cog',
-        },
-      ],
+      footer: [],
       user: [
         {
           key: 'profile',

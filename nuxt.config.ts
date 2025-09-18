@@ -41,6 +41,13 @@ export default defineNuxtConfig({
       },
     },
     baseURL: URL_PREFIX,
+    devProxy: {
+      '/cogapi': {
+        target: process.env.NUXT_PUBLIC_API_REMOTE || 'http://localhost:8000',
+        changeOrigin: true,
+        prependPath: true,
+      },
+    },
   },
   vite: {
     plugins: [tailwindcss()],

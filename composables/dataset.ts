@@ -16,7 +16,7 @@ export const useRegisterFileDataset = () => {
   const registerFileDataset = async (
     values: FileDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { datasetFileRegister } = useApi();
+    const { postDatasetFile } = useApi();
     const files = values.source_settings?.dataset_file
       ? [values.source_settings.dataset_file]
       : [];
@@ -32,7 +32,7 @@ export const useRegisterFileDataset = () => {
       description: values.metadata?.description || '',
     };
 
-    return await datasetFileRegister(data);
+    return await postDatasetFile(data);
   };
 
   return {
@@ -44,7 +44,7 @@ export const useRegisterTableDataset = () => {
   const registerTableDataset = async (
     values: TableDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { datasetTableRegister } = useApi();
+    const { postDatasetTable } = useApi();
     const data: TableDatasetRegisterParams = {
       dataset_type: 0,
       name: values.metadata?.name || '',
@@ -54,7 +54,7 @@ export const useRegisterTableDataset = () => {
       selected_fields: values.source_settings?.selected_fields || '',
     };
 
-    return await datasetTableRegister(data);
+    return await postDatasetTable(data);
   };
 
   return {
@@ -66,7 +66,7 @@ export const useRegisterStreamDataset = () => {
   const registerStreamDataset = async (
     values: StreamDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { datasetKafkaRegister } = useApi();
+    const { postDatasetBroker } = useApi();
 
     const data: StreamDatasetRegisterParams = {
       dataset_type: 0,
@@ -79,7 +79,7 @@ export const useRegisterStreamDataset = () => {
       topic_schema: values.source_settings?.topic_schema || '',
     };
 
-    return await datasetKafkaRegister(data);
+    return await postDatasetBroker(data);
   };
 
   return {

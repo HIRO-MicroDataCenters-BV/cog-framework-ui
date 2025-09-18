@@ -335,12 +335,17 @@ export const useApiWithMock = () => {
     getDatasetsForTable: (params = {}) => {
       if (mock.value.enabled) {
         return Promise.resolve({
-          success: true,
-          data: mock.value.datasets,
+          status_code: 200,
           message: 'Mock datasets data',
+          data: mock.value.datasets,
+          pagination: {
+            total_items: mock.value.datasets.length,
+            page: 1,
+            limit: mock.value.datasets.length,
+          },
         });
       }
-      return realApi.getDatasetsForTable(params);
+      return realApi.getDatasets(params);
     },
 
     fetchDatasets: (params = {}) => {
@@ -350,38 +355,43 @@ export const useApiWithMock = () => {
             (d) => d.id === params.dataset_id,
           );
           return Promise.resolve({
-            success: true,
-            data: dataset ? [dataset] : [],
+            status_code: 200,
             message: 'Mock dataset data',
+            data: dataset ? [dataset] : [],
           });
         }
         return Promise.resolve({
-          success: true,
-          data: mock.value.datasets,
+          status_code: 200,
           message: 'Mock datasets data',
+          data: mock.value.datasets,
         });
       }
-      return realApi.fetchDatasets(params);
+      return realApi.getDatasets(params);
     },
 
     getModelsForTable: (params = {}) => {
       if (mock.value.enabled) {
         return Promise.resolve({
-          success: true,
-          data: mock.value.models,
+          status_code: 200,
           message: 'Mock models data',
+          data: mock.value.models,
+          pagination: {
+            total_items: mock.value.models.length,
+            page: 1,
+            limit: mock.value.models.length,
+          },
         });
       }
-      return realApi.getModelsForTable(params);
+      return realApi.getModels(params);
     },
 
     getModelDetails: (params = {}) => {
       if (mock.value.enabled) {
         const model = mock.value.models.find((m) => m.id === params.id);
         return Promise.resolve({
-          success: true,
-          data: model ? [model] : [],
+          status_code: 200,
           message: 'Mock model details',
+          data: model ? [model] : [],
         });
       }
       return realApi.getModelDetails(params);
@@ -390,12 +400,12 @@ export const useApiWithMock = () => {
     getAllPipelineRuns: () => {
       if (mock.value.enabled) {
         return Promise.resolve({
-          success: true,
-          data: mock.value.pipelineRuns,
+          status_code: 200,
           message: 'Mock pipeline runs data',
+          data: mock.value.pipelineRuns,
         });
       }
-      return realApi.getAllPipelineRuns();
+      return realApi.getPipelineRunsList();
     },
 
     deleteDatasetFile: (id) => {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
 import Badge from '@/components/ui/badge/Badge.vue';
-import { useApiWithMock } from '@/composables/mock';
+import { useApi } from '@/composables/api';
 
 const { t } = useI18n();
 
 const dayjs = useDayjs();
-const { getAllPipelineRuns } = useApiWithMock();
+const { getPipelineRunsList } = useApi();
 const { setPage, page } = useApp();
 
 setPage({
@@ -79,7 +79,7 @@ const columns = [
 // Data source function for pipeline runs
 const dataSource = async (params = {}) => {
   try {
-    const response = await getAllPipelineRuns();
+    const response = await getPipelineRunsList();
 
     if (response && 'data' in response && response.data) {
       return {

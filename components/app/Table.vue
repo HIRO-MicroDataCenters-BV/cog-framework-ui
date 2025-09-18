@@ -34,7 +34,13 @@ const props = defineProps({
     type: Function as PropType<
       (
         params?: Record<string, unknown>,
-      ) => Promise<TableDataResponse | ApiTableResponse | null | undefined>
+      ) => Promise<
+        | TableDataResponse
+        | ApiTableResponse
+        | { detail: string }
+        | null
+        | undefined
+      >
     >,
     required: true,
   },
