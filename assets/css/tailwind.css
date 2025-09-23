@@ -41,10 +41,18 @@
   .vue-flow__node {
     border: none;
   }
+  /*
   .vue-flow__node-default.selected,
   .vue-flow__node.selected {
     border:none;
   }
+    */
+
+    .vue-flow__node-default.selected,
+    .vue-flow__node.selected {
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+    }
   .vue-flow__viewport{
     background: white;
     background-image: radial-gradient(rgba(0,0,0,.2) 1px, transparent 0);
