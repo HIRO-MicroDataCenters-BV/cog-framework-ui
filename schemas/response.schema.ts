@@ -6,18 +6,21 @@ const paginationSchema = z.object({
   page: z.number(),
 });
 
-export const apiResponseSchema = z.object({
-  status_code: z.number().optional(),
-  message: z.string().optional(),
-  data: z
-    .union([
-      z.array(z.object({}).passthrough()),
-      z.object({}).passthrough(),
-      z.null(),
-    ])
-    .optional(),
-  pagination: paginationSchema.optional(),
-});
+export const apiResponseSchema = z.union([
+  z.object({
+    status_code: z.number().optional(),
+    message: z.string().optional(),
+    data: z
+      .union([
+        z.array(z.object({}).passthrough()),
+        z.object({}).passthrough(),
+        z.null(),
+      ])
+      .optional(),
+    pagination: paginationSchema.optional(),
+  }),
+  z.array(z.object({}).passthrough()),
+]);
 
 export const apiErrorResponseSchema = z.object({
   detail: z.string(),
