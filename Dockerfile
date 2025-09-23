@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 # Create a stage for building the application.
 FROM base AS build
 
-ARG NUXT_PUBLIC_API_BASE=/cogapi
+ARG NUXT_PUBLIC_API_BASE=/apidev
 ARG NUXT_PUBLIC_APP_VERSION=1.0.0
 ENV NUXT_PUBLIC_APP_VERSION=$NUXT_PUBLIC_APP_VERSION
 

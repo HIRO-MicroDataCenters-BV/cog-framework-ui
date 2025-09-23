@@ -124,6 +124,10 @@ const fetchComponents = async () => {
     components.value = res.data as unknown as Component[];
   }
 };
+
+defineExpose({
+  fetchComponents,
+});
 </script>
 
 <style scoped>
