@@ -60,8 +60,8 @@ interface CompoentPath {
   type: string | 'CSV' | 'parquet';
 }
 interface Component {
-  id: string;
-  name: string;
+  id: string | number;
+  name: string | null;
   input_path: CompoentPath[];
   output_path: CompoentPath[];
   component_file: string | null;
@@ -123,6 +123,8 @@ const fetchComponents = async () => {
   console.log('res', res);
   if (res) {
     components.value = res as unknown as Component[];
+    categories.value = getCategories(components.value);
+    console.log('components', components.value);
   }
 };
 
