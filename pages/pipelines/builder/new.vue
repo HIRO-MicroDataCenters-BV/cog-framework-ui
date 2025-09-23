@@ -1,0 +1,15 @@
+<template>
+  <div class="h-[calc(100svh-64px)]">
+    <AppBuilder />
+  </div>
+</template>
+
+<script lang="ts" setup>
+const { setPage, page } = useApp();
+
+setPage({
+  section: 'pipelines',
+});
+</script>
+
+<style></style>

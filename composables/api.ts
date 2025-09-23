@@ -55,6 +55,7 @@ export const useApi = () => {
     };
 
     try {
+      console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
       const data = await res.json();
       if (!res.ok) {

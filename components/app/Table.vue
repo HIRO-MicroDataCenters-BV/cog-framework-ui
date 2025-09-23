@@ -413,6 +413,9 @@ const add = () => {
     case 'model_management':
       openAddModel.value = true;
       break;
+    case 'pipelines':
+      navigateTo('/pipelines/builder/new');
+      break;
   }
 };
 

@@ -70,101 +70,16 @@ interface Component {
 }
 
 interface Category {
-  id: string;
+  id: string | number;
   name: string;
   isOpen: boolean;
   components: Component[];
 }
 
-const components: Component[] = ref([
-  {
-    id: 1,
-    name: 'Preprocess',
-    input_path: [
-      {
-        name: 'file',
-        type: 'CSV',
-      },
-    ],
-    output_path: [
-      {
-        name: 'output',
-        type: 'parquet',
-      },
-    ],
-    component_file: null,
-    category: null,
-    creator: null,
-  },
-  {
-    id: 2,
-    name: 'process',
-    input_path: [
-      {
-        name: 'file',
-        type: 'CSV',
-      },
-    ],
-    output_path: [
-      {
-        name: 'output',
-        type: 'parquet',
-      },
-    ],
-    component_file: 'process.yaml',
-    category: 'preprocess',
-    creator: 'admin',
-  },
-  {
-    id: 3,
-    name: 'string',
-    input_path: [{}],
-    output_path: [{}],
-    component_file: 'string',
-    category: 'string',
-    creator: 'string',
-  },
-  {
-    id: 4,
-    name: 'Preprocess',
-    input_path: [
-      {
-        name: 'file',
-        type: 'CSV',
-      },
-    ],
-    output_path: [
-      {
-        name: 'output',
-        type: 'parquet',
-      },
-    ],
-    component_file:
-      'http://mlflow-minio.kubeflow:9000/mlflow/Preprocess.yaml?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minio%2F20250916%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250916T080921Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4965b08816e78add40ccbc190f485652b9e43778363df8b6a8d84b999315b317',
-    category: null,
-    creator: null,
-  },
-  {
-    id: 5,
-    name: 'Preprocess',
-    input_path: [
-      {
-        name: 'file',
-        type: 'CSV',
-      },
-    ],
-    output_path: [
-      {
-        name: 'output',
-        type: 'parquet',
-      },
-    ],
-    component_file:
-      'http://mlflow-minio.kubeflow:9000/mlflow/Preprocess.yaml?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minio%2F20250916%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250916T081110Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=db5644ddf81a181b3109af36cae70226fe159110b4db1c069ff118af26d3137e',
-    category: 'training',
-    creator: 'sai',
-  },
-]);
+const api = useApi();
+
+const components = ref<Component[]>([]);
+
 const getCategories = (items: Component[]) => {
   const list = items.map((item, index) => {
     return {
@@ -176,12 +91,12 @@ const getCategories = (items: Component[]) => {
       ),
     };
   });
-  return list.reduce((items, current) => {
+  return list.reduce((items: Category[], current) => {
     if (items.findIndex((object) => object.id === current.id) === -1) {
-      items.push(current);
+      items.push(current as Category);
     }
     return items;
-  }, []);
+  }, [] as Category[]);
 };
 const categories = ref(getCategories(components.value));
 
@@ -189,13 +104,26 @@ const emit = defineEmits<{
   dragStart: [component: Component];
 }>();
 
-function onDragStart(event: DragEvent, component: Component) {
+const onDragStart = (event: DragEvent, component: Component) => {
   if (event.dataTransfer) {
     event.dataTransfer.setData('application/json', JSON.stringify(component));
     event.dataTransfer.effectAllowed = 'copy';
   }
   emit('dragStart', component);
-}
+};
+
+onMounted(() => {
+  console.log('onMounted');
+  fetchComponents();
+});
+
+const fetchComponents = async () => {
+  console.log('fetchComponents');
+  const res = await api.getComponents();
+  if (res && 'data' in res) {
+    components.value = res.data as unknown as Component[];
+  }
+};
 </script>
 
 <style scoped>
