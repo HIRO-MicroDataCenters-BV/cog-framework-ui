@@ -34,7 +34,13 @@ const props = defineProps({
     type: Function as PropType<
       (
         params?: Record<string, unknown>,
-      ) => Promise<TableDataResponse | ApiTableResponse | null | undefined>
+      ) => Promise<
+        | TableDataResponse
+        | ApiTableResponse
+        | { detail: string }
+        | null
+        | undefined
+      >
     >,
     required: true,
   },
@@ -54,6 +60,10 @@ const props = defineProps({
       }[]
     >,
     default: () => [],
+  },
+  hasFilters: {
+    type: Boolean,
+    default: true,
   },
   hasStats: {
     type: Boolean,
@@ -81,7 +91,8 @@ const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
 const pageSize = ref(props.pageSize);
 
-const hasTableFilters = ref(true);
+const hasFilters = ref(props.hasFilters);
+const isFiltersOpen = ref(true);
 
 const selectedFilterColumn = ref((route.query.column as string) || 'all');
 const searchValue = ref((route.query.q as string) || '');
@@ -166,7 +177,7 @@ const fetchData = async () => {
 };
 
 const toggleTableFilters = () => {
-  hasTableFilters.value = !hasTableFilters.value;
+  isFiltersOpen.value = !isFiltersOpen.value;
 };
 
 const columnFilters = ref<ColumnFiltersState>(
@@ -402,6 +413,9 @@ const add = () => {
     case 'model_management':
       openAddModel.value = true;
       break;
+    case 'pipelines':
+      navigateTo('/pipelines/builder/new');
+      break;
   }
 };
 
@@ -450,9 +464,9 @@ defineExpose({ fetchData });
             </div>
           </div>
           <div class="flex gap-6 items-center">
-            <div class="flex gap-2">
+            <div v-if="hasFilters" class="flex gap-2">
               <Switch
-                :model-value="hasTableFilters"
+                :model-value="isFiltersOpen"
                 @update:model-value="toggleTableFilters"
               />
               <Label class="flex items-center">{{ t('label.filters') }}</Label>
@@ -466,7 +480,7 @@ defineExpose({ fetchData });
       </div>
 
       <!-- table filters -->
-      <div v-if="hasTableFilters">
+      <div v-if="isFiltersOpen">
         <Separator />
         <div class="flex gap-2 items-center py-4">
           <div v-if="hasSearch" class="flex-auto flex">
@@ -537,7 +551,9 @@ defineExpose({ fetchData });
         :page-size="pageSize"
         class="border-b"
       >
-        <TableHeader class="sticky top-0 bg-sidebar-background">
+        <TableHeader
+          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-1000 shadow-xs"
+        >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"

@@ -14,6 +14,7 @@ const props = defineProps<{
     :class="
       cn(
         'border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5',
+        'transition-[margin,opacity] duration-200 ease-linear',
         'group-data-[collapsible=icon]:hidden',
         props.class,
       )

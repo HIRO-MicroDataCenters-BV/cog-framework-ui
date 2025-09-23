@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
-import { useApiWithMock } from '@/composables/mock';
+import { useApi } from '@/composables/api';
 
 const dayjs = useDayjs();
-const { getModelsForTable } = useApiWithMock();
+const { getModels } = useApi();
 const { setPage, page } = useApp();
 
 setPage({
@@ -56,7 +56,7 @@ const tabs = uselistTabs().value.model_management;
 <template>
   <AppTable
     :columns="columns"
-    :data-source="getModelsForTable"
+    :data-source="getModels"
     :tabs="tabs"
     class="flex-grow"
   />

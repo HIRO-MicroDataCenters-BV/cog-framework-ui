@@ -27,7 +27,7 @@
 const { t } = useI18n();
 const dayjs = useDayjs();
 const route = useRoute();
-const { fetchDatasets, getDatasetsForTable } = useApiWithMock();
+const { getDatasets } = useApi();
 const { setPage } = useApp();
 const id = computed(() => parseInt(route.params.id[0]));
 const content = ref();
@@ -55,7 +55,7 @@ const schema = [
 ];
 
 onMounted(async () => {
-  const res = await fetchDatasets({ dataset_id: id.value });
+  const res = await getDatasets({ id: id.value });
   if (res && 'data' in res && res.data && Array.isArray(res.data)) {
     const data = res.data;
     content.value = data[0];

@@ -17,15 +17,12 @@ export const badgeVariants = cva(
         outline:
           'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
         completed:
-          'border-transparent bg-green-500 text-white [a&]:hover:bg-green-600',
-        running:
-          'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:[a&]:hover:bg-gray-600',
+          'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-green-600',
+        running: 'border-transparent bg-blue-600 text-white',
         failed:
-          'border-transparent bg-red-500 text-white [a&]:hover:bg-red-600',
-        pending:
-          'border-transparent bg-yellow-500 text-white [a&]:hover:bg-yellow-600',
-        succeeded:
-          'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:[a&]:hover:bg-gray-600',
+          'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
+        pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
+        succeeded: 'border-transparent bg-green-700 text-white',
       },
     },
     defaultVariants: {

@@ -3068,17 +3068,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue-flow/core@npm:^1.42.5":
-  version: 1.42.5
-  resolution: "@vue-flow/core@npm:1.42.5"
+"@vue-flow/core@npm:^1.46.3":
+  version: 1.46.3
+  resolution: "@vue-flow/core@npm:1.46.3"
   dependencies:
     "@vueuse/core": "npm:^10.5.0"
     d3-drag: "npm:^3.0.0"
+    d3-interpolate: "npm:^3.0.1"
     d3-selection: "npm:^3.0.0"
     d3-zoom: "npm:^3.0.0"
   peerDependencies:
     vue: ^3.3.0
-  checksum: 10c0/17108611fe2ffb10447305bf9257d207bd622335b98c0905bbcae25f17321355552b075e6a71beeab71d9248f08181e8c3fcfab12bf08fe731301c72b1d6f9c1
+  checksum: 10c0/aa18e99e5b6115be69fecb9cf64d12ced4aec305c275690ab409aad1e6e8edd3e61ec65f3b0071a090128e0e4b3d2ba79289fac35055b82c43fe992b8d3bcf11
   languageName: node
   linkType: hard
 
@@ -4517,7 +4518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-interpolate@npm:1 - 3":
+"d3-interpolate@npm:1 - 3, d3-interpolate@npm:^3.0.1":
   version: 3.0.1
   resolution: "d3-interpolate@npm:3.0.1"
   dependencies:
@@ -7635,7 +7636,7 @@ __metadata:
     "@tanstack/vue-table": "npm:^8.21.2"
     "@unhead/vue": "npm:^2.0.0-rc.8"
     "@vee-validate/zod": "npm:^4.15.0"
-    "@vue-flow/core": "npm:^1.42.5"
+    "@vue-flow/core": "npm:^1.46.3"
     "@vueuse/core": "npm:^13.6.0"
     "@vueuse/nuxt": "npm:13.0.0"
     class-variance-authority: "npm:^0.7.1"

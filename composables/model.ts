@@ -19,7 +19,7 @@ export interface ModelFormValues extends FormValues {
 }
 
 export const useModelForm = () => {
-  const { saveModelDetails, registerModelUri } = useApi();
+  const { postModelSave, postModelUri } = useApi();
 
   const submitModelForm = async (values: ModelFormValues) => {
     try {
@@ -30,7 +30,7 @@ export const useModelForm = () => {
           if (!values.file?.files?.length) {
             throw new Error('error.no_file_selected');
           }
-          res = await saveModelDetails({
+          res = await postModelSave({
             files: values.file.files,
             model_name: values.metadata?.name || '',
             file_type: values.file.file_type?.toString() || '0',
@@ -41,7 +41,7 @@ export const useModelForm = () => {
           if (!values.datastream?.uri) {
             throw new Error('error.no_uri_provided');
           }
-          res = await registerModelUri({
+          res = await postModelUri({
             model_id: values.datastream.model_id || '',
             file_type: values.datastream.file_type || 0,
             description: values.metadata?.description || '',

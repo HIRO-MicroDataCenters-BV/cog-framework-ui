@@ -2,11 +2,11 @@
 import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
-import { useApiWithMock } from '@/composables/mock';
+import { useApi } from '@/composables/api';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
-const { getDatasetsForTable } = useApiWithMock();
+const { getDatasets } = useApi();
 
 const tableRef = ref();
 
@@ -15,7 +15,7 @@ const {
   deleteDatasetBroker,
   deleteDatasetTopic,
   deleteDatasetMessage,
-} = useApiWithMock();
+} = useApi();
 
 setPage({
   section: 'dataset_management',
@@ -114,7 +114,7 @@ const columns = [
   <AppTable
     ref="tableRef"
     :columns="columns"
-    :data-source="getDatasetsForTable"
+    :data-source="getDatasets"
     :tabs="tabs"
     class="flex-grow"
   />

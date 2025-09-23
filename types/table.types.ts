@@ -55,4 +55,6 @@ export interface ApiTableResponse {
 // Function type for data source
 export type TableDataSource = (
   params?: unknown,
-) => Promise<TableDataResponse | ApiTableResponse | null | undefined>;
+) => Promise<
+  TableDataResponse | ApiTableResponse | { detail: string } | null | undefined
+>;
