@@ -21,7 +21,7 @@
             <span class="text-sm flex-auto overflow-hidden">{{
               data.label
             }}</span>
-            <Badge status="pending"></Badge>
+            <Badge v-if="data.status" status="pending"></Badge>
           </div>
           <div v-if="data.category" class="px-4 py-2">
             <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
@@ -43,8 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { VueFlow, Position, Handle } from '@vue-flow/core';
+import { ref, type CSSProperties } from 'vue';
+import { VueFlow, Position, Handle, MarkerType } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 
 interface Node {
@@ -63,6 +63,14 @@ interface Edge {
   source: string;
   target: string;
   type?: string;
+  color?: string;
+  style?: CSSProperties;
+  markerEnd?: {
+    type: MarkerType;
+    color?: string;
+    width?: number;
+    height?: number;
+  };
 }
 
 const nodes = ref<Node[]>([]);
@@ -114,10 +122,21 @@ function onNodeClick(event: unkown) {
 }
 
 function onConnect(connection: unkown) {
+  const size = 23;
+  const color = '#000';
   const newEdge: Edge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
     target: connection.target,
+    style: {
+      stroke: color,
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: size,
+      height: size,
+      color: color,
+    },
   };
 
   edges.value.push(newEdge);
