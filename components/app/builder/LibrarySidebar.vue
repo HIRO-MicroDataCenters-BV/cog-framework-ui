@@ -120,8 +120,9 @@ onMounted(() => {
 const fetchComponents = async () => {
   console.log('fetchComponents');
   const res = await api.getComponents();
-  if (res && 'data' in res) {
-    components.value = res.data as unknown as Component[];
+  console.log('res', res);
+  if (res) {
+    components.value = res as unknown as Component[];
   }
 };
 
