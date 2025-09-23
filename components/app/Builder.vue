@@ -1,29 +1,63 @@
 <template>
   <div class="h-full flex">
-    <div class="w-80 flex-shrink-0 border-r">
+    <div v-if="isSidebarOpen.library" class="w-80 flex-shrink-0 border-r">
       <AppPanel :title="$t('builder.components')">
         <template #actions>
           <button
             class="p-1 rounded hover:bg-muted"
             :title="$t('menu.documentation')"
+            @click="openExternalBuilder"
           >
             <Icon name="lucide:file-code" class="w-4 h-4" />
           </button>
           <button
+            @click="fetchComponents"
             class="p-1 rounded hover:bg-muted"
             :title="$t('action.refresh')"
           >
             <Icon name="lucide:refresh-cw" class="w-4 h-4" />
           </button>
           <button
+            @click="toggleSidebar('library')"
             class="p-1 rounded hover:bg-muted"
             :title="$t('action.minimize')"
           >
             <Icon name="lucide:minimize-2" class="w-4 h-4" />
           </button>
         </template>
-        <LibrarySidebar @drag-start="onDragStart" />
+        <LibrarySidebar @drag-start="onDragStart" ref="librarySidebar" />
       </AppPanel>
+    </div>
+    <div
+      v-if="!isSidebarOpen.library"
+      class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
+    >
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-medium text-gray-500 flex-1">
+          {{ $t('builder.components') }}
+        </h3>
+        <button
+          class="p-1 rounded hover:bg-muted"
+          :title="$t('menu.documentation')"
+          @click="openExternalBuilder"
+        >
+          <Icon name="lucide:file-code" class="w-4 h-4" />
+        </button>
+        <button
+          @click="fetchComponents"
+          class="p-1 rounded hover:bg-muted"
+          :title="$t('action.refresh')"
+        >
+          <Icon name="lucide:refresh-cw" class="w-4 h-4" />
+        </button>
+        <button
+          @click="toggleSidebar('library')"
+          class="p-1 rounded hover:bg-muted"
+          :title="$t('action.maximize')"
+        >
+          <Icon name="lucide:maximize-2" class="w-4 h-4" />
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 flex flex-col">
@@ -63,36 +97,66 @@ interface Edge {
   type?: string;
 }
 
+const isSidebarOpen = ref({
+  library: true,
+  properties: true,
+});
+
+const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
+
+const externalBuilderUrl = ref(
+  'https://dashboard.cog.hiro-develop.nl/notebook/admin/sai/lab/workspaces/auto-3/tree/register_component.ipynb',
+);
+
 const selectedNode = ref<Node | null>(null);
+const toggleSidebar = (sidebar: 'library' | 'properties') => {
+  console.log('Toggle sidebar:', sidebar);
+  isSidebarOpen.value[sidebar] = !isSidebarOpen.value[sidebar];
+  console.log('isSidebarOpen', isSidebarOpen.value);
+};
 
-function onDragStart(component: unknown) {
+const fetchComponents = () => {
+  console.log('Fetch components');
+  if (librarySidebar.value) {
+    librarySidebar.value.fetchComponents();
+  }
+};
+
+const openExternalBuilder = () => {
+  navigateTo(externalBuilderUrl.value, {
+    external: true,
+    open: { target: '_blank' },
+  });
+};
+
+const onDragStart = (component: unknown) => {
   console.log('Drag started:', component);
-}
+};
 
-function onNodeClick(node: Node | null) {
+const onNodeClick = (node: Node | null) => {
   selectedNode.value = node;
-}
+};
 
-function onConnect(edge: Edge) {
+const onConnect = (edge: Edge) => {
   console.log('Connected:', edge);
-}
+};
 
-function onEdgeUpdate(edge: Edge) {
+const onEdgeUpdate = (edge: Edge) => {
   console.log('Edge updated:', edge);
-}
+};
 
-function onUpdateNode(nodeId: string, updates: unknown) {
+const onUpdateNode = (nodeId: string, updates: unknown) => {
   console.log('Update node:', nodeId, updates);
-}
+};
 
-function onDeleteNode(nodeId: string) {
+const onDeleteNode = (nodeId: string) => {
   console.log('Delete node:', nodeId);
   selectedNode.value = null;
-}
+};
 
-function onDeleteSelected() {
+const onDeleteSelected = () => {
   if (selectedNode.value) {
     onDeleteNode(selectedNode.value.id);
   }
-}
+};
 </script>
