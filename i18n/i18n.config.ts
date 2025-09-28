@@ -148,6 +148,7 @@ export default defineI18nConfig(() => ({
         file_type: 'Select File Type',
       },
       action: {
+        run: 'Run',
         add_pipelines: 'New Pipeline',
         previous: 'Previous',
         next: 'Next',
@@ -232,6 +233,7 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
         pipelines: 'Pipelines',
+        pipelines_builder: 'Pipelines',
         datasets: 'Datasets',
       },
       step: {
