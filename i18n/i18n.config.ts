@@ -109,6 +109,12 @@ export default defineI18nConfig(() => ({
         file_type: 'File Type',
         model_policy_file: 'Model Policy File',
         model_file: 'Model File',
+        input_path: 'Input parameters',
+        output_path: 'Output parameters',
+        component_file: 'Component file',
+        category: 'Category',
+        creator: 'Creator',
+        properties: 'Properties',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',

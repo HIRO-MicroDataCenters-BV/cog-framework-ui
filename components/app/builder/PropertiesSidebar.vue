@@ -6,78 +6,74 @@
     </div>
 
     <div v-else class="space-y-4">
-      <div>
-        <h4 class="text-sm font-medium mb-2">
-          {{ selectedNode.data?.label || 'Component' }}
-        </h4>
-        <p class="text-xs text-muted-foreground">{{ selectedNode.type }}</p>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-sm font-medium">{{ $t('label.name') }}</label>
-          <input
-            v-model="nodeName"
-            class="w-full mt-1 px-3 py-2 border rounded-md text-sm"
-            :placeholder="$t('placeholder.name')"
-          />
-        </div>
-
-        <div>
-          <label class="text-sm font-medium">
-            {{ $t('label.description') }}
-          </label>
-          <textarea
-            v-model="nodeDescription"
-            class="w-full mt-1 px-3 py-2 border rounded-md text-sm"
-            rows="3"
-            :placeholder="$t('placeholder.description')"
-          />
-        </div>
-
-        <div v-if="selectedNode.type === 'data-source'">
-          <label class="text-sm font-medium">
-            {{ $t('label.connection_string') }}
-          </label>
-          <input
-            v-model="connectionString"
-            class="w-full mt-1 px-3 py-2 border rounded-md text-sm"
-            :placeholder="$t('placeholder.connection_string')"
-          />
-        </div>
-
-        <div v-if="selectedNode.type === 'filter'">
-          <label class="text-sm font-medium">
-            {{ $t('label.filter_condition') }}
-          </label>
-          <input
-            v-model="filterCondition"
-            class="w-full mt-1 px-3 py-2 border rounded-md text-sm"
-            :placeholder="$t('placeholder.filter_condition')"
-          />
-        </div>
-
-        <div v-if="selectedNode.type === 'transform'">
-          <label class="text-sm font-medium">
-            {{ $t('label.transform_expression') }}
-          </label>
-          <textarea
-            v-model="transformExpression"
-            class="w-full mt-1 px-3 py-2 border rounded-md text-sm"
-            rows="2"
-            :placeholder="$t('placeholder.transform_expression')"
-          />
-        </div>
-      </div>
-
-      <div class="pt-4 border-t">
-        <button
-          class="w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-          @click="deleteNode"
+      <SheetHeader class="p-4 px-8 flex justify-between border-b">
+        <SheetTitle
+          class="text-sm font-medium text-gray-500 flex-1 ml-8 cursor-pointer"
+          >{{ selectedNode.data?.label || 'Component' }}</SheetTitle
         >
-          <Icon name="lucide:trash-2" class="w-4 h-4 inline mr-2" />
-          {{ $t('action.delete_component') }}
-        </button>
+      </SheetHeader>
+      <DialogClose class="h-4 w-4 absolute top-4 left-8 cursor-pointer">
+        <Icon name="lucide:x" class="size-4" />
+        <span class="sr-only">Close</span>
+      </DialogClose>
+      <div class="p-4">
+        <div class="mb-4">
+          <h3 class="mb-2">
+            {{ $t('label.input_path') }}
+          </h3>
+          <div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="flex items-center gap-2 text-gray-500">
+                <Icon name="lucide:text" class="size-4" />{{
+                  selectedNode.data?.component?.input_path[0].name
+                }}<span></span>
+              </div>
+              <div>{{ selectedNode.data?.component?.input_path[0].type }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <h3 class="mb-2">
+            {{ $t('label.output_path') }}
+          </h3>
+          <div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="flex items-center gap-2 text-gray-500">
+                <Icon name="lucide:text" class="size-4" />{{
+                  selectedNode.data?.component?.output_path[0].name
+                }}<span></span>
+              </div>
+              <div>{{ selectedNode.data?.component?.output_path[0].type }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <h3 class="mb-2">
+            {{ $t('label.properties') }}
+          </h3>
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4 text-sm items-start">
+              <div class="flex items-center gap-2 text-gray-500">
+                <Icon name="lucide:text" class="size-4" />{{
+                  $t('label.category')
+                }}<span></span>
+              </div>
+              <div>{{ selectedNode.data?.component?.category }}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm items-start">
+              <div class="flex items-center gap-2 text-gray-500">
+                <Icon name="lucide:text" class="size-4" />{{
+                  $t('label.component_file')
+                }}<span></span>
+              </div>
+              <div>
+                <p class="overflow-hidden text-ellipsis">
+                  {{ selectedNode.data?.component?.component_file }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -139,6 +135,7 @@ function updateNode() {
         transformExpression: transformExpression.value,
       } as Record<string, unknown>,
     };
+    console.log('props.selectedNode', props.selectedNode.data);
     emit('updateNode', props.selectedNode.id, updates);
   }
 }
