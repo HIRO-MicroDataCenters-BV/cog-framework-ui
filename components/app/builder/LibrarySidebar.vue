@@ -216,7 +216,7 @@ onMounted(() => {
 
 const fetchComponents = async () => {
   console.log('fetchComponents');
-  const res = await api.getComponents();
+  const res = await api.getPipelineComponents();
   console.log('res', res);
   if (res) {
     components.value = res as unknown as Component[];

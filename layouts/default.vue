@@ -1,7 +1,7 @@
 <template>
   <SidebarProvider class="sidebar-wrapper">
     <AppSidebar />
-    <SidebarInset>
+    <SidebarInset class="overflow-hidden">
       <AppContent>
         <AppHeader />
         <div class="flex flex-1 flex-col gap-4 h-full">

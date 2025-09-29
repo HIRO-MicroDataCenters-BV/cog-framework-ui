@@ -440,7 +440,10 @@ defineExpose({ fetchData });
       <div>
         <div class="pb-4 flex">
           <div class="flex-auto">
-            <div v-if="page.description != ''" class="w-96 max-w-full">
+            <div
+              v-if="page.description != ''"
+              class="w-full md:w-96 max-w-full"
+            >
               <p class="text-sm text-slate-500">{{ page.description }}</p>
             </div>
             <div
@@ -544,7 +547,7 @@ defineExpose({ fetchData });
       </div>
     </div>
     <!-- end table filters -->
-    <div class="flex-grow overflow-auto flex flex-col">
+    <div class="overflow-x-auto w-full">
       <Table
         :data-source="dataSource"
         :columns="columns"
@@ -552,7 +555,7 @@ defineExpose({ fetchData });
         class="border-b"
       >
         <TableHeader
-          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-1000 shadow-xs"
+          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
