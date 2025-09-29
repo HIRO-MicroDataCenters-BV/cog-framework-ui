@@ -7,6 +7,7 @@ const { t } = useI18n();
 
 const dayjs = useDayjs();
 const { getPipelineRunsList } = useApi();
+const mock = useMock();
 const { setPage, page } = useApp();
 
 setPage({
@@ -116,12 +117,22 @@ const tabs = [
     icon: null,
   },
 ];
+const data = mock.value.pipelineRuns;
+const mockDataSource = (params = {}) => {
+  return Promise.resolve({
+    data: data,
+    total: data.length,
+    page: 1,
+    pageSize: data.length,
+  });
+};
+console.log(data);
 </script>
 
 <template>
   <AppTable
     :columns="columns"
-    :data-source="dataSource"
+    :data-source="mockDataSource"
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"
