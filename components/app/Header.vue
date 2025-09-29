@@ -23,7 +23,14 @@
         </Breadcrumb>
       </div>
       <div class="flex items-center gap-2 ml-auto">
-        <AppColorModeSwitch />
+        <div v-if="page.section == 'pipelines_builder'">
+          <Button @click="runPipeline"
+            ><Icon name="lucide:play" class="w-4 h-4" /><span>{{
+              $t('action.run')
+            }}</span></Button
+          >
+        </div>
+        <!-- <AppColorModeSwitch /> -->
       </div>
     </div>
   </header>
@@ -31,6 +38,12 @@
 
 <script lang="ts" setup>
 const { page } = useApp();
+
+const runPipeline = () => {
+  console.log('runPipeline');
+  const id = 1;
+  navigateTo(`/pipelines/${id}`);
+};
 </script>
 
 <style></style>

@@ -1,8 +1,42 @@
 <template>
   <div class="h-full flex">
-    <div v-if="isSidebarOpen.library" class="w-80 flex-shrink-0 border-r">
-      <AppPanel :title="$t('builder.components')">
-        <template #actions>
+    <Sheet>
+      <div v-if="isSidebarOpen.library" class="w-80 flex-shrink-0 border-r">
+        <AppPanel :title="$t('builder.components')">
+          <template #actions>
+            <button
+              class="p-1 rounded hover:bg-muted"
+              :title="$t('menu.documentation')"
+              @click="openExternalBuilder"
+            >
+              <Icon name="lucide:file-code" class="w-4 h-4" />
+            </button>
+            <button
+              @click="fetchComponents"
+              class="p-1 rounded hover:bg-muted"
+              :title="$t('action.refresh')"
+            >
+              <Icon name="lucide:refresh-cw" class="w-4 h-4" />
+            </button>
+            <button
+              @click="toggleSidebar('library')"
+              class="p-1 rounded hover:bg-muted"
+              :title="$t('action.minimize')"
+            >
+              <Icon name="lucide:minimize-2" class="w-4 h-4" />
+            </button>
+          </template>
+          <LibrarySidebar @drag-start="onDragStart" ref="librarySidebar" />
+        </AppPanel>
+      </div>
+      <div
+        v-if="!isSidebarOpen.library"
+        class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
+      >
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-medium text-gray-500 flex-1">
+            {{ $t('builder.components') }}
+          </h3>
           <button
             class="p-1 rounded hover:bg-muted"
             :title="$t('menu.documentation')"
@@ -20,55 +54,29 @@
           <button
             @click="toggleSidebar('library')"
             class="p-1 rounded hover:bg-muted"
-            :title="$t('action.minimize')"
+            :title="$t('action.maximize')"
           >
-            <Icon name="lucide:minimize-2" class="w-4 h-4" />
+            <Icon name="lucide:maximize-2" class="w-4 h-4" />
           </button>
-        </template>
-        <LibrarySidebar @drag-start="onDragStart" ref="librarySidebar" />
-      </AppPanel>
-    </div>
-    <div
-      v-if="!isSidebarOpen.library"
-      class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
-    >
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-medium text-gray-500 flex-1">
-          {{ $t('builder.components') }}
-        </h3>
-        <button
-          class="p-1 rounded hover:bg-muted"
-          :title="$t('menu.documentation')"
-          @click="openExternalBuilder"
-        >
-          <Icon name="lucide:file-code" class="w-4 h-4" />
-        </button>
-        <button
-          @click="fetchComponents"
-          class="p-1 rounded hover:bg-muted"
-          :title="$t('action.refresh')"
-        >
-          <Icon name="lucide:refresh-cw" class="w-4 h-4" />
-        </button>
-        <button
-          @click="toggleSidebar('library')"
-          class="p-1 rounded hover:bg-muted"
-          :title="$t('action.maximize')"
-        >
-          <Icon name="lucide:maximize-2" class="w-4 h-4" />
-        </button>
+        </div>
       </div>
-    </div>
 
-    <div class="flex-1 flex flex-col">
-      <div class="flex-1">
-        <CanvasArea
-          @node-click="onNodeClick"
-          @connect="onConnect"
-          @edge-update="onEdgeUpdate"
-        />
+      <div class="flex-1 flex flex-col">
+        <div class="flex-1">
+          <CanvasArea
+            @node-click="onNodeClick"
+            @connect="onConnect"
+            @edge-update="onEdgeUpdate"
+          />
+        </div>
       </div>
-    </div>
+
+      <SheetContent :show-overlay="false" :show-close-button="false">
+        <div>
+          <PropertiesSidebar :selectedNode="selectedNode" />
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 </template>
 

@@ -15,17 +15,19 @@
         <div
           class="bg-white border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
         >
-          <div
-            class="flex items-center flex-nowrap gap-2 border-b px-4 py-2 text-gray-700"
-          >
-            <span class="text-sm flex-auto overflow-hidden">{{
-              data.label
-            }}</span>
-            <Badge v-if="data.status" status="pending"></Badge>
-          </div>
-          <div v-if="data.category" class="px-4 py-2">
-            <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
-          </div>
+          <SheetTrigger as-child>
+            <div
+              class="flex items-center flex-nowrap gap-2 border-b px-4 py-2 text-gray-700"
+            >
+              <span class="text-sm flex-auto overflow-hidden">{{
+                data.label
+              }}</span>
+              <Badge v-if="data.status" status="pending"></Badge>
+            </div>
+            <div v-if="data.category" class="px-4 py-2">
+              <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
+            </div>
+          </SheetTrigger>
           <Handle
             type="target"
             :position="targetPosition"
@@ -82,12 +84,12 @@ const emit = defineEmits<{
   edgeUpdate: [edge: Edge];
 }>();
 
-function onDragOver(event: DragEvent) {
+const onDragOver = (event: DragEvent) => {
   event.preventDefault();
   event.dataTransfer!.dropEffect = 'copy';
-}
+};
 
-function onDrop(event: DragEvent) {
+const onDrop = (event: DragEvent) => {
   event.preventDefault();
 
   const data = event.dataTransfer?.getData('application/json');
@@ -107,21 +109,24 @@ function onDrop(event: DragEvent) {
         label: component.name,
         status: component.status,
         category: component.category,
+        component: component,
       },
     };
 
     nodes.value.push(newNode);
+
+    console.log(newNode);
   } catch (error) {
     console.error('Error parsing dropped component:', error);
   }
-}
+};
 
-function onNodeClick(event: unkown) {
+const onNodeClick = (event: unkown) => {
   const node = event.node;
   emit('nodeClick', node);
-}
+};
 
-function onConnect(connection: unkown) {
+const onConnect = (connection: unkown) => {
   const size = 23;
   const color = '#000';
   const newEdge: Edge = {
@@ -141,11 +146,11 @@ function onConnect(connection: unkown) {
 
   edges.value.push(newEdge);
   emit('connect', newEdge);
-}
+};
 
-function onEdgeUpdate(edge: unkown) {
+const onEdgeUpdate = (edge: unkown) => {
   emit('edgeUpdate', edge);
-}
+};
 </script>
 
 <style scoped></style>
