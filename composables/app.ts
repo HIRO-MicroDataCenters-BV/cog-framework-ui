@@ -3,6 +3,7 @@ interface Page {
   title?: string;
   subtitle?: string;
   description?: string;
+  data?: { builder: { components: never[] } };
 }
 
 export const useApp = () => {
@@ -12,6 +13,11 @@ export const useApp = () => {
       title: '',
       subtitle: '',
       description: '',
+      data: {
+        builder: {
+          components: [],
+        },
+      },
     };
   });
   const setPage = (value: Page) => {
@@ -20,6 +26,11 @@ export const useApp = () => {
       title: value.title || '',
       subtitle: value.subtitle || '',
       description: value.description || '',
+      data: value.data || {
+        builder: {
+          components: [],
+        },
+      },
     };
   };
   return {

@@ -10,6 +10,8 @@
       @node-click="onNodeClick"
       @connect="onConnect"
       @edge-update="onEdgeUpdate"
+      @edges-change="onEdgesChange"
+      @edge-update-end="onEdgesChange"
     >
       <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
@@ -82,6 +84,7 @@ const emit = defineEmits<{
   nodeClick: [node: Node | null];
   connect: [edge: Edge];
   edgeUpdate: [edge: Edge];
+  update: [nodes: Node[], edges: Edge[]];
 }>();
 
 const onDragOver = (event: DragEvent) => {
@@ -114,8 +117,7 @@ const onDrop = (event: DragEvent) => {
     };
 
     nodes.value.push(newNode);
-
-    console.log(newNode);
+    emit('update', nodes.value, edges.value);
   } catch (error) {
     console.error('Error parsing dropped component:', error);
   }
@@ -146,10 +148,19 @@ const onConnect = (connection: unkown) => {
 
   edges.value.push(newEdge);
   emit('connect', newEdge);
+  emit('update', nodes.value, edges.value);
 };
 
-const onEdgeUpdate = (edge: unkown) => {
+const onEdgesChange = () => {
+  console.log('onEdgesChange', edges);
+  setTimeout(() => {
+    emit('update', nodes.value, edges.value);
+  }, 100);
+};
+
+const onEdgeUpdate = (edge: Edge) => {
   emit('edgeUpdate', edge);
+  emit('update', nodes.value, edges.value);
 };
 </script>
 

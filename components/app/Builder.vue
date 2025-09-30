@@ -12,21 +12,21 @@
               <Icon name="lucide:file-code" class="w-4 h-4" />
             </button>
             <button
-              @click="fetchComponents"
               class="p-1 rounded hover:bg-muted"
               :title="$t('action.refresh')"
+              @click="fetchComponents"
             >
               <Icon name="lucide:refresh-cw" class="w-4 h-4" />
             </button>
             <button
-              @click="toggleSidebar('library')"
               class="p-1 rounded hover:bg-muted"
               :title="$t('action.minimize')"
+              @click="toggleSidebar('library')"
             >
               <Icon name="lucide:minimize-2" class="w-4 h-4" />
             </button>
           </template>
-          <LibrarySidebar @drag-start="onDragStart" ref="librarySidebar" />
+          <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
         </AppPanel>
       </div>
       <div
@@ -45,16 +45,16 @@
             <Icon name="lucide:file-code" class="w-4 h-4" />
           </button>
           <button
-            @click="fetchComponents"
             class="p-1 rounded hover:bg-muted"
             :title="$t('action.refresh')"
+            @click="fetchComponents"
           >
             <Icon name="lucide:refresh-cw" class="w-4 h-4" />
           </button>
           <button
-            @click="toggleSidebar('library')"
             class="p-1 rounded hover:bg-muted"
             :title="$t('action.maximize')"
+            @click="toggleSidebar('library')"
           >
             <Icon name="lucide:maximize-2" class="w-4 h-4" />
           </button>
@@ -67,6 +67,7 @@
             @node-click="onNodeClick"
             @connect="onConnect"
             @edge-update="onEdgeUpdate"
+            @update="onUpdate"
           />
         </div>
       </div>
@@ -153,18 +154,7 @@ const onEdgeUpdate = (edge: Edge) => {
   console.log('Edge updated:', edge);
 };
 
-const onUpdateNode = (nodeId: string, updates: unknown) => {
-  console.log('Update node:', nodeId, updates);
-};
-
-const onDeleteNode = (nodeId: string) => {
-  console.log('Delete node:', nodeId);
-  selectedNode.value = null;
-};
-
-const onDeleteSelected = () => {
-  if (selectedNode.value) {
-    onDeleteNode(selectedNode.value.id);
-  }
+const onUpdate = (nodes: Node[], edges: Edge[]) => {
+  console.log('Update:', nodes, edges);
 };
 </script>

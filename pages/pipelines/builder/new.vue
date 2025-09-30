@@ -9,6 +9,11 @@ const { setPage, page } = useApp();
 
 setPage({
   section: 'pipelines_builder',
+  data: {
+    builder: {
+      components: [],
+    },
+  },
 });
 </script>
 
