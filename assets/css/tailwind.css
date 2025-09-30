@@ -44,7 +44,10 @@
   .vue-flow__node-default.selected,
   .vue-flow__node.selected {
     border: 1px solid var(--primary);
-    border-radius: var(--radius);
+    border-radius: var(--radius) !important;
+  }
+  .vue-flow__node:hover .handle{
+    opacity: 1;
   }
   .vue-flow__viewport{
     background: white;
@@ -52,8 +55,25 @@
     background-size: 40px 40px;
     background-position: -19px -19px;
   }
-  .vue-flow__edge.selected path {
+
+  .vue-flow__edge .vue-flow__edge-textwrapper{
+    display: none;
+  }
+  .vue-flow__edge .vue-flow__edge-text{
+    fill: var(--destructive) !important;
+    font-size: 0.8rem !important;
+  }
+  /*
+  .vue-flow__edge:hover path {
     stroke: var(--destructive) !important;
+  }
+  .vue-flow__edge:hover .vue-flow__edge-textwrapper{
+    display: block;
+    color: var(--destructive) !important;
+  }
+  */
+  .vue-flow__edge.selected path {
+    stroke: var(--primary) !important;
   }
 }
 

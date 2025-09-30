@@ -33,12 +33,12 @@
           <Handle
             type="target"
             :position="targetPosition"
-            class="bg-black dark:bg-white rounded"
+            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
           />
           <Handle
             type="source"
             :position="sourcePosition"
-            class="bg-black dark:bg-white rounded"
+            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
           />
         </div>
       </template>
@@ -106,7 +106,7 @@ const onNodeClick = (event: unkown) => {
 
 const onConnect = (connection: unkown) => {
   const size = 23;
-  const color = '#000';
+  const color = '#9BB2BB';
   console.log('connection', connection);
   const sourceNode = nodes.value.find((node) => node.id === connection.source);
   const targetNode = nodes.value.find((node) => node.id === connection.target);
