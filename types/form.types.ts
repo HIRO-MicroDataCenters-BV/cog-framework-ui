@@ -73,32 +73,3 @@ export interface StepFormProps {
 export interface FormValues {
   [key: string]: unknown;
 }
-
-export interface FormField {
-  key: string;
-  type: string;
-  label: string;
-  placeholder?: string;
-  options?: { value: number | string; label: string }[];
-  multiple?: boolean;
-}
-
-export interface FormStep {
-  key: string;
-  title: string;
-  fields: FormField[];
-}
-
-export interface FormNavigation {
-  next: string;
-  back: string;
-  submit: string;
-  cancel: string;
-}
-
-export interface ActionLabels {
-  next: string;
-  back: string;
-  submit: string;
-  cancel: string;
-}

@@ -1,13 +1,7 @@
-interface Page {
-  section?: string;
-  title?: string;
-  subtitle?: string;
-  description?: string;
-  data?: { builder: { components: never[] } };
-}
+import type { Page } from '~/types/app.types';
 
 export const useApp = () => {
-  const page = useState('page', () => {
+  const page = useState<Page>('page', () => {
     return {
       section: '',
       title: '',
@@ -15,7 +9,9 @@ export const useApp = () => {
       description: '',
       data: {
         builder: {
-          components: [],
+          name: '',
+          nodes: [],
+          edges: [],
         },
       },
     };
@@ -26,9 +22,11 @@ export const useApp = () => {
       title: value.title || '',
       subtitle: value.subtitle || '',
       description: value.description || '',
-      data: value.data || {
+      data: {
         builder: {
-          components: [],
+          name: value.data?.builder?.name || '',
+          nodes: value.data?.builder?.nodes || [],
+          edges: value.data?.builder?.edges || [],
         },
       },
     };

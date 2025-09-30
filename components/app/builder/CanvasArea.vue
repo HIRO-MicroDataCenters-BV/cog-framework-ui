@@ -51,31 +51,7 @@ import { ref, type CSSProperties } from 'vue';
 import { VueFlow, Position, Handle, MarkerType } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 
-interface Node {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    status: string;
-    [key: string]: unknown;
-  };
-}
-
-interface Edge {
-  id: string;
-  source: string;
-  target: string;
-  type?: string;
-  color?: string;
-  style?: CSSProperties;
-  markerEnd?: {
-    type: MarkerType;
-    color?: string;
-    width?: number;
-    height?: number;
-  };
-}
+import type { Node, Edge } from '~/types/builder.types';
 
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
