@@ -107,6 +107,9 @@ const onNodeClick = (event: unkown) => {
 const onConnect = (connection: unkown) => {
   const size = 23;
   const color = '#000';
+  console.log('connection', connection);
+  const sourceNode = nodes.value.find((node) => node.id === connection.source);
+  const targetNode = nodes.value.find((node) => node.id === connection.target);
   const newEdge: Edge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
@@ -114,6 +117,8 @@ const onConnect = (connection: unkown) => {
     style: {
       stroke: color,
     },
+    sourceNode: sourceNode,
+    targetNode: targetNode,
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: size,

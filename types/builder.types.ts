@@ -16,6 +16,8 @@ export interface Edge {
   source: string;
   target: string;
   type?: string;
+  sourceNode?: Node;
+  targetNode?: Node;
 }
 
 export interface ComponentPath {
