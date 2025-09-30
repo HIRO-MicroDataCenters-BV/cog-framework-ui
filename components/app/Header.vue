@@ -40,7 +40,7 @@
 import type { Edge, Component } from '~/types/builder.types';
 
 const { page } = useApp();
-const { api } = useApi();
+const api = useApi();
 
 console.log('page', page);
 
