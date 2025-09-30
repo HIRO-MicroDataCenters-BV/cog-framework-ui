@@ -118,8 +118,10 @@ const runPipeline = () => {
     const inputs: string[] = [];
 
     edges?.forEach((edge) => {
-      const sourceId = edge?.sourceNode?.data?.component?.id;
-      inputs.push(sourceId);
+      console.log('edge', edge);
+      const sourceId = edge?.sourceNode?.data?.component?.id + '';
+      console.log('sourceId', sourceId, edge?.sourceNode?.data?.component?.id);
+      inputs.push(`${sourceId}.output`);
     });
 
     result.inputs = [...result.inputs, ...inputs];
