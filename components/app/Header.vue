@@ -37,12 +37,122 @@
 </template>
 
 <script lang="ts" setup>
+import type { Edge, Component } from '~/types/builder.types';
+
 const { page } = useApp();
+const { api } = useApi();
+
+console.log('page', page);
+
+/*
+{
+  "name": "example_pipeline",
+  "pipeline_components": [
+    {
+      "id": "component_id1",
+      "name": "component_id_name1",
+      "inputs": ["file"],
+    },
+    {
+      "id": "component_id2",
+      "name": "component_id_name2",
+      "inputs": ["component_id1.output"],
+    },
+    {
+      "id": "component_id3",
+      "name": "component_id_name3",
+      "inputs": ["component_id2.output"],
+    },
+    {
+      "id": "component_id4",
+      "name": "component_id_name4",
+      "inputs": ["component_id1.output", "component_id2.output", "isvc"],
+    }
+  ],
+  "input_path": [
+    {"name": "file", "type": "string"},
+    {"name": "isvc", "type": "string"}
+  ],
+  "output_path": [
+    {"name": "final_serving_output", "type": "artifact"}
+  ]
+}
+*/
+
+interface PipelineComponent {
+  id: string;
+  name: string;
+  inputs: string | number[];
+}
+
+interface PipelinePath {
+  name: string;
+  type: string;
+}
 
 const runPipeline = () => {
-  console.log('runPipeline');
-  const id = 1;
-  navigateTo(`/pipelines/${id}`);
+  console.log('runPipeline', page.value.data?.builder);
+
+  const builder = page.value.data?.builder;
+  if (!builder) return;
+  console.log('builder', builder);
+  const data = {
+    name: builder.name,
+    pipeline_components: [],
+    input_path: [] as PipelinePath[],
+    output_path: [] as PipelinePath[],
+  };
+
+  const nodes = builder?.nodes?.map((node) => {
+    console.log('node', node);
+    const component = node?.data?.component as Component;
+    const result = { ...component, inputs: [] };
+
+    console.log('component', component);
+    const input_path = component.input_path;
+    input_path.forEach((path: PipelinePath) => {
+      result.inputs.push(path.name as string);
+    });
+    const id = node?.id;
+    const edges = builder?.edges?.filter((edge: Edge) => edge.target === id);
+    const inputs: string[] = [];
+
+    edges?.forEach((edge) => {
+      const sourceId = edge?.sourceNode?.data?.component?.id;
+      inputs.push(sourceId);
+    });
+
+    result.inputs = [...result.inputs, ...inputs];
+    return result;
+  });
+
+  const components = nodes.map((node) => {
+    return {
+      id: node.id,
+      name: node.name,
+      inputs: node.inputs,
+    };
+  });
+
+  const input_path: PipelinePath[] = [];
+  const output_path: PipelinePath[] = [];
+
+  nodes.forEach((node) => {
+    input_path.push(...node.input_path);
+    output_path.push(...node.output_path);
+  });
+  data.input_path = input_path;
+  data.output_path = output_path;
+  data.pipeline_components = components;
+
+  console.log('data', data);
+  console.log('nodeData', nodes);
+  console.log('edgeData', edges);
+
+  console.log('postTrainingBuilderPipelineComponent');
+  api.postTrainingBuilderPipelineComponent(data).then((res: unknown) => {
+    console.log('res', res);
+  });
 };
 </script>
 

@@ -11,7 +11,9 @@ setPage({
   section: 'pipelines_builder',
   data: {
     builder: {
-      components: [],
+      name: 'example_pipeline',
+      nodes: [],
+      edges: [],
     },
   },
 });

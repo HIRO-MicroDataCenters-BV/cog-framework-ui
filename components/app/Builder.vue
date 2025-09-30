@@ -87,24 +87,9 @@ import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
+import type { Node, Edge } from '~/types/builder.types';
 
-interface Node {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    icon: string;
-    [key: string]: unknown;
-  };
-}
-
-interface Edge {
-  id: string;
-  source: string;
-  target: string;
-  type?: string;
-}
+const { setPage, page } = useApp();
 
 const isSidebarOpen = ref({
   library: true,
@@ -156,5 +141,15 @@ const onEdgeUpdate = (edge: Edge) => {
 
 const onUpdate = (nodes: Node[], edges: Edge[]) => {
   console.log('Update:', nodes, edges);
+  setPage({
+    ...page.value,
+    data: {
+      builder: {
+        name: page.value.data?.builder?.name || '',
+        nodes,
+        edges,
+      },
+    },
+  });
 };
 </script>

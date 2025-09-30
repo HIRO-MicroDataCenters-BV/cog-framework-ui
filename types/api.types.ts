@@ -1,4 +1,4 @@
-import type { FormValues } from './form.types';
+import type { FormValues } from './form';
 
 export interface FileDatasetValues extends FormValues {
   metadata?: {
