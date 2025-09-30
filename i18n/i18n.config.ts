@@ -74,6 +74,7 @@ export default defineI18nConfig(() => ({
         },
       },
       label: {
+        no_category: 'No category',
         version: 'Version',
         files: 'Files',
         filters: 'Filters',
