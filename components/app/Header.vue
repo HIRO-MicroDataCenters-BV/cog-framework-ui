@@ -148,8 +148,6 @@ const runPipeline = () => {
   data.pipeline_components = components;
 
   console.log('data', data);
-  console.log('nodeData', nodes);
-  console.log('edgeData', edges);
 
   console.log('postTrainingBuilderPipelineComponent');
   api.postTrainingBuilderPipelineComponent(data).then((res: unknown) => {
