@@ -40,6 +40,7 @@
   .vue-flow__node-default,
   .vue-flow__node {
     border: none;
+    border-radius: var(--radius) !important;
   }
   .vue-flow__node-default.selected,
   .vue-flow__node.selected {

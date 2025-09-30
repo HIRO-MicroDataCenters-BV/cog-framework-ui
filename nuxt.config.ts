@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-zod-i18n',
     'dayjs-nuxt',
-    '@nuxtjs/color-mode',
+    //'@nuxtjs/color-mode',
   ],
   ssr: false,
   devtools: { enabled: true },
@@ -23,9 +23,11 @@ export default defineNuxtConfig({
     baseURL: process.env.URL_PREFIX,
   },
   css: ['~/assets/css/tailwind.css'],
+  /*
   colorMode: {
     classSuffix: '',
   },
+  */
   runtimeConfig: {
     public: {
       apiBase: URL_PREFIX,
