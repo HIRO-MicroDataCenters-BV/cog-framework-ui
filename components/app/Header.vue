@@ -25,8 +25,8 @@
       <div class="flex items-center gap-2 ml-auto">
         <div v-if="page.section == 'pipelines_builder'">
           <Button @click="runPipeline"
-            ><Icon name="lucide:play" class="w-4 h-4" /><span>{{
-              $t('action.run')
+            ><Icon name="lucide:save" class="w-4 h-4" /><span>{{
+              $t('action.save')
             }}</span></Button
           >
         </div>
