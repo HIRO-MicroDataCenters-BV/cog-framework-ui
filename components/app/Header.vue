@@ -19,6 +19,11 @@
                 page.title
               }}</BreadcrumbItem>
             </template>
+            <template v-if="page.section == 'pipelines_builder'">
+              <BreadcrumbItem class="hidden md:block">
+                <Input v-model="page.data.builder.name" />
+              </BreadcrumbItem>
+            </template>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
