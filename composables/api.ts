@@ -203,6 +203,8 @@ export const useApi = () => {
             if (showToast) toaster.show('error', 'unauthorized');
             return null;
         }
+      } else {
+        if (showToast) toaster.show('success', data);
       }
 
       const result =
@@ -2140,7 +2142,9 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipelineComponent: async (data: unknown) => {
-      return request(`/training-builder-pipeline-components`, 'POST', data);
+      return request(`/training-builder-pipeline-components`, 'POST', data, {
+        showToast: true,
+      });
     },
 
     /**
