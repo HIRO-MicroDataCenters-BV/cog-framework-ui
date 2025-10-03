@@ -9,8 +9,9 @@
       <SheetHeader class="p-4 px-8 flex justify-between border-b">
         <SheetTitle
           class="text-sm font-medium text-gray-500 flex-1 ml-8 cursor-pointer"
-          >{{ selectedNode.data?.label || 'Component' }}</SheetTitle
         >
+          <Input v-model="nodeName" type="text" />
+        </SheetTitle>
       </SheetHeader>
       <DialogClose class="h-4 w-4 absolute top-4 left-8 cursor-pointer">
         <Icon name="lucide:x" class="size-4" />
@@ -107,6 +108,7 @@ const nodeDescription = ref('');
 const connectionString = ref('');
 const filterCondition = ref('');
 const transformExpression = ref('');
+const selectedNodeLabel = ref('');
 
 watch(
   () => props.selectedNode,
@@ -118,6 +120,7 @@ watch(
       filterCondition.value = (newNode.data?.filterCondition as string) || '';
       transformExpression.value =
         (newNode.data?.transformExpression as string) || '';
+      selectedNodeLabel.value = (newNode.data?.label as string) || '';
     }
   },
   { immediate: true },
@@ -128,7 +131,7 @@ function updateNode() {
     const updates: Partial<Node> = {
       data: {
         ...props.selectedNode.data,
-        label: nodeName.value,
+        label: selectedNodeLabel.value,
         description: nodeDescription.value,
         connectionString: connectionString.value,
         filterCondition: filterCondition.value,

@@ -68,3 +68,53 @@ export function calculateDuration(
 
   return `${diffSeconds}s`;
 }
+
+export function generateUniqueName(existingNames: string[]): string {
+  if (existingNames.length === 0) {
+    return 'Name_1';
+  }
+
+  const numberPattern = /^(.*)_(\d+)$/;
+  const baseNames = new Map<string, number[]>();
+
+  for (const name of existingNames) {
+    const match = name.match(numberPattern);
+    if (match) {
+      const baseName = match[1];
+      const number = parseInt(match[2], 10);
+
+      if (!baseNames.has(baseName)) {
+        baseNames.set(baseName, []);
+      }
+      baseNames.get(baseName)!.push(number);
+    } else {
+      if (!baseNames.has(name)) {
+        baseNames.set(name, []);
+      }
+    }
+  }
+
+  let mostCommonBase = '';
+  let maxCount = 0;
+
+  for (const [baseName, numbers] of baseNames) {
+    const totalCount =
+      numbers.length + (existingNames.includes(baseName) ? 1 : 0);
+    if (totalCount > maxCount) {
+      maxCount = totalCount;
+      mostCommonBase = baseName;
+    }
+  }
+
+  if (!mostCommonBase && existingNames.length > 0) {
+    mostCommonBase = existingNames[0];
+  }
+
+  const existingNumbers = baseNames.get(mostCommonBase) || [];
+  let counter = 1;
+  while (existingNumbers.includes(counter)) {
+    counter++;
+  }
+
+  return `${mostCommonBase}_${counter}`;
+}
