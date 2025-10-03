@@ -19,14 +19,19 @@
                 page.title
               }}</BreadcrumbItem>
             </template>
+            <template v-if="page.section == 'pipelines_builder'">
+              <BreadcrumbItem class="hidden md:block">
+                <Input v-model="page.data.builder.name" />
+              </BreadcrumbItem>
+            </template>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
       <div class="flex items-center gap-2 ml-auto">
         <div v-if="page.section == 'pipelines_builder'">
           <Button @click="runPipeline"
-            ><Icon name="lucide:play" class="w-4 h-4" /><span>{{
-              $t('action.run')
+            ><Icon name="lucide:save" class="w-4 h-4" /><span>{{
+              $t('action.save')
             }}</span></Button
           >
         </div>

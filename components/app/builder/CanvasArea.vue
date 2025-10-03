@@ -85,7 +85,10 @@ const onDrop = (event: DragEvent) => {
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       data: {
-        label: component.name,
+        label: generateUniqueName([
+          ...nodes.value.map((node) => node.data.label),
+          component.name,
+        ]),
         status: component.status,
         category: component.category,
         component: component,

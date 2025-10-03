@@ -32,18 +32,15 @@ const columns = [
       ),
   },
   {
-    id: 'created_on',
+    id: 'start_time',
     cell: ({ row }: { row: TableRowType }) => {
-      const createdOn = row.getValue<string>('created_on');
-      return createdOn ? dayjs(createdOn).format('DD.MM.YYYY HH:mm') : '-';
+      const startedOn = row.getValue<string>('start_time');
+      return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
     },
   },
   {
-    id: 'started_on',
-    cell: ({ row }: { row: TableRowType }) => {
-      const startedOn = row.getValue<string>('started_on');
-      return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
-    },
+    id: 'experiment_id',
+    cell: ({ row }: { row: TableRowType }) => row.getValue('experiment_id'),
   },
   {
     id: 'status',
@@ -56,24 +53,7 @@ const columns = [
   },
   {
     id: 'duration',
-    cell: ({ row }: { row: TableRowType }) => {
-      const duration = row.getValue<string>('duration');
-      const startTime = row.getValue<string>('start_time');
-
-      if (duration) {
-        return duration;
-      }
-
-      if (startTime) {
-        const start = new Date(startTime);
-        const now = new Date();
-        const diff = now.getTime() - start.getTime();
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        return `${hours}h ${minutes}m`;
-      }
-      return '-';
-    },
+    cell: ({ row }: { row: TableRowType }) => row.getValue('duration'),
   },
 ];
 
@@ -132,7 +112,7 @@ console.log(data);
 <template>
   <AppTable
     :columns="columns"
-    :data-source="mockDataSource"
+    :data-source="getPipelineRunsList"
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"

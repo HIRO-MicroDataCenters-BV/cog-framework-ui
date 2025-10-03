@@ -250,6 +250,8 @@ export default defineI18nConfig(() => ({
         streams: 'Streams',
       },
       column: {
+        experiment_id: 'Experiment ID',
+        start_time: 'Start Time',
         id: 'ID',
         dataset_id: 'ID',
         name: 'Name',
