@@ -68,13 +68,14 @@
             @connect="onConnect"
             @edge-update="onEdgeUpdate"
             @update="onUpdate"
+            @error="onError"
           />
         </div>
       </div>
 
       <SheetContent :show-overlay="false" :show-close-button="false">
         <div>
-          <PropertiesSidebar :selectedNode="selectedNode" />
+          <PropertiesSidebar :selectedNode="selectedNode as any" />
         </div>
       </SheetContent>
     </Sheet>
@@ -88,6 +89,7 @@ import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import type { Node, Edge } from '~/types/builder.types';
+import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 
 const { setPage, page } = useApp();
 
@@ -102,7 +104,7 @@ const externalBuilderUrl = ref(
   'https://dashboard.cog.hiro-develop.nl/notebook/admin/sai/lab/workspaces/auto-3/tree/register_component.ipynb',
 );
 
-const selectedNode = ref<Node | null>(null);
+const selectedNode = ref<VueFlowNode | null>(null);
 const toggleSidebar = (sidebar: 'library' | 'properties') => {
   console.log('Toggle sidebar:', sidebar);
   isSidebarOpen.value[sidebar] = !isSidebarOpen.value[sidebar];
@@ -127,29 +129,38 @@ const onDragStart = (component: unknown) => {
   console.log('Drag started:', component);
 };
 
-const onNodeClick = (node: Node | null) => {
+const onNodeClick = (node: VueFlowNode | null) => {
   selectedNode.value = node;
 };
 
-const onConnect = (edge: Edge) => {
+const onConnect = (edge: VueFlowEdge) => {
   console.log('Connected:', edge);
 };
 
-const onEdgeUpdate = (edge: Edge) => {
+const onEdgeUpdate = (edge: any) => {
   console.log('Edge updated:', edge);
 };
 
-const onUpdate = (nodes: Node[], edges: Edge[]) => {
+const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
   console.log('Update:', nodes, edges);
   setPage({
     ...page.value,
     data: {
       builder: {
         name: page.value.data?.builder?.name || '',
-        nodes,
-        edges,
+        nodes: nodes as Node[],
+        edges: edges as Edge[],
       },
     },
+  });
+};
+
+const onError = (errorKey: string) => {
+  console.error('Builder error:', errorKey);
+
+  const toaster = useToaster();
+  toaster.show('error', errorKey, {
+    duration: 3000,
   });
 };
 </script>

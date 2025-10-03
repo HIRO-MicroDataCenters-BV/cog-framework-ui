@@ -20,6 +20,10 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           connection_error: 'Connection error',
           unauthorized: 'Unauthorized',
+          multiple_inputs_not_allowed:
+            'Multiple inputs to one output not allowed',
+          multiple_outputs_not_allowed:
+            'Multiple outputs from one input not allowed',
         },
         info: {
           operation_in_progress: 'Operation in progress',
@@ -206,6 +210,10 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           operation_failed: 'Operation failed',
           connection_error: 'Connection error',
+          multiple_inputs_not_allowed:
+            'Multiple inputs to one output not allowed',
+          multiple_outputs_not_allowed:
+            'Multiple outputs from one input not allowed',
         },
         info: {
           operation_in_progress: 'Operation in progress',

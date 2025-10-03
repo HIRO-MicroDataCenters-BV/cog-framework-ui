@@ -48,19 +48,27 @@
 
 <script setup lang="ts">
 import { ref, type CSSProperties } from 'vue';
-import { VueFlow, Position, Handle, MarkerType } from '@vue-flow/core';
+import {
+  VueFlow,
+  Position,
+  Handle,
+  MarkerType,
+  type Node as VueFlowNode,
+  type Edge as VueFlowEdge,
+} from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 
 import type { Node, Edge } from '~/types/builder.types';
 
-const nodes = ref<Node[]>([]);
-const edges = ref<Edge[]>([]);
+const nodes = ref<VueFlowNode[]>([]);
+const edges = ref<VueFlowEdge[]>([]);
 
 const emit = defineEmits<{
-  nodeClick: [node: Node | null];
-  connect: [edge: Edge];
-  edgeUpdate: [edge: Edge];
-  update: [nodes: Node[], edges: Edge[]];
+  nodeClick: [node: VueFlowNode | null];
+  connect: [edge: VueFlowEdge];
+  edgeUpdate: [edge: any];
+  update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
+  error: [errorKey: string];
 }>();
 
 const onDragOver = (event: DragEvent) => {
@@ -78,7 +86,7 @@ const onDrop = (event: DragEvent) => {
     const component = JSON.parse(data);
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
-    const newNode: Node = {
+    const newNode: VueFlowNode = {
       id: `compoent-${component.id}-${Date.now()}`,
       type: 'default',
       position,
@@ -102,33 +110,53 @@ const onDrop = (event: DragEvent) => {
   }
 };
 
-const onNodeClick = (event: unkown) => {
+const onNodeClick = (event: unknown) => {
   const node = event.node;
   emit('nodeClick', node);
 };
 
-const onConnect = (connection: unkown) => {
+const onConnect = (connection: unknown) => {
   const size = 23;
   const color = '#9BB2BB';
   console.log('connection', connection);
+
+  const existingIncomingEdges = edges.value.filter(
+    (edge) => edge.target === connection.target,
+  );
+
+  if (existingIncomingEdges.length > 0) {
+    emit('error', 'multiple_inputs_not_allowed');
+    return;
+  }
+
+  const existingOutgoingEdges = edges.value.filter(
+    (edge) => edge.source === connection.source,
+  );
+
+  if (existingOutgoingEdges.length > 0) {
+    emit('error', 'multiple_outputs_not_allowed');
+    return;
+  }
+
   const sourceNode = nodes.value.find((node) => node.id === connection.source);
   const targetNode = nodes.value.find((node) => node.id === connection.target);
-  const newEdge: Edge = {
+  const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
     target: connection.target,
     style: {
       stroke: color,
     },
-    sourceNode: sourceNode,
-    targetNode: targetNode,
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: size,
       height: size,
       color: color,
     },
-  };
+  } as VueFlowEdge & { sourceNode?: VueFlowNode; targetNode?: VueFlowNode };
+
+  (newEdge as unknown as { sourceNode: VueFlowNode }).sourceNode = sourceNode;
+  (newEdge as unknown as { targetNode: VueFlowNode }).targetNode = targetNode;
 
   edges.value.push(newEdge);
   emit('connect', newEdge);
@@ -142,8 +170,8 @@ const onEdgesChange = () => {
   }, 100);
 };
 
-const onEdgeUpdate = (edge: Edge) => {
-  emit('edgeUpdate', edge);
+const onEdgeUpdate = (edgeUpdateEvent: unknown) => {
+  emit('edgeUpdate', edgeUpdateEvent);
   emit('update', nodes.value, edges.value);
 };
 </script>

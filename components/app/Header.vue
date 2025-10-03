@@ -124,9 +124,8 @@ const runPipeline = () => {
 
     edges?.forEach((edge) => {
       console.log('edge', edge);
-      const sourceId = edge?.sourceNode?.data?.component?.id + '';
-      console.log('sourceId', sourceId, edge?.sourceNode?.data?.component?.id);
-      inputs.push(`${sourceId}.output`);
+      const sourceName = edge?.sourceNode?.data?.component?.name + '';
+      inputs.push(`${sourceName}.output`);
     });
 
     result.inputs = [...result.inputs, ...inputs];

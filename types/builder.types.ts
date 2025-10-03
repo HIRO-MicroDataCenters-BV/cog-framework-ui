@@ -2,11 +2,14 @@ export interface Node {
   id: string;
   type: string;
   position: { x: number; y: number };
+  targetPosition?: any;
+  sourcePosition?: any;
   data: {
     label: string;
     icon?: string;
     status?: string;
     category?: string;
+    component?: Component;
     [key: string]: unknown;
   };
 }
@@ -18,6 +21,17 @@ export interface Edge {
   type?: string;
   sourceNode?: Node;
   targetNode?: Node;
+  style?: {
+    stroke?: string;
+    strokeWidth?: number;
+    [key: string]: any;
+  };
+  markerEnd?: {
+    type?: any;
+    width?: number;
+    height?: number;
+    color?: string;
+  };
 }
 
 export interface ComponentPath {
