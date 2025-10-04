@@ -123,7 +123,9 @@ console.log('page', page);
 interface PipelineComponent {
   id: string;
   name: string;
-  inputs: string | number[];
+  inputs: string[];
+  input_path: PipelinePath[];
+  output_path: PipelinePath[];
 }
 
 interface PipelinePath {
@@ -139,18 +141,20 @@ const runPipeline = () => {
   console.log('builder', builder);
   const data = {
     name: builder.name,
-    pipeline_components: [],
+    pipeline_components: [] as PipelineComponent[],
     input_path: [] as PipelinePath[],
     output_path: [] as PipelinePath[],
   };
 
-  const nodes = builder?.nodes?.map((node) => {
+  const nodes = builder?.nodes?.map((node): PipelineComponent => {
     console.log('node', node);
     const component = node?.data?.component as Component;
-    const result = {
-      ...component,
-      name: node?.data?.label || component?.name,
+    const result: PipelineComponent = {
+      id: String(component?.id || ''),
+      name: node?.data?.label || component?.name || '',
       inputs: [],
+      input_path: component?.input_path || [],
+      output_path: component?.output_path || [],
     };
 
     console.log('component', component);
@@ -177,6 +181,8 @@ const runPipeline = () => {
       id: node.id,
       name: node.name,
       inputs: node.inputs,
+      input_path: node.input_path,
+      output_path: node.output_path,
     };
   });
 

@@ -98,9 +98,9 @@ watch(
 const emit = defineEmits<{
   nodeClick: [node: VueFlowNode | null];
   connect: [edge: VueFlowEdge];
-  edgeUpdate: [edge: any];
+  edgeUpdate: [edge: VueFlowEdge];
   update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
-  error: [errorKey: string, data?: Record<string, any>];
+  error: [errorKey: string, data?: Record<string, unknown>];
 }>();
 
 const onDragOver = (event: DragEvent) => {
@@ -166,12 +166,12 @@ const validateTypeCompatibility = (
   };
 };
 
-const onNodeClick = (event: any) => {
+const onNodeClick = (event: { node: VueFlowNode | null }) => {
   const node = event.node;
   emit('nodeClick', node);
 };
 
-const onConnect = (connection: any) => {
+const onConnect = (connection: { source: string; target: string }) => {
   const size = 23;
   const color = '#9BB2BB';
   console.log('connection', connection);
@@ -229,14 +229,9 @@ const onConnect = (connection: any) => {
       height: size,
       color: color,
     },
-  } as VueFlowEdge & { sourceNode?: VueFlowNode; targetNode?: VueFlowNode };
-
-  if (sourceNode) {
-    (newEdge as unknown as { sourceNode: VueFlowNode }).sourceNode = sourceNode;
-  }
-  if (targetNode) {
-    (newEdge as unknown as { targetNode: VueFlowNode }).targetNode = targetNode;
-  }
+    // sourceNode and targetNode are not part of Vue Flow Edge type
+    // but we need them for our API, so we'll add them as additional properties
+  };
 
   edges.value.push(newEdge);
   emit('connect', newEdge);
@@ -250,8 +245,8 @@ const onEdgesChange = () => {
   }, 100);
 };
 
-const onEdgeUpdate = (edgeUpdateEvent: any) => {
-  emit('edgeUpdate', edgeUpdateEvent);
+const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
+  emit('edgeUpdate', edgeUpdateEvent.edge);
   emit('update', nodes.value, edges.value);
 };
 </script>

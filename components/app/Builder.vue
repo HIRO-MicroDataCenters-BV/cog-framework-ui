@@ -91,11 +91,11 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
-import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import type { Node, Edge } from '~/types/builder.types';
 
 const { setPage, page } = useApp();
@@ -119,7 +119,7 @@ watch(
   (nodes) => {
     if (selectedNode.value && nodes) {
       const updatedNode = nodes.find(
-        (node: any) => node.id === selectedNode.value?.id,
+        (node: Node) => node.id === selectedNode.value?.id,
       );
       if (updatedNode) {
         selectedNode.value = updatedNode;
@@ -162,7 +162,7 @@ const onConnect = (edge: VueFlowEdge) => {
   console.log('Connected:', edge);
 };
 
-const onEdgeUpdate = (edge: any) => {
+const onEdgeUpdate = (edge: VueFlowEdge) => {
   console.log('Edge updated:', edge);
 };
 
@@ -182,7 +182,7 @@ const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
   console.log('Builder onUpdate - setPage called');
 };
 
-const onError = (errorKey: string, data?: Record<string, any>) => {
+const onError = (errorKey: string, data?: Record<string, unknown>) => {
   console.error('Builder error:', errorKey, data);
 
   const toaster = useToaster();
@@ -199,7 +199,7 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
   const currentBuilder = page.value.data?.builder;
   if (currentBuilder?.nodes) {
     const nodeIndex = currentBuilder.nodes.findIndex(
-      (node: any) => node.id === nodeId,
+      (node: Node) => node.id === nodeId,
     );
     console.log('Builder onUpdateNode - nodeIndex:', nodeIndex);
     if (nodeIndex !== -1) {
@@ -242,7 +242,10 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
       });
 
       // Trigger CanvasArea update to sync the changes
-      onUpdate(newNodes as unknown, currentBuilder.edges as unknown);
+      onUpdate(
+        newNodes as VueFlowNode[],
+        currentBuilder.edges as VueFlowEdge[],
+      );
     }
   }
 };
@@ -253,7 +256,7 @@ const onDeleteNode = (nodeId: string) => {
   const currentBuilder = page.value.data?.builder;
   if (currentBuilder?.nodes) {
     currentBuilder.nodes = currentBuilder.nodes.filter(
-      (node: unknown) => node.id !== nodeId,
+      (node: Node) => node.id !== nodeId,
     );
 
     if (selectedNode.value?.id === nodeId) {

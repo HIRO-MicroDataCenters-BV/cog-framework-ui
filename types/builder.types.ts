@@ -1,9 +1,11 @@
+import type { Position } from '@vue-flow/core';
+
 export interface Node {
   id: string;
   type: string;
   position: { x: number; y: number };
-  targetPosition?: any;
-  sourcePosition?: any;
+  targetPosition?: Position;
+  sourcePosition?: Position;
   data: {
     label: string;
     icon?: string;
@@ -24,10 +26,10 @@ export interface Edge {
   style?: {
     stroke?: string;
     strokeWidth?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   markerEnd?: {
-    type?: any;
+    type?: string;
     width?: number;
     height?: number;
     color?: string;
