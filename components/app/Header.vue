@@ -20,8 +20,25 @@
               }}</BreadcrumbItem>
             </template>
             <template v-if="page.section == 'pipelines_builder'">
-              <BreadcrumbItem class="hidden md:block">
-                <Input v-model="page.data.builder.name" />
+              <BreadcrumbItem class="hidden md:block relative">
+                <Form :validation-schema="pipelineNameSchema">
+                  <FormField
+                    v-slot="{ componentField }"
+                    type="text"
+                    name="pipeline_name"
+                  >
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          v-bind="componentField"
+                          v-model="pipelineName"
+                          type="text"
+                          :placeholder="$t('placeholder.pipeline_name')"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  </FormField>
+                </Form>
               </BreadcrumbItem>
             </template>
           </BreadcrumbList>
@@ -42,10 +59,29 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import type { Edge, Component } from '~/types/builder.types';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from '~/components/ui/form';
+import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const api = useApi();
+
+// Safe access to pipeline name
+const pipelineName = computed({
+  get: () => page.value.data?.builder?.name || '',
+  set: (value: string) => {
+    if (page.value.data?.builder) {
+      page.value.data.builder.name = value;
+    }
+  },
+});
 
 console.log('page', page);
 
@@ -111,7 +147,11 @@ const runPipeline = () => {
   const nodes = builder?.nodes?.map((node) => {
     console.log('node', node);
     const component = node?.data?.component as Component;
-    const result = { ...component, inputs: [] };
+    const result = {
+      ...component,
+      name: node?.data?.label || component?.name,
+      inputs: [],
+    };
 
     console.log('component', component);
     const input_path = component.input_path;
@@ -124,7 +164,7 @@ const runPipeline = () => {
 
     edges?.forEach((edge) => {
       console.log('edge', edge);
-      const sourceName = edge?.sourceNode?.data?.component?.name + '';
+      const sourceName = edge?.sourceNode?.data?.label + '';
       inputs.push(`${sourceName}.output`);
     });
 
