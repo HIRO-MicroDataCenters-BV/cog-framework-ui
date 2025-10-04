@@ -20,8 +20,25 @@
               }}</BreadcrumbItem>
             </template>
             <template v-if="page.section == 'pipelines_builder'">
-              <BreadcrumbItem class="hidden md:block">
-                <Input v-model="page.data.builder.name" />
+              <BreadcrumbItem class="hidden md:block relative">
+                <Form :validation-schema="pipelineNameSchema">
+                  <FormField
+                    v-slot="{ componentField }"
+                    type="text"
+                    name="pipeline_name"
+                  >
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          v-bind="componentField"
+                          v-model="pipelineName"
+                          type="text"
+                          :placeholder="$t('placeholder.pipeline_name')"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  </FormField>
+                </Form>
               </BreadcrumbItem>
             </template>
           </BreadcrumbList>
@@ -42,10 +59,29 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import type { Edge, Component } from '~/types/builder.types';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from '~/components/ui/form';
+import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const api = useApi();
+
+// Safe access to pipeline name
+const pipelineName = computed({
+  get: () => page.value.data?.builder?.name || '',
+  set: (value: string) => {
+    if (page.value.data?.builder) {
+      page.value.data.builder.name = value;
+    }
+  },
+});
 
 console.log('page', page);
 
@@ -87,7 +123,9 @@ console.log('page', page);
 interface PipelineComponent {
   id: string;
   name: string;
-  inputs: string | number[];
+  inputs: string[];
+  input_path: PipelinePath[];
+  output_path: PipelinePath[];
 }
 
 interface PipelinePath {
@@ -103,15 +141,21 @@ const runPipeline = () => {
   console.log('builder', builder);
   const data = {
     name: builder.name,
-    pipeline_components: [],
+    pipeline_components: [] as PipelineComponent[],
     input_path: [] as PipelinePath[],
     output_path: [] as PipelinePath[],
   };
 
-  const nodes = builder?.nodes?.map((node) => {
+  const nodes = builder?.nodes?.map((node): PipelineComponent => {
     console.log('node', node);
     const component = node?.data?.component as Component;
-    const result = { ...component, inputs: [] };
+    const result: PipelineComponent = {
+      id: String(component?.id || ''),
+      name: node?.data?.label || component?.name || '',
+      inputs: [],
+      input_path: component?.input_path || [],
+      output_path: component?.output_path || [],
+    };
 
     console.log('component', component);
     const input_path = component.input_path;
@@ -124,9 +168,8 @@ const runPipeline = () => {
 
     edges?.forEach((edge) => {
       console.log('edge', edge);
-      const sourceId = edge?.sourceNode?.data?.component?.id + '';
-      console.log('sourceId', sourceId, edge?.sourceNode?.data?.component?.id);
-      inputs.push(`${sourceId}.output`);
+      const sourceName = edge?.sourceNode?.data?.label + '';
+      inputs.push(`${sourceName}.output`);
     });
 
     result.inputs = [...result.inputs, ...inputs];
@@ -138,6 +181,8 @@ const runPipeline = () => {
       id: node.id,
       name: node.name,
       inputs: node.inputs,
+      input_path: node.input_path,
+      output_path: node.output_path,
     };
   });
 

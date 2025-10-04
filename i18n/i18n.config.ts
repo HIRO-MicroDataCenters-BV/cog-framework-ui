@@ -20,6 +20,12 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           connection_error: 'Connection error',
           unauthorized: 'Unauthorized',
+          multiple_inputs_not_allowed:
+            'Multiple inputs to one output not allowed',
+          multiple_outputs_not_allowed:
+            'Multiple outputs from one input not allowed',
+          type_mismatch:
+            'Type mismatch: {sourceType} cannot connect to {targetType}',
         },
         info: {
           operation_in_progress: 'Operation in progress',
@@ -131,6 +137,8 @@ export default defineI18nConfig(() => ({
         filter_condition: 'WHERE condition',
         transform_expression: 'Transform expression',
         dataset_name: 'Dataset Name',
+        pipeline_name: 'Enter pipeline name',
+        component_name: 'Enter component name',
         dataset_description: 'Dataset Description',
         broker_name: 'Broker Name',
         broker_ip_address: 'Broker IP Address',
@@ -206,6 +214,12 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           operation_failed: 'Operation failed',
           connection_error: 'Connection error',
+          multiple_inputs_not_allowed:
+            'Multiple inputs to one output not allowed',
+          multiple_outputs_not_allowed:
+            'Multiple outputs from one input not allowed',
+          type_mismatch:
+            'Type mismatch: {sourceType} cannot connect to {targetType}',
         },
         info: {
           operation_in_progress: 'Operation in progress',
@@ -293,7 +307,11 @@ export default defineI18nConfig(() => ({
           invalid_type_received: 'This field is required',
           invalid_enum_value: 'Please select a valid option',
           required: 'This field is required',
-          too_small: 'This field must be at least {min} characters',
+          too_small: {
+            string: {
+              inclusive: 'This field must be at least {min} characters',
+            },
+          },
           too_big: 'This field must be at most {max} characters',
           invalid_date: 'Please enter a valid date',
           invalid_number: 'Please enter a valid number',
@@ -372,6 +390,10 @@ export default defineI18nConfig(() => ({
         },
         component: {
           name: 'Component name is required',
+          name_required: 'Component name is required',
+          name_format:
+            'Only letters, numbers, underscores, and hyphens are allowed',
+          name_unique: 'Component name must be unique',
           input_path: 'Input path',
           output_path: 'Output path',
           component_file: 'Component file',

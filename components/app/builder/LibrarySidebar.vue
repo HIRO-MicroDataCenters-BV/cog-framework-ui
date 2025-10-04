@@ -61,7 +61,161 @@ import type { Component, Category } from '~/types/builder.types';
 
 const api = useApi();
 
-const components = ref<Component[]>([]);
+const components = ref<Component[]>([
+  {
+    id: 7,
+    name: 'component_id1',
+    input_path: [
+      {
+        name: 'file',
+        type: 'CSV',
+      },
+    ],
+    output_path: [
+      {
+        name: 'output',
+        type: 'parquet',
+      },
+    ],
+    component_file: '/component_id1.yaml',
+    category: 'download',
+    creator: 'Sai',
+  },
+  {
+    id: 8,
+    name: 'component_id2',
+    input_path: [
+      {
+        name: 'file',
+        type: 'parquet',
+      },
+    ],
+    output_path: [
+      {
+        name: 'Output',
+        type: 'string',
+      },
+    ],
+    component_file: '/component_id2.yaml',
+    category: 'pre-process',
+    creator: '',
+  },
+  {
+    id: 9,
+    name: 'component_id3',
+    input_path: [
+      {
+        name: 'input',
+        type: 'string',
+      },
+    ],
+    output_path: [
+      {
+        name: 'comp_output',
+        type: 'string',
+      },
+    ],
+    component_file: '/component_id3.yaml',
+    category: 'training',
+    creator: '',
+  },
+  {
+    id: 10,
+    name: 'component_id4',
+    input_path: [
+      {
+        name: 'input',
+        type: 'string',
+      },
+      {
+        name: 'output',
+        type: 'parquet',
+      },
+      {
+        name: 'comp_uri',
+        type: 'string',
+      },
+    ],
+    output_path: [
+      {
+        name: 'comp_output',
+        type: 'string',
+      },
+    ],
+    component_file: '/component_id4.yaml',
+    category: 'serving',
+    creator: '',
+  },
+  {
+    id: 11,
+    name: 'adder',
+    input_path: [
+      {
+        name: 'number1',
+        type: 'int',
+      },
+      {
+        name: 'number2',
+        type: 'int',
+      },
+      {
+        name: 'operation',
+        type: 'string',
+      },
+    ],
+    output_path: [
+      {
+        name: 'scale',
+        type: 'string',
+      },
+      {
+        name: 'outnum',
+        type: 'long',
+      },
+    ],
+    component_file: '/adder.yaml',
+    category: 'operators',
+    creator: 'ali',
+  },
+  {
+    id: 12,
+    name: 'A',
+    input_path: [
+      {
+        name: 'number',
+        type: 'int',
+      },
+    ],
+    output_path: [
+      {
+        name: 'number',
+        type: 'int',
+      },
+    ],
+    component_file: '/a.yaml',
+    category: 'variables',
+    creator: '',
+  },
+  {
+    id: 13,
+    name: 'B',
+    input_path: [
+      {
+        name: 'number',
+        type: 'int',
+      },
+    ],
+    output_path: [
+      {
+        name: 'number',
+        type: 'int',
+      },
+    ],
+    component_file: '/b.yaml',
+    category: 'variables',
+    creator: '',
+  },
+]);
 
 const getCategories = (items: Component[]) => {
   const list = items.map((item, index) => {

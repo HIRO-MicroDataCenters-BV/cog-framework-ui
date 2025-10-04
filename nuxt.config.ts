@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-zod-i18n',
     'dayjs-nuxt',
-    //'@nuxtjs/color-mode',
+    // '@nuxtjs/color-mode',
   ],
   ssr: false,
   devtools: { enabled: true },

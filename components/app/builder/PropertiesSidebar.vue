@@ -10,7 +10,17 @@
         <SheetTitle
           class="text-sm font-medium text-gray-500 flex-1 ml-8 cursor-pointer"
         >
-          <Input v-model="nodeName" type="text" />
+          <div>
+            <Input
+              v-model="nodeName"
+              type="text"
+              :placeholder="$t('placeholder.component_name')"
+              :class="{ 'border-red-500': !isComponentNameValid }"
+            />
+            <div v-if="componentNameError" class="text-red-500 text-sm mt-1">
+              {{ componentNameError }}
+            </div>
+          </div>
         </SheetTitle>
       </SheetHeader>
       <DialogClose class="h-4 w-4 absolute top-4 left-8 cursor-pointer">
@@ -18,36 +28,8 @@
         <span class="sr-only">Close</span>
       </DialogClose>
       <div class="p-4">
-        <div class="mb-4">
-          <h3 class="mb-2">
-            {{ $t('label.input_path') }}
-          </h3>
-          <div>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div class="flex items-center gap-2 text-gray-500">
-                <Icon name="lucide:text" class="size-4" />{{
-                  selectedNode.data?.component?.input_path[0].name
-                }}<span></span>
-              </div>
-              <div>{{ selectedNode.data?.component?.input_path[0].type }}</div>
-            </div>
-          </div>
-        </div>
-        <div class="mb-4">
-          <h3 class="mb-2">
-            {{ $t('label.output_path') }}
-          </h3>
-          <div>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div class="flex items-center gap-2 text-gray-500">
-                <Icon name="lucide:text" class="size-4" />{{
-                  selectedNode.data?.component?.output_path[0].name
-                }}<span></span>
-              </div>
-              <div>{{ selectedNode.data?.component?.output_path[0].type }}</div>
-            </div>
-          </div>
-        </div>
+        <PathSection :title="$t('label.input_path')" :paths="inputPaths" />
+        <PathSection :title="$t('label.output_path')" :paths="outputPaths" />
         <div class="mb-4">
           <h3 class="mb-2">
             {{ $t('label.properties') }}
@@ -81,19 +63,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, reactive, watch, computed, nextTick } from 'vue';
+import PathSection from './PathSection.vue';
+import { Input } from '~/components/ui/input';
+
+const { t } = useI18n();
 
 interface Node {
   id: string;
   type: string;
   data?: {
     label?: string;
+    component?: {
+      input_path?: Array<{ name: string; type: string }>;
+      output_path?: Array<{ name: string; type: string }>;
+      category?: string;
+      component_file?: string;
+    };
     [key: string]: unknown;
   };
 }
 
 interface Props {
   selectedNode: Node | null;
+  allNodes?: Node[];
 }
 
 const props = defineProps<Props>();
@@ -102,25 +95,111 @@ const emit = defineEmits<{
   updateNode: [nodeId: string, updates: Partial<Node>];
   deleteNode: [nodeId: string];
 }>();
+const formData = reactive({
+  nodeName: '',
+  nodeDescription: '',
+  connectionString: '',
+  filterCondition: '',
+  transformExpression: '',
+});
 
-const nodeName = ref('');
-const nodeDescription = ref('');
-const connectionString = ref('');
-const filterCondition = ref('');
-const transformExpression = ref('');
 const selectedNodeLabel = ref('');
+
+const nodeName = computed({
+  get: () => formData.nodeName,
+  set: (value: string) => {
+    formData.nodeName = value;
+  },
+});
+const nodeDescription = computed({
+  get: () => formData.nodeDescription,
+  set: (value: string) => {
+    formData.nodeDescription = value;
+  },
+});
+const connectionString = computed({
+  get: () => formData.connectionString,
+  set: (value: string) => {
+    formData.connectionString = value;
+  },
+});
+const filterCondition = computed({
+  get: () => formData.filterCondition,
+  set: (value: string) => {
+    formData.filterCondition = value;
+  },
+});
+const transformExpression = computed({
+  get: () => formData.transformExpression,
+  set: (value: string) => {
+    formData.transformExpression = value;
+  },
+});
+
+const renderPathList = (paths: Array<{ name: string; type: string }>) => {
+  return (
+    paths?.map((path, index) => ({
+      name: path.name,
+      type: path.type,
+      key: `path-${index}`,
+    })) || []
+  );
+};
+
+const inputPaths = computed(() =>
+  renderPathList(props.selectedNode?.data?.component?.input_path || []),
+);
+const outputPaths = computed(() =>
+  renderPathList(props.selectedNode?.data?.component?.output_path || []),
+);
+
+const existingNodeNames = computed(() => {
+  if (!props.allNodes) return [];
+  const currentId = props.selectedNode?.id;
+  return props.allNodes
+    .filter((node) => node.id !== currentId)
+    .map((node) => node.data?.label as string)
+    .filter(Boolean);
+});
+const componentNameError = computed(() => {
+  const name = formData.nodeName;
+
+  if (!name || name.trim() === '') {
+    return t('validation.component.name_required');
+  }
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    return t('validation.component.name_format');
+  }
+
+  if (existingNodeNames.value.includes(name)) {
+    return t('validation.component.name_unique');
+  }
+
+  return null;
+});
+
+const isComponentNameValid = computed(() => {
+  return componentNameError.value === null;
+});
 
 watch(
   () => props.selectedNode,
   (newNode) => {
     if (newNode) {
-      nodeName.value = (newNode.data?.label as string) || '';
-      nodeDescription.value = (newNode.data?.description as string) || '';
-      connectionString.value = (newNode.data?.connectionString as string) || '';
-      filterCondition.value = (newNode.data?.filterCondition as string) || '';
-      transformExpression.value =
+      const label = (newNode.data?.label as string) || '';
+      nextTick(() => {
+        formData.nodeName = label;
+      });
+
+      formData.nodeDescription = (newNode.data?.description as string) || '';
+      formData.connectionString =
+        (newNode.data?.connectionString as string) || '';
+      formData.filterCondition =
+        (newNode.data?.filterCondition as string) || '';
+      formData.transformExpression =
         (newNode.data?.transformExpression as string) || '';
-      selectedNodeLabel.value = (newNode.data?.label as string) || '';
+      selectedNodeLabel.value = label;
     }
   },
   { immediate: true },
@@ -131,14 +210,13 @@ function updateNode() {
     const updates: Partial<Node> = {
       data: {
         ...props.selectedNode.data,
-        label: selectedNodeLabel.value,
-        description: nodeDescription.value,
-        connectionString: connectionString.value,
-        filterCondition: filterCondition.value,
-        transformExpression: transformExpression.value,
+        label: formData.nodeName,
+        description: formData.nodeDescription,
+        connectionString: formData.connectionString,
+        filterCondition: formData.filterCondition,
+        transformExpression: formData.transformExpression,
       } as Record<string, unknown>,
     };
-    console.log('props.selectedNode', props.selectedNode.data);
     emit('updateNode', props.selectedNode.id, updates);
   }
 }
@@ -149,13 +227,14 @@ function deleteNode() {
   }
 }
 watch(
-  [
-    nodeName,
-    nodeDescription,
-    connectionString,
-    filterCondition,
-    transformExpression,
-  ],
+  () => formData.nodeName,
+  (newValue) => {
+    selectedNodeLabel.value = newValue;
+  },
+);
+
+watch(
+  () => formData,
   () => {
     updateNode();
   },

@@ -1,12 +1,17 @@
+import type { Position } from '@vue-flow/core';
+
 export interface Node {
   id: string;
   type: string;
   position: { x: number; y: number };
+  targetPosition?: Position;
+  sourcePosition?: Position;
   data: {
     label: string;
     icon?: string;
     status?: string;
     category?: string;
+    component?: Component;
     [key: string]: unknown;
   };
 }
@@ -18,6 +23,17 @@ export interface Edge {
   type?: string;
   sourceNode?: Node;
   targetNode?: Node;
+  style?: {
+    stroke?: string;
+    strokeWidth?: number;
+    [key: string]: unknown;
+  };
+  markerEnd?: {
+    type?: string;
+    width?: number;
+    height?: number;
+    color?: string;
+  };
 }
 
 export interface ComponentPath {

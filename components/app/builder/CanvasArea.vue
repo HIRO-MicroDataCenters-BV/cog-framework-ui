@@ -47,20 +47,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type CSSProperties } from 'vue';
-import { VueFlow, Position, Handle, MarkerType } from '@vue-flow/core';
+import { ref, watch, type CSSProperties } from 'vue';
+import {
+  VueFlow,
+  Position,
+  Handle,
+  MarkerType,
+  type Node as VueFlowNode,
+  type Edge as VueFlowEdge,
+} from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 
-import type { Node, Edge } from '~/types/builder.types';
+import type { Node, Edge, Component } from '~/types/builder.types';
 
-const nodes = ref<Node[]>([]);
-const edges = ref<Edge[]>([]);
+interface Props {
+  nodes?: VueFlowNode[];
+  edges?: VueFlowEdge[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  nodes: () => [],
+  edges: () => [],
+});
+
+const nodes = ref<VueFlowNode[]>(props.nodes);
+const edges = ref<VueFlowEdge[]>(props.edges);
+
+watch(
+  () => props.nodes,
+  (newNodes, oldNodes) => {
+    console.log('CanvasArea - received new nodes:', newNodes);
+    console.log('CanvasArea - old nodes:', oldNodes);
+    console.log('CanvasArea - nodes changed?', newNodes !== oldNodes);
+
+    // Force reactivity by creating new array
+    nodes.value = [...(newNodes || [])];
+    console.log('CanvasArea - local nodes.value updated to:', nodes.value);
+  },
+  { deep: true, immediate: true },
+);
+
+watch(
+  () => props.edges,
+  (newEdges) => {
+    edges.value = newEdges || [];
+  },
+  { deep: true, immediate: true },
+);
 
 const emit = defineEmits<{
-  nodeClick: [node: Node | null];
-  connect: [edge: Edge];
-  edgeUpdate: [edge: Edge];
-  update: [nodes: Node[], edges: Edge[]];
+  nodeClick: [node: VueFlowNode | null];
+  connect: [edge: VueFlowEdge];
+  edgeUpdate: [edge: VueFlowEdge];
+  update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
+  error: [errorKey: string, data?: Record<string, unknown>];
 }>();
 
 const onDragOver = (event: DragEvent) => {
@@ -78,7 +118,7 @@ const onDrop = (event: DragEvent) => {
     const component = JSON.parse(data);
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
-    const newNode: Node = {
+    const newNode: VueFlowNode = {
       id: `compoent-${component.id}-${Date.now()}`,
       type: 'default',
       position,
@@ -102,32 +142,95 @@ const onDrop = (event: DragEvent) => {
   }
 };
 
-const onNodeClick = (event: unkown) => {
+const validateTypeCompatibility = (
+  sourceComponent: Component,
+  targetComponent: Component,
+): { isValid: boolean; sourceType?: string; targetType?: string } => {
+  const sourceOutputType = sourceComponent.output_path[0]?.type;
+  const targetInputType = targetComponent.input_path[0]?.type;
+
+  if (!sourceOutputType || !targetInputType) {
+    return {
+      isValid: false,
+      sourceType: sourceOutputType,
+      targetType: targetInputType,
+    };
+  }
+
+  const isCompatible = sourceOutputType === targetInputType;
+
+  return {
+    isValid: isCompatible,
+    sourceType: sourceOutputType,
+    targetType: targetInputType,
+  };
+};
+
+const onNodeClick = (event: { node: VueFlowNode | null }) => {
   const node = event.node;
   emit('nodeClick', node);
 };
 
-const onConnect = (connection: unkown) => {
+const onConnect = (connection: { source: string; target: string }) => {
   const size = 23;
   const color = '#9BB2BB';
   console.log('connection', connection);
+
+  const existingIncomingEdges = edges.value.filter(
+    (edge) => edge.target === connection.target,
+  );
+
+  if (existingIncomingEdges.length > 0) {
+    emit('error', 'multiple_inputs_not_allowed');
+    return;
+  }
+
+  const existingOutgoingEdges = edges.value.filter(
+    (edge) => edge.source === connection.source,
+  );
+
+  if (existingOutgoingEdges.length > 0) {
+    emit('error', 'multiple_outputs_not_allowed');
+    return;
+  }
+
   const sourceNode = nodes.value.find((node) => node.id === connection.source);
   const targetNode = nodes.value.find((node) => node.id === connection.target);
-  const newEdge: Edge = {
+
+  if (sourceNode && targetNode) {
+    const sourceComponent = sourceNode.data?.component as Component;
+    const targetComponent = targetNode.data?.component as Component;
+
+    if (sourceComponent && targetComponent) {
+      const validation = validateTypeCompatibility(
+        sourceComponent,
+        targetComponent,
+      );
+
+      if (!validation.isValid) {
+        emit('error', 'type_mismatch', {
+          sourceType: validation.sourceType,
+          targetType: validation.targetType,
+        });
+        return;
+      }
+    }
+  }
+  const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
     target: connection.target,
     style: {
       stroke: color,
     },
-    sourceNode: sourceNode,
-    targetNode: targetNode,
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: size,
       height: size,
       color: color,
     },
+    // sourceNode and targetNode are not part of Vue Flow Edge type
+    // but we need them for our API, so we'll add them as additional properties
   };
 
   edges.value.push(newEdge);
@@ -142,8 +245,8 @@ const onEdgesChange = () => {
   }, 100);
 };
 
-const onEdgeUpdate = (edge: Edge) => {
-  emit('edgeUpdate', edge);
+const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
+  emit('edgeUpdate', edgeUpdateEvent.edge);
   emit('update', nodes.value, edges.value);
 };
 </script>

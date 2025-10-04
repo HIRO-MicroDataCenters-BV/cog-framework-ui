@@ -69,11 +69,17 @@ export function calculateDuration(
   return `${diffSeconds}s`;
 }
 
+/**
+ * Generate unique name with number suffix based on existing names
+ * @param existingNames - Array of existing names
+ * @returns Unique name with number suffix (e.g., "Component_1", "Component_2")
+ */
 export function generateUniqueName(existingNames: string[]): string {
   if (existingNames.length === 0) {
     return 'Name_1';
   }
 
+  // Find the base name from existing names with number patterns
   const numberPattern = /^(.*)_(\d+)$/;
   const baseNames = new Map<string, number[]>();
 
@@ -88,12 +94,14 @@ export function generateUniqueName(existingNames: string[]): string {
       }
       baseNames.get(baseName)!.push(number);
     } else {
+      // Name without number suffix
       if (!baseNames.has(name)) {
         baseNames.set(name, []);
       }
     }
   }
 
+  // Find the most common base name or use the first one
   let mostCommonBase = '';
   let maxCount = 0;
 
@@ -106,10 +114,12 @@ export function generateUniqueName(existingNames: string[]): string {
     }
   }
 
+  // If no pattern found, use the first name as base
   if (!mostCommonBase && existingNames.length > 0) {
     mostCommonBase = existingNames[0];
   }
 
+  // Find the next available number
   const existingNumbers = baseNames.get(mostCommonBase) || [];
   let counter = 1;
   while (existingNumbers.includes(counter)) {
