@@ -238,6 +238,8 @@ export default defineI18nConfig(() => ({
         page: 'Page',
       },
       menu: {
+        upload: 'Upload',
+        jupyter: 'Jupyter',
         documentation: 'Documentation',
         support: 'Support',
         settings: 'Settings',

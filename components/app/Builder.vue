@@ -5,25 +5,13 @@
         <AppPanel :title="$t('builder.components')">
           <template #actions>
             <button
+              v-for="action in menuActions"
+              :key="action.key"
               class="p-1 rounded hover:bg-muted"
-              :title="$t('menu.documentation')"
-              @click="openExternalBuilder"
+              :title="$t(action.titleKey)"
+              @click="action.action"
             >
-              <Icon name="lucide:file-code" class="w-4 h-4" />
-            </button>
-            <button
-              class="p-1 rounded hover:bg-muted"
-              :title="$t('action.refresh')"
-              @click="fetchComponents"
-            >
-              <Icon name="lucide:refresh-cw" class="w-4 h-4" />
-            </button>
-            <button
-              class="p-1 rounded hover:bg-muted"
-              :title="$t('action.minimize')"
-              @click="toggleSidebar('library')"
-            >
-              <Icon name="lucide:minimize-2" class="w-4 h-4" />
+              <Icon :name="action.icon" class="w-4 h-4" />
             </button>
           </template>
           <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
@@ -38,25 +26,13 @@
             {{ $t('builder.components') }}
           </h3>
           <button
+            v-for="action in menuActions"
+            :key="action.key"
             class="p-1 rounded hover:bg-muted"
-            :title="$t('menu.documentation')"
-            @click="openExternalBuilder"
+            :title="$t(action.titleKey)"
+            @click="action.action"
           >
-            <Icon name="lucide:file-code" class="w-4 h-4" />
-          </button>
-          <button
-            class="p-1 rounded hover:bg-muted"
-            :title="$t('action.refresh')"
-            @click="fetchComponents"
-          >
-            <Icon name="lucide:refresh-cw" class="w-4 h-4" />
-          </button>
-          <button
-            class="p-1 rounded hover:bg-muted"
-            :title="$t('action.maximize')"
-            @click="toggleSidebar('library')"
-          >
-            <Icon name="lucide:maximize-2" class="w-4 h-4" />
+            <Icon :name="action.icon" class="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -90,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
@@ -105,6 +81,8 @@ const isSidebarOpen = ref({
   properties: true,
 });
 
+const openUploadComponentDialog = ref(false);
+
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
@@ -112,6 +90,47 @@ const externalBuilderUrl = ref(
 );
 
 const selectedNode = ref<VueFlowNode | null>(null);
+
+// Menu actions configuration
+interface MenuAction {
+  key: string;
+  icon: string;
+  titleKey: string;
+  action: () => void;
+}
+
+const menuActions = computed<MenuAction[]>(() => [
+  {
+    key: 'upload',
+    icon: 'lucide:upload',
+    titleKey: 'menu.upload',
+    action: () => {
+      openUploadComponentDialog.value = true;
+    },
+  },
+  {
+    key: 'jupyter',
+    icon: 'lucide:file-code',
+    titleKey: 'menu.jupyter',
+    action: openExternalBuilder,
+  },
+  {
+    key: 'refresh',
+    icon: 'lucide:refresh-cw',
+    titleKey: 'action.refresh',
+    action: fetchComponents,
+  },
+  {
+    key: 'toggle',
+    icon: isSidebarOpen.value.library
+      ? 'lucide:minimize-2'
+      : 'lucide:maximize-2',
+    titleKey: isSidebarOpen.value.library
+      ? 'action.minimize'
+      : 'action.maximize',
+    action: () => toggleSidebar('library'),
+  },
+]);
 
 // Watch for changes in page data and update selectedNode
 watch(
