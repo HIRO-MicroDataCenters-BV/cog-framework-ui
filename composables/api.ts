@@ -86,7 +86,7 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast !== false;
+    const showToast = options?.showToast;
     const toaster = useToaster();
 
     const opts: RequestInit = {
