@@ -1,6 +1,9 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
-    <DialogContent class="overflow-hidden h-138 max-h-full">
+    <DialogContent class="overflow-hidden max-h-full">
+      <DialogHeader v-if="props.navigation.length == 0">
+        <DialogTitle>{{ props.title }}</DialogTitle>
+      </DialogHeader>
       <SidebarProvider
         style="
           --sidebar-width: 10rem;
@@ -42,12 +45,13 @@
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
+
         <SidebarInset>
           <slot />
 
-          <DialogFooter>
+          <DialogFooter v-if="props.navigation.length > 0">
             <div class="flex gap-2 w-full">
-              <div class="flex-1">
+              <div v-if="props.navigation.length == 0" class="flex-1">
                 <DialogClose as-child>
                   <Button type="button" variant="outline">
                     {{ t(`action.close`) }}
@@ -67,6 +71,21 @@
                   {{ t(`action.${item}`) }}
                 </Button>
               </div>
+            </div>
+          </DialogFooter>
+          <DialogFooter v-else class="justify-start!">
+            <div class="flex mt-8 gap-2" as-child>
+              <Button
+                v-for="item in props.stepFormActions.length > 0
+                  ? props.stepFormActions
+                  : props.actions"
+                :key="item"
+                :variant="variantByActionType(item)"
+                :type="typeByActionType(item, step)"
+                @click="onAction(item)"
+              >
+                {{ t(`action.${item}`) }}
+              </Button>
             </div>
           </DialogFooter>
         </SidebarInset>

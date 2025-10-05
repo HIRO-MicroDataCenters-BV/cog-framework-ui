@@ -11,6 +11,7 @@ export default defineI18nConfig(() => ({
         success: {
           dataset_added: 'Dataset {name} successfully added',
           model_added: 'Model successfully added',
+          component_uploaded: 'Component successfully uploaded',
           operation_completed: 'Operation completed successfully',
           data_saved: 'Data saved successfully',
         },
@@ -18,6 +19,7 @@ export default defineI18nConfig(() => ({
           unknown: 'An unknown error occurred',
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
+          component_upload_failed: 'Failed to upload component',
           connection_error: 'Connection error',
           unauthorized: 'Unauthorized',
           multiple_inputs_not_allowed:
@@ -26,6 +28,8 @@ export default defineI18nConfig(() => ({
             'Multiple outputs from one input not allowed',
           type_mismatch:
             'Type mismatch: {sourceType} cannot connect to {targetType}',
+          no_file_selected: 'Please select a file',
+          invalid_file_type: 'Please select a valid YAML file',
         },
         info: {
           operation_in_progress: 'Operation in progress',
@@ -44,6 +48,7 @@ export default defineI18nConfig(() => ({
         select_filter: 'Select Filter',
         add_dataset: 'Add Dataset',
         add_model: 'Add Model',
+        upload_component: 'Upload components as .yaml',
         dataset_management: 'Dataset Management',
         training_builder: 'Training Builder',
         runs: 'Runs',
@@ -99,6 +104,8 @@ export default defineI18nConfig(() => ({
         table: 'Table',
         data_stream: 'Data Stream',
         dataset_file: 'Dataset File',
+        yaml_file: 'YAML File',
+        category: 'Category (optional)',
         db_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Selected Fields',
@@ -119,7 +126,6 @@ export default defineI18nConfig(() => ({
         input_path: 'Input parameters',
         output_path: 'Output parameters',
         component_file: 'Component file',
-        category: 'Category',
         creator: 'Creator',
         properties: 'Properties',
       },
@@ -146,6 +152,7 @@ export default defineI18nConfig(() => ({
         topic_name: 'Topic Name',
         topic_schema: 'Topic Schema',
         browse: 'Browse...',
+        category: 'Enter category',
         db_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Enter field, separated by commas',
@@ -157,6 +164,7 @@ export default defineI18nConfig(() => ({
         file_type: 'Select File Type',
       },
       action: {
+        upload: 'Upload',
         run: 'Run',
         add_pipelines: 'New Pipeline',
         previous: 'Previous',
@@ -220,6 +228,8 @@ export default defineI18nConfig(() => ({
             'Multiple outputs from one input not allowed',
           type_mismatch:
             'Type mismatch: {sourceType} cannot connect to {targetType}',
+          no_file_selected: 'Please select a file',
+          invalid_file_type: 'Please select a valid YAML file',
         },
         info: {
           operation_in_progress: 'Operation in progress',

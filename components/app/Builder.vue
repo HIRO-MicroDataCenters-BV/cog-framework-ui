@@ -63,6 +63,16 @@
       </SheetContent>
     </Sheet>
   </div>
+
+  <AppDialogPipelineComponent
+    :open="openUploadComponentDialog"
+    @on-close="
+      () => {
+        openUploadComponentDialog = false;
+        fetchComponents();
+      }
+    "
+  />
 </template>
 
 <script setup lang="ts">
@@ -72,6 +82,7 @@ import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
+import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import type { Node, Edge } from '~/types/builder.types';
 
 const { setPage, page } = useApp();
