@@ -30,6 +30,7 @@ export default defineI18nConfig(() => ({
             'Type mismatch: {sourceType} cannot connect to {targetType}',
           no_file_selected: 'Please select a file',
           invalid_file_type: 'Please select a valid YAML file',
+          no_category: 'Please enter a category',
         },
         info: {
           operation_in_progress: 'Operation in progress',

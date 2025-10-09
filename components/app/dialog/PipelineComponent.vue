@@ -19,7 +19,9 @@
           class="mt-2"
           @change="onFileChange"
         />
-        <p v-if="error" class="text-sm text-red-500 mt-1">{{ error }}</p>
+        <p v-if="errorFile" class="text-sm text-red-500 mt-1">
+          {{ errorFile }}
+        </p>
       </div>
 
       <div>
@@ -33,6 +35,9 @@
           :placeholder="t('placeholder.category')"
           class="mt-2"
         />
+        <p v-if="errorCategory" class="text-sm text-red-500 mt-1">
+          {{ errorCategory }}
+        </p>
       </div>
     </div>
   </AppDialog>
@@ -53,7 +58,8 @@ const props = withDefaults(
 const open = ref(props.open);
 const selectedFile = ref<File | null>(null);
 const category = ref('');
-const error = ref('');
+const errorFile = ref('');
+const errorCategory = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
 
 watch(
@@ -64,7 +70,8 @@ watch(
       // Reset form when dialog opens
       selectedFile.value = null;
       category.value = '';
-      error.value = '';
+      errorFile.value = '';
+      errorCategory.value = '';
       if (fileInput.value) {
         fileInput.value.value = '';
       }
@@ -87,9 +94,9 @@ const onFileChange = (event: Event) => {
 
     if (allowedTypes.includes(fileExtension)) {
       selectedFile.value = file;
-      error.value = '';
+      errorFile.value = '';
     } else {
-      error.value = t('message.error.invalid_file_type');
+      errorFile.value = t('message.error.invalid_file_type');
       selectedFile.value = null;
     }
   }
@@ -110,8 +117,15 @@ const handleAction = async (action: string | number | boolean) => {
 };
 
 const handleUpload = async () => {
-  if (!selectedFile.value) {
-    error.value = t('message.error.no_file_selected');
+  errorCategory.value = '';
+  errorFile.value = '';
+  if (category.value.trim() === '' || !selectedFile.value) {
+    if (category.value.trim() === '') {
+      errorCategory.value = t('message.error.no_category');
+    }
+    if (!selectedFile.value) {
+      errorFile.value = t('message.error.no_file_selected');
+    }
     return;
   }
 
