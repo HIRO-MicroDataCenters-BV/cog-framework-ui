@@ -106,7 +106,7 @@ export default defineI18nConfig(() => ({
         data_stream: 'Data Stream',
         dataset_file: 'Dataset File',
         yaml_file: 'YAML File',
-        category: 'Category (optional)',
+        category: 'Category',
         db_url: 'Database URL',
         table_name: 'Table Name',
         selected_fields: 'Selected Fields',
