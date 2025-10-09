@@ -106,8 +106,9 @@ const fetchComponents = async () => {
   console.log('res', res);
   if (res && 'data' in res) {
     components.value = res.data as unknown as Component[];
-    categories.value = getCategories(components.value);
     console.log('components', components.value);
+    categories.value = getCategories(components.value);
+    console.log('categories', categories.value);
   }
 };
 
