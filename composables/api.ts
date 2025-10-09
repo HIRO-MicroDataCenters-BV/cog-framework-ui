@@ -109,7 +109,8 @@ export const useApi = () => {
             return null;
         }
       } else {
-        if (showToast) toaster.show('success', data);
+        const successMessage = data.message || 'operation_completed';
+        if (showToast) toaster.show('success', successMessage);
       }
 
       const result =
