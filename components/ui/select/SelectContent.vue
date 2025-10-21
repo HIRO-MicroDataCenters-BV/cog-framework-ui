@@ -9,7 +9,7 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 import { SelectScrollDownButton, SelectScrollUpButton } from '.';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 defineOptions({
   inheritAttrs: false,

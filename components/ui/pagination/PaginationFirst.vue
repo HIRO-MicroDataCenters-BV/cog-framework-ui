@@ -5,7 +5,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { ChevronLeftIcon } from 'lucide-vue-next';
 import { PaginationFirst, useForwardProps } from 'reka-ui';
 import { buttonVariants, type ButtonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = withDefaults(
   defineProps<

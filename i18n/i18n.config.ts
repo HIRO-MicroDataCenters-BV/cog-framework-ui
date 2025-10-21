@@ -20,8 +20,12 @@ export default defineI18nConfig(() => ({
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
-          connection_error: 'Connection error',
-          unauthorized: 'Unauthorized',
+          connection_error: 'Unable to connect to server',
+          unauthorized: 'Unauthorized - please log in',
+          forbidden: 'Access denied',
+          not_found: 'Resource not found',
+          server_error: 'Server error occurred',
+          request_failed: 'Request failed',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:

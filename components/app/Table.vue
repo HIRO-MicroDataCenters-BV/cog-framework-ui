@@ -160,19 +160,26 @@ const fetchData = async () => {
     params[getFilterColumnName(route.query.column as string)] = route.query.q;
   }
 
-  const response = await props.dataSource(params);
-  const tableData = response?.data;
-  const pagination = response?.pagination;
-  data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
-  pageSize.value = pagination?.limit ?? 0;
-  totalItems.value = pagination?.total_items ?? 0;
+  try {
+    const response = await props.dataSource(params);
+    const tableData = response?.data;
+    const pagination = response?.pagination;
+    data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+    pageSize.value = pagination?.limit ?? 0;
+    totalItems.value = pagination?.total_items ?? 0;
 
-  if (pagination) {
-    const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
-    table.setPageSize(pageSize.value);
-    if (currentPage.value >= totalPages) {
-      table.setPageIndex(currentPage.value);
+    if (pagination) {
+      const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
+      table.setPageSize(pageSize.value);
+      if (currentPage.value >= totalPages) {
+        table.setPageIndex(currentPage.value);
+      }
     }
+  } catch (error) {
+    // Toast is shown by API layer, just set empty data
+    data.value = [];
+    pageSize.value = 0;
+    totalItems.value = 0;
   }
 };
 
@@ -606,7 +613,7 @@ defineExpose({ fetchData });
           {{ t('hint.rows_selected') }}
         </div>
         {{ currentPage }}
-        <AppTablePagination
+        <AppPagination
           :current-page="currentPage"
           :total-items="Math.ceil(totalItems / pageSize)"
           :page-size="table.getPageCount()"

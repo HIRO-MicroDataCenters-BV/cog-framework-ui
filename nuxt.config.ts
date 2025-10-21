@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   },
   i18n: {
     vueI18n: './i18n.config.ts',
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
   },
   icon: {
     serverBundle: {
@@ -76,5 +79,31 @@ export default defineNuxtConfig({
   shadcn: {
     prefix: '',
     componentDir: './components/ui',
+  },
+  components: {
+    dirs: [
+      {
+        path: '~/components/app',
+        pathPrefix: false,
+        prefix: 'App',
+      },
+      {
+        path: '~/components/forms',
+        pathPrefix: false,
+        extensions: ['.vue'],
+      },
+      // UI components are handled by shadcn-nuxt, explicitly exclude from Nuxt scanning
+    ],
+  },
+  hooks: {
+    'components:extend'(components) {
+      // Remove UI components registered by Nuxt to prevent duplicates with shadcn-nuxt
+      for (let i = components.length - 1; i >= 0; i--) {
+        const c = components[i];
+        if (c.filePath.includes('/components/ui/')) {
+          components.splice(i, 1);
+        }
+      }
+    },
   },
 });

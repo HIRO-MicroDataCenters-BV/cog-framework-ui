@@ -86,8 +86,12 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast;
+    // Show toast by default: true for errors, conditional for success
+    const showToast = options?.showToast ?? true;
     const toaster = useToaster();
+    const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+      method,
+    );
 
     const opts: RequestInit = {
       method,
@@ -100,17 +104,34 @@ export const useApi = () => {
       console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
       const data = await res.json();
+
       if (!res.ok) {
+        // Always show error toasts
         switch (res.status) {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
-            if (showToast) toaster.show('error', 'unauthorized');
+            toaster.show('error', 'unauthorized');
+            return null;
+          case 403:
+            toaster.show('error', 'forbidden');
+            return null;
+          case 404:
+            toaster.show('error', 'not_found');
+            return null;
+          case 500:
+            toaster.show('error', 'server_error');
+            return null;
+          default:
+            toaster.show('error', data.message || 'request_failed');
             return null;
         }
       } else {
-        const successMessage = data.message || 'operation_completed';
-        if (showToast) toaster.show('success', successMessage);
+        // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
+        if (isModifyingRequest && showToast) {
+          const successMessage = data.message || 'operation_completed';
+          toaster.show('success', successMessage);
+        }
       }
 
       const result =
@@ -119,13 +140,11 @@ export const useApi = () => {
           : apiResponseSchema.parse(data);
       return result;
     } catch (err) {
-      if (method === 'DELETE') {
-        return;
-      } else {
-        console.error('Fetch error:', err);
-        if (showToast) toaster.show('error', 'connection_error');
-        throw err;
-      }
+      // Always show error toast for network errors
+      toaster.show('error', 'connection_error');
+
+      // Return null instead of throwing to prevent app crashes
+      return null;
     }
   };
 
