@@ -22,7 +22,8 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: corepack up
+        run: npm install pnpm
+        run: pnpm install
 
       - name: Lint all files
         run: npm run lint
