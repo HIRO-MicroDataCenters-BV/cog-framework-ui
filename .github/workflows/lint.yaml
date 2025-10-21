@@ -22,7 +22,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install pnpm && pnpm install
+        run: npm install
 
       - name: Lint all files
         run: npm run lint
