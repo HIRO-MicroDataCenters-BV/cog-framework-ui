@@ -5,6 +5,7 @@
     :step-form-actions="stepFormActions"
     :navigation="formNavigation"
     :step="currentStep"
+    class="max-h-full overflow-hidden h-[552px]"
     @on-close="handleClose"
     @on-action="handleAction"
     @on-set-step="handleSetStep"
