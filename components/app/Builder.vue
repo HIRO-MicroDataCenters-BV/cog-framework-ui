@@ -1,7 +1,10 @@
 <template>
   <div class="h-full flex">
     <Sheet>
-      <div v-if="isSidebarOpen.library" class="w-80 flex-shrink-0 border-r">
+      <div
+        v-if="!readonly && isSidebarOpen.library"
+        class="w-80 flex-shrink-0 border-r"
+      >
         <AppPanel :title="$t('builder.components')">
           <template #actions>
             <button
@@ -18,7 +21,7 @@
         </AppPanel>
       </div>
       <div
-        v-if="!isSidebarOpen.library"
+        v-if="!readonly && !isSidebarOpen.library"
         class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
       >
         <div class="flex items-center justify-between">
@@ -42,6 +45,7 @@
           <CanvasArea
             :nodes="(page.data?.builder?.nodes as any) || []"
             :edges="(page.data?.builder?.edges as any) || []"
+            :readonly="readonly"
             @node-click="onNodeClick"
             @connect="onConnect"
             @edge-update="onEdgeUpdate"
@@ -54,6 +58,7 @@
       <SheetContent :show-overlay="false" :show-close-button="false">
         <div>
           <PropertiesSidebar
+            :readonly="readonly"
             :selected-node="selectedNode as any"
             :all-nodes="(page.data?.builder?.nodes as any) || []"
             @update-node="onUpdateNode as any"
@@ -84,6 +89,20 @@ import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import type { Node, Edge } from '~/types/builder.types';
+
+const props = withDefaults(
+  defineProps<{
+    readonly?: boolean;
+    data?: unknown[];
+  }>(),
+  {
+    readonly: false,
+    data: () => [],
+  },
+);
+
+const readonly = computed(() => props.readonly);
+const data = computed(() => props.data);
 
 const { setPage, page } = useApp();
 
@@ -159,13 +178,10 @@ watch(
   { deep: true },
 );
 const toggleSidebar = (sidebar: 'library' | 'properties') => {
-  console.log('Toggle sidebar:', sidebar);
   isSidebarOpen.value[sidebar] = !isSidebarOpen.value[sidebar];
-  console.log('isSidebarOpen', isSidebarOpen.value);
 };
 
 const fetchComponents = () => {
-  console.log('Fetch components');
   if (librarySidebar.value) {
     librarySidebar.value.fetchComponents();
   }
@@ -179,26 +195,22 @@ const openExternalBuilder = () => {
 };
 
 const onDragStart = (component: unknown) => {
-  console.log('Drag started:', component);
+  // Drag started
 };
 
 const onNodeClick = (node: VueFlowNode | null) => {
-  console.log('Builder onNodeClick - node:', node);
   selectedNode.value = node;
-  console.log('Builder onNodeClick - selectedNode set to:', selectedNode.value);
 };
 
 const onConnect = (edge: VueFlowEdge) => {
-  console.log('Connected:', edge);
+  // Connected
 };
 
 const onEdgeUpdate = (edge: VueFlowEdge) => {
-  console.log('Edge updated:', edge);
+  // Edge updated
 };
 
 const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
-  console.log('Builder onUpdate called with nodes:', nodes);
-  console.log('Builder onUpdate called with edges:', edges);
   setPage({
     ...page.value,
     data: {
@@ -209,7 +221,6 @@ const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
       },
     },
   });
-  console.log('Builder onUpdate - setPage called');
 };
 
 const onError = (errorKey: string, data?: Record<string, unknown>) => {
@@ -223,21 +234,12 @@ const onError = (errorKey: string, data?: Record<string, unknown>) => {
 };
 
 const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
-  console.log('Builder onUpdateNode - nodeId:', nodeId);
-  console.log('Builder onUpdateNode - updates:', updates);
-
   const currentBuilder = page.value.data?.builder;
   if (currentBuilder?.nodes) {
     const nodeIndex = currentBuilder.nodes.findIndex(
       (node: Node) => node.id === nodeId,
     );
-    console.log('Builder onUpdateNode - nodeIndex:', nodeIndex);
     if (nodeIndex !== -1) {
-      console.log(
-        'Builder onUpdateNode - old node:',
-        currentBuilder.nodes[nodeIndex],
-      );
-
       // Deep merge the updates
       const updatedNode = {
         ...currentBuilder.nodes[nodeIndex],
@@ -247,8 +249,6 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
           ...updates.data,
         },
       };
-
-      console.log('Builder onUpdateNode - new node:', updatedNode);
 
       // Create a completely new nodes array to trigger reactivity
       const newNodes = [...currentBuilder.nodes];
@@ -281,8 +281,6 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
 };
 
 const onDeleteNode = (nodeId: string) => {
-  console.log('Delete node:', nodeId);
-
   const currentBuilder = page.value.data?.builder;
   if (currentBuilder?.nodes) {
     currentBuilder.nodes = currentBuilder.nodes.filter(

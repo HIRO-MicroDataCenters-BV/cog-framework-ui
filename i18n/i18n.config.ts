@@ -279,6 +279,9 @@ export default defineI18nConfig(() => ({
         files: 'Files',
         tables: 'Tables',
         streams: 'Streams',
+        flow: 'Flow',
+        details: 'Details',
+        outputs: 'Outputs',
       },
       column: {
         experiment_id: 'Experiment ID',

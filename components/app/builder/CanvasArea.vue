@@ -1,10 +1,17 @@
 <template>
-  <div class="h-full bg-muted/20 relative">
+  <div
+    class="h-full bg-muted/20 relative"
+    :class="{ readonly: props.readonly }"
+  >
     <VueFlow
       v-model:nodes="nodes"
       v-model:edges="edges"
       class="w-full h-full"
       fit-view
+      :nodes-draggable="!props.readonly"
+      :nodes-connectable="!props.readonly"
+      :edges-updatable="!props.readonly"
+      :elements-selectable="!props.readonly"
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
@@ -24,7 +31,7 @@
               <span class="text-sm flex-auto overflow-hidden">{{
                 data.label
               }}</span>
-              <Badge v-if="data.status" status="pending"></Badge>
+              <Badge v-if="data.status" :status="data.status" />
             </div>
             <div v-if="data.category" class="px-4 py-2">
               <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
@@ -33,12 +40,18 @@
           <Handle
             type="target"
             :position="targetPosition"
-            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
+            :class="[
+              'bg-black dark:bg-white rounded w-2 h-2 handle',
+              props.readonly ? 'opacity-0' : 'opacity-20',
+            ]"
           />
           <Handle
             type="source"
             :position="sourcePosition"
-            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
+            :class="[
+              'bg-black dark:bg-white rounded w-2 h-2 handle',
+              props.readonly ? 'opacity-0' : 'opacity-20',
+            ]"
           />
         </div>
       </template>
@@ -63,11 +76,13 @@ import type { Node, Edge, Component } from '~/types/builder.types';
 interface Props {
   nodes?: VueFlowNode[];
   edges?: VueFlowEdge[];
+  readonly?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodes: () => [],
   edges: () => [],
+  readonly: false,
 });
 
 const nodes = ref<VueFlowNode[]>(props.nodes);
@@ -75,14 +90,8 @@ const edges = ref<VueFlowEdge[]>(props.edges);
 
 watch(
   () => props.nodes,
-  (newNodes, oldNodes) => {
-    console.log('CanvasArea - received new nodes:', newNodes);
-    console.log('CanvasArea - old nodes:', oldNodes);
-    console.log('CanvasArea - nodes changed?', newNodes !== oldNodes);
-
-    // Force reactivity by creating new array
+  (newNodes) => {
     nodes.value = [...(newNodes || [])];
-    console.log('CanvasArea - local nodes.value updated to:', nodes.value);
   },
   { deep: true, immediate: true },
 );
@@ -104,11 +113,13 @@ const emit = defineEmits<{
 }>();
 
 const onDragOver = (event: DragEvent) => {
+  if (props.readonly) return;
   event.preventDefault();
   event.dataTransfer!.dropEffect = 'copy';
 };
 
 const onDrop = (event: DragEvent) => {
+  if (props.readonly) return;
   event.preventDefault();
 
   const data = event.dataTransfer?.getData('application/json');
@@ -172,9 +183,10 @@ const onNodeClick = (event: { node: VueFlowNode | null }) => {
 };
 
 const onConnect = (connection: { source: string; target: string }) => {
+  if (props.readonly) return;
+
   const size = 23;
   const color = '#9BB2BB';
-  console.log('connection', connection);
 
   const existingIncomingEdges = edges.value.filter(
     (edge) => edge.target === connection.target,
@@ -239,16 +251,33 @@ const onConnect = (connection: { source: string; target: string }) => {
 };
 
 const onEdgesChange = () => {
-  console.log('onEdgesChange', edges);
   setTimeout(() => {
     emit('update', nodes.value, edges.value);
   }, 100);
 };
 
 const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
+  if (props.readonly) return;
+
   emit('edgeUpdate', edgeUpdateEvent.edge);
   emit('update', nodes.value, edges.value);
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.readonly .vue-flow__node {
+  cursor: pointer !important;
+}
+
+.readonly .vue-flow__node:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.readonly .vue-flow__edge {
+  pointer-events: none;
+}
+
+.readonly .vue-flow__handle {
+  pointer-events: none;
+}
+</style>
