@@ -1,0 +1,91 @@
+{
+  "status_code": 200,
+  "message": "pipeline runs details",
+  "data": [
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 14-33-57",
+      "run_id": "dbe1d349-c117-46d5-9b6f-62ed8efafb2b",
+      "status": "Succeeded",
+      "duration": "0:03:24",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T14:33:59+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 14-18-42",
+      "run_id": "d9bff3f5-42b5-439e-8bbc-30c59981dde7",
+      "status": "Succeeded",
+      "duration": "0:03:57",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T14:18:44+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 14-02-24",
+      "run_id": "77393bc1-e00e-4cd7-8073-543f8e115071",
+      "status": "Succeeded",
+      "duration": "0:03:01",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T14:02:25+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 13-26-15",
+      "run_id": "5fcc0e1a-41e3-4d96-a1fc-d835cfcfb021",
+      "status": "Failed",
+      "duration": "0:02:58",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T13:26:17+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 13-07-12",
+      "run_id": "6ceae20d-231b-4407-9069-dc503f314486",
+      "status": "Succeeded",
+      "duration": "0:03:06",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T13:07:14+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 12-14-24",
+      "run_id": "7355ed13-92cd-47f6-b564-17e341c80297",
+      "status": "Failed",
+      "duration": "0:00:27",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T12:14:26+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 12-13-01",
+      "run_id": "e91e5b25-0f12-41f9-b428-02bdd283ae87",
+      "status": "Failed",
+      "duration": "0:00:29",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T12:13:03+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 12-11-53",
+      "run_id": "b6179c99-7c8e-487f-b1da-b438f4245607",
+      "status": "Failed",
+      "duration": "0:00:42",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T12:11:55+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 10-25-38",
+      "run_id": "4c0dd58d-f1b6-4c9a-9078-83d0f41c16d5",
+      "status": "Failed",
+      "duration": "0:10:34",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T10:25:40+00:00"
+    },
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 08-47-37",
+      "run_id": "7b3ed5a2-b288-41ab-b73b-9ce8d76e68e2",
+      "status": "Succeeded",
+      "duration": "0:06:53",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T08:47:38+00:00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total_items": 215
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "status_code": 200,
+  "message": "All datasets",
+  "data": [
+    {
+      "train_and_inference_type": 1,
+      "data_source_type": 0,
+      "description": "test_dataset",
+      "register_date_time": "2025-09-09T14:59:16.320319",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 20,
+      "dataset_name": "test_dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-09T14:59:16.320320"
+    },
+    {
+      "train_and_inference_type": 1,
+      "data_source_type": 0,
+      "description": null,
+      "register_date_time": "2025-09-26T08:41:24.817887",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 21,
+      "dataset_name": "training dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T08:41:24.817889"
+    },
+    {
+      "train_and_inference_type": 0,
+      "data_source_type": 0,
+      "description": "First training dataset",
+      "register_date_time": "2025-09-26T09:06:33.848638",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 24,
+      "dataset_name": "train dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T09:06:33.848640"
+    },
+    {
+      "train_and_inference_type": 0,
+      "data_source_type": 0,
+      "description": "First training dataset",
+      "register_date_time": "2025-09-26T10:07:02.798554",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 26,
+      "dataset_name": "train dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T10:07:02.798556"
+    },
+    {
+      "train_and_inference_type": 0,
+      "data_source_type": 0,
+      "description": "First training dataset",
+      "register_date_time": "2025-09-26T10:10:29.938704",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 28,
+      "dataset_name": "train dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T10:10:29.938705"
+    },
+    {
+      "train_and_inference_type": 0,
+      "data_source_type": 0,
+      "description": null,
+      "register_date_time": "2025-09-26T10:58:14.264024",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 34,
+      "dataset_name": "train dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T10:58:14.264025"
+    },
+    {
+      "train_and_inference_type": 1,
+      "data_source_type": 20,
+      "description": "Prometheus dataset for monitoring Kubernetes cluster",
+      "register_date_time": "2025-09-26T14:41:58.300559",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 35,
+      "dataset_name": "prometheus_monitoring_dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T14:41:58.300567"
+    },
+    {
+      "train_and_inference_type": 1,
+      "data_source_type": 20,
+      "description": "Prometheus dataset for monitoring Kubernetes cluster",
+      "register_date_time": "2025-09-26T14:46:45.932335",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 36,
+      "dataset_name": "prometheus_monitoring_dataset",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-09-26T14:46:45.932343"
+    },
+    {
+      "train_and_inference_type": 1,
+      "data_source_type": 1,
+      "description": "test_ds_table",
+      "register_date_time": "2025-10-01T08:35:44.538548",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 38,
+      "dataset_name": "test_ds_table_updated",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-10-01T08:35:44.538551"
+    },
+    {
+      "train_and_inference_type": 2,
+      "data_source_type": 0,
+      "description": "aymen pods db",
+      "register_date_time": "2025-10-01T14:16:50.935847",
+      "last_modified_user_id": "admin@hiro.com",
+      "id": 39,
+      "dataset_name": "aymen",
+      "user_id": "admin@hiro.com",
+      "last_modified_time": "2025-10-01T14:16:50.935850"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total_items": 17
+  }
+}

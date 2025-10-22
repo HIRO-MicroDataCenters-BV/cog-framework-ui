@@ -13,6 +13,11 @@ import type {
   InferenceServiceParams,
 } from '~/types/api.types';
 
+import datasetsData from '@/mocks/get.datasets.json';
+import modelsData from '@/mocks/get.models.json';
+import runsData from '@/mocks/get.runs.json';
+import componentsData from '@/mocks/get.training-builder-components.json';
+
 /**
  * @fileoverview Cognitive Framework API client
  *
@@ -40,6 +45,7 @@ import type {
 export const useApi = () => {
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
+  const mockEnabled = config.public.mockEnabled;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
 
@@ -180,6 +186,9 @@ export const useApi = () => {
      * ```
      */
     getModels: async (params: ModelQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -814,6 +823,9 @@ export const useApi = () => {
      * ```
      */
     getDatasets: async (params: DatasetQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -1825,6 +1837,9 @@ export const useApi = () => {
      * ```
      */
     getPipelineRunsList: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(runsData);
+      }
       return request(`/pipelines/runs`);
     },
     // ============================================================================
@@ -1972,9 +1987,16 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const components = await api.getTrainingBuilderComponents();
+     * const components = await api.getTrainingBuilderComponents({ limit: '10' });
      * ```
      */
-    getTrainingBuilderComponents: async () => {
+    getTrainingBuilderComponents: async (params: { limit: string }) => {
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      if (mockEnabled) {
+        return Promise.resolve(componentsData);
+      }
       return request(`/training-builder-components`);
     },
 

@@ -1,0 +1,121 @@
+{
+  "status_code": 200,
+  "message": "Models retrieved successfully.",
+  "data": [
+    {
+      "name": "bold-pug-491",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "a71a098f-bc67-4cb3-8011-59a29422401a",
+      "version": 0,
+      "last_modified_time": "2025-10-13T09:14:58.689609",
+      "register_date": "2025-10-13T09:14:52.119000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "legendary-panda-669",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "a0ae6a20-bcd8-4b86-a00b-775ee39a0f1b",
+      "version": 0,
+      "last_modified_time": "2025-10-13T09:09:31.649590",
+      "register_date": "2025-10-13T09:09:26.585000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "909ab7a4-6196-4885-b622-3432a27c5741",
+      "version": 0,
+      "last_modified_time": "2025-10-13T08:12:40.601284",
+      "register_date": "2025-10-13T08:12:30.713000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "a8000c98-b451-49e7-8c4b-22ea98cfdcca",
+      "version": 0,
+      "last_modified_time": "2025-10-10T17:40:38.133080",
+      "register_date": "2025-10-10T17:40:29.606000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "79519e44-6382-4231-8211-3f27a0eb749d",
+      "version": 0,
+      "last_modified_time": "2025-10-10T17:32:00.185257",
+      "register_date": "2025-10-10T17:31:51.297000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "dd624eee-9a6b-4f0c-83d3-fc31cba69b0b",
+      "version": 0,
+      "last_modified_time": "2025-10-10T17:25:19.102454",
+      "register_date": "2025-10-10T17:25:13.229000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "9aded84a-b46a-478c-a135-fa93c7570603",
+      "version": 0,
+      "last_modified_time": "2025-10-10T16:58:28.280301",
+      "register_date": "2025-10-10T16:58:22.628000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "210f8143-0951-4473-b42e-e5459719ed10",
+      "version": 0,
+      "last_modified_time": "2025-10-10T16:32:08.277579",
+      "register_date": "2025-10-10T16:32:02.575000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "b7c851e9-bd69-46ca-90af-3532f4c53273",
+      "version": 0,
+      "last_modified_time": "2025-10-10T16:16:30.513310",
+      "register_date": "2025-10-10T16:16:24.931000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "Log Model",
+      "type": "log_model",
+      "description": "log_model",
+      "id": "d087f35d-1018-43ff-acb8-74bd3f246244",
+      "version": 0,
+      "last_modified_time": "2025-10-10T15:55:03.216849",
+      "register_date": "2025-10-10T15:54:57.245000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total_items": 15
+  }
+}
