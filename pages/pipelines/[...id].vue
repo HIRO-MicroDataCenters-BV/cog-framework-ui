@@ -225,28 +225,68 @@ const getOutputPaths = (template: PipelineTemplate) => [
   ...extractPaths(template.outputs?.parameters, 'String'),
 ];
 
-const loadPipelineData = async () => {
-  try {
-    const mockData = await import('~/mocks/get.runs.flow.json');
-    pipelineData.value = mockData.default as PipelineData;
+const fetchPipelineData = async () => {
+  const route = useRoute();
+  const runId = route.params.id as string;
+  const api = useApi();
 
-    const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
-    const title = pipelineData.value.display_name || 'Pipeline';
+  const data = await api.getPipelineRunFlow(runId);
+  if (!data) return;
 
-    setPage({
-      section: 'pipelines',
-      title,
-      data: {
-        builder: { name: title, nodes, edges },
-      },
-    });
-  } catch (error) {
-    console.error('Error loading pipeline data:', error);
+  pipelineData.value = data as PipelineData;
+
+  const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
+  const title = pipelineData.value.display_name || 'Pipeline';
+
+  setPage({
+    section: 'pipelines',
+    title,
+    data: {
+      builder: { name: title, nodes, edges },
+    },
+  });
+};
+
+const runDetails = ref<Record<string, unknown> | null>(null);
+
+const getKeyIcon = (key: string) => {
+  const iconMap: Record<string, string> = {
+    run_id: 'lucide:hash',
+    experiment_id: 'lucide:hash',
+    status: 'lucide:circle-dot-dashed',
+    start_time: 'lucide:calendar',
+    duration: 'lucide:timer',
+  };
+
+  if (iconMap[key]) {
+    return iconMap[key];
+  }
+
+  if (key.includes('id') || key.includes('Id')) {
+    return 'lucide:hash';
+  }
+
+  return 'lucide:text';
+};
+
+const fetchRunDetails = async () => {
+  const route = useRoute();
+  const runId = route.params.id as string;
+  const api = useApi();
+
+  const response = await api.getPipelineRunsList({ run_id: runId });
+  if (
+    response &&
+    'data' in response &&
+    Array.isArray(response.data) &&
+    response.data.length > 0
+  ) {
+    runDetails.value = response.data[0];
   }
 };
 
-onMounted(() => {
-  loadPipelineData();
+onMounted(async () => {
+  await Promise.all([fetchPipelineData(), fetchRunDetails()]);
 });
 </script>
 
@@ -267,7 +307,42 @@ onMounted(() => {
       <TabsContent value="flow" class="h-full">
         <AppBuilder :readonly="true" />
       </TabsContent>
-      <TabsContent value="details">Components</TabsContent>
+      <TabsContent value="details" class="h-full p-4">
+        <div v-if="runDetails" class="space-y-4">
+          <Table class="w-full">
+            <TableBody>
+              <TableRow
+                v-for="(value, key) in runDetails"
+                :key="key"
+                class="border-b-0"
+              >
+                <TableCell
+                  class="text-left py-3 pr-8 w-20 text-gray-500 font-medium flex items-center gap-2"
+                >
+                  <span class="size-4"><Icon :name="getKeyIcon(key)" /></span>
+                  <span>{{ t(`label.${key}`) }}</span>
+                </TableCell>
+                <TableCell class="text-left py-3">
+                  <span
+                    v-if="
+                      typeof value === 'string' &&
+                      value.includes('T') &&
+                      value.includes('+')
+                    "
+                  >
+                    {{ new Date(value).toLocaleString() }}
+                  </span>
+                  <span v-else-if="key === 'status'">{{ value }}</span>
+                  <span v-else>{{ value }}</span>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        <div v-else class="flex items-center justify-center h-64">
+          <div class="text-gray-500">{{ t('hint.loading') }}</div>
+        </div>
+      </TabsContent>
     </Tabs>
   </div>
 </template>

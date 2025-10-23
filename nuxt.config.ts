@@ -47,6 +47,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: URL_PREFIX,
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
+      apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
     },
   },
   compatibilityDate: '2024-11-01',
@@ -60,7 +61,7 @@ export default defineNuxtConfig({
     baseURL: URL_PREFIX,
     devProxy: {
       '/cogapi': {
-        target: process.env.NUXT_PUBLIC_API_REMOTE || 'http://localhost:8000',
+        target: process.env.NUXT_PUBLIC_API_REMOTE || '',
         changeOrigin: true,
         prependPath: true,
       },

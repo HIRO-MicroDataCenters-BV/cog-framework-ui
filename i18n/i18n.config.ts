@@ -60,6 +60,7 @@ export default defineI18nConfig(() => ({
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         are_you_sure: 'Are you sure?',
+        run_details: 'Run Details',
       },
       alert: {
         delete_dataset:
@@ -133,6 +134,12 @@ export default defineI18nConfig(() => ({
         component_file: 'Component file',
         creator: 'Creator',
         properties: 'Properties',
+        run_name: 'Run Name',
+        run_id: 'Run ID',
+        status: 'Status',
+        duration: 'Duration',
+        experiment_id: 'Experiment ID',
+        start_time: 'Start Time',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -253,6 +260,7 @@ export default defineI18nConfig(() => ({
         in: 'in',
         all: 'All',
         page: 'Page',
+        loading: 'Loading...',
       },
       menu: {
         upload: 'Upload',
