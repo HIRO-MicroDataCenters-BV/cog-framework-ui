@@ -9,11 +9,8 @@ export const useToaster = () => {
       message: string,
       data?: Record<string, string | number>,
     ) => {
-      console.log('show', type, message, data);
       const msg = t(`message.${type}.${message}`);
       const options = { duration: 3000, ...data };
-      console.log('msg', msg);
-      console.log('options', options);
       switch (type) {
         case 'success':
           toast.success(msg, options);
@@ -28,7 +25,6 @@ export const useToaster = () => {
           toast.info(msg, options);
           break;
       }
-      console.log('toast', toast);
     },
   };
 };

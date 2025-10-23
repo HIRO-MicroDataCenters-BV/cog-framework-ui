@@ -96,31 +96,23 @@ export const useApi = () => {
     body?: unknown,
     options?: { showToast?: boolean },
   ) => {
-    console.log('request', url, method, body, options);
     const isFormData = body instanceof FormData;
-    console.log('isFormData', isFormData);
     const showToast = options?.showToast ?? true;
-    console.log('showToast', showToast);
-    console.log('toaster', toaster);
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
-    console.log('isModifyingRequest', isModifyingRequest);
     // Set loading state
     setPage({
       ...page.value,
       isLoading: true,
     });
-    console.log('setPage', page.value);
     const opts: RequestInit = {
       method,
       headers: getHeaders(isFormData),
       ...(method !== 'DELETE' &&
         method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
     };
-    console.log('opts', opts);
     try {
-      console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
       const data = await res.json();
 
@@ -210,8 +202,6 @@ export const useApi = () => {
      * ```
      */
     getModels: async (params: ModelQueryParams = {}) => {
-      console.log('getModels', params);
-      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(modelsData);
       }
@@ -854,18 +844,13 @@ export const useApi = () => {
      * ```
      */
     getDatasets: async (params: DatasetQueryParams = {}) => {
-      console.log('getDatasets', params);
-      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(datasetsData);
       }
-      console.log('q');
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      console.log('q', q);
       const res = await request(`/datasets?${q}`);
-      console.log('res', res);
       return res;
     },
     /**
@@ -1888,8 +1873,6 @@ export const useApi = () => {
         sort_order?: 'asc' | 'desc';
       } = {},
     ) => {
-      console.log('getPipelineRunsList', params);
-      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(runsDetailsData);
       }
