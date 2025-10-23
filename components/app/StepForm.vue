@@ -394,7 +394,11 @@ const reviewData = computed((): ReviewTableItem[] => {
       label: item.label,
       value: item.valuePath
         .split('.')
-        .reduce((obj: any, key: string) => obj?.[key], formValues),
+        .reduce(
+          (obj: Record<string, unknown>, key: string) =>
+            obj?.[key] as Record<string, unknown>,
+          formValues as Record<string, unknown>,
+        ),
     };
   });
 });
