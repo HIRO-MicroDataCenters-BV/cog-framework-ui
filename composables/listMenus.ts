@@ -6,7 +6,7 @@ export const uselistMenus = () => {
         {
           key: 'dataset_management',
           title: t('menu.datasets'),
-          url: 'dataset_management',
+          url: '/dataset_management',
           icon: 'lucide:table-2',
           items: [],
           isActive: false,
@@ -14,7 +14,7 @@ export const uselistMenus = () => {
         {
           key: 'pipelines',
           title: t('menu.pipelines'),
-          url: 'pipelines',
+          url: '/pipelines',
           icon: 'lucide:route',
           items: [],
           isActive: false,
@@ -22,7 +22,7 @@ export const uselistMenus = () => {
         {
           key: 'model_management',
           title: t('menu.model_management'),
-          url: 'model_management',
+          url: '/model_management',
           icon: 'lucide:package',
           items: [],
           isActive: false,
