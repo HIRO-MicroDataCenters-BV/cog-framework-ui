@@ -9,7 +9,7 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink href="../">
+              <BreadcrumbLink :href="page.section">
                 {{ $t(`menu.${page.section}`) }}
               </BreadcrumbLink>
             </BreadcrumbItem>

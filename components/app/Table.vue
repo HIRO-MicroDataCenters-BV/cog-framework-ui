@@ -165,6 +165,8 @@ const fetchData = async () => {
     params[getFilterColumnName(route.query.column as string)] = route.query.q;
   }
 
+  console.log('fetchData', params);
+
   try {
     const response = await props.dataSource(params);
 
