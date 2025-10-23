@@ -95,27 +95,29 @@ export const useApi = () => {
     body?: unknown,
     options?: { showToast?: boolean },
   ) => {
+    console.log('request', url, method, body, options);
     const isFormData = body instanceof FormData;
     // Show toast by default: true for errors, conditional for success
     const showToast = options?.showToast ?? true;
     const toaster = useToaster();
+    console.log('toaster', toaster);
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
-
+    console.log('isModifyingRequest', isModifyingRequest);
     // Set loading state
     setPage({
       ...page.value,
       isLoading: true,
     });
-
+    console.log('setPage', page.value);
     const opts: RequestInit = {
       method,
       headers: getHeaders(isFormData),
       ...(method !== 'DELETE' &&
         method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
     };
-
+    console.log('opts', opts);
     try {
       console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
@@ -856,10 +858,13 @@ export const useApi = () => {
       if (mockEnabled) {
         return Promise.resolve(datasetsData);
       }
+      console.log('q');
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
+      console.log('q', q);
       const res = await request(`/datasets?${q}`);
+      console.log('res', res);
       return res;
     },
     /**
