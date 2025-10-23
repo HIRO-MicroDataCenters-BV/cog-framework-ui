@@ -51,6 +51,7 @@ export const useApi = () => {
   const mockEnabled = config.public.mockEnabled;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  const { setPage, page } = useApp();
 
   /**
    * Generates appropriate headers for API requests
@@ -101,6 +102,12 @@ export const useApi = () => {
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
+
+    // Set loading state
+    setPage({
+      ...page.value,
+      isLoading: true,
+    });
 
     const opts: RequestInit = {
       method,
@@ -154,6 +161,12 @@ export const useApi = () => {
 
       // Return null instead of throwing to prevent app crashes
       return null;
+    } finally {
+      // Reset loading state
+      setPage({
+        ...page.value,
+        isLoading: false,
+      });
     }
   };
 

@@ -7,6 +7,7 @@ export const useApp = () => {
       title: '',
       subtitle: '',
       description: '',
+      isLoading: false,
       data: {
         builder: {
           name: '',
@@ -22,6 +23,7 @@ export const useApp = () => {
       title: value.title || '',
       subtitle: value.subtitle || '',
       description: value.description || '',
+      isLoading: value.isLoading || false,
       data: {
         builder: {
           name: value.data?.builder?.name || '',

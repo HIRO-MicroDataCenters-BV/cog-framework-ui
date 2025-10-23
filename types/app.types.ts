@@ -6,4 +6,5 @@ export interface Page {
   subtitle?: string;
   description?: string;
   data?: { builder: { name: string; nodes: Node[]; edges: Edge[] } };
+  isLoading?: boolean;
 }
