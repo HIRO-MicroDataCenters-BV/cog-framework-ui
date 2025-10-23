@@ -97,8 +97,9 @@ export const useApi = () => {
   ) => {
     console.log('request', url, method, body, options);
     const isFormData = body instanceof FormData;
-    // Show toast by default: true for errors, conditional for success
+    console.log('isFormData', isFormData);
     const showToast = options?.showToast ?? true;
+    console.log('showToast', showToast);
     const toaster = useToaster();
     console.log('toaster', toaster);
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
