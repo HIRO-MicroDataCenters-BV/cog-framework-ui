@@ -22,10 +22,23 @@
         </div>
       </AppContent>
     </SidebarInset>
+
+    <!-- Global loading spinner -->
+    <div
+      v-if="page.isLoading"
+      class="fixed top-4 right-4 z-50 flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow-lg"
+    >
+      <Spinner class="size-4" />
+      <span class="text-sm text-gray-600 dark:text-gray-300">{{
+        t('hint.loading')
+      }}</span>
+    </div>
   </SidebarProvider>
 </template>
 
 <script lang="ts" setup>
+import { Spinner } from '@/components/ui/spinner';
+
 const { t } = useI18n();
 const { page } = useApp();
 </script>
