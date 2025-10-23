@@ -288,9 +288,13 @@ const table = useVueTable({
       currentPage.value = newPage;
       const query = { ...route.query };
       query.page = currentPage.value.toString();
-      router.replace({
-        query,
-      });
+      router
+        .replace({
+          query,
+        })
+        .then(() => {
+          fetchData();
+        });
     }
   },
 
@@ -424,7 +428,7 @@ watch(
       }, 100);
     }
   },
-  { deep: true },
+  { deep: true, immediate: false },
 );
 
 const add = () => {
@@ -641,7 +645,9 @@ defineExpose({ fetchData });
               table.setPageIndex(page - 1);
               const query = { ...route.query };
               query.page = page.toString();
-              router.replace({ query });
+              router.replace({ query }).then(() => {
+                fetchData();
+              });
             }
           "
         />
