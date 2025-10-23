@@ -2329,7 +2329,7 @@ export const useApi = () => {
         return Promise.resolve(runsFlowData);
       }
 
-      const url = `${apiRuns}/${id}`;
+      const url = `${apiRuns}/runs/${id}`;
       const headers = getHeaders();
 
       try {
