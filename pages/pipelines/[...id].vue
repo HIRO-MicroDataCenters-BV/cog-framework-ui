@@ -253,8 +253,8 @@ onMounted(() => {
 <template>
   <div class="h-[calc(100svh-74px)]">
     <Tabs default-value="flow" class="h-full">
-      <div class="w-full h-[52px] px-4">
-        <TabsList class="h-full rounded-none bg-transparent gap-4">
+      <div class="w-full h-[52px] px-4 border-b border-gray-200">
+        <TabsList class="h-full rounded-none bg-transparent gap-4 py-0">
           <TabsTrigger
             v-for="tab in tabs"
             :key="tab.value"

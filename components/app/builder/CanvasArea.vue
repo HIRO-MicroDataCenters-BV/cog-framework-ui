@@ -153,30 +153,6 @@ const onDrop = (event: DragEvent) => {
   }
 };
 
-const validateTypeCompatibility = (
-  sourceComponent: Component,
-  targetComponent: Component,
-): { isValid: boolean; sourceType?: string; targetType?: string } => {
-  const sourceOutputType = sourceComponent.output_path[0]?.type;
-  const targetInputType = targetComponent.input_path[0]?.type;
-
-  if (!sourceOutputType || !targetInputType) {
-    return {
-      isValid: false,
-      sourceType: sourceOutputType,
-      targetType: targetInputType,
-    };
-  }
-
-  const isCompatible = sourceOutputType === targetInputType;
-
-  return {
-    isValid: isCompatible,
-    sourceType: sourceOutputType,
-    targetType: targetInputType,
-  };
-};
-
 const onNodeClick = (event: { node: VueFlowNode | null }) => {
   const node = event.node;
   emit('nodeClick', node);
@@ -188,46 +164,6 @@ const onConnect = (connection: { source: string; target: string }) => {
   const size = 23;
   const color = '#9BB2BB';
 
-  const existingIncomingEdges = edges.value.filter(
-    (edge) => edge.target === connection.target,
-  );
-
-  if (existingIncomingEdges.length > 0) {
-    emit('error', 'multiple_inputs_not_allowed');
-    return;
-  }
-
-  const existingOutgoingEdges = edges.value.filter(
-    (edge) => edge.source === connection.source,
-  );
-
-  if (existingOutgoingEdges.length > 0) {
-    emit('error', 'multiple_outputs_not_allowed');
-    return;
-  }
-
-  const sourceNode = nodes.value.find((node) => node.id === connection.source);
-  const targetNode = nodes.value.find((node) => node.id === connection.target);
-
-  if (sourceNode && targetNode) {
-    const sourceComponent = sourceNode.data?.component as Component;
-    const targetComponent = targetNode.data?.component as Component;
-
-    if (sourceComponent && targetComponent) {
-      const validation = validateTypeCompatibility(
-        sourceComponent,
-        targetComponent,
-      );
-
-      if (!validation.isValid) {
-        emit('error', 'type_mismatch', {
-          sourceType: validation.sourceType,
-          targetType: validation.targetType,
-        });
-        return;
-      }
-    }
-  }
   const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
@@ -241,8 +177,6 @@ const onConnect = (connection: { source: string; target: string }) => {
       height: size,
       color: color,
     },
-    // sourceNode and targetNode are not part of Vue Flow Edge type
-    // but we need them for our API, so we'll add them as additional properties
   };
 
   edges.value.push(newEdge);

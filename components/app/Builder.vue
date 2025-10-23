@@ -105,6 +105,8 @@ const readonly = computed(() => props.readonly);
 const data = computed(() => props.data);
 
 const { setPage, page } = useApp();
+const toaster = useToaster();
+const { t } = useI18n();
 
 const isSidebarOpen = ref({
   library: true,
@@ -226,9 +228,11 @@ const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
 const onError = (errorKey: string, data?: Record<string, unknown>) => {
   console.error('Builder error:', errorKey, data);
 
-  const toaster = useToaster();
-  toaster.show('error', errorKey, {
-    duration: 3000,
+  // Show detailed error message to user
+  const errorMessage = (data?.message as string) || t(`error.${errorKey}`);
+
+  toaster.show('error', errorMessage, {
+    duration: 5000,
     ...data,
   });
 };
