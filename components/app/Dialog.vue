@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
-    <DialogContent class="overflow-hidden max-h-full">
+    <DialogContent class="overflow-hidden max-h-full" :class="props.class">
       <DialogHeader v-if="props.navigation.length == 0">
         <DialogTitle>{{ props.title }}</DialogTitle>
       </DialogHeader>
@@ -107,6 +107,7 @@ const props = withDefaults(
     navigation?: string[];
     step?: number;
     stepFormActions?: string[];
+    class?: string;
   }>(),
   {
     open: false,
@@ -117,6 +118,7 @@ const props = withDefaults(
     navigation: () => [],
     actions: () => ['cancel', 'save'],
     stepFormActions: () => [],
+    class: '',
   },
 );
 

@@ -12,7 +12,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { Primitive } from 'reka-ui';
 import type { BadgeVariants, StatusType } from '.';
 import { badgeVariants, statusConfig } from '.';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<
   PrimitiveProps & {

@@ -12,11 +12,14 @@
         >
           <div>
             <Input
+              v-if="!readonly"
               v-model="nodeName"
               type="text"
               :placeholder="$t('placeholder.component_name')"
               :class="{ 'border-red-500': !isComponentNameValid }"
             />
+            <div v-else>{{ selectedNode.data?.label }}</div>
+
             <div v-if="componentNameError" class="text-red-500 text-sm mt-1">
               {{ componentNameError }}
             </div>
@@ -85,11 +88,18 @@ interface Node {
 }
 
 interface Props {
-  selectedNode: Node | null;
+  selectedNode?: Node | null;
   allNodes?: Node[];
+  readonly?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  selectedNode: null,
+  allNodes: () => [],
+  readonly: false,
+});
+
+const readonly = computed(() => props.readonly);
 
 const emit = defineEmits<{
   updateNode: [nodeId: string, updates: Partial<Node>];

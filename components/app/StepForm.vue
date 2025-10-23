@@ -43,15 +43,15 @@
                               class="flex flex-col space-y-1"
                               v-bind="componentField"
                             >
-                              <FormItem
+                              <div
                                 v-for="option in field.options"
                                 :key="option.value"
-                                class="flex space-y-0 gap-x-3"
+                                class="flex items-center items-start space-x-3"
                               >
-                                <FormControl>
-                                  <RadioGroupItem :value="option.value" />
-                                </FormControl>
-                                <FormLabel class="font-normal flex flex-col">
+                                <RadioGroupItem :value="option.value" />
+                                <FormLabel
+                                  class="font-normal flex flex-col cursor-pointer"
+                                >
                                   <div class="mb-1 w-full">
                                     {{ option.label }}
                                   </div>
@@ -62,7 +62,7 @@
                                     {{ option.subtitle }}
                                   </div>
                                 </FormLabel>
-                              </FormItem>
+                              </div>
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
@@ -89,8 +89,8 @@
                               :placeholder="field.placeholder || ''"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -113,8 +113,8 @@
                               :placeholder="field.placeholder || ''"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -139,8 +139,8 @@
                               class="w-full"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -162,8 +162,8 @@
                               "
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 

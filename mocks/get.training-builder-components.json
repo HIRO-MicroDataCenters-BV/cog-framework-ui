@@ -1,0 +1,259 @@
+{
+  "status_code": 200,
+  "message": "Components retrieved successfully.",
+  "data": [
+    {
+      "id": 12,
+      "name": "A",
+      "input_path": [{ "name": "number", "type": "int" }],
+      "output_path": [{ "name": "number", "type": "int" }],
+      "component_file": "/a.yaml",
+      "category": "variables",
+      "creator": ""
+    },
+    {
+      "id": 13,
+      "name": "B",
+      "input_path": [{ "name": "number", "type": "int" }],
+      "output_path": [{ "name": "number", "type": "int" }],
+      "component_file": "/b.yaml",
+      "category": "variables",
+      "creator": ""
+    },
+    {
+      "id": 14,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": null,
+      "creator": null
+    },
+    {
+      "id": 15,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": null,
+      "creator": null
+    },
+    {
+      "id": 16,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": null,
+      "creator": null
+    },
+    {
+      "id": 17,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": null,
+      "creator": null
+    },
+    {
+      "id": 19,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": "serving",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 20,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": "serving",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 21,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": "serving",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 22,
+      "name": "Update serve model",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": "serving",
+      "creator": "admin"
+    },
+    {
+      "id": 23,
+      "name": "Update serve",
+      "input_path": [
+        { "name": "model_id", "type": "String" },
+        { "name": "isvc_name", "type": "String" }
+      ],
+      "output_path": [{ "name": "Output", "type": "String" }],
+      "component_file": "/mlflow/Update_serve_model_20251006142700.yaml",
+      "category": "serving",
+      "creator": "admin"
+    },
+    {
+      "id": 24,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": "admin"
+    },
+    {
+      "id": 25,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": "admin"
+    },
+    {
+      "id": 26,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": null
+    },
+    {
+      "id": 27,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": null
+    },
+    {
+      "id": 28,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": null
+    },
+    {
+      "id": 29,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": null
+    },
+    {
+      "id": 30,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": null
+    },
+    {
+      "id": 31,
+      "name": "Preprocess",
+      "input_path": [{ "name": "file", "type": "CSV" }],
+      "output_path": [{ "name": "output", "type": "parquet" }],
+      "component_file": "/mlflow/Preprocess_20251010140809.yaml",
+      "category": "training",
+      "creator": null
+    },
+    {
+      "id": 32,
+      "name": "string",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "string",
+      "creator": "admin"
+    },
+    {
+      "id": 33,
+      "name": "Preprocess",
+      "input_path": [{ "name": "file", "type": "CSV" }],
+      "output_path": [{ "name": "output", "type": "parquet" }],
+      "component_file": "/mlflow/Preprocess_20251010141522.yaml",
+      "category": "training",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 34,
+      "name": "Preprocess",
+      "input_path": [{ "name": "file", "type": "CSV" }],
+      "output_path": [{ "name": "output", "type": "parquet" }],
+      "component_file": "/mlflow/Preprocess_20251010143625.yaml",
+      "category": "training",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 35,
+      "name": "Preprocess",
+      "input_path": [{ "name": "file", "type": "CSV" }],
+      "output_path": [{ "name": "output", "type": "parquet" }],
+      "component_file": "/mlflow/Preprocess_20251013091405.yaml",
+      "category": "training",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": 36,
+      "name": "Cell Aggregated",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "Fdederated Server",
+      "creator": "Ali"
+    },
+    {
+      "id": 37,
+      "name": "Cell Client",
+      "input_path": [{}],
+      "output_path": [{}],
+      "component_file": "string",
+      "category": "Fdederated Client",
+      "creator": "Ali"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 999, "total_items": 25 }
+}

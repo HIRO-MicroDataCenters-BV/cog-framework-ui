@@ -13,6 +13,13 @@ import type {
   InferenceServiceParams,
 } from '~/types/api.types';
 
+import datasetsData from '@/mocks/get.datasets.json';
+import modelsData from '@/mocks/get.models.json';
+import runsData from '@/mocks/get.runs.json';
+import runsDetailsData from '@/mocks/get.runs.details.json';
+import componentsData from '@/mocks/get.training-builder-components.json';
+import runsFlowData from '@/mocks/get.runs.flow.json';
+
 /**
  * @fileoverview Cognitive Framework API client
  *
@@ -40,6 +47,8 @@ import type {
 export const useApi = () => {
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
+  const apiRuns = config.public.apiRuns;
+  const mockEnabled = config.public.mockEnabled;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
 
@@ -86,8 +95,12 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast;
+    // Show toast by default: true for errors, conditional for success
+    const showToast = options?.showToast ?? true;
     const toaster = useToaster();
+    const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+      method,
+    );
 
     const opts: RequestInit = {
       method,
@@ -100,17 +113,34 @@ export const useApi = () => {
       console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
       const data = await res.json();
+
       if (!res.ok) {
+        // Always show error toasts
         switch (res.status) {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
-            if (showToast) toaster.show('error', 'unauthorized');
+            toaster.show('error', 'unauthorized');
+            return null;
+          case 403:
+            toaster.show('error', 'forbidden');
+            return null;
+          case 404:
+            toaster.show('error', 'not_found');
+            return null;
+          case 500:
+            toaster.show('error', 'server_error');
+            return null;
+          default:
+            toaster.show('error', data.message || 'request_failed');
             return null;
         }
       } else {
-        const successMessage = data.message || 'operation_completed';
-        if (showToast) toaster.show('success', successMessage);
+        // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
+        if (isModifyingRequest && showToast) {
+          const successMessage = data.message || 'operation_completed';
+          toaster.show('success', successMessage);
+        }
       }
 
       const result =
@@ -119,13 +149,11 @@ export const useApi = () => {
           : apiResponseSchema.parse(data);
       return result;
     } catch (err) {
-      if (method === 'DELETE') {
-        return;
-      } else {
-        console.error('Fetch error:', err);
-        if (showToast) toaster.show('error', 'connection_error');
-        throw err;
-      }
+      // Always show error toast for network errors
+      toaster.show('error', 'connection_error');
+
+      // Return null instead of throwing to prevent app crashes
+      return null;
     }
   };
 
@@ -145,6 +173,8 @@ export const useApi = () => {
      * @param {number} [params.last_days] - Duration filter in days to fetch models
      * @param {string} [params.name] - The name of the model to retrieve
      * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order for last_modified_time
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing list of models
      *
@@ -158,9 +188,15 @@ export const useApi = () => {
      *
      * // Get specific model by name
      * const model = await api.getModels({ name: 'my-model' });
+     *
+     * // Get models with pagination
+     * const paginatedModels = await api.getModels({ page: 1, limit: 10 });
      * ```
      */
     getModels: async (params: ModelQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -779,6 +815,8 @@ export const useApi = () => {
      * @param {string} [params.name] - The name of the dataset to search for
      * @param {number} [params.id] - Dataset ID
      * @param {number} [params.last_days] - The number of days to look back for datasets
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing the list of datasets
      *
@@ -792,9 +830,15 @@ export const useApi = () => {
      *
      * // Get specific dataset by name
      * const dataset = await api.getDatasets({ name: 'training-data' });
+     *
+     * // Get datasets with pagination
+     * const paginatedDatasets = await api.getDatasets({ page: 1, limit: 10 });
      * ```
      */
     getDatasets: async (params: DatasetQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -1796,17 +1840,38 @@ export const useApi = () => {
     /**
      * Gets pipeline runs list
      *
-     * Retrieves a list of all pipeline runs.
+     * Retrieves a list of pipeline runs with optional filtering and sorting.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.run_id] - Run ID to filter by
+     * @param {string} [params.run_name] - Run name to filter by
+     * @param {string} [params.sort_by] - Attribute to sort by
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
      *
      * @returns {Promise<Object>} Standard response containing list of pipeline runs
      *
      * @example
      * ```typescript
      * const runs = await api.getPipelineRunsList();
+     * const specificRun = await api.getPipelineRunsList({ run_id: 'dbe1d349-c117-46d5-9b6f-62ed8efafb2b' });
+     * const sortedRuns = await api.getPipelineRunsList({ sort_by: 'start_time', sort_order: 'asc' });
      * ```
      */
-    getPipelineRunsList: async () => {
-      return request(`/pipelines/runs`);
+    getPipelineRunsList: async (
+      params: {
+        run_id?: string;
+        run_name?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+      } = {},
+    ) => {
+      if (mockEnabled) {
+        return Promise.resolve(runsDetailsData);
+      }
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/pipelines/runs?${q}`);
     },
     // ============================================================================
     // POD MANAGEMENT API
@@ -1953,9 +2018,16 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const components = await api.getTrainingBuilderComponents();
+     * const components = await api.getTrainingBuilderComponents({ limit: '10' });
      * ```
      */
-    getTrainingBuilderComponents: async () => {
+    getTrainingBuilderComponents: async (params: { limit: string }) => {
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      if (mockEnabled) {
+        return Promise.resolve(componentsData);
+      }
       return request(`/training-builder-components`);
     },
 
@@ -2236,6 +2308,43 @@ export const useApi = () => {
      */
     getHeaders: async () => {
       return request(`/headers`);
+    },
+
+    /**
+     * Gets pipeline run flow data by run ID
+     *
+     * Retrieves flow data for a specific pipeline run using the external API.
+     *
+     * @param {string} id - The run ID
+     *
+     * @returns {Promise<Object>} Standard response containing pipeline run flow data
+     *
+     * @example
+     * ```typescript
+     * const flowData = await api.getPipelineRunFlow('75011b49-1bd1-469a-ae63-38a7d26f1a7f');
+     * ```
+     */
+    getPipelineRunFlow: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(runsFlowData);
+      }
+
+      const url = `${apiRuns}/${id}`;
+      const headers = getHeaders();
+
+      try {
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Error fetching pipeline run flow:', error);
+        throw error;
+      }
     },
   };
 };

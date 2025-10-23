@@ -1,6 +1,6 @@
 <template>
   <div class="h-[calc(100svh-64px)]">
-    <AppBuilder />
+    <AppBuilder :readonly="false" />
   </div>
 </template>
 

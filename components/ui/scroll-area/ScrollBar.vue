@@ -5,7 +5,7 @@ import {
   ScrollAreaThumb,
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = withDefaults(
   defineProps<ScrollAreaScrollbarProps & { class?: HTMLAttributes['class'] }>(),

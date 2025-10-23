@@ -20,8 +20,12 @@ export default defineI18nConfig(() => ({
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
-          connection_error: 'Connection error',
-          unauthorized: 'Unauthorized',
+          connection_error: 'Unable to connect to server',
+          unauthorized: 'Unauthorized - please log in',
+          forbidden: 'Access denied',
+          not_found: 'Resource not found',
+          server_error: 'Server error occurred',
+          request_failed: 'Request failed',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:
@@ -56,6 +60,7 @@ export default defineI18nConfig(() => ({
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         are_you_sure: 'Are you sure?',
+        run_details: 'Run Details',
       },
       alert: {
         delete_dataset:
@@ -129,6 +134,12 @@ export default defineI18nConfig(() => ({
         component_file: 'Component file',
         creator: 'Creator',
         properties: 'Properties',
+        run_name: 'Run Name',
+        run_id: 'Run ID',
+        status: 'Status',
+        duration: 'Duration',
+        experiment_id: 'Experiment ID',
+        start_time: 'Start Time',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -170,6 +181,8 @@ export default defineI18nConfig(() => ({
         add_pipelines: 'New Pipeline',
         previous: 'Previous',
         next: 'Next',
+        first: 'First',
+        last: 'Last',
         filters: 'Filters',
         edit: 'Edit',
         delete: 'Delete',
@@ -247,6 +260,7 @@ export default defineI18nConfig(() => ({
         in: 'in',
         all: 'All',
         page: 'Page',
+        loading: 'Loading...',
       },
       menu: {
         upload: 'Upload',
@@ -275,6 +289,9 @@ export default defineI18nConfig(() => ({
         files: 'Files',
         tables: 'Tables',
         streams: 'Streams',
+        flow: 'Flow',
+        details: 'Details',
+        outputs: 'Outputs',
       },
       column: {
         experiment_id: 'Experiment ID',

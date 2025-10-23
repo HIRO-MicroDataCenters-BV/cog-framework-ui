@@ -7,7 +7,7 @@ import {
   type PaginationRootProps,
   useForwardPropsEmits,
 } from 'reka-ui';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<
   PaginationRootProps & {

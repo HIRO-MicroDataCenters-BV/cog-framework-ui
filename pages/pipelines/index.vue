@@ -20,7 +20,12 @@ const baseUrl = page.value.section;
 const columns = [
   {
     id: 'run_id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('run_id'),
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'a',
+        { href: `${baseUrl}/${row.getValue('run_id')}` },
+        row.getValue('run_id'),
+      ),
   },
   {
     id: 'run_name',
@@ -116,5 +121,6 @@ console.log(data);
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"
+    :selectable="false"
   />
 </template>

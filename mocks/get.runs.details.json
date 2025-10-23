@@ -1,0 +1,19 @@
+{
+  "status_code": 200,
+  "message": "pipeline runs details",
+  "data": [
+    {
+      "run_name": "ml_training_pipeline 2025-10-14 14-33-57",
+      "run_id": "dbe1d349-c117-46d5-9b6f-62ed8efafb2b",
+      "status": "Succeeded",
+      "duration": "0:03:24",
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "start_time": "2025-10-14T14:33:59+00:00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total_items": 1
+  }
+}

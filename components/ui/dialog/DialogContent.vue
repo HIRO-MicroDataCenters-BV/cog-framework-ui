@@ -10,7 +10,7 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 import DialogOverlay from './DialogOverlay.vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<
   DialogContentProps & { class?: HTMLAttributes['class']; hasClose?: boolean }

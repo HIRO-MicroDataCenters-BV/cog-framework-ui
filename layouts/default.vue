@@ -11,7 +11,7 @@
                 <template v-if="page.title == ''">{{
                   t(`subtitle.${page.section}`)
                 }}</template>
-                <template v-else>{{ page.title }}</template>
+                <!-- <template v-else>{{ page.title }}</template> -->
               </h1>
               <p v-if="page.subtitle != ''" class="text-sm text-gray-500">
                 {{ page.subtitle }}

@@ -2,7 +2,7 @@
 import { ErrorMessage } from 'vee-validate';
 import { type HTMLAttributes, toValue } from 'vue';
 import { useFormField } from './useFormField';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<{
   class?: HTMLAttributes['class'];

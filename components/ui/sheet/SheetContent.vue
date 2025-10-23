@@ -11,7 +11,7 @@ import {
   useForwardPropsEmits,
 } from 'reka-ui';
 import SheetOverlay from './SheetOverlay.vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 interface SheetContentProps extends DialogContentProps {
   class?: HTMLAttributes['class'];

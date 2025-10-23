@@ -94,6 +94,10 @@ export interface ModelQueryParams {
   name?: string;
   /** Sort order for last_modified_time: 'asc' or 'desc' */
   sort_order?: 'asc' | 'desc';
+  /** Page number for pagination */
+  page?: number;
+  /** Number of items per page */
+  limit?: number;
 }
 
 /**
@@ -106,6 +110,10 @@ export interface DatasetQueryParams {
   id?: number;
   /** Duration of the dataset in days */
   last_days?: number;
+  /** Page number for pagination */
+  page?: number;
+  /** Number of items per page */
+  limit?: number;
 }
 
 /**

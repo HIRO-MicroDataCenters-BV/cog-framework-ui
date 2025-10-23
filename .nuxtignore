@@ -1,0 +1,3 @@
+# Ignore UI components from Nuxt auto-scanning (handled by shadcn-nuxt)
+components/ui/**
+

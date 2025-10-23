@@ -102,13 +102,19 @@ onMounted(() => {
 
 const fetchComponents = async () => {
   console.log('fetchComponents');
-  const res = await api.getTrainingBuilderComponents();
-  console.log('res', res);
-  if (res && 'data' in res) {
-    components.value = res.data as unknown as Component[];
-    console.log('components', components.value);
-    categories.value = getCategories(components.value);
-    console.log('categories', categories.value);
+  try {
+    const res = await api.getTrainingBuilderComponents();
+    console.log('res', res);
+    if (res && 'data' in res) {
+      components.value = res.data as unknown as Component[];
+      console.log('components', components.value);
+      categories.value = getCategories(components.value);
+      console.log('categories', categories.value);
+    }
+  } catch (error) {
+    // Toast is shown by API layer, just set empty arrays
+    components.value = [];
+    categories.value = [];
   }
 };
 
