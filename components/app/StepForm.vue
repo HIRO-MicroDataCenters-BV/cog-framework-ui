@@ -254,7 +254,7 @@
 
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
-import { get as useGet } from 'lodash-es';
+// import { get as useGet } from 'lodash-es';
 
 import {
   FormControl,
@@ -392,7 +392,9 @@ const reviewData = computed((): ReviewTableItem[] => {
   return reviewList.map((item) => {
     return {
       label: item.label,
-      value: useGet(formValues, item.valuePath),
+      value: item.valuePath
+        .split('.')
+        .reduce((obj: any, key: string) => obj?.[key], formValues),
     };
   });
 });
