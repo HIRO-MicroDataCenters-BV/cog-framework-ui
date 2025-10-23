@@ -194,6 +194,8 @@ export const useApi = () => {
      * ```
      */
     getModels: async (params: ModelQueryParams = {}) => {
+      console.log('getModels', params);
+      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(modelsData);
       }
@@ -836,6 +838,8 @@ export const useApi = () => {
      * ```
      */
     getDatasets: async (params: DatasetQueryParams = {}) => {
+      console.log('getDatasets', params);
+      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(datasetsData);
       }
@@ -1865,6 +1869,8 @@ export const useApi = () => {
         sort_order?: 'asc' | 'desc';
       } = {},
     ) => {
+      console.log('getPipelineRunsList', params);
+      console.log('mockEnabled', mockEnabled);
       if (mockEnabled) {
         return Promise.resolve(runsDetailsData);
       }
