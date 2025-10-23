@@ -1,42 +1,12 @@
 <script lang="ts" setup>
 import { Position } from '@vue-flow/core';
-import type { Node, Edge } from '~/types/builder.types';
-
-interface PipelineTemplate {
-  name: string;
-  container?: Record<string, unknown>;
-  inputs?: {
-    artifacts?: Array<{ name: string }>;
-    parameters?: Array<{ name: string }>;
-  };
-  outputs?: {
-    artifacts?: Array<{ name: string }>;
-    parameters?: Array<{ name: string }>;
-  };
-  dag?: {
-    tasks: Array<{
-      name: string;
-      dependencies?: string[];
-    }>;
-  };
-}
-
-interface TaskDetail {
-  display_name: string;
-  state: string;
-}
-
-interface PipelineData {
-  display_name: string;
-  pipeline_spec: {
-    spec: {
-      templates: PipelineTemplate[];
-    };
-  };
-  run_details?: {
-    task_details: TaskDetail[];
-  };
-}
+import type {
+  Node,
+  Edge,
+  PipelineTemplate,
+  TaskDetail,
+  PipelineData,
+} from '~/types/builder.types';
 
 const { setPage, page } = useApp();
 const { t } = useI18n();
@@ -44,22 +14,38 @@ const { t } = useI18n();
 const pipelineData = ref<PipelineData | null>(null);
 
 const tabs = ref([
-  {
-    label: 'flow',
-    value: 'flow',
-  },
-  {
-    label: 'details',
-    value: 'details',
-  },
+  { label: 'flow', value: 'flow' },
+  { label: 'details', value: 'details' },
 ]);
+
+const LAYOUT_CONFIG = {
+  nodeWidth: 280,
+  nodeSpacing: 80,
+  centerX: 500,
+  levelHeight: 300,
+  levelOffset: 100,
+} as const;
+
+const TASK_STATUS_MAP = {
+  SUCCEEDED: 'succeeded',
+  FAILED: 'failed',
+  RUNNING: 'running',
+  PENDING: 'pending',
+} as const;
+
+const CATEGORY_PATTERNS = [
+  { patterns: ['load', 'dataset'], category: 'data' },
+  { patterns: ['preprocess', 'transform'], category: 'preprocessing' },
+  { patterns: ['train', 'training'], category: 'training' },
+  { patterns: ['evaluate', 'test'], category: 'evaluation' },
+  { patterns: ['best', 'select'], category: 'selection' },
+] as const;
 
 const calculateNodePositions = (
   templates: PipelineTemplate[],
   dagTasks: Array<{ name: string; dependencies?: string[] }>,
 ) => {
   const positions: Record<string, { x: number; y: number }> = {};
-
   const levels: Record<number, string[]> = {};
   const processed = new Set<string>();
 
@@ -71,16 +57,14 @@ const calculateNodePositions = (
     visited.add(nodeName);
 
     if (processed.has(nodeName)) {
-      for (const [level, nodes] of Object.entries(levels)) {
-        if (nodes.includes(nodeName)) return parseInt(level);
-      }
-      return 0;
+      const found = Object.entries(levels).find(([, nodes]) =>
+        nodes.includes(nodeName),
+      );
+      return found ? parseInt(found[0]) : 0;
     }
 
     const task = dagTasks.find((t) => t.name === nodeName);
-    if (!task || !task.dependencies || task.dependencies.length === 0) {
-      return 0;
-    }
+    if (!task?.dependencies?.length) return 0;
 
     const maxDepLevel = Math.max(
       ...task.dependencies.map((dep: string) =>
@@ -90,89 +74,81 @@ const calculateNodePositions = (
     return maxDepLevel + 1;
   };
 
-  templates.forEach((template) => {
-    if (template.dag) return;
-
-    const level = getNodeLevel(template.name);
-    if (!levels[level]) levels[level] = [];
-    levels[level].push(template.name);
-    processed.add(template.name);
-  });
-
-  Object.entries(levels).forEach(([levelStr, nodeNames]) => {
-    const level = parseInt(levelStr);
-    const y = level * 300 + 100;
-
-    const trainingNodes = nodeNames.filter((name) =>
-      name.startsWith('training'),
-    );
-    const evaluateNodes = nodeNames.filter((name) =>
-      name.startsWith('evaluate-model'),
-    );
-    const otherNodes = nodeNames.filter(
+  const groupNodesByType = (nodeNames: string[]) => ({
+    training: nodeNames.filter((name) => name.startsWith('training')),
+    evaluate: nodeNames.filter((name) => name.startsWith('evaluate-model')),
+    other: nodeNames.filter(
       (name) =>
         !name.startsWith('training') && !name.startsWith('evaluate-model'),
-    );
+    ),
+  });
 
-    const nodeWidth = 280;
-    const nodeSpacing = 80;
-    const centerX = 500;
-
-    const allNodes = [...otherNodes, ...trainingNodes, ...evaluateNodes];
+  const positionNodesOnLevel = (nodeNames: string[], level: number) => {
+    const y = level * LAYOUT_CONFIG.levelHeight + LAYOUT_CONFIG.levelOffset;
+    const { other, training, evaluate } = groupNodesByType(nodeNames);
+    const allNodes = [...other, ...training, ...evaluate];
 
     if (allNodes.length === 1) {
-      positions[allNodes[0]] = { x: centerX, y };
+      positions[allNodes[0]] = { x: LAYOUT_CONFIG.centerX, y };
       return;
     }
 
     allNodes.forEach((nodeName, index) => {
       const offset =
-        (index - (allNodes.length - 1) / 2) * (nodeWidth + nodeSpacing);
-      const x = centerX + offset;
-      positions[nodeName] = { x, y };
+        (index - (allNodes.length - 1) / 2) *
+        (LAYOUT_CONFIG.nodeWidth + LAYOUT_CONFIG.nodeSpacing);
+      positions[nodeName] = { x: LAYOUT_CONFIG.centerX + offset, y };
     });
+  };
+
+  templates
+    .filter((template) => !template.dag)
+    .forEach((template) => {
+      const level = getNodeLevel(template.name);
+      if (!levels[level]) levels[level] = [];
+      levels[level].push(template.name);
+      processed.add(template.name);
+    });
+
+  Object.entries(levels).forEach(([levelStr, nodeNames]) => {
+    positionNodesOnLevel(nodeNames, parseInt(levelStr));
   });
 
   return positions;
 };
 
 const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
-  if (!pipelineData?.pipeline_spec?.spec?.templates) {
+  const pipelineSpec = pipelineData?.pipeline_spec?.spec;
+  if (!pipelineSpec?.templates) {
     return { nodes: [], edges: [] };
   }
 
-  const templates = pipelineData.pipeline_spec.spec.templates;
-  const dag = pipelineData.pipeline_spec.spec.templates.find((t) => t.dag);
+  const { templates } = pipelineSpec;
+  const dag = templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
-
-  const nodes: Node[] = [];
-  const edges: Edge[] = [];
-
   const nodePositions = calculateNodePositions(
     templates,
     dag?.dag?.tasks || [],
   );
 
-  templates.forEach((template, index) => {
-    if (template.dag) return;
-
+  const createNode = (template: PipelineTemplate, index: number): Node => {
     const taskDetail = taskDetails.find(
       (task) => task.display_name === template.name,
     );
-    const status = getTaskStatus(taskDetail);
+    const fallbackPosition = {
+      x: (index % 3) * 300 + 100,
+      y: Math.floor(index / 3) * 200 + 100,
+    };
 
-    const node: Node = {
+    return {
       id: template.name,
       type: 'default',
-      position: nodePositions[template.name] || {
-        x: (index % 3) * 300 + 100,
-        y: Math.floor(index / 3) * 200 + 100,
-      },
+      position: nodePositions[template.name] || fallbackPosition,
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       data: {
         label: template.name,
-        status: status,
+        status: getTaskStatus(taskDetail),
         category: getComponentCategory(template),
         component: {
           id: template.name,
@@ -185,120 +161,69 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
         },
       },
     };
+  };
 
-    nodes.push(node);
+  const createEdge = (source: string, target: string): Edge => ({
+    id: `edge-${source}-${target}`,
+    source,
+    target,
+    style: { stroke: '#9BB2BB', strokeWidth: 2 },
+    markerEnd: { type: 'arrowclosed', width: 20, height: 20, color: '#9BB2BB' },
   });
 
-  if (dag?.dag?.tasks) {
-    dag.dag.tasks.forEach((task) => {
-      if (task.dependencies && task.dependencies.length > 0) {
-        task.dependencies.forEach((dependency) => {
-          const sourceExists = nodes.some((node) => node.id === dependency);
-          const targetExists = nodes.some((node) => node.id === task.name);
+  const nodes = templates
+    .filter((template) => !template.dag)
+    .map((template, index) => createNode(template, index));
 
-          if (sourceExists && targetExists) {
-            const edge: Edge = {
-              id: `edge-${dependency}-${task.name}`,
-              source: dependency,
-              target: task.name,
-              style: {
-                stroke: '#9BB2BB',
-                strokeWidth: 2,
-              },
-              markerEnd: {
-                type: 'arrowclosed',
-                width: 20,
-                height: 20,
-                color: '#9BB2BB',
-              },
-            };
-            edges.push(edge);
-          }
-        });
-      }
-    });
-  }
+  const edges =
+    dag?.dag?.tasks
+      ?.flatMap(
+        (task) =>
+          task.dependencies?.map((dependency) => ({
+            source: dependency,
+            target: task.name,
+          })) || [],
+      )
+      .filter(
+        ({ source, target }) =>
+          nodes.some((node) => node.id === source) &&
+          nodes.some((node) => node.id === target),
+      )
+      .map(({ source, target }) => createEdge(source, target)) || [];
 
   return { nodes, edges };
 };
 
 const getTaskStatus = (taskDetail: TaskDetail | undefined) => {
   if (!taskDetail) return 'pending';
-
-  switch (taskDetail.state) {
-    case 'SUCCEEDED':
-      return 'succeeded';
-    case 'FAILED':
-      return 'failed';
-    case 'RUNNING':
-      return 'running';
-    case 'PENDING':
-      return 'pending';
-    default:
-      return 'pending';
-  }
+  return (
+    TASK_STATUS_MAP[taskDetail.state as keyof typeof TASK_STATUS_MAP] ||
+    'pending'
+  );
 };
 
 const getComponentCategory = (template: PipelineTemplate) => {
   const name = template.name.toLowerCase();
-
-  if (name.includes('load') || name.includes('dataset')) return 'data';
-  if (name.includes('preprocess') || name.includes('transform'))
-    return 'preprocessing';
-  if (name.includes('train') || name.includes('training')) return 'training';
-  if (name.includes('evaluate') || name.includes('test')) return 'evaluation';
-  if (name.includes('best') || name.includes('select')) return 'selection';
-
-  return 'general';
+  const found = CATEGORY_PATTERNS.find(({ patterns }) =>
+    patterns.some((pattern) => name.includes(pattern)),
+  );
+  return found?.category || 'general';
 };
 
-const getInputPaths = (template: PipelineTemplate) => {
-  const paths: Array<{ name: string; type: string }> = [];
+const extractPaths = (
+  items: Array<{ name: string }> | undefined,
+  type: string,
+) => items?.map((item) => ({ name: item.name, type })) || [];
 
-  if (template.inputs?.artifacts) {
-    template.inputs.artifacts.forEach((artifact) => {
-      paths.push({
-        name: artifact.name,
-        type: 'Dataset',
-      });
-    });
-  }
+const getInputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.inputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.inputs?.parameters, 'String'),
+];
 
-  if (template.inputs?.parameters) {
-    template.inputs.parameters.forEach((param) => {
-      paths.push({
-        name: param.name,
-        type: 'String',
-      });
-    });
-  }
-
-  return paths;
-};
-
-const getOutputPaths = (template: PipelineTemplate) => {
-  const paths: Array<{ name: string; type: string }> = [];
-
-  if (template.outputs?.artifacts) {
-    template.outputs.artifacts.forEach((artifact) => {
-      paths.push({
-        name: artifact.name,
-        type: 'Dataset',
-      });
-    });
-  }
-
-  if (template.outputs?.parameters) {
-    template.outputs.parameters.forEach((param) => {
-      paths.push({
-        name: param.name,
-        type: 'String',
-      });
-    });
-  }
-
-  return paths;
-};
+const getOutputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.outputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.outputs?.parameters, 'String'),
+];
 
 const loadPipelineData = async () => {
   try {
@@ -306,16 +231,13 @@ const loadPipelineData = async () => {
     pipelineData.value = mockData.default as PipelineData;
 
     const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
+    const title = pipelineData.value.display_name || 'Pipeline';
 
     setPage({
       section: 'pipelines',
-      title: pipelineData.value.display_name || 'Pipeline',
+      title,
       data: {
-        builder: {
-          name: pipelineData.value.display_name || 'Pipeline',
-          nodes,
-          edges,
-        },
+        builder: { name: title, nodes, edges },
       },
     });
   } catch (error) {

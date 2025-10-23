@@ -116,5 +116,6 @@ console.log(data);
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"
+    :selectable="false"
   />
 </template>

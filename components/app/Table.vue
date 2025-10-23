@@ -15,9 +15,6 @@ import {
 } from '@tanstack/vue-table';
 import { ref, watch, onMounted } from 'vue';
 import { valueUpdater } from '~/utils';
-/*
-import { AppMenuActions } from '#components';
-*/
 import type {
   SearchFilter,
   SearchFilterParams,
@@ -77,6 +74,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -102,6 +103,10 @@ const tabs = computed(() => props.tabs || []);
 const validTabs = computed(() => {
   return tabs.value.filter((tab) => tab && tab.key && tab.value && tab.title);
 });
+
+const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
+const canPreviousPage = computed(() => currentPage.value > 1);
+const canNextPage = computed(() => currentPage.value < totalPages.value);
 
 const stat = ref({
   total: {
@@ -139,7 +144,7 @@ const getFilterColumnName = (columnId: string) => {
 };
 const fetchData = async () => {
   const params: Record<string, unknown> = {
-    page: table.getState().pagination.pageIndex + 1,
+    page: currentPage.value,
     limit: pageSize.value,
   };
 
@@ -162,23 +167,35 @@ const fetchData = async () => {
 
   try {
     const response = await props.dataSource(params);
-    const tableData = response?.data;
-    const pagination = response?.pagination;
-    data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
-    pageSize.value = pagination?.limit ?? 0;
-    totalItems.value = pagination?.total_items ?? 0;
 
-    if (pagination) {
-      const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
-      table.setPageSize(pageSize.value);
-      if (currentPage.value >= totalPages) {
-        table.setPageIndex(currentPage.value);
+    if (response && 'data' in response && 'pagination' in response) {
+      const tableData = response.data;
+      const pagination = response.pagination;
+      data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+
+      if (pagination) {
+        pageSize.value = pagination.limit ?? props.pageSize;
+        totalItems.value = pagination.total_items ?? 0;
+
+        const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
+        table.setPageSize(pageSize.value);
+
+        if (currentPage.value > totalPages) {
+          currentPage.value = Math.max(1, totalPages);
+          table.setPageIndex(currentPage.value - 1);
+        }
+      } else {
+        pageSize.value = props.pageSize;
+        totalItems.value = data.value.length;
       }
+    } else {
+      data.value = [];
+      pageSize.value = props.pageSize;
+      totalItems.value = 0;
     }
   } catch (error) {
-    // Toast is shown by API layer, just set empty data
     data.value = [];
-    pageSize.value = 0;
+    pageSize.value = props.pageSize;
     totalItems.value = 0;
   }
 };
@@ -201,7 +218,7 @@ const rowSelection = ref<Record<string, boolean>>({});
 const expanded = ref<ExpandedState>({});
 
 const currentPage = ref<number>(
-  route.query.page ? parseInt(route.query.page as string) : 0,
+  route.query.page ? parseInt(route.query.page as string) : 1,
 );
 
 const getColumns = (list: TableColumn[]) => {
@@ -255,7 +272,7 @@ const table = useVueTable({
   },
   initialState: {
     pagination: {
-      pageIndex: currentPage.value,
+      pageIndex: currentPage.value - 1,
       pageSize: pageSize.value,
     },
   },
@@ -266,8 +283,9 @@ const table = useVueTable({
         ? updater(table.getState().pagination)
         : updater;
 
-    if (newPagination.pageIndex !== currentPage.value) {
-      currentPage.value = newPagination.pageIndex;
+    const newPage = newPagination.pageIndex + 1;
+    if (newPage !== currentPage.value) {
+      currentPage.value = newPage;
       const query = { ...route.query };
       query.page = currentPage.value.toString();
       router.replace({
@@ -291,14 +309,12 @@ const table = useVueTable({
     },
     get pagination() {
       return {
-        pageIndex: currentPage.value,
+        pageIndex: currentPage.value - 1,
         pageSize: pageSize.value,
       };
     },
   },
 });
-
-// const tabs = uselistTabs();
 
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
@@ -331,7 +347,7 @@ const updateUrlParams = () => {
     query.q = filter.value;
     query.column = filter.column;
   }
-  query.page = (currentPage.value + 1).toString();
+  query.page = currentPage.value.toString();
 
   if (pageSize.value) {
     query.limit = pageSize.value.toString();
@@ -384,9 +400,9 @@ watch(
       if (newQuery.page) {
         const pageIndex = parseInt(newQuery.page as string);
         currentPage.value = pageIndex;
-        table.setPageIndex(pageIndex);
+        table.setPageIndex(pageIndex - 1);
       } else {
-        currentPage.value = 0;
+        currentPage.value = 1;
         table.setPageIndex(0);
       }
 
@@ -399,7 +415,7 @@ watch(
     } catch (error) {
       columnFilters.value = [];
       columnVisibility.value = {};
-      currentPage.value = 0;
+      currentPage.value = 1;
       table.setPageIndex(0);
     } finally {
       setTimeout(() => {
@@ -489,7 +505,6 @@ defineExpose({ fetchData });
         </div>
       </div>
 
-      <!-- table filters -->
       <div v-if="isFiltersOpen">
         <Separator />
         <div class="flex gap-2 items-center py-4">
@@ -553,7 +568,6 @@ defineExpose({ fetchData });
         </div>
       </div>
     </div>
-    <!-- end table filters -->
     <div class="overflow-x-auto w-full">
       <Table
         :data-source="dataSource"
@@ -607,21 +621,27 @@ defineExpose({ fetchData });
 
     <div class="py-4 p-4 bg-sidebar-background sticky bottom-0">
       <div class="flex items-center justify-between">
-        <div class="flex-1 text-sm text-muted-foreground">
+        <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
           {{ table.getFilteredSelectedRowModel().rows.length }}
           {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
           {{ t('hint.rows_selected') }}
         </div>
-        {{ currentPage }}
+        <div v-else class="flex-1"></div>
         <AppPagination
           :current-page="currentPage"
-          :total-items="Math.ceil(totalItems / pageSize)"
-          :page-size="table.getPageCount()"
-          :can-previous-page="table.getCanPreviousPage()"
-          :can-next-page="table.getCanNextPage()"
+          :total-items="totalItems"
+          :page-size="pageSize"
+          :can-previous-page="canPreviousPage"
+          :can-next-page="canNextPage"
+          :sibling-count="2"
+          :show-edges="true"
           @on-set-page="
-            (page) => {
-              table.setPageIndex(page);
+            (page: number) => {
+              currentPage = page;
+              table.setPageIndex(page - 1);
+              const query = { ...route.query };
+              query.page = page.toString();
+              router.replace({ query });
             }
           "
         />

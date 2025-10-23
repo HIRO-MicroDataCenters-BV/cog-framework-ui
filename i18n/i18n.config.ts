@@ -174,6 +174,8 @@ export default defineI18nConfig(() => ({
         add_pipelines: 'New Pipeline',
         previous: 'Previous',
         next: 'Next',
+        first: 'First',
+        last: 'Last',
         filters: 'Filters',
         edit: 'Edit',
         delete: 'Delete',
