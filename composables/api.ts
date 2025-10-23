@@ -52,6 +52,7 @@ export const useApi = () => {
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
   const { setPage, page } = useApp();
+  const toaster = useToaster();
 
   /**
    * Generates appropriate headers for API requests
@@ -100,7 +101,6 @@ export const useApi = () => {
     console.log('isFormData', isFormData);
     const showToast = options?.showToast ?? true;
     console.log('showToast', showToast);
-    const toaster = useToaster();
     console.log('toaster', toaster);
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
