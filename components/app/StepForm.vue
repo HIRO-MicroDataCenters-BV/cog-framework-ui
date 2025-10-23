@@ -254,7 +254,7 @@
 
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
-import { get as useGet } from 'lodash-es';
+// import { get as useGet } from 'lodash-es';
 
 import {
   FormControl,
@@ -334,7 +334,7 @@ const currentActions = computed(() => {
 
 watch(
   currentActions,
-  (actions) => {
+  (actions: ActionType[]) => {
     emit('update-actions', actions);
   },
   { immediate: true },
@@ -342,7 +342,7 @@ watch(
 
 watch(
   currentStep,
-  (value) => {
+  (value: number) => {
     emit('on-step-change', value, currentActions.value);
   },
   { immediate: true },
@@ -350,7 +350,7 @@ watch(
 
 watch(
   () => props.isSubmit,
-  (value) => {
+  (value: boolean) => {
     if (value) {
       form.submitForm();
       onSubmit();
@@ -361,7 +361,7 @@ watch(
 
 watch(
   () => props.step,
-  (value) => {
+  (value: number) => {
     if (value !== undefined && value !== currentStep.value) {
       currentStep.value = value;
     }
@@ -392,7 +392,13 @@ const reviewData = computed((): ReviewTableItem[] => {
   return reviewList.map((item) => {
     return {
       label: item.label,
-      value: useGet(formValues, item.valuePath),
+      value: item.valuePath
+        .split('.')
+        .reduce(
+          (obj: Record<string, unknown>, key: string) =>
+            obj?.[key] as Record<string, unknown>,
+          formValues as Record<string, unknown>,
+        ),
     };
   });
 });
