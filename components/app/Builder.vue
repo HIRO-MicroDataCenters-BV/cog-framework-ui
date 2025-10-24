@@ -81,7 +81,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
 import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
@@ -167,7 +166,7 @@ const menuActions = computed<MenuAction[]>(() => [
 // Watch for changes in page data and update selectedNode
 watch(
   () => page.value.data?.builder?.nodes,
-  (nodes) => {
+  (nodes: Node[]) => {
     if (selectedNode.value && nodes) {
       const updatedNode = nodes.find(
         (node: Node) => node.id === selectedNode.value?.id,

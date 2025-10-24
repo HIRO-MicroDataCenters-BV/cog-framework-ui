@@ -20,6 +20,7 @@
       @edges-change="onEdgesChange"
       @edge-update-end="onEdgesChange"
     >
+      <Background variant="dots" :gap="20" :size="0.75" color="#808080" />
       <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
           class="bg-white border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
@@ -69,6 +70,7 @@ import {
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
 } from '@vue-flow/core';
+import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
 
 import type { Node, Edge, Component } from '~/types/builder.types';

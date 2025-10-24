@@ -51,10 +51,7 @@
     opacity: 1;
   }
   .vue-flow__viewport{
-    background: white;
-    background-image: radial-gradient(rgba(0,0,0,.2) 1px, transparent 0);
-    background-size: 40px 40px;
-    background-position: -19px -19px;
+    background: transparent;
   }
 
   .vue-flow__edge .vue-flow__edge-textwrapper{
