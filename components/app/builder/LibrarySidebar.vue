@@ -102,8 +102,9 @@ onMounted(() => {
 
 const fetchComponents = async () => {
   console.log('fetchComponents');
+  const limit = '999';
   try {
-    const res = await api.getTrainingBuilderComponents();
+    const res = await api.getTrainingBuilderComponents({ limit });
     console.log('res', res);
     if (res && 'data' in res) {
       components.value = res.data as unknown as Component[];

@@ -1848,13 +1848,15 @@ export const useApi = () => {
     /**
      * Gets pipeline runs list
      *
-     * Retrieves a list of pipeline runs with optional filtering and sorting.
+     * Retrieves a list of pipeline runs with optional filtering, sorting and pagination.
      *
      * @param {Object} [params={}] - Query parameters
      * @param {string} [params.run_id] - Run ID to filter by
      * @param {string} [params.run_name] - Run name to filter by
      * @param {string} [params.sort_by] - Attribute to sort by
      * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing list of pipeline runs
      *
@@ -1863,6 +1865,7 @@ export const useApi = () => {
      * const runs = await api.getPipelineRunsList();
      * const specificRun = await api.getPipelineRunsList({ run_id: 'dbe1d349-c117-46d5-9b6f-62ed8efafb2b' });
      * const sortedRuns = await api.getPipelineRunsList({ sort_by: 'start_time', sort_order: 'asc' });
+     * const paginatedRuns = await api.getPipelineRunsList({ page: 1, limit: 10 });
      * ```
      */
     getPipelineRunsList: async (
@@ -1871,6 +1874,8 @@ export const useApi = () => {
         run_name?: string;
         sort_by?: string;
         sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
       } = {},
     ) => {
       if (mockEnabled) {
@@ -2036,7 +2041,7 @@ export const useApi = () => {
       if (mockEnabled) {
         return Promise.resolve(componentsData);
       }
-      return request(`/training-builder-components`);
+      return request(`/training-builder-components?${q}`);
     },
 
     /**

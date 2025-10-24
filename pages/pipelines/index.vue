@@ -62,37 +62,6 @@ const columns = [
   },
 ];
 
-// Data source function for pipeline runs
-const dataSource = async (params = {}) => {
-  try {
-    const response = await getPipelineRunsList();
-
-    if (response && 'data' in response && response.data) {
-      return {
-        data: Array.isArray(response.data) ? response.data : [response.data],
-        total: Array.isArray(response.data) ? response.data.length : 1,
-        page: 1,
-        pageSize: Array.isArray(response.data) ? response.data.length : 1,
-      };
-    }
-
-    return {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    };
-  } catch (error) {
-    console.error('Failed to fetch pipeline runs:', error);
-    return {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    };
-  }
-};
-
 const tabs = [
   {
     key: 'all',
