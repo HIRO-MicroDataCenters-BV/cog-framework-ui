@@ -20,13 +20,19 @@
       @edges-change="onEdgesChange"
       @edge-update-end="onEdgesChange"
     >
+      <Background
+        variant="dots"
+        :gap="20"
+        :size="0.75"
+        color="hsl(var(--muted-foreground))"
+      />
       <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
-          class="bg-white border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
+          class="bg-card border border-border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
         >
           <SheetTrigger as-child>
             <div
-              class="flex items-center flex-nowrap gap-2 border-b px-4 py-2 text-gray-700"
+              class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground"
             >
               <span class="text-sm flex-auto overflow-hidden">{{
                 data.label
@@ -41,7 +47,7 @@
             type="target"
             :position="targetPosition"
             :class="[
-              'bg-black dark:bg-white rounded w-2 h-2 handle',
+              'bg-foreground rounded w-2 h-2 handle',
               props.readonly ? 'opacity-0' : 'opacity-20',
             ]"
           />
@@ -49,7 +55,7 @@
             type="source"
             :position="sourcePosition"
             :class="[
-              'bg-black dark:bg-white rounded w-2 h-2 handle',
+              'bg-foreground rounded w-2 h-2 handle',
               props.readonly ? 'opacity-0' : 'opacity-20',
             ]"
           />
@@ -69,6 +75,7 @@ import {
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
 } from '@vue-flow/core';
+import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
 
 import type { Node, Edge, Component } from '~/types/builder.types';
@@ -162,7 +169,7 @@ const onConnect = (connection: { source: string; target: string }) => {
   if (props.readonly) return;
 
   const size = 23;
-  const color = '#9BB2BB';
+  const color = 'hsl(var(--muted-foreground))';
 
   const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}`,
@@ -171,6 +178,7 @@ const onConnect = (connection: { source: string; target: string }) => {
     style: {
       stroke: color,
     },
+    type: 'smoothstep',
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: size,
