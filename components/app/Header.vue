@@ -9,11 +9,11 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink :href="page.section">
+              <BreadcrumbLink :href="`${$config.app.baseURL}${page.section}`">
                 {{ $t(`menu.${page.section}`) }}
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <template v-if="page.title != ''">
+            <template v-if="page.title !== ''">
               <BreadcrumbSeparator />
               <BreadcrumbItem class="hidden md:block">{{
                 page.title

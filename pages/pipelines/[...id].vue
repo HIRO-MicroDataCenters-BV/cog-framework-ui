@@ -42,44 +42,46 @@ const CATEGORY_PATTERNS = [
 ] as const;
 
 const calculateNodePositions = (
-  templates: PipelineTemplate[],
-  dagTasks: Array<{ name: string; dependencies?: string[] }>,
+  nodeIds: string[],
+  edges: Array<{ source: string; target: string }>,
 ) => {
   const positions: Record<string, { x: number; y: number }> = {};
   const levels: Record<number, string[]> = {};
-  const processed = new Set<string>();
+  const memo = new Map<string, number>();
 
-  const getNodeLevel = (
-    nodeName: string,
-    visited = new Set<string>(),
-  ): number => {
-    if (visited.has(nodeName)) return 0;
-    visited.add(nodeName);
+  const incoming = new Map<string, Set<string>>();
+  nodeIds.forEach((id) => incoming.set(id, new Set()));
+  edges.forEach(({ source, target }) => {
+    if (!incoming.has(target)) incoming.set(target, new Set());
+    incoming.get(target)!.add(source);
+    if (!incoming.has(source)) incoming.set(source, new Set());
+  });
 
-    if (processed.has(nodeName)) {
-      const found = Object.entries(levels).find(([, nodes]) =>
-        nodes.includes(nodeName),
-      );
-      return found ? parseInt(found[0]) : 0;
-    }
-
-    const task = dagTasks.find((t) => t.name === nodeName);
-    if (!task?.dependencies?.length) return 0;
-
-    const maxDepLevel = Math.max(
-      ...task.dependencies.map((dep: string) =>
-        getNodeLevel(dep, new Set(visited)),
-      ),
-    );
-    return maxDepLevel + 1;
+  const getLevel = (id: string, stack = new Set<string>()): number => {
+    if (memo.has(id)) return memo.get(id)!;
+    if (stack.has(id)) return 0;
+    stack.add(id);
+    const parents = Array.from(incoming.get(id) || []);
+    const level = parents.length
+      ? Math.max(...parents.map((p) => getLevel(p, new Set(stack)))) + 1
+      : 0;
+    memo.set(id, level);
+    return level;
   };
 
+  nodeIds.forEach((id) => {
+    const lvl = getLevel(id);
+    if (!levels[lvl]) levels[lvl] = [];
+    levels[lvl].push(id);
+  });
+
   const groupNodesByType = (nodeNames: string[]) => ({
-    training: nodeNames.filter((name) => name.startsWith('training')),
+    training: nodeNames.filter((name) => name.startsWith('federated-client')),
     evaluate: nodeNames.filter((name) => name.startsWith('evaluate-model')),
     other: nodeNames.filter(
       (name) =>
-        !name.startsWith('training') && !name.startsWith('evaluate-model'),
+        !name.startsWith('federated-client') &&
+        !name.startsWith('evaluate-model'),
     ),
   });
 
@@ -87,12 +89,10 @@ const calculateNodePositions = (
     const y = level * LAYOUT_CONFIG.levelHeight + LAYOUT_CONFIG.levelOffset;
     const { other, training, evaluate } = groupNodesByType(nodeNames);
     const allNodes = [...other, ...training, ...evaluate];
-
     if (allNodes.length === 1) {
       positions[allNodes[0]] = { x: LAYOUT_CONFIG.centerX, y };
       return;
     }
-
     allNodes.forEach((nodeName, index) => {
       const offset =
         (index - (allNodes.length - 1) / 2) *
@@ -100,15 +100,6 @@ const calculateNodePositions = (
       positions[nodeName] = { x: LAYOUT_CONFIG.centerX + offset, y };
     });
   };
-
-  templates
-    .filter((template) => !template.dag)
-    .forEach((template) => {
-      const level = getNodeLevel(template.name);
-      if (!levels[level]) levels[level] = [];
-      levels[level].push(template.name);
-      processed.add(template.name);
-    });
 
   Object.entries(levels).forEach(([levelStr, nodeNames]) => {
     positionNodesOnLevel(nodeNames, parseInt(levelStr));
@@ -119,18 +110,37 @@ const calculateNodePositions = (
 
 const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   const pipelineSpec = pipelineData?.pipeline_spec?.spec;
+  const color = 'hsl(var(--muted-foreground))';
+  const arrowSize = 18;
   if (!pipelineSpec?.templates) {
     return { nodes: [], edges: [] };
   }
 
-  const { templates } = pipelineSpec;
-  const dag = templates.find((t) => t.dag);
-  const taskDetails = pipelineData.run_details?.task_details || [];
-  const nodePositions = calculateNodePositions(
-    templates,
-    dag?.dag?.tasks || [],
+  const { templates, entrypoint } = pipelineSpec as {
+    templates: PipelineTemplate[];
+    entrypoint?: string;
+  };
+
+  const nameToTemplate = new Map<string, PipelineTemplate>();
+  templates.forEach((tpl) => nameToTemplate.set(tpl.name, tpl));
+
+  const findDagByName = (name?: string) => {
+    if (!name) return undefined;
+    const tpl = nameToTemplate.get(name);
+    return tpl && (tpl as PipelineTemplate).dag ? tpl : undefined;
+  };
+
+  const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
+
+  console.log('Debug - entrypoint:', entrypoint);
+  console.log('Debug - topDag:', topDag?.name);
+  console.log('Debug - templates count:', templates.length);
+  console.log(
+    'Debug - container templates:',
+    templates.filter((t) => !t.dag).length,
   );
 
+  const taskDetails = pipelineData.run_details?.task_details || [];
   const createNode = (template: PipelineTemplate, index: number): Node => {
     const taskDetail = taskDetails.find(
       (task) => task.display_name === template.name,
@@ -143,7 +153,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     return {
       id: template.name,
       type: 'default',
-      position: nodePositions[template.name] || fallbackPosition,
+      position: fallbackPosition,
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       data: {
@@ -167,31 +177,137 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     id: `edge-${source}-${target}`,
     source,
     target,
-    style: { stroke: '#9BB2BB', strokeWidth: 2 },
-    markerEnd: { type: 'arrowclosed', width: 20, height: 20, color: '#9BB2BB' },
+    style: { stroke: color, strokeWidth: 1 },
+    markerEnd: {
+      type: 'arrowclosed',
+      width: arrowSize,
+      height: arrowSize,
+      color,
+    },
   });
 
+  // Map output parameter/artifact names to producer template
+  const outputNameToProducer = new Map<string, string>();
+  templates.forEach((tpl) => {
+    const params = (tpl.outputs as any)?.parameters as Array<{ name: string }>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const arts = (tpl.outputs as any)?.artifacts as Array<{ name: string }>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    params?.forEach((p) => outputNameToProducer.set(p.name, tpl.name));
+    arts?.forEach((a) => outputNameToProducer.set(a.name, tpl.name));
+  });
+
+  // Resolve a task name (from DAG dependencies) to leaf container template names
+  const getLeafContainersForTaskName = (
+    taskName: string,
+    withinDag?: PipelineTemplate,
+  ): string[] => {
+    // If we have a DAG context, find the task definition by name to get its template
+    const taskTplName = withinDag?.dag?.tasks?.find(
+      (t: { name: string; template: string }) => t.name === taskName,
+    )?.template as string | undefined;
+    const candidateName = taskTplName || taskName;
+    return getLeafContainersForTemplate(candidateName);
+  };
+
+  const getLeafContainersForTemplate = (
+    templateName: string,
+    seen = new Set<string>(),
+  ): string[] => {
+    if (seen.has(templateName)) return [];
+    seen.add(templateName);
+    const tpl = nameToTemplate.get(templateName);
+    if (!tpl) return [];
+    if (!(tpl as PipelineTemplate).dag) {
+      return [tpl.name];
+    }
+    const dagTpl = tpl as PipelineTemplate;
+    const children = dagTpl.dag?.tasks || [];
+    const results: string[] = [];
+    children.forEach((task: { template: string }) => {
+      results.push(...getLeafContainersForTemplate(task.template, seen));
+    });
+    return Array.from(new Set(results));
+  };
+
+  // Collect edges from the entrypoint DAG, resolving to leaf containers
+  const edgePairs = new Set<string>();
+  if (topDag?.dag?.tasks?.length) {
+    topDag.dag.tasks.forEach(
+      (task: { template: string; dependencies?: string[] }) => {
+        const targets = getLeafContainersForTemplate(task.template);
+        const deps: string[] = task.dependencies || [];
+        deps.forEach((depName: string) => {
+          const sources = getLeafContainersForTaskName(depName, topDag);
+          sources.forEach((s) =>
+            targets.forEach((t) => edgePairs.add(`${s}=>${t}`)),
+          );
+        });
+      },
+    );
+  }
+
+  // Heuristic: implicit edges from parameter references in container args
+  const jinjaParamRef = /\{\{\s*inputs\.parameters\.([a-zA-Z0-9_.-]+)\s*\}\}/g;
+  templates
+    .filter(
+      (tpl) =>
+        !(tpl as PipelineTemplate).dag &&
+        (tpl as PipelineTemplate & { container?: { args?: unknown[] } })
+          .container,
+    )
+    .forEach((tpl) => {
+      const args: unknown[] = ((
+        tpl as PipelineTemplate & { container?: { args?: unknown[] } }
+      ).container?.args || []) as unknown[];
+      const argStr = args.join(' ');
+      const matches = Array.from(argStr.matchAll(jinjaParamRef));
+      matches.forEach((m) => {
+        const paramName = m[1];
+        const producer = outputNameToProducer.get(paramName);
+        if (producer && producer !== tpl.name) {
+          edgePairs.add(`${producer}=>${tpl.name}`);
+        }
+      });
+    });
+
+  // Get node IDs for layout calculation
+  const nodeIdsForLayout = templates.filter((t) => !t.dag).map((t) => t.name);
+
+  // Create nodes first
   const nodes = templates
     .filter((template) => !template.dag)
     .map((template, index) => createNode(template, index));
 
-  const edges =
-    dag?.dag?.tasks
-      ?.flatMap(
-        (task) =>
-          task.dependencies?.map((dependency) => ({
-            source: dependency,
-            target: task.name,
-          })) || [],
-      )
-      .filter(
-        ({ source, target }) =>
-          nodes.some((node) => node.id === source) &&
-          nodes.some((node) => node.id === target),
-      )
-      .map(({ source, target }) => createEdge(source, target)) || [];
+  const edgesArray = Array.from(edgePairs)
+    .map((key) => key.split('=>'))
+    .filter(
+      ([source, target]) =>
+        nodes.some((n) => n.id === source) &&
+        nodes.some((n) => n.id === target),
+    )
+    .map(([source, target]) => createEdge(source, target));
 
-  return { nodes, edges };
+  console.log(
+    'Debug - nodes:',
+    nodes.length,
+    nodes.map((n) => n.id),
+  );
+  console.log(
+    'Debug - edges:',
+    edgesArray.length,
+    edgesArray.map((e) => `${e.source}->${e.target}`),
+  );
+  console.log('Debug - edgePairs:', Array.from(edgePairs));
+
+  const nodePositions = calculateNodePositions(
+    nodeIdsForLayout,
+    edgesArray.map((e) => ({ source: e.source, target: e.target })),
+  );
+
+  nodes.forEach((n) => {
+    n.position = nodePositions[n.id] || n.position;
+  });
+
+  return { nodes, edges: edgesArray };
 };
 
 const getTaskStatus = (taskDetail: TaskDetail | undefined) => {
