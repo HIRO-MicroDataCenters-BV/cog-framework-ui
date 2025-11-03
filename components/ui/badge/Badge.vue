@@ -7,39 +7,80 @@ import {
   CircleSlash,
   Clock,
   Check,
+  Calendar,
+  Database,
+  File,
+  Radio,
 } from 'lucide-vue-next';
 import { reactiveOmit } from '@vueuse/core';
 import { Primitive } from 'reka-ui';
-import type { BadgeVariants, StatusType } from '.';
-import { badgeVariants, statusConfig } from '.';
+import type { BadgeVariants, BadgeCategory, StatusType, DataType } from '.';
+import { badgeVariants, badgeConfig, dataTypeMapping } from '.';
 import { cn } from '@/utils';
 
 const props = defineProps<
   PrimitiveProps & {
     variant?: BadgeVariants['variant'];
-    status?: StatusType | string;
+    value?: StatusType | DataType | string | number;
+    type?: BadgeCategory;
     class?: HTMLAttributes['class'];
   }
 >();
 
-const delegatedProps = reactiveOmit(props, 'class', 'status');
+const { t } = useI18n();
 
-// Get variant from status if status is provided
+const delegatedProps = reactiveOmit(props, 'class', 'value', 'type');
+
+// Get data type from numeric value
+const getDataTypeFromValue = (value: number): DataType | null => {
+  for (const [type, values] of Object.entries(dataTypeMapping)) {
+    if ((values as readonly number[]).includes(value)) {
+      return type as DataType;
+    }
+  }
+  return null;
+};
+
+// Get configuration key based on type and value
+const getConfigKey = (): string | null => {
+  if (props.value === null || props.value === undefined || !props.type)
+    return null;
+
+  if (props.type === 'status' && typeof props.value === 'string') {
+    return props.value.toLowerCase();
+  }
+
+  if (props.type === 'type' && typeof props.value === 'number') {
+    return (
+      getDataTypeFromValue(props.value as number)?.toLocaleLowerCase() ?? null
+    );
+  }
+
+  return null;
+};
+
+// Get variant from configuration
 const computedVariant = computed(() => {
-  if (props.status) {
-    const statusKey = props.status.toLowerCase() as StatusType;
-    return statusConfig[statusKey]?.variant || props.variant;
+  const configKey = getConfigKey();
+  if (configKey && props.type) {
+    const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+    if (categoryConfig && configKey in categoryConfig) {
+      const config = categoryConfig[configKey];
+      return config?.variant || props.variant;
+    }
   }
   return props.variant;
 });
 
-// Get icon component based on status
+// Get icon component based on configuration
 const iconComponent = computed(() => {
-  if (!props.status) return null;
+  const configKey = getConfigKey();
+  if (!configKey || !props.type) return null;
 
-  const statusKey = props.status.toLowerCase() as StatusType;
-  const config = statusConfig[statusKey];
+  const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+  if (!categoryConfig || !(configKey in categoryConfig)) return null;
 
+  const config = categoryConfig[configKey];
   if (!config) return null;
 
   switch (config.icon) {
@@ -53,16 +94,38 @@ const iconComponent = computed(() => {
       return Clock;
     case 'Check':
       return Check;
+    case 'File':
+      return File;
+    case 'Database':
+      return Database;
+    case 'Stream':
+      return Radio;
+    case 'Calendar':
+      return Calendar;
     default:
       return null;
   }
 });
 
-// Check if status should animate
+// Check if value should animate
 const shouldAnimate = computed(() => {
-  if (!props.status) return false;
-  const statusKey = props.status.toLowerCase() as StatusType;
-  return statusConfig[statusKey]?.animate || false;
+  const configKey = getConfigKey();
+  if (!configKey || !props.type) return false;
+
+  const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+  if (!categoryConfig || !(configKey in categoryConfig)) return false;
+
+  const config = categoryConfig[configKey];
+  return config?.animate || false;
+});
+
+// Get display value
+const displayValue = computed(() => {
+  const configKey = getConfigKey();
+  if (props.type === 'type' && configKey) {
+    return t(`label.${configKey}`);
+  }
+  return props.value;
 });
 </script>
 
@@ -78,9 +141,7 @@ const shouldAnimate = computed(() => {
       :class="cn('w-3 h-3', shouldAnimate && 'animate-spin duration-1000')"
     />
     <slot>
-      <span v-if="props.status" class="capitalize">
-        {{ props.status }}
-      </span>
+      <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
     </slot>
   </Primitive>
 </template>

@@ -472,7 +472,7 @@ defineExpose({ fetchData });
         <div class="pb-4 flex justify-between gap-2">
           <div>
             <h2 class="text-2xl font-medium">
-              {{ t(`title.${page.section}`) }}
+              {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
             </h2>
           </div>
 

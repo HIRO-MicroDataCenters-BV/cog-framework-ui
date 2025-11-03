@@ -3,6 +3,7 @@ import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
+import { Badge } from '~/components/ui/badge';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
@@ -28,7 +29,17 @@ const tabs = uselistTabs().value.dataset_management;
 const columns = [
   {
     id: 'id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('id'),
+    cell: ({ row }: { row: TableRowType }) => {
+      const value = parseInt(row.getValue<string>('id'));
+      return h(
+        Badge,
+        {
+          value: 'id',
+          type: 'type',
+        },
+        `#${value}`,
+      );
+    },
   },
   {
     id: 'dataset_name',
@@ -40,22 +51,46 @@ const columns = [
       ),
   },
   {
-    id: 'description',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('description'),
-  },
-  {
     id: 'data_source_type',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('data_source_type'),
+    cell: ({ row }: { row: TableRowType }) => {
+      const value = parseInt(row.getValue<string>('data_source_type'));
+      return h(Badge, {
+        value,
+        type: 'type',
+      });
+    },
   },
   {
-    id: 'train_and_inference_type',
-    cell: ({ row }: { row: TableRowType }) =>
-      row.getValue('train_and_inference_type'),
+    id: 'user_id',
+    cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
     id: 'created_at',
     cell: ({ row }: { row: TableRowType }) =>
-      dayjs(row.getValue<string>('created_at')).format('DD.MM.YYYY'),
+      h(
+        'span',
+        {
+          class: 'font-mono',
+          title: dayjs(row.getValue<string>('created_at')).format(
+            'DD MMM YYYY HH:mm:ss',
+          ),
+        },
+        dayjs(row.getValue<string>('created_at')).format('DD MMM YYYY'),
+      ),
+  },
+  {
+    id: 'updated_at',
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'span',
+        {
+          class: 'font-mono',
+          title: dayjs(row.getValue<string>('updated_at')).format(
+            'DD MMM YYYY HH:mm:ss',
+          ),
+        },
+        dayjs(row.getValue<string>('updated_at')).format('DD MMM YYYY'),
+      ),
   },
   {
     id: 'actions',

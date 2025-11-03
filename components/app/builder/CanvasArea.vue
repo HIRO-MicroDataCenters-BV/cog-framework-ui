@@ -37,7 +37,7 @@
               <span class="text-sm flex-auto overflow-hidden">{{
                 data.label
               }}</span>
-              <Badge v-if="data.status" :status="data.status" />
+              <Badge v-if="data.status" :value="data.status" type="status" />
             </div>
             <div v-if="data.category" class="px-4 py-2">
               <p>{{ $t(`builder.category`) }} {{ data.category }}</p>

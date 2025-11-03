@@ -52,7 +52,8 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
       return h(Badge, {
-        status: status?.toLowerCase() || 'pending',
+        value: status?.toLowerCase() || 'pending',
+        type: 'status',
       });
     },
   },
