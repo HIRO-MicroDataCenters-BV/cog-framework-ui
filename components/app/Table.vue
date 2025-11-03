@@ -176,7 +176,13 @@ const fetchData = async () => {
       data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
 
       if (pagination) {
-        pageSize.value = pagination.limit ?? props.pageSize;
+        // Prefer limit from URL over API response
+        if (route.query.limit) {
+          pageSize.value =
+            parseInt(route.query.limit as string) || props.pageSize;
+        } else {
+          pageSize.value = pagination.limit ?? props.pageSize;
+        }
         totalItems.value = pagination.total_items ?? 0;
 
         const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
@@ -287,16 +293,9 @@ const table = useVueTable({
 
     const newPage = newPagination.pageIndex + 1;
     if (newPage !== currentPage.value) {
-      currentPage.value = newPage;
       const query = { ...route.query };
-      query.page = currentPage.value.toString();
-      router
-        .replace({
-          query,
-        })
-        .then(() => {
-          fetchData();
-        });
+      query.page = newPage.toString();
+      router.replace({ query });
     }
   },
 
@@ -327,7 +326,6 @@ const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
 const applySearchFilter = () => {
-  table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
   );
@@ -353,11 +351,13 @@ const updateUrlParams = () => {
     query.q = filter.value;
     query.column = filter.column;
   }
-  query.page = currentPage.value.toString();
+
+  // Reset to first page when filtering
+  currentPage.value = 1;
+  query.page = '1';
 
   if (pageSize.value) {
     query.limit = pageSize.value.toString();
-    table.setPageSize(pageSize.value);
   }
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
@@ -413,9 +413,10 @@ watch(
       }
 
       if (newQuery.limit) {
-        const pageSize = parseInt(newQuery.limit as string);
-        if (pageSize > 0 && pageSize !== props.pageSize) {
-          table.setPageSize(pageSize);
+        const newPageSize = parseInt(newQuery.limit as string);
+        if (newPageSize > 0 && newPageSize !== pageSize.value) {
+          pageSize.value = newPageSize;
+          table.setPageSize(newPageSize);
         }
       }
     } catch (error) {
@@ -449,10 +450,11 @@ const add = () => {
 };
 
 onMounted(() => {
-  fetchData();
   setTimeout(() => {
     if (Object.keys(route.query).length === 0) {
       updateUrlParams();
+    } else {
+      fetchData();
     }
   }, 50);
 });
@@ -467,54 +469,14 @@ defineExpose({ fetchData });
   >
     <div class="p-4">
       <div>
-        <div class="pb-4 flex">
-          <div class="flex-auto">
-            <div
-              v-if="page.description != ''"
-              class="w-full md:w-96 max-w-full"
-            >
-              <p class="text-sm text-slate-500">{{ page.description }}</p>
-            </div>
-            <div
-              v-if="hasStats"
-              class="frame grid gap-4 auto-cols-max grid-flow-col"
-            >
-              <div v-for="item in stat" :key="item.key" class="frame-item">
-                <div
-                  class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
-                >
-                  {{ item.label }}
-                </div>
-                <div class="frame-item-content flex items-center">
-                  <Icon
-                    :name="item.icon"
-                    :class="`h-4 w-4 mr-2 ${item.color}`"
-                  />
-                  <span class="stat-value">{{ item.value }}</span>
-                </div>
-              </div>
-            </div>
+        <div class="pb-4 flex justify-between gap-2">
+          <div>
+            <h2 class="text-2xl font-medium">
+              {{ t(`title.${page.section}`) }}
+            </h2>
           </div>
-          <div class="flex gap-6 items-center">
-            <div v-if="hasFilters" class="flex gap-2">
-              <Switch
-                :model-value="isFiltersOpen"
-                @update:model-value="toggleTableFilters"
-              />
-              <Label class="flex items-center">{{ t('label.filters') }}</Label>
-            </div>
-            <Button @click="() => add()"
-              ><Icon name="lucide:plus"></Icon
-              >{{ t(`action.add_${page.section}`) }}</Button
-            >
-          </div>
-        </div>
-      </div>
 
-      <div v-if="isFiltersOpen">
-        <Separator />
-        <div class="flex gap-2 items-center py-4">
-          <div v-if="hasSearch" class="flex-auto flex">
+          <div class="flex gap-2">
             <div class="flex gap-2">
               <Input
                 v-model="searchValue"
@@ -550,7 +512,20 @@ defineExpose({ fetchData });
                 </SelectContent>
               </Select>
             </div>
+
+            <div class="flex gap-6 items-center">
+              <Button @click="() => add()"
+                ><Icon name="lucide:plus"></Icon
+                >{{ t(`action.add_${page.section}`) }}</Button
+              >
+            </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 
+      <div>
+        <div class="flex gap-2 items-center py-4">
           <div v-if="validTabs.length > 0" class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
@@ -573,6 +548,7 @@ defineExpose({ fetchData });
           </div>
         </div>
       </div>
+      -->
     </div>
     <div class="overflow-x-auto w-full">
       <Table
@@ -641,15 +617,20 @@ defineExpose({ fetchData });
           :can-next-page="canNextPage"
           :sibling-count="2"
           :show-edges="true"
+          :page-size-options="[10, 20, 50, 100]"
           @on-set-page="
             (page: number) => {
-              currentPage = page;
-              table.setPageIndex(page - 1);
               const query = { ...route.query };
               query.page = page.toString();
-              router.replace({ query }).then(() => {
-                fetchData();
-              });
+              router.replace({ query });
+            }
+          "
+          @on-set-page-size="
+            (size: number) => {
+              const query = { ...route.query };
+              query.limit = size.toString();
+              query.page = '1';
+              router.replace({ query });
             }
           "
         />

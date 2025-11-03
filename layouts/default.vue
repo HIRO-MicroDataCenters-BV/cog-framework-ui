@@ -3,7 +3,6 @@
     <AppSidebar />
     <SidebarInset class="overflow-hidden">
       <AppContent>
-        <AppHeader />
         <div class="flex flex-1 flex-col gap-4 h-full">
           <div class="h-full flex flex-col flex-grow">
             <div class="px-4">
