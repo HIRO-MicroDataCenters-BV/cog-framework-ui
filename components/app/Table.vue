@@ -142,6 +142,16 @@ const stat = ref({
 const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
 };
+
+const getAutoColumn = (searchValue: string): string => {
+  // If search value is only numbers, search by id
+  if (/^\d+$/.test(searchValue)) {
+    return 'id';
+  }
+  // Otherwise search by name
+  return 'name';
+};
+
 const fetchData = async () => {
   const params: Record<string, unknown> = {
     page: currentPage.value,
@@ -333,10 +343,14 @@ const applySearchFilter = () => {
     updateUrlParams();
     return;
   }
+
+  // Auto-detect column based on search value
+  const columnToUse = getAutoColumn(searchValue.value);
+
   const searchFilter: SearchFilter = {
     id: 'search',
     value: searchValue.value,
-    column: selectedFilterColumn.value,
+    column: columnToUse,
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
@@ -477,40 +491,18 @@ defineExpose({ fetchData });
           </div>
 
           <div class="flex gap-2">
-            <div class="flex gap-2">
+            <div class="relative">
               <Input
                 v-model="searchValue"
-                class="w-64"
+                class="w-64 pl-8"
                 type="search"
-                :placeholder="t('placeholder.search')"
+                :placeholder="t('placeholder.search_by_name_or_id')"
                 @update:model-value="applySearchFilter"
               />
-
-              <Select
-                v-model="selectedFilterColumn"
-                @update:model-value="applySearchFilter"
-              >
-                <SelectTrigger class="w-[180px]">
-                  <SelectValue :placeholder="t('placeholder.select_filter')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
-                    <SelectItem value="all"
-                      >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
-                    >
-                    <SelectItem
-                      v-for="column in table
-                        .getAllColumns()
-                        .filter((column) => column.getCanHide())"
-                      :key="column.id"
-                      :value="column.id"
-                    >
-                      {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <Icon
+                name="lucide:search"
+                class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
             </div>
 
             <div class="flex gap-6 items-center">

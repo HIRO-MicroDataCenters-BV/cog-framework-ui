@@ -153,6 +153,7 @@ export default defineI18nConfig(() => ({
         name: 'Enter a name',
         version: 'Version',
         search: 'Search...',
+        search_by_name_or_id: 'Search by name or ID...',
         description: 'Enter a description',
         connection_string: 'Database connection string',
         filter_condition: 'WHERE condition',

@@ -105,3 +105,9 @@ export const dataTypeMapping = {
 export type BadgeCategory = keyof typeof badgeConfig;
 export type StatusType = keyof typeof badgeConfig.status;
 export type DataType = keyof typeof badgeConfig.type;
+
+export type BadgeCategoryConfig = {
+  variant: BadgeVariants['variant'];
+  icon: string | null;
+  animate: boolean;
+};

@@ -14,7 +14,13 @@ import {
 } from 'lucide-vue-next';
 import { reactiveOmit } from '@vueuse/core';
 import { Primitive } from 'reka-ui';
-import type { BadgeVariants, BadgeCategory, StatusType, DataType } from '.';
+import type {
+  BadgeVariants,
+  BadgeCategory,
+  StatusType,
+  DataType,
+  BadgeCategoryConfig,
+} from '.';
 import { badgeVariants, badgeConfig, dataTypeMapping } from '.';
 import { cn } from '@/utils';
 
@@ -63,7 +69,10 @@ const getConfigKey = (): string | null => {
 const computedVariant = computed(() => {
   const configKey = getConfigKey();
   if (configKey && props.type) {
-    const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+    const categoryConfig = badgeConfig[props.type] as Record<
+      string,
+      BadgeCategoryConfig
+    >;
     if (categoryConfig && configKey in categoryConfig) {
       const config = categoryConfig[configKey];
       return config?.variant || props.variant;
@@ -77,7 +86,10 @@ const iconComponent = computed(() => {
   const configKey = getConfigKey();
   if (!configKey || !props.type) return null;
 
-  const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+  const categoryConfig = badgeConfig[props.type] as Record<
+    string,
+    BadgeCategoryConfig
+  >;
   if (!categoryConfig || !(configKey in categoryConfig)) return null;
 
   const config = categoryConfig[configKey];
@@ -112,7 +124,10 @@ const shouldAnimate = computed(() => {
   const configKey = getConfigKey();
   if (!configKey || !props.type) return false;
 
-  const categoryConfig = badgeConfig[props.type] as Record<string, any>;
+  const categoryConfig = badgeConfig[props.type] as Record<
+    string,
+    BadgeCategoryConfig
+  >;
   if (!categoryConfig || !(configKey in categoryConfig)) return false;
 
   const config = categoryConfig[configKey];
