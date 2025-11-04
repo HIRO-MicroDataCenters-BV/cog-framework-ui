@@ -14,6 +14,10 @@ import type {
 } from '~/types/api.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
+import datasetsDetailsData from '@/mocks/get.datasets.details.json';
+import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
+import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.prometheus.json';
+import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import runsData from '@/mocks/get.runs.json';
 import runsDetailsData from '@/mocks/get.runs.details.json';
@@ -1283,6 +1287,9 @@ export const useApi = () => {
      * ```
      */
     getDatasetFileDetails: async (dataset_id: number) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsFileData);
+      }
       return request(`/datasets/${dataset_id}/file`);
     },
 
@@ -1301,6 +1308,9 @@ export const useApi = () => {
      * ```
      */
     getDatasetTableDetails: async (dataset_id: number) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsTableData);
+      }
       return request(`/datasets/${dataset_id}/table`);
     },
 
@@ -1386,6 +1396,9 @@ export const useApi = () => {
      * ```
      */
     getDatasetById: async (id: number) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsData);
+      }
       return request(`/datasets/${id}`);
     },
 
@@ -1466,6 +1479,9 @@ export const useApi = () => {
      * ```
      */
     getDatasetPrometheus: async (id: number) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsPrometheusData);
+      }
       return request(`/datasets/prometheus/${id}`);
     },
     // ============================================================================
