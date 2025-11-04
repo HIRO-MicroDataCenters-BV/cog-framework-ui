@@ -22,8 +22,7 @@ import type {
   BadgeCategoryConfig,
 } from '.';
 import { badgeVariants, badgeConfig } from '.';
-import { getDataTypeFromValue } from '@/utils';
-import { cn } from '@/utils';
+import { getDataTypeFromValue, cn } from '@/utils';
 
 const props = withDefaults(
   defineProps<

@@ -51,10 +51,14 @@ const columns = [
     id: 'status',
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
-      return h(Badge, {
-        value: status?.toLowerCase() || 'pending',
-        type: 'status',
-      }, () => []);
+      return h(
+        Badge,
+        {
+          value: status?.toLowerCase() || 'pending',
+          type: 'status',
+        },
+        () => [],
+      );
     },
   },
   {

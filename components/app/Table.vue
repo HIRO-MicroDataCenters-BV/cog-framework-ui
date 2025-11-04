@@ -250,11 +250,13 @@ const currentPage = ref<number>(
 );
 
 const currentSortBy = computed(() => (route.query.sort_by as string) || '');
-const currentSortOrder = computed(() => (route.query.sort_order as string) || 'desc');
+const currentSortOrder = computed(
+  () => (route.query.sort_order as string) || 'desc',
+);
 
 const handleSort = (columnId: string) => {
   const query = { ...route.query };
-  
+
   if (currentSortBy.value === columnId) {
     // Toggle sort order if same column
     query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
@@ -263,18 +265,18 @@ const handleSort = (columnId: string) => {
     query.sort_by = columnId;
     query.sort_order = 'asc';
   }
-  
+
   // Reset to first page when sorting
   query.page = '1';
   currentPage.value = 1;
-  
+
   router.replace({ query });
 };
 
 const getColumns = (list: TableColumn[]) => {
   return list.map((item) => {
     const isSortable = props.sortableColumns.includes(item.id);
-    
+
     return {
       id: item.id,
       accessorKey: item.id,
@@ -282,11 +284,12 @@ const getColumns = (list: TableColumn[]) => {
         ? () => {
             const isSorted = currentSortBy.value === item.id;
             const sortOrder = isSorted ? currentSortOrder.value : null;
-            
+
             return h(
               'div',
               {
-                class: 'flex items-center gap-2 cursor-pointer select-none hover:text-foreground',
+                class:
+                  'flex items-center gap-2 cursor-pointer select-none hover:text-foreground',
                 onClick: () => handleSort(item.id),
               },
               [
@@ -301,14 +304,18 @@ const getColumns = (list: TableColumn[]) => {
                       name: 'lucide:chevron-up',
                       class: [
                         'h-3 w-3',
-                        sortOrder === 'asc' ? 'text-foreground' : 'text-muted-foreground opacity-30',
+                        sortOrder === 'asc'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground opacity-30',
                       ],
                     }),
                     h(resolveComponent('Icon'), {
                       name: 'lucide:chevron-down',
                       class: [
                         'h-3 w-3 -mt-1',
-                        sortOrder === 'desc' ? 'text-foreground' : 'text-muted-foreground opacity-30',
+                        sortOrder === 'desc'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground opacity-30',
                       ],
                     }),
                   ],
