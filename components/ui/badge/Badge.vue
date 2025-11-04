@@ -21,7 +21,8 @@ import type {
   DataType,
   BadgeCategoryConfig,
 } from '.';
-import { badgeVariants, badgeConfig, dataTypeMapping } from '.';
+import { badgeVariants, badgeConfig } from '.';
+import { getDataTypeFromValue } from '@/utils';
 import { cn } from '@/utils';
 
 const props = withDefaults(
@@ -43,16 +44,6 @@ defineOptions({
 const { t } = useI18n();
 
 const delegatedProps = reactiveOmit(props, 'class', 'value', 'type');
-
-// Get data type from numeric value
-const getDataTypeFromValue = (value: number): DataType | null => {
-  for (const [type, values] of Object.entries(dataTypeMapping)) {
-    if ((values as readonly number[]).includes(value)) {
-      return type as DataType;
-    }
-  }
-  return null;
-};
 
 // Get configuration key based on type and value
 const getConfigKey = (): string | null => {

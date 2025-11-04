@@ -94,14 +94,6 @@ export const badgeConfig = {
   },
 } as const;
 
-// Mapping for numeric values to data types
-export const dataTypeMapping = {
-  file: [0],
-  database: [1],
-  stream: [10, 11],
-  time_series: [20],
-} as const;
-
 export type BadgeCategory = keyof typeof badgeConfig;
 export type StatusType = keyof typeof badgeConfig.status;
 export type DataType = keyof typeof badgeConfig.type;
