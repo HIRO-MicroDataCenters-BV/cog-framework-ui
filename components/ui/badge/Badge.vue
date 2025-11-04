@@ -162,6 +162,8 @@ const displayValue = computed(() => {
       v-if="iconComponent"
       :class="cn('w-3 h-3', shouldAnimate && 'animate-spin duration-1000')"
     />
-    <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
+    <slot>
+      <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
+    </slot>
   </Primitive>
 </template>

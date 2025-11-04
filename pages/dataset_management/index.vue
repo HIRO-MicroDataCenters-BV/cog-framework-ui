@@ -37,7 +37,9 @@ const columns = [
           value: 'id',
           type: 'type',
         },
-        `#${value}`,
+        {
+          default: () => `#${value}`,
+        },
       );
     },
   },
