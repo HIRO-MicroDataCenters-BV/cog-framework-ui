@@ -24,14 +24,21 @@ import type {
 import { badgeVariants, badgeConfig, dataTypeMapping } from '.';
 import { cn } from '@/utils';
 
-const props = defineProps<
-  PrimitiveProps & {
-    variant?: BadgeVariants['variant'];
-    value?: StatusType | DataType | string | number;
-    type?: BadgeCategory;
-    class?: HTMLAttributes['class'];
-  }
->();
+const props = withDefaults(
+  defineProps<
+    PrimitiveProps & {
+      variant?: BadgeVariants['variant'];
+      value?: StatusType | DataType | string | number;
+      type?: BadgeCategory;
+      class?: HTMLAttributes['class'];
+    }
+  >(),
+  {},
+);
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const { t } = useI18n();
 
@@ -155,8 +162,6 @@ const displayValue = computed(() => {
       v-if="iconComponent"
       :class="cn('w-3 h-3', shouldAnimate && 'animate-spin duration-1000')"
     />
-    <slot>
-      <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
-    </slot>
+    <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
   </Primitive>
 </template>

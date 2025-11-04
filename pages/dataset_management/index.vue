@@ -54,10 +54,14 @@ const columns = [
     id: 'data_source_type',
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
-      return h(Badge, {
-        value,
-        type: 'type',
-      });
+      return h(
+        Badge,
+        {
+          value,
+          type: 'type',
+        },
+        () => [],
+      );
     },
   },
   {
@@ -65,31 +69,31 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
-    id: 'created_at',
+    id: 'register_date_time',
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'span',
         {
           class: 'font-mono',
-          title: dayjs(row.getValue<string>('created_at')).format(
+          title: dayjs(row.getValue<string>('register_date_time')).format(
             'DD MMM YYYY HH:mm:ss',
           ),
         },
-        dayjs(row.getValue<string>('created_at')).format('DD MMM YYYY'),
+        dayjs(row.getValue<string>('register_date_time')).format('DD MMM YYYY'),
       ),
   },
   {
-    id: 'updated_at',
+    id: 'last_modified_time',
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'span',
         {
           class: 'font-mono',
-          title: dayjs(row.getValue<string>('updated_at')).format(
+          title: dayjs(row.getValue<string>('last_modified_time')).format(
             'DD MMM YYYY HH:mm:ss',
           ),
         },
-        dayjs(row.getValue<string>('updated_at')).format('DD MMM YYYY'),
+        dayjs(row.getValue<string>('last_modified_time')).format('DD MMM YYYY'),
       ),
   },
   {
@@ -151,6 +155,7 @@ const columns = [
     :columns="columns"
     :data-source="getDatasets"
     :tabs="tabs"
+    :sortable-columns="['last_modified_time']"
     class="flex-grow"
   />
 </template>

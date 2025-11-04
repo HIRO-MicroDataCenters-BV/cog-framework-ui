@@ -54,7 +54,7 @@ const columns = [
       return h(Badge, {
         value: status?.toLowerCase() || 'pending',
         type: 'status',
-      });
+      }, () => []);
     },
   },
   {

@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed, h, resolveComponent } from 'vue';
 import { valueUpdater } from '~/utils';
 import type {
   SearchFilter,
@@ -77,6 +77,10 @@ const props = defineProps({
   selectable: {
     type: Boolean,
     default: false,
+  },
+  sortableColumns: {
+    type: Array as PropType<string[]>,
+    default: () => [],
   },
 });
 
@@ -156,7 +160,13 @@ const fetchData = async () => {
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
+    sort_order: (route.query.sort_order as string) || 'desc',
   };
+
+  // Add sort_by if present in URL
+  if (route.query.sort_by) {
+    params.sort_by = route.query.sort_by as string;
+  }
 
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
@@ -239,12 +249,74 @@ const currentPage = ref<number>(
   route.query.page ? parseInt(route.query.page as string) : 1,
 );
 
+const currentSortBy = computed(() => (route.query.sort_by as string) || '');
+const currentSortOrder = computed(() => (route.query.sort_order as string) || 'desc');
+
+const handleSort = (columnId: string) => {
+  const query = { ...route.query };
+  
+  if (currentSortBy.value === columnId) {
+    // Toggle sort order if same column
+    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column, set to asc
+    query.sort_by = columnId;
+    query.sort_order = 'asc';
+  }
+  
+  // Reset to first page when sorting
+  query.page = '1';
+  currentPage.value = 1;
+  
+  router.replace({ query });
+};
+
 const getColumns = (list: TableColumn[]) => {
   return list.map((item) => {
+    const isSortable = props.sortableColumns.includes(item.id);
+    
     return {
       id: item.id,
       accessorKey: item.id,
-      header: t(`column.${item.id}`),
+      header: isSortable
+        ? () => {
+            const isSorted = currentSortBy.value === item.id;
+            const sortOrder = isSorted ? currentSortOrder.value : null;
+            
+            return h(
+              'div',
+              {
+                class: 'flex items-center gap-2 cursor-pointer select-none hover:text-foreground',
+                onClick: () => handleSort(item.id),
+              },
+              [
+                h('span', t(`column.${item.id}`)),
+                h(
+                  'div',
+                  {
+                    class: 'flex flex-col',
+                  },
+                  [
+                    h(resolveComponent('Icon'), {
+                      name: 'lucide:chevron-up',
+                      class: [
+                        'h-3 w-3',
+                        sortOrder === 'asc' ? 'text-foreground' : 'text-muted-foreground opacity-30',
+                      ],
+                    }),
+                    h(resolveComponent('Icon'), {
+                      name: 'lucide:chevron-down',
+                      class: [
+                        'h-3 w-3 -mt-1',
+                        sortOrder === 'desc' ? 'text-foreground' : 'text-muted-foreground opacity-30',
+                      ],
+                    }),
+                  ],
+                ),
+              ],
+            );
+          }
+        : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
     } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -305,6 +377,9 @@ const table = useVueTable({
     if (newPage !== currentPage.value) {
       const query = { ...route.query };
       query.page = newPage.toString();
+      if (!query.sort_order) {
+        query.sort_order = 'desc';
+      }
       router.replace({ query });
     }
   },
@@ -373,6 +448,19 @@ const updateUrlParams = () => {
   if (pageSize.value) {
     query.limit = pageSize.value.toString();
   }
+
+  // Preserve sort_order from URL or set default
+  if (route.query.sort_order) {
+    query.sort_order = route.query.sort_order as string;
+  } else {
+    query.sort_order = 'desc';
+  }
+
+  // Preserve sort_by from URL if present
+  if (route.query.sort_by) {
+    query.sort_by = route.query.sort_by as string;
+  }
+
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
     setTimeout(() => {
@@ -433,6 +521,8 @@ watch(
           table.setPageSize(newPageSize);
         }
       }
+
+      // sort_by is handled by currentSortBy computed, no need to update state here
     } catch (error) {
       columnFilters.value = [];
       columnVisibility.value = {};
@@ -614,6 +704,9 @@ defineExpose({ fetchData });
             (page: number) => {
               const query = { ...route.query };
               query.page = page.toString();
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
               router.replace({ query });
             }
           "
@@ -622,6 +715,9 @@ defineExpose({ fetchData });
               const query = { ...route.query };
               query.limit = size.toString();
               query.page = '1';
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
               router.replace({ query });
             }
           "
