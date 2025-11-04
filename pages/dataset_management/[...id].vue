@@ -194,6 +194,27 @@ const additionalSchema = {
       ],
     },
   ],
+  stream: [
+    {
+      key: 'default',
+      label: null,
+      prefix: null,
+      items: [
+        {
+          key: 'register_date',
+          type: 'date',
+          icon: 'lucide:circle-plus',
+          hasCopy: true,
+        },
+        {
+          key: 'last_modified_time',
+          type: 'date',
+          icon: 'lucide:circle-fading-plus',
+          hasCopy: true,
+        },
+      ],
+    },
+  ],
   time_series: [
     {
       key: 'connection_type',
@@ -349,6 +370,7 @@ const additionalDataSource = {
   file: getDatasetFileDetails,
   database: getDatasetTableDetails,
   time_series: getDatasetPrometheus,
+  stream: getDatasetFileDetails,
 };
 
 onMounted(async () => {
