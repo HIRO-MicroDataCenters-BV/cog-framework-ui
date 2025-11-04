@@ -32,9 +32,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  pageSizeOptions: {
+    type: Array,
+    default: () => [10, 20, 50, 100],
+  },
 });
 
-const emit = defineEmits(['on-set-page']);
+const emit = defineEmits(['on-set-page', 'on-set-page-size']);
 
 const PAGINATION_CONFIG = {
   MAX_VISIBLE_PAGES: 5,
@@ -127,69 +131,100 @@ const handleFirstPage = () => {
 const handleLastPage = () => {
   emit('on-set-page', totalPages.value);
 };
+
+const handlePageSizeChange = (value) => {
+  const newSize = parseInt(value, 10);
+  if (!isNaN(newSize) && newSize > 0) {
+    emit('on-set-page-size', newSize);
+  }
+};
 </script>
 
 <template>
-  <div class="flex items-center justify-end space-x-2">
-    <div class="flex items-center gap-1">
-      <button
-        v-if="showEdges && currentPage > PAGINATION_CONFIG.FIRST_PAGE_THRESHOLD"
-        class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-        :disabled="currentPage === 1"
-        @click="handleFirstPage"
+  <div class="flex items-center justify-between space-x-2 w-full">
+    <div class="flex items-center gap-2">
+      <Select
+        :model-value="pageSize.toString()"
+        @update:model-value="handlePageSizeChange"
       >
-        {{ t('action.first') }}
-      </button>
-
-      <button
-        class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-        :disabled="!canPreviousPage"
-        @click="handlePrevPage"
-      >
-        ‹ {{ t('action.previous') }}
-      </button>
-
-      <template v-for="(item, index) in pageNumbers" :key="index">
+        <SelectTrigger class="w-[100px]">
+          <Icon name="lucide:rows-3" class="size-4" />
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem
+            v-for="option in pageSizeOptions"
+            :key="option"
+            :value="option.toString()"
+          >
+            {{ option }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+    <div class="flex items-center justify-end space-x-2">
+      <div class="flex items-center gap-1">
         <button
-          v-if="item.type === 'page'"
-          class="w-10 h-10 p-0 border rounded-md"
-          :class="{
-            'bg-primary text-primary-foreground hover:bg-primary/90':
-              item.value === currentPage,
-            'bg-background hover:bg-gray-50 cursor-pointer':
-              item.value !== currentPage,
-          }"
-          @click="handleSetPage(item.value)"
+          v-if="
+            showEdges && currentPage > PAGINATION_CONFIG.FIRST_PAGE_THRESHOLD
+          "
+          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          :disabled="currentPage === 1"
+          @click="handleFirstPage"
         >
-          {{ item.value }}
+          {{ t('action.first') }}
         </button>
-        <span
-          v-else
-          class="w-10 h-10 p-0 flex items-center justify-center text-gray-500"
+
+        <button
+          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          :disabled="!canPreviousPage"
+          @click="handlePrevPage"
         >
-          ...
-        </span>
-      </template>
+          ‹ {{ t('action.previous') }}
+        </button>
 
-      <button
-        class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-        :disabled="!canNextPage"
-        @click="handleNextPage"
-      >
-        {{ t('action.next') }} ›
-      </button>
+        <template v-for="(item, index) in pageNumbers" :key="index">
+          <button
+            v-if="item.type === 'page'"
+            class="w-10 h-10 p-0 border rounded-md"
+            :class="{
+              'bg-primary text-primary-foreground hover:bg-primary/90':
+                item.value === currentPage,
+              'bg-background hover:bg-gray-50 cursor-pointer':
+                item.value !== currentPage,
+            }"
+            @click="handleSetPage(item.value)"
+          >
+            {{ item.value }}
+          </button>
+          <span
+            v-else
+            class="w-10 h-10 p-0 flex items-center justify-center text-gray-500"
+          >
+            ...
+          </span>
+        </template>
 
-      <button
-        v-if="
-          showEdges &&
-          currentPage < totalPages - PAGINATION_CONFIG.LAST_PAGE_THRESHOLD
-        "
-        class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-        :disabled="currentPage === totalPages"
-        @click="handleLastPage"
-      >
-        {{ t('action.last') }}
-      </button>
+        <button
+          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          :disabled="!canNextPage"
+          @click="handleNextPage"
+        >
+          {{ t('action.next') }} ›
+        </button>
+
+        <button
+          v-if="
+            showEdges &&
+            currentPage < totalPages - PAGINATION_CONFIG.LAST_PAGE_THRESHOLD
+          "
+          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          :disabled="currentPage === totalPages"
+          @click="handleLastPage"
+        >
+          {{ t('action.last') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

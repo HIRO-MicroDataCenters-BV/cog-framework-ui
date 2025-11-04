@@ -1,9 +1,9 @@
 <template>
   <SidebarProvider class="sidebar-wrapper">
     <AppSidebar />
-    <SidebarInset class="overflow-hidden">
+    <SidebarInset class="overflow-hidden overflow-y-auto">
+      <AppHeader :page="page" />
       <AppContent>
-        <AppHeader />
         <div class="flex flex-1 flex-col gap-4 h-full">
           <div class="h-full flex flex-col flex-grow">
             <div class="px-4">
@@ -13,9 +13,6 @@
                 }}</template>
                 <!-- <template v-else>{{ page.title }}</template> -->
               </h1>
-              <p v-if="page.subtitle != ''" class="text-sm text-gray-500">
-                {{ page.subtitle }}
-              </p>
             </div>
             <slot />
           </div>
@@ -41,6 +38,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 const { t } = useI18n();
 const { page } = useApp();
+console.log('page', page);
 </script>
 
 <style>

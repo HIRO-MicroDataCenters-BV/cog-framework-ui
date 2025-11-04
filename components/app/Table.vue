@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed, h, resolveComponent } from 'vue';
 import { valueUpdater } from '~/utils';
 import type {
   SearchFilter,
@@ -77,6 +77,10 @@ const props = defineProps({
   selectable: {
     type: Boolean,
     default: false,
+  },
+  sortableColumns: {
+    type: Array as PropType<string[]>,
+    default: () => [],
   },
 });
 
@@ -142,11 +146,27 @@ const stat = ref({
 const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
 };
+
+const getAutoColumn = (searchValue: string): string => {
+  // If search value is only numbers, search by id
+  if (/^\d+$/.test(searchValue)) {
+    return 'id';
+  }
+  // Otherwise search by name
+  return 'name';
+};
+
 const fetchData = async () => {
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
+    sort_order: (route.query.sort_order as string) || 'desc',
   };
+
+  // Add sort_by if present in URL
+  if (route.query.sort_by) {
+    params.sort_by = route.query.sort_by as string;
+  }
 
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
@@ -176,7 +196,13 @@ const fetchData = async () => {
       data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
 
       if (pagination) {
-        pageSize.value = pagination.limit ?? props.pageSize;
+        // Prefer limit from URL over API response
+        if (route.query.limit) {
+          pageSize.value =
+            parseInt(route.query.limit as string) || props.pageSize;
+        } else {
+          pageSize.value = pagination.limit ?? props.pageSize;
+        }
         totalItems.value = pagination.total_items ?? 0;
 
         const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
@@ -223,12 +249,81 @@ const currentPage = ref<number>(
   route.query.page ? parseInt(route.query.page as string) : 1,
 );
 
+const currentSortBy = computed(() => (route.query.sort_by as string) || '');
+const currentSortOrder = computed(
+  () => (route.query.sort_order as string) || 'desc',
+);
+
+const handleSort = (columnId: string) => {
+  const query = { ...route.query };
+
+  if (currentSortBy.value === columnId) {
+    // Toggle sort order if same column
+    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New column, set to asc
+    query.sort_by = columnId;
+    query.sort_order = 'asc';
+  }
+
+  // Reset to first page when sorting
+  query.page = '1';
+  currentPage.value = 1;
+
+  router.replace({ query });
+};
+
 const getColumns = (list: TableColumn[]) => {
   return list.map((item) => {
+    const isSortable = props.sortableColumns.includes(item.id);
+
     return {
       id: item.id,
       accessorKey: item.id,
-      header: t(`column.${item.id}`),
+      header: isSortable
+        ? () => {
+            const isSorted = currentSortBy.value === item.id;
+            const sortOrder = isSorted ? currentSortOrder.value : null;
+
+            return h(
+              'div',
+              {
+                class:
+                  'flex items-center gap-2 cursor-pointer select-none hover:text-foreground',
+                onClick: () => handleSort(item.id),
+              },
+              [
+                h('span', t(`column.${item.id}`)),
+                h(
+                  'div',
+                  {
+                    class: 'flex flex-col',
+                  },
+                  [
+                    h(resolveComponent('Icon'), {
+                      name: 'lucide:chevron-up',
+                      class: [
+                        'h-3 w-3',
+                        sortOrder === 'asc'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground opacity-30',
+                      ],
+                    }),
+                    h(resolveComponent('Icon'), {
+                      name: 'lucide:chevron-down',
+                      class: [
+                        'h-3 w-3 -mt-1',
+                        sortOrder === 'desc'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground opacity-30',
+                      ],
+                    }),
+                  ],
+                ),
+              ],
+            );
+          }
+        : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
     } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -287,16 +382,12 @@ const table = useVueTable({
 
     const newPage = newPagination.pageIndex + 1;
     if (newPage !== currentPage.value) {
-      currentPage.value = newPage;
       const query = { ...route.query };
-      query.page = currentPage.value.toString();
-      router
-        .replace({
-          query,
-        })
-        .then(() => {
-          fetchData();
-        });
+      query.page = newPage.toString();
+      if (!query.sort_order) {
+        query.sort_order = 'desc';
+      }
+      router.replace({ query });
     }
   },
 
@@ -327,7 +418,6 @@ const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
 const applySearchFilter = () => {
-  table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
   );
@@ -335,10 +425,14 @@ const applySearchFilter = () => {
     updateUrlParams();
     return;
   }
+
+  // Auto-detect column based on search value
+  const columnToUse = getAutoColumn(searchValue.value);
+
   const searchFilter: SearchFilter = {
     id: 'search',
     value: searchValue.value,
-    column: selectedFilterColumn.value,
+    column: columnToUse,
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
@@ -353,12 +447,27 @@ const updateUrlParams = () => {
     query.q = filter.value;
     query.column = filter.column;
   }
-  query.page = currentPage.value.toString();
+
+  // Reset to first page when filtering
+  currentPage.value = 1;
+  query.page = '1';
 
   if (pageSize.value) {
     query.limit = pageSize.value.toString();
-    table.setPageSize(pageSize.value);
   }
+
+  // Preserve sort_order from URL or set default
+  if (route.query.sort_order) {
+    query.sort_order = route.query.sort_order as string;
+  } else {
+    query.sort_order = 'desc';
+  }
+
+  // Preserve sort_by from URL if present
+  if (route.query.sort_by) {
+    query.sort_by = route.query.sort_by as string;
+  }
+
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
     setTimeout(() => {
@@ -413,11 +522,14 @@ watch(
       }
 
       if (newQuery.limit) {
-        const pageSize = parseInt(newQuery.limit as string);
-        if (pageSize > 0 && pageSize !== props.pageSize) {
-          table.setPageSize(pageSize);
+        const newPageSize = parseInt(newQuery.limit as string);
+        if (newPageSize > 0 && newPageSize !== pageSize.value) {
+          pageSize.value = newPageSize;
+          table.setPageSize(newPageSize);
         }
       }
+
+      // sort_by is handled by currentSortBy computed, no need to update state here
     } catch (error) {
       columnFilters.value = [];
       columnVisibility.value = {};
@@ -449,10 +561,11 @@ const add = () => {
 };
 
 onMounted(() => {
-  fetchData();
   setTimeout(() => {
     if (Object.keys(route.query).length === 0) {
       updateUrlParams();
+    } else {
+      fetchData();
     }
   }, 50);
 });
@@ -467,90 +580,41 @@ defineExpose({ fetchData });
   >
     <div class="p-4">
       <div>
-        <div class="pb-4 flex">
-          <div class="flex-auto">
-            <div
-              v-if="page.description != ''"
-              class="w-full md:w-96 max-w-full"
-            >
-              <p class="text-sm text-slate-500">{{ page.description }}</p>
-            </div>
-            <div
-              v-if="hasStats"
-              class="frame grid gap-4 auto-cols-max grid-flow-col"
-            >
-              <div v-for="item in stat" :key="item.key" class="frame-item">
-                <div
-                  class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
-                >
-                  {{ item.label }}
-                </div>
-                <div class="frame-item-content flex items-center">
-                  <Icon
-                    :name="item.icon"
-                    :class="`h-4 w-4 mr-2 ${item.color}`"
-                  />
-                  <span class="stat-value">{{ item.value }}</span>
-                </div>
-              </div>
-            </div>
+        <div class="pb-4 flex justify-between gap-2">
+          <div>
+            <h2 class="text-2xl font-medium">
+              {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
+            </h2>
           </div>
-          <div class="flex gap-6 items-center">
-            <div v-if="hasFilters" class="flex gap-2">
-              <Switch
-                :model-value="isFiltersOpen"
-                @update:model-value="toggleTableFilters"
+
+          <div class="flex gap-2">
+            <div class="relative">
+              <Input
+                v-model="searchValue"
+                class="w-64 pl-8"
+                type="search"
+                :placeholder="t('placeholder.search_by_name_or_id')"
+                @update:model-value="applySearchFilter"
               />
-              <Label class="flex items-center">{{ t('label.filters') }}</Label>
+              <Icon
+                name="lucide:search"
+                class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
             </div>
-            <Button @click="() => add()"
-              ><Icon name="lucide:plus"></Icon
-              >{{ t(`action.add_${page.section}`) }}</Button
-            >
+
+            <div class="flex gap-6 items-center">
+              <Button @click="() => add()"
+                ><Icon name="lucide:plus"></Icon
+                >{{ t(`action.add_${page.section}`) }}</Button
+              >
+            </div>
           </div>
         </div>
       </div>
 
-      <div v-if="isFiltersOpen">
-        <Separator />
+      <!-- 
+      <div>
         <div class="flex gap-2 items-center py-4">
-          <div v-if="hasSearch" class="flex-auto flex">
-            <div class="flex gap-2">
-              <Input
-                v-model="searchValue"
-                class="w-64"
-                type="search"
-                :placeholder="t('placeholder.search')"
-                @update:model-value="applySearchFilter"
-              />
-
-              <Select
-                v-model="selectedFilterColumn"
-                @update:model-value="applySearchFilter"
-              >
-                <SelectTrigger class="w-[180px]">
-                  <SelectValue :placeholder="t('placeholder.select_filter')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
-                    <SelectItem value="all"
-                      >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
-                    >
-                    <SelectItem
-                      v-for="column in table
-                        .getAllColumns()
-                        .filter((column) => column.getCanHide())"
-                      :key="column.id"
-                      :value="column.id"
-                    >
-                      {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
           <div v-if="validTabs.length > 0" class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
@@ -573,6 +637,7 @@ defineExpose({ fetchData });
           </div>
         </div>
       </div>
+      -->
     </div>
     <div class="overflow-x-auto w-full">
       <Table
@@ -641,15 +706,26 @@ defineExpose({ fetchData });
           :can-next-page="canNextPage"
           :sibling-count="2"
           :show-edges="true"
+          :page-size-options="[10, 20, 50, 100]"
           @on-set-page="
             (page: number) => {
-              currentPage = page;
-              table.setPageIndex(page - 1);
               const query = { ...route.query };
               query.page = page.toString();
-              router.replace({ query }).then(() => {
-                fetchData();
-              });
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
+              router.replace({ query });
+            }
+          "
+          @on-set-page-size="
+            (size: number) => {
+              const query = { ...route.query };
+              query.limit = size.toString();
+              query.page = '1';
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
+              router.replace({ query });
             }
           "
         />

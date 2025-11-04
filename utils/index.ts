@@ -128,3 +128,36 @@ export function generateUniqueName(existingNames: string[]): string {
 
   return `${mostCommonBase}_${counter}`;
 }
+
+/**
+ * Mapping for numeric values to data types
+ */
+export const DATA_TYPE_MAPPING = {
+  file: [0],
+  database: [1],
+  stream: [10, 11],
+  time_series: [20],
+} as const;
+
+export type DataTypeName = keyof typeof DATA_TYPE_MAPPING;
+
+/**
+ * Get data type name from numeric value
+ * @param value - Numeric value representing the data type
+ * @returns Data type name (e.g., 'file', 'database', 'stream', 'time_series') or null if not found
+ *
+ * @example
+ * ```typescript
+ * getDataTypeFromValue(0) // returns 'file'
+ * getDataTypeFromValue(10) // returns 'stream'
+ * getDataTypeFromValue(99) // returns null
+ * ```
+ */
+export function getDataTypeFromValue(value: number): DataTypeName | null {
+  for (const [type, values] of Object.entries(DATA_TYPE_MAPPING)) {
+    if ((values as readonly number[]).includes(value)) {
+      return type as DataTypeName;
+    }
+  }
+  return null;
+}

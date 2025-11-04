@@ -13,6 +13,9 @@ FROM node:${NODE_VERSION}-alpine AS base
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
+# Enable corepack for package manager version management
+RUN corepack enable
+
 ################################################################################
 # Create a stage for building the application.
 FROM base AS build
@@ -27,17 +30,17 @@ ENV NUXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage bind mounts to package.json and package-lock.json to avoid having to copy them
+# Leverage bind mounts to package.json and pnpm-lock.yaml to avoid having to copy them
 # into this layer.
 RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-    --mount=type=cache,id=npm,target=/root/.npm \
-    npm ci
+    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+    --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Copy the rest of the source files into the image.
 COPY . .
 # Run the build script.
-RUN npm run build
+RUN pnpm run build
 
 ################################################################################
 FROM nginx:stable-alpine AS nginx
