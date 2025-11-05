@@ -101,6 +101,22 @@
           </template>
         </div>
       </template>
+      <div v-if="additional?.topic_details?.topic_schema" class="mt-4 mb-24">
+        <div
+          class="bg-gray-100 border border-gray-200 rounded-md overflow-hidden"
+        >
+          <Label class="px-2 py-2 border-b border-gray-200">{{
+            $t('label.topic_schema')
+          }}</Label>
+          <Textarea
+            readonly
+            class="bg-white border-none rounded-none"
+            :defaultValue="
+              JSON.stringify(additional?.topic_details?.topic_schema, null, 2)
+            "
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
