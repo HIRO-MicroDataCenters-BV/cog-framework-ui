@@ -1,0 +1,29 @@
+{
+  "status_code": 200,
+  "message": "Dataset message details.",
+  "data": {
+    "dataset": {
+      "id": 5,
+      "dataset_name": "nats_dataset_5",
+      "description": "nats_dataset",
+      "dataset_type": 0,
+      "data_source_type": 11,
+      "user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    "broker_details": {
+      "id": 2,
+      "broker_name": "cog-nats.nats.svc.cluster.local",
+      "broker_ip": "10.43.245.13",
+      "broker_port": 4222,
+      "creation_date": "2025-08-21T12:48:46.433148"
+    },
+    "topic_details": {
+      "id": 5,
+      "topic_name": "nats-1",
+      "topic_schema": {},
+      "broker_id": 2,
+      "creation_date": "2025-08-28T08:47:20.368556"
+    }
+  }
+}

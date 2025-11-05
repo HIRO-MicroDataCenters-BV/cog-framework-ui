@@ -1,5 +1,5 @@
 <template>
-  <div v-if="content" class="w-[840px] mx-auto max-w-full">
+  <div v-if="content" class="w-[840px] mx-auto max-w-full px-4">
     <div class="mb-8">
       <header class="mb-8">
         <h1 v-if="page.title != ''" class="text-2xl font-medium">
@@ -8,6 +8,11 @@
       </header>
       <div class="flex gap-2">
         <Badge :value="content.data_source_type" type="type" />
+        <Badge value="id" type="type">{{
+          $t(
+            `label.${trainAndInferenceType[content.train_and_inference_type as keyof typeof trainAndInferenceType]}`,
+          )
+        }}</Badge>
         <Badge value="id" type="type">#{{ content.id }}</Badge>
       </div>
     </div>
@@ -112,6 +117,7 @@ const {
   getDatasetFileDetails,
   getDatasetTableDetails,
   getDatasetPrometheus,
+  getDatasetMessageDetails,
 } = useApi();
 const { setPage, page } = useApp();
 const id = computed(() => parseInt(route.params.id[0]));
@@ -210,6 +216,62 @@ const additionalSchema = {
           key: 'last_modified_time',
           type: 'date',
           icon: 'lucide:circle-fading-plus',
+          hasCopy: true,
+        },
+      ],
+    },
+    {
+      key: 'broker_details',
+      label: 'broker_details',
+      prefix: 'broker_details',
+      items: [
+        {
+          key: 'broker_name',
+          type: 'text',
+          icon: 'lucide:text',
+          hasCopy: true,
+        },
+        {
+          key: 'broker_ip',
+          type: 'text',
+          icon: 'lucide:hash',
+          hasCopy: true,
+        },
+        {
+          key: 'broker_port',
+          type: 'text',
+          icon: 'lucide:text',
+          hasCopy: true,
+        },
+        {
+          key: 'creation_date',
+          type: 'date',
+          icon: 'lucide:circle-plus',
+          hasCopy: true,
+        },
+      ],
+    },
+    {
+      key: 'topic_details',
+      label: 'topic_details',
+      prefix: 'topic_details',
+      items: [
+        {
+          key: 'topic_name',
+          type: 'text',
+          icon: 'lucide:text',
+          hasCopy: true,
+        },
+        {
+          key: 'broker_id',
+          type: 'text',
+          icon: 'lucide:hash',
+          hasCopy: true,
+        },
+        {
+          key: 'creation_date',
+          type: 'date',
+          icon: 'lucide:circle-plus',
           hasCopy: true,
         },
       ],
@@ -370,7 +432,13 @@ const additionalDataSource = {
   file: getDatasetFileDetails,
   database: getDatasetTableDetails,
   time_series: getDatasetPrometheus,
-  stream: getDatasetFileDetails,
+  stream: getDatasetMessageDetails,
+};
+
+const trainAndInferenceType = {
+  0: 'train',
+  1: 'inference',
+  2: 'train_and_inference',
 };
 
 onMounted(async () => {

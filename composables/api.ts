@@ -17,6 +17,7 @@ import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
 import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.prometheus.json';
+import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
 import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import runsData from '@/mocks/get.runs.json';
@@ -1269,6 +1270,9 @@ export const useApi = () => {
      * ```
      */
     getDatasetMessageDetails: async (dataset_id: number) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsStreamData);
+      }
       return request(`/datasets/${dataset_id}/message/details`);
     },
 
