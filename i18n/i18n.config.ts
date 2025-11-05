@@ -113,6 +113,8 @@ export default defineI18nConfig(() => ({
         scope: 'Scope',
         verb: 'Verb',
         version: 'Version',
+        broker_id: 'Broker ID',
+        creation_date: 'Added',
         prometheus_url: 'URL',
         fields_selected_list: 'Fields',
         frequency: 'Frequency',
