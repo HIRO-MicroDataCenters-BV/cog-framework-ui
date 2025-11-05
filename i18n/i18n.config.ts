@@ -65,6 +65,7 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
         are_you_sure: 'Are you sure?',
         run_details: 'Run Details',
+        pipelines: 'Pipelines',
       },
       alert: {
         delete_dataset:
@@ -105,6 +106,8 @@ export default defineI18nConfig(() => ({
         group: 'Group',
         instance: 'Instance',
         job: 'Job',
+        broker_details: 'Broker Details',
+        topic: 'Topic Details',
         le: 'Le',
         resource: 'Resource',
         scope: 'Scope',
@@ -154,6 +157,9 @@ export default defineI18nConfig(() => ({
         table_name: 'Table Name',
         selected_fields: 'Selected Fields',
         fields: 'Fields',
+        train: 'Train',
+        inference: 'Inference',
+        train_and_inference: 'Train and Inference',
         register_date_time: 'Register Date Time',
         train_and_inference_type: 'Train and Inference Type',
         user_id: 'User ID',
