@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref, computed, watch, nextTick } from 'vue';
 import type { Table } from '@tanstack/vue-table';
 import type { DataItem } from '~/types/table.types';
+import { Check } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,6 +34,11 @@ const { t } = useI18n();
 const isOpen = ref(false);
 const selectedValues = ref<Set<string | number>>(new Set());
 
+const normalizeValue = (value: string | number): string | number => {
+  if (typeof value === 'number') return value;
+  return String(value);
+};
+
 const filterOptions = computed<FilterOption[]>(() => {
   const allRows = props.table.getCoreRowModel().rows;
   const valueCounts = new Map<string | number, number>();
@@ -39,52 +46,69 @@ const filterOptions = computed<FilterOption[]>(() => {
   allRows.forEach((row) => {
     const value = (row.original as Record<string, unknown>)[props.columnId];
     if (value !== null && value !== undefined) {
-      valueCounts.set(value, (valueCounts.get(value) || 0) + 1);
+      const normalizedValue = normalizeValue(
+        typeof value === 'number' ? value : String(value),
+      );
+      valueCounts.set(
+        normalizedValue,
+        (valueCounts.get(normalizedValue) || 0) + 1,
+      );
     }
   });
 
   return Array.from(valueCounts.entries())
     .map(([value, count]) => ({
       value,
-      label: props.getValueLabel
-        ? props.getValueLabel(value)
-        : String(value),
+      label: props.getValueLabel ? props.getValueLabel(value) : String(value),
       count,
     }))
     .sort((a, b) => b.count - a.count);
 });
 
+const syncSelectedValues = () => {
+  const filters = props.table.getState().columnFilters;
+  const columnFilter = filters.find((f) => f.id === props.columnId);
+  if (columnFilter && Array.isArray(columnFilter.value) && columnFilter.value.length > 0) {
+    const filterValues = columnFilter.value.map(normalizeValue);
+    selectedValues.value = new Set(filterValues);
+  } else {
+    selectedValues.value = new Set();
+  }
+};
+
 watch(
   () => props.table.getState().columnFilters,
-  (filters) => {
-    const columnFilter = filters.find((f) => f.id === props.columnId);
-    if (columnFilter) {
-      if (Array.isArray(columnFilter.value)) {
-        selectedValues.value = new Set(columnFilter.value);
-      } else {
-        selectedValues.value = new Set();
-      }
-    } else {
-      selectedValues.value = new Set();
+  () => {
+    syncSelectedValues();
+  },
+  { immediate: true, deep: true },
+);
+
+watch(
+  () => isOpen.value,
+  (open) => {
+    if (open) {
+      syncSelectedValues();
     }
   },
-  { immediate: true },
 );
 
 const selectedCount = computed(() => selectedValues.value.size);
 
 const toggleValue = (value: string | number, checked: boolean) => {
+  const normalizedValue = normalizeValue(value);
   if (checked) {
-    selectedValues.value.add(value);
+    selectedValues.value.add(normalizedValue);
   } else {
-    selectedValues.value.delete(value);
+    selectedValues.value.delete(normalizedValue);
   }
   applyFilter();
 };
 
 const handleItemClick = (value: string | number) => {
-  const isCurrentlySelected = selectedValues.value.has(value);
-  toggleValue(value, !isCurrentlySelected);
+  const normalizedValue = normalizeValue(value);
+  const isCurrentlySelected = selectedValues.value.has(normalizedValue);
+  toggleValue(normalizedValue, !isCurrentlySelected);
 };
 
 const clearAll = () => {
@@ -98,7 +122,8 @@ const applyFilter = () => {
 };
 
 const isSelected = (value: string | number) => {
-  return selectedValues.value.has(value);
+  const normalizedValue = normalizeValue(value);
+  return selectedValues.value.has(normalizedValue);
 };
 </script>
 
@@ -134,13 +159,21 @@ const isSelected = (value: string | number) => {
           v-for="option in filterOptions"
           :key="String(option.value)"
           class="cursor-pointer"
-          @click.prevent.stop="() => handleItemClick(option.value)"
         >
           <div class="flex items-center gap-2 w-full">
-            <div @click.stop="() => handleItemClick(option.value)">
-              <Checkbox :checked="isSelected(option.value)" />
-            </div>
-            <div class="flex items-center justify-between flex-1">
+            <Checkbox
+              :model-value="isSelected(option.value)"
+              @update:model-value="(checked) => toggleValue(option.value, checked)"
+              @click.stop
+            >
+              <template #default>
+                <Check class="size-3.5 text-white" />
+              </template>
+            </Checkbox>
+            <div
+              class="flex items-center justify-between flex-1"
+              @click.stop="() => handleItemClick(option.value)"
+            >
               <span>{{ option.label }}</span>
               <span class="text-xs text-muted-foreground ml-2">
                 ({{ option.count }})
@@ -150,13 +183,9 @@ const isSelected = (value: string | number) => {
         </DropdownMenuItem>
       </div>
       <DropdownMenuSeparator v-if="selectedCount > 0" />
-      <DropdownMenuItem
-        v-if="selectedCount > 0"
-        @click="clearAll"
-      >
+      <DropdownMenuItem v-if="selectedCount > 0" @click="clearAll">
         {{ t('action.clear_all') }}
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
-
