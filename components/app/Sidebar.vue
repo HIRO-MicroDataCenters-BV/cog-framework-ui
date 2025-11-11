@@ -31,7 +31,7 @@ setOpen(!isIframe.value);
 </script>
 
 <template>
-  <Sidebar collapsible="icon">
+  <Sidebar collapsible="icon" class="bg-white">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>

@@ -705,11 +705,8 @@ defineExpose({ fetchData });
 </script>
 
 <template>
-  <div
-    :class="['w-full flex flex-col', props.class]"
-    style="height: calc(100vh - 80px)"
-  >
-    <div class="p-4">
+  <div :class="['w-full flex flex-col relative h-[100svh]', props.class]">
+    <div class="pl-4 p-4">
       <div>
         <div class="pb-4 flex justify-between gap-2">
           <div>
@@ -780,16 +777,20 @@ defineExpose({ fetchData });
       </div>
       -->
     </div>
-    <div class="overflow-x-auto w-full">
-      <table class="border-b w-full">
+    <div class="overflow-x-auto w-full flex-1">
+      <table class="border-b w-full border-collapse">
         <TableHeader
-          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-10 shadow-xs"
+          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-t bg-gray-50 dark:bg-gray-900 border-gray-200 z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
           >
-            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+            <TableHead
+              v-for="header in headerGroup.headers"
+              :key="header.id"
+              class="border-l border-r border-border"
+            >
               <FlexRender
                 v-if="!header.isPlaceholder"
                 :render="header.column.columnDef.header"
@@ -805,7 +806,11 @@ defineExpose({ fetchData });
               :key="row.id"
             >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
-                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                <TableCell
+                  v-for="cell in row.getVisibleCells()"
+                  :key="cell.id"
+                  class="border-l border-r border-border py-2 px-4"
+                >
                   <FlexRender
                     :render="cell.column.columnDef.cell"
                     :props="cell.getContext()"
@@ -813,7 +818,10 @@ defineExpose({ fetchData });
                 </TableCell>
               </TableRow>
               <TableRow v-if="row.getIsExpanded()">
-                <TableCell :colspan="row.getAllCells().length">
+                <TableCell
+                  :colspan="row.getAllCells().length"
+                  class="border-l border-r border-border py-2 px-4"
+                >
                   {{ JSON.stringify(row.original) }}
                 </TableCell>
               </TableRow>
@@ -821,7 +829,10 @@ defineExpose({ fetchData });
           </template>
 
           <TableRow v-else>
-            <TableCell :colspan="columns.length" class="h-24 text-center">
+            <TableCell
+              :colspan="columns.length"
+              class="h-24 text-center border-l border-r border-border"
+            >
               {{ t('hint.no_results') }}
             </TableCell>
           </TableRow>
@@ -829,7 +840,9 @@ defineExpose({ fetchData });
       </table>
     </div>
 
-    <div class="py-4 p-4 bg-sidebar-background sticky bottom-0">
+    <div
+      class="py-4 px-6 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+    >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
           {{ table.getFilteredSelectedRowModel().rows.length }}
