@@ -111,7 +111,7 @@
           <Textarea
             readonly
             class="bg-white border-none rounded-none"
-            :defaultValue="
+            :default-value="
               JSON.stringify(additional?.topic_details?.topic_schema, null, 2)
             "
           />

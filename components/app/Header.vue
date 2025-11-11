@@ -197,8 +197,8 @@ const runPipeline = () => {
 
   console.log('data', data);
 
-  console.log('postTrainingBuilderPipelineComponent');
-  api.postTrainingBuilderPipelineComponent(data).then((res: unknown) => {
+  console.log('postTrainingBuilderPipeline');
+  api.postTrainingBuilderPipeline(data).then((res: unknown) => {
     console.log('res', res);
   });
 };

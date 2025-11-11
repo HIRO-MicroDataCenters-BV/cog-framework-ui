@@ -151,6 +151,7 @@ const displayValue = computed(() => {
       :is="iconComponent"
       v-if="iconComponent"
       :class="cn('w-3 h-3', shouldAnimate && 'animate-spin duration-1000')"
+      stroke-width="1.25"
     />
     <slot>
       <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
