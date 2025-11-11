@@ -262,6 +262,8 @@ export default defineI18nConfig(() => ({
         notifications: 'Notifications',
         help: 'Help',
         logout: 'Log out',
+        clear_all: 'Clear all',
+        clear_filters: 'Clear filters',
       },
       stat: {
         total: 'Total',
@@ -309,6 +311,7 @@ export default defineI18nConfig(() => ({
         page: 'Page',
         loading: 'Loading...',
         by: 'by',
+        filter_by: 'Filter by',
       },
       menu: {
         upload: 'Upload',

@@ -2044,17 +2044,27 @@ export const useApi = () => {
     /**
      * Gets training builder components
      *
-     * Retrieves all available training builder components.
+     * Retrieves all available training builder components with optional filters.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.name] - Wildcard search by component name (case-insensitive)
+     * @param {string} [params.category] - Filter by category (case-insensitive)
      *
      * @returns {Promise<Object>} Standard response containing training builder components
      *
      * @example
      * ```typescript
      * const components = await api.getTrainingBuilderComponents();
-     * const components = await api.getTrainingBuilderComponents({ limit: '10' });
+     * const components = await api.getTrainingBuilderComponents({ name: 'preprocessor' });
+     * const components = await api.getTrainingBuilderComponents({ category: 'training' });
      * ```
      */
-    getTrainingBuilderComponents: async (params: { limit: string }) => {
+    getTrainingBuilderComponents: async (
+      params: {
+        name?: string;
+        category?: string;
+      } = {},
+    ) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -2071,9 +2081,11 @@ export const useApi = () => {
      *
      * @param {Object} data - Component creation data
      * @param {string} data.name - Component name
-     * @param {string} data.type - Component type
-     * @param {string} data.description - Component description
-     * @param {Object} data.config - Component configuration
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
+     * @param {string} data.component_file - Component file path
+     * @param {string} data.category - Component category
+     * @param {string} [data.creator] - Optional creator
      *
      * @returns {Promise<Object>} Standard response containing created component information
      *
@@ -2081,9 +2093,10 @@ export const useApi = () => {
      * ```typescript
      * const result = await api.postTrainingBuilderComponent({
      *   name: 'data-preprocessor',
-     *   type: 'preprocessing',
-     *   description: 'Data preprocessing component',
-     *   config: { method: 'normalization' }
+     *   input_path: [{ name: 'input', type: 'String' }],
+     *   output_path: [{ name: 'output', type: 'String' }],
+     *   component_file: '/path/to/component.yaml',
+     *   category: 'training'
      * });
      * ```
      */
@@ -2092,92 +2105,185 @@ export const useApi = () => {
     },
 
     /**
+     * Updates training builder component
+     *
+     * Updates an existing component by either its ID or name.
+     *
+     * @param {Object} data - Component update data
+     * @param {string} [data.id] - Component UUID (alternative to name)
+     * @param {string} [data.name] - Component name (alternative to ID)
+     * @param {Array} [data.input_path] - Input path configuration
+     * @param {Array} [data.output_path] - Output path configuration
+     * @param {string} [data.component_file] - Component file path
+     * @param {string} [data.category] - Component category
+     *
+     * @returns {Promise<Object>} Standard response containing updated component information
+     *
+     * @example
+     * ```typescript
+     * const result = await api.patchTrainingBuilderComponent({
+     *   id: '123e4567-e89b-12d3-a456-426614174000',
+     *   category: 'updated-category'
+     * });
+     * ```
+     */
+    patchTrainingBuilderComponent: async (data: unknown) => {
+      return request(`/training-builder-components`, 'PATCH', data);
+    },
+
+    /**
+     * Gets training builder component by ID
+     *
+     * Retrieves a specific component by its UUID.
+     *
+     * @param {string} component_id - The UUID of the component to retrieve
+     *
+     * @returns {Promise<Object>} Standard response containing component information
+     *
+     * @example
+     * ```typescript
+     * const component = await api.getTrainingBuilderComponentById('123e4567-e89b-12d3-a456-426614174000');
+     * ```
+     */
+    getTrainingBuilderComponentById: async (component_id: string) => {
+      return request(`/training-builder-components/${component_id}`);
+    },
+
+    /**
      * Deletes training builder component
      *
      * Removes a training builder component from the system.
      *
-     * @param {number} component_id - The ID of the component to delete
+     * @param {string} component_id - The UUID of the component to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteTrainingBuilderComponent(123);
+     * await api.deleteTrainingBuilderComponent('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteTrainingBuilderComponent: async (component_id: number) => {
+    deleteTrainingBuilderComponent: async (component_id: string) => {
       return request(`/training-builder-components/${component_id}`, 'DELETE');
     },
 
     // ============================================================================
-    // TRAINING BUILDER PIPELINE COMPONENT APIs
+    // TRAINING BUILDER PIPELINE APIs
     // ============================================================================
 
     /**
-     * Gets training builder pipeline components
+     * Gets training builder pipelines
      *
-     * Retrieves all available training builder pipeline components.
+     * Retrieves all available training builder pipelines with optional name filter.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.name] - Optional name filter for pipeline
      *
      * @returns {Promise<Object>} Standard response containing pipeline components
      *
      * @example
      * ```typescript
-     * const components = await api.getTrainingBuilderPipelineComponents();
+     * const pipelines = await api.getTrainingBuilderPipelines();
+     * const pipelines = await api.getTrainingBuilderPipelines({ name: 'my-pipeline' });
      * ```
      */
-    getTrainingBuilderPipelineComponents: async () => {
-      return request(`/training-builder-pipeline-components`);
+    getTrainingBuilderPipelines: async (params: { name?: string } = {}) => {
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      const query = q ? `?${q}` : '';
+      return request(`/training-builder-pipelines${query}`);
     },
 
     /**
-     * Creates training builder pipeline component
+     * Creates training builder pipeline
      *
-     * Creates a new training builder pipeline component.
+     * Creates a new training builder pipeline.
      *
-     * @param {Object} data - Pipeline component creation data
-     * @param {string} data.name - Component name
-     * @param {string} data.pipeline_id - Pipeline ID
-     * @param {string} data.component_type - Component type
-     * @param {Object} data.config - Component configuration
+     * @param {Object} data - Pipeline creation data
+     * @param {string} data.name - Pipeline name
+     * @param {Array} data.pipeline_components - Pipeline components array
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
      *
-     * @returns {Promise<Object>} Standard response containing created pipeline component information
+     * @returns {Promise<Object>} Standard response containing created pipeline information
      *
      * @example
      * ```typescript
-     * const result = await api.postTrainingBuilderPipelineComponent({
-     *   name: 'pipeline-preprocessor',
-     *   pipeline_id: 'pipeline-123',
-     *   component_type: 'preprocessing',
-     *   config: { method: 'scaling' }
+     * const result = await api.postTrainingBuilderPipeline({
+     *   name: 'example_pipeline',
+     *   pipeline_components: [
+     *     {
+     *       id: 'component_id1',
+     *       name: 'component_id_name1',
+     *       inputs: ['url'],
+     *       outputs: ['downloaded_data']
+     *     }
+     *   ],
+     *   input_path: [{ name: 'url', type: 'string' }],
+     *   output_path: [{ name: 'final_serving_output', type: 'artifact' }]
      * });
      * ```
      */
-    postTrainingBuilderPipelineComponent: async (data: unknown) => {
-      return request(`/training-builder-pipeline-components`, 'POST', data, {
+    postTrainingBuilderPipeline: async (data: unknown) => {
+      return request(`/training-builder-pipelines`, 'POST', data, {
         showToast: true,
       });
     },
 
     /**
-     * Deletes training builder pipeline component
+     * Deletes training builder pipeline
      *
-     * Removes a training builder pipeline component from the system.
+     * Removes a training builder pipeline from the system.
      *
-     * @param {number} pipeline_component_id - The ID of the pipeline component to delete
+     * @param {string} pipeline_id - The UUID of the pipeline to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteTrainingBuilderPipelineComponent(456);
+     * await api.deleteTrainingBuilderPipeline('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteTrainingBuilderPipelineComponent: async (
-      pipeline_component_id: number,
-    ) => {
+    deleteTrainingBuilderPipeline: async (pipeline_id: string) => {
+      return request(`/training-builder-pipelines/${pipeline_id}`, 'DELETE');
+    },
+
+    /**
+     * Runs federated learning pipeline with dataspace configuration
+     *
+     * Creates and triggers a federated learning (FL) pipeline using dataspace configuration.
+     *
+     * @param {Object} data - Federated pipeline creation data
+     * @param {string} data.name - Pipeline name
+     * @param {Array} data.pipeline_components - Pipeline components array
+     * @param {Object} data.dataspace_config - Dataspace configuration object
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
+     * @param {Array} data.data_products - Data products array
+     *
+     * @returns {Promise<Object>} Standard response containing pipeline run details and status
+     *
+     * @example
+     * ```typescript
+     * const result = await api.postTrainingBuilderPipelineDataspaceFederatedRun({
+     *   name: 'federated-pipeline',
+     *   pipeline_components: [...],
+     *   dataspace_config: {...},
+     *   input_path: [...],
+     *   output_path: [...],
+     *   data_products: [...]
+     * });
+     * ```
+     */
+    postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
       return request(
-        `/training-builder-pipeline-components/${pipeline_component_id}`,
-        'DELETE',
+        `/training-builder-pipelines/dataspace/federated/run`,
+        'POST',
+        data,
+        {
+          showToast: true,
+        },
       );
     },
     // ============================================================================

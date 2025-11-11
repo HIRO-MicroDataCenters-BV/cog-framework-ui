@@ -40,7 +40,10 @@
               <Badge v-if="data.status" :value="data.status" type="status" />
             </div>
             <div v-if="data.category" class="px-4 py-2">
-              <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
+              <p class="flex items-center gap-2 text-xs text-muted-foreground">
+                <Icon name="lucide:folder" class="w-3 h-3" />
+                {{ data.category }}
+              </p>
             </div>
           </SheetTrigger>
           <Handle
@@ -136,6 +139,19 @@ const onDrop = (event: DragEvent) => {
     const component = JSON.parse(data);
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
+    const existingLabels = nodes.value
+      .map((node) => node.data?.label as string)
+      .filter(Boolean);
+
+    const baseName = component.name || 'Component';
+    let counter = 1;
+    let newLabel = baseName;
+
+    while (existingLabels.includes(newLabel)) {
+      newLabel = `${baseName}_${counter}`;
+      counter++;
+    }
+
     const newNode: VueFlowNode = {
       id: `compoent-${component.id}-${Date.now()}`,
       type: 'default',
@@ -143,10 +159,7 @@ const onDrop = (event: DragEvent) => {
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       data: {
-        label: generateUniqueName([
-          ...nodes.value.map((node) => node.data.label),
-          component.name,
-        ]),
+        label: newLabel,
         status: component.status,
         category: component.category,
         component: component,
@@ -178,7 +191,6 @@ const onConnect = (connection: { source: string; target: string }) => {
     style: {
       stroke: color,
     },
-    type: 'smoothstep',
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: size,

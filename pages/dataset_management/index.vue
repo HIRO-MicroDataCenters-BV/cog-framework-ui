@@ -158,6 +158,7 @@ const columns = [
     :data-source="getDatasets"
     :tabs="tabs"
     :sortable-columns="['last_modified_time']"
+    :filterable-columns="['data_source_type']"
     class="flex-grow"
   />
 </template>

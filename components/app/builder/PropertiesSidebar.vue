@@ -40,9 +40,7 @@
           <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4 text-sm items-start">
               <div class="flex items-center gap-2 text-gray-500">
-                <Icon name="lucide:text" class="size-4" />{{
-                  $t('label.category')
-                }}<span></span>
+                <Icon name="lucide:folder" class="size-4" />
               </div>
               <div>{{ selectedNode.data?.component?.category }}</div>
             </div>
