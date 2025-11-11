@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
+import { Check } from 'lucide-vue-next';
 import type { Table } from '@tanstack/vue-table';
 import type { DataItem } from '~/types/table.types';
-import { Check } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -68,7 +68,11 @@ const filterOptions = computed<FilterOption[]>(() => {
 const syncSelectedValues = () => {
   const filters = props.table.getState().columnFilters;
   const columnFilter = filters.find((f) => f.id === props.columnId);
-  if (columnFilter && Array.isArray(columnFilter.value) && columnFilter.value.length > 0) {
+  if (
+    columnFilter &&
+    Array.isArray(columnFilter.value) &&
+    columnFilter.value.length > 0
+  ) {
     const filterValues = columnFilter.value.map(normalizeValue);
     selectedValues.value = new Set(filterValues);
   } else {
@@ -163,7 +167,9 @@ const isSelected = (value: string | number) => {
           <div class="flex items-center gap-2 w-full">
             <Checkbox
               :model-value="isSelected(option.value)"
-              @update:model-value="(checked) => toggleValue(option.value, checked)"
+              @update:model-value="
+                (checked) => toggleValue(option.value, checked)
+              "
               @click.stop
             >
               <template #default>
