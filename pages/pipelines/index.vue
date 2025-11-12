@@ -2,6 +2,8 @@
 import type { TableRowType } from '@/types/row.types';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { useApi } from '@/composables/api';
+import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
 
 const { t } = useI18n();
 
@@ -20,12 +22,28 @@ const baseUrl = page.value.section;
 const columns = [
   {
     id: 'run_id',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        { href: `${baseUrl}/${row.getValue('run_id')}` },
-        row.getValue('run_id'),
-      ),
+    size: 180,
+    minSize: 180,
+    maxSize: 180,
+    cell: ({ row }: { row: TableRowType }) => {
+      const runIdValue = row.getValue<string>('run_id');
+      const shortenedId = shortenUuid(runIdValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: runIdValue,
+        },
+        {
+          default: () =>
+            h(
+              'a',
+              { href: `${baseUrl}/${runIdValue}` },
+              shortenedId,
+            ),
+        },
+      );
+    },
   },
   {
     id: 'run_name',

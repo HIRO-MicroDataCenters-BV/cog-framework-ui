@@ -161,3 +161,19 @@ export function getDataTypeFromValue(value: number): DataTypeName | null {
   }
   return null;
 }
+
+/**
+ * Shortens UUID to a more readable format
+ * @param uuid - UUID string to shorten
+ * @returns Shortened UUID format (e.g., "842be4...9dba") or original string if too short
+ *
+ * @example
+ * ```typescript
+ * shortenUuid('842be490-7910-422a-97bb-a56ad10b9dba') // returns '842be4...9dba'
+ * shortenUuid('abc') // returns 'abc'
+ * ```
+ */
+export function shortenUuid(uuid: string): string {
+  if (!uuid || uuid.length < 12) return uuid;
+  return `${uuid.slice(0, 6)}...${uuid.slice(-6)}`;
+}

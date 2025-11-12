@@ -7,6 +7,8 @@ import type {
   TaskDetail,
   PipelineData,
 } from '~/types/builder.types';
+import { shortenUuid } from '~/utils';
+import CopyPaste from '~/components/app/CopyPaste.vue';
 
 const { setPage, page } = useApp();
 const { t } = useI18n();
@@ -449,6 +451,13 @@ onMounted(async () => {
                     {{ new Date(value).toLocaleString() }}
                   </span>
                   <span v-else-if="key === 'status'">{{ value }}</span>
+                  <CopyPaste
+                    v-else-if="key === 'run_id' || key === 'experiment_id'"
+                    :has-copy="true"
+                    :copy-text="String(value)"
+                  >
+                    {{ shortenUuid(String(value)) }}
+                  </CopyPaste>
                   <span v-else>{{ value }}</span>
                 </TableCell>
               </TableRow>

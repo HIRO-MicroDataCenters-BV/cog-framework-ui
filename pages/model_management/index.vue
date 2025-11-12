@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
 import { useApi } from '@/composables/api';
+import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
 const { getModels } = useApi();
@@ -15,7 +17,23 @@ const baseUrl = page.value.section;
 const columns = [
   {
     id: 'id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('id'),
+    size: 180,
+    minSize: 180,
+    maxSize: 180,
+    cell: ({ row }: { row: TableRowType }) => {
+      const idValue = row.getValue<string>('id');
+      const shortenedId = shortenUuid(idValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: idValue,
+        },
+        {
+          default: () => shortenedId,
+        },
+      );
+    },
   },
   {
     id: 'name',
