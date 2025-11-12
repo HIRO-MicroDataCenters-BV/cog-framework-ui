@@ -35,7 +35,8 @@ const columns = [
           copyText: runIdValue,
         },
         {
-          default: () => h('a', { href: `${baseUrl}/${runIdValue}` }, shortenedId),
+          default: () =>
+            h('a', { href: `${baseUrl}/${runIdValue}` }, shortenedId),
         },
       );
     },
