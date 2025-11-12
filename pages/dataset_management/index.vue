@@ -4,6 +4,7 @@ import type { TableRowType } from '@/types/row.types';
 import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
+import CopyPaste from '~/components/app/CopyPaste.vue';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
@@ -26,23 +27,12 @@ const baseUrl = page.value.section;
 
 const tabs = uselistTabs().value.dataset_management;
 
+const shortenUuid = (uuid: string): string => {
+  if (!uuid || uuid.length < 12) return uuid;
+  return `${uuid.slice(0, 6)}...${uuid.slice(-6)}`;
+};
+
 const columns = [
-  {
-    id: 'id',
-    cell: ({ row }: { row: TableRowType }) => {
-      const value = parseInt(row.getValue<string>('id'));
-      return h(
-        Badge,
-        {
-          value: 'id',
-          type: 'type',
-        },
-        {
-          default: () => `#${value}`,
-        },
-      );
-    },
-  },
   {
     id: 'dataset_name',
     cell: ({ row }: { row: TableRowType }) =>
@@ -51,6 +41,26 @@ const columns = [
         { href: `${baseUrl}/${row.getValue('id')}` },
         row.getValue('dataset_name'),
       ),
+  },
+  {
+    id: 'id',
+    size: 180,
+    minSize: 180,
+    maxSize: 180,
+    cell: ({ row }: { row: TableRowType }) => {
+      const idValue = row.getValue<string>('id');
+      const shortenedId = shortenUuid(idValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: idValue,
+        },
+        {
+          default: () => shortenedId,
+        },
+      );
+    },
   },
   {
     id: 'data_source_type',
@@ -102,7 +112,7 @@ const columns = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
-      const id = parseInt(row.getValue('id'));
+      const id = row.getValue<string>('id');
 
       return h(DropdownAction, {
         title: row.getValue('dataset_name') as string,

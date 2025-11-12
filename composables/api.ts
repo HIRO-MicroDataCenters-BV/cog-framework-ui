@@ -941,16 +941,16 @@ export const useApi = () => {
      *
      * Removes a specific dataset from the database using its ID.
      *
-     * @param {number} id - The ID of the dataset to delete
+     * @param {string} id - The UUID of the dataset to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetFile(123);
+     * await api.deleteDatasetFile('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetFile: async (id: number) => {
+    deleteDatasetFile: async (id: string) => {
       return request(`/datasets/file/${id}`, 'DELETE');
     },
     /**
@@ -1098,16 +1098,16 @@ export const useApi = () => {
      *
      * Removes a message broker from the system.
      *
-     * @param {number} id - The ID of the broker to delete
+     * @param {string} id - The UUID of the broker to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetBroker(123);
+     * await api.deleteDatasetBroker('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetBroker: async (id: number) => {
+    deleteDatasetBroker: async (id: string) => {
       return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
@@ -1185,16 +1185,16 @@ export const useApi = () => {
      *
      * Removes a topic from the system.
      *
-     * @param {number} id - The ID of the topic to delete
+     * @param {string} id - The UUID of the topic to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetTopic(456);
+     * await api.deleteDatasetTopic('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetTopic: async (id: number) => {
+    deleteDatasetTopic: async (id: string) => {
       return request(`/datasets/topic/${id}`, 'DELETE');
     },
 
@@ -1372,16 +1372,16 @@ export const useApi = () => {
      *
      * Removes a specific message from the system.
      *
-     * @param {number} id - The ID of the message to delete
+     * @param {string} id - The UUID of the message to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetMessage(789);
+     * await api.deleteDatasetMessage('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetMessage: async (id: number) => {
+    deleteDatasetMessage: async (id: string) => {
       return request(`/datasets/message/${id}`, 'DELETE');
     },
 
@@ -1390,16 +1390,16 @@ export const useApi = () => {
      *
      * Retrieves a specific dataset using its unique identifier.
      *
-     * @param {number} id - The ID of the dataset
+     * @param {string} id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing dataset information
      *
      * @example
      * ```typescript
-     * const dataset = await api.getDatasetById(123);
+     * const dataset = await api.getDatasetById('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    getDatasetById: async (id: number) => {
+    getDatasetById: async (id: string) => {
       if (mockEnabled) {
         return Promise.resolve(datasetsDetailsData);
       }
@@ -2174,25 +2174,23 @@ export const useApi = () => {
     /**
      * Gets training builder pipelines
      *
-     * Retrieves all available training builder pipelines with optional name filter.
+     * Retrieves all available training builder pipelines filtered by name.
      *
-     * @param {Object} [params={}] - Query parameters
-     * @param {string} [params.name] - Optional name filter for pipeline
+     * @param {Object} params - Query parameters
+     * @param {string} params.name - Name filter for pipeline (required)
      *
      * @returns {Promise<Object>} Standard response containing pipeline components
      *
      * @example
      * ```typescript
-     * const pipelines = await api.getTrainingBuilderPipelines();
      * const pipelines = await api.getTrainingBuilderPipelines({ name: 'my-pipeline' });
      * ```
      */
-    getTrainingBuilderPipelines: async (params: { name?: string } = {}) => {
+    getTrainingBuilderPipelines: async (params: { name: string }) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const query = q ? `?${q}` : '';
-      return request(`/training-builder-pipelines${query}`);
+      return request(`/training-builder-pipeline?${q}`);
     },
 
     /**
@@ -2226,7 +2224,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
-      return request(`/training-builder-pipelines`, 'POST', data, {
+      return request(`/training-builder-pipeline`, 'POST', data, {
         showToast: true,
       });
     },
@@ -2246,7 +2244,7 @@ export const useApi = () => {
      * ```
      */
     deleteTrainingBuilderPipeline: async (pipeline_id: string) => {
-      return request(`/training-builder-pipelines/${pipeline_id}`, 'DELETE');
+      return request(`/training-builder-pipeline/${pipeline_id}`, 'DELETE');
     },
 
     /**
