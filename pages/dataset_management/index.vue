@@ -5,6 +5,7 @@ import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
@@ -26,11 +27,6 @@ setPage({
 const baseUrl = page.value.section;
 
 const tabs = uselistTabs().value.dataset_management;
-
-const shortenUuid = (uuid: string): string => {
-  if (!uuid || uuid.length < 12) return uuid;
-  return `${uuid.slice(0, 6)}...${uuid.slice(-6)}`;
-};
 
 const columns = [
   {
