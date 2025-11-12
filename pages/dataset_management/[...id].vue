@@ -123,7 +123,7 @@
 
 <script lang="ts" setup>
 import { getDataTypeFromValue, DATA_TYPE_MAPPING } from '~/utils';
-import { CopyPaste } from '~/components/app/copy-paste';
+import CopyPaste from '~/components/app/CopyPaste.vue';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
@@ -136,7 +136,7 @@ const {
   getDatasetMessageDetails,
 } = useApi();
 const { setPage, page } = useApp();
-const id = computed(() => parseInt(route.params.id[0]));
+const id = computed(() => route.params.id[0]);
 const content = ref();
 const additional = ref();
 const type = ref();

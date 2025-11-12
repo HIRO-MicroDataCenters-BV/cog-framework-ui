@@ -163,7 +163,9 @@ const getFilterColumnName = (columnId: string) => {
 };
 
 const getAutoColumn = (searchValue: string): string => {
-  if (/^\d+$/.test(searchValue)) {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(searchValue)) {
     return 'id';
   }
   return 'name';
@@ -398,6 +400,9 @@ const getColumns = (list: TableColumn[]) => {
         isSortable || isFilterable ? headerContent : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
+      size: item.size,
+      minSize: item.minSize,
+      maxSize: item.maxSize,
       filterFn: (row: unknown, columnId: string) => {
         const columnFilter = columnFilters.value.find((f) => f.id === columnId);
         if (
@@ -789,7 +794,12 @@ defineExpose({ fetchData });
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="border-l border-r border-border"
+              :class="[
+                'border-l border-r border-border',
+                header.column.id === 'id'
+                  ? 'w-[180px] min-w-[180px] max-w-[180px]'
+                  : '',
+              ]"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -809,7 +819,12 @@ defineExpose({ fetchData });
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
-                  class="border-l border-r border-border py-2 px-4"
+                  :class="[
+                    'border-l border-r border-border py-2 px-4',
+                    cell.column.id === 'id'
+                      ? 'w-[180px] min-w-[180px] max-w-[180px]'
+                      : '',
+                  ]"
                 >
                   <FlexRender
                     :render="cell.column.columnDef.cell"
