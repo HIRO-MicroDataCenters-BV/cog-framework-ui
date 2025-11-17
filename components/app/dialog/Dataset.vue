@@ -78,6 +78,9 @@ const actionLabels = getDatasetActionLabels(t);
 
 const formSteps = getDatasetFormSteps(t);
 
+// Инициализация composable на верхнем уровне setup функции
+const { submitDatasetForm } = useDatasetForm();
+
 const handleClose = async () => {
   await emit('on-close');
   currentStep.value = 0;
@@ -102,12 +105,13 @@ const onSubmit = async (values: FormValues) => {
   console.log('onSubmit', values);
   isSubmit.value = false;
   try {
-    const { submitDatasetForm } = useDatasetForm();
     const response = await submitDatasetForm(values);
-    emit('on-close');
-
+    if (response) {
+      emit('on-close');
+    }
     return response;
-  } catch (_) {
+  } catch (error) {
+    console.error('Error submitting dataset form:', error);
     currentStep.value = 0;
     return undefined;
   }
