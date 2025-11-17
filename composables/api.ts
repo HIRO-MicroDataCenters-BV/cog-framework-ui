@@ -145,7 +145,7 @@ export const useApi = () => {
       } else {
         // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
         if (isModifyingRequest && showToast) {
-          const successMessage = data.message || 'operation_completed';
+          const successMessage = 'operation_completed';
           toaster.show('success', successMessage);
         }
       }
