@@ -13,10 +13,11 @@ import type {
 type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
 
 export const useRegisterFileDataset = () => {
+  const { postDatasetFile } = useApi();
+
   const registerFileDataset = async (
     values: FileDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { postDatasetFile } = useApi();
     const files = values.source_settings?.dataset_file
       ? [values.source_settings.dataset_file]
       : [];
@@ -25,14 +26,13 @@ export const useRegisterFileDataset = () => {
       throw new Error('error.no_file_selected');
     }
 
-    const data: FileDatasetRegisterParams = {
+    return await postDatasetFile({
       files,
       name: values.metadata?.name || '',
       dataset_type: 2,
       description: values.metadata?.description || '',
-    };
-
-    return await postDatasetFile(data);
+      id: 0, // Not used by postDatasetFile, but required by type
+    });
   };
 
   return {
@@ -41,10 +41,11 @@ export const useRegisterFileDataset = () => {
 };
 
 export const useRegisterTableDataset = () => {
+  const { postDatasetTable } = useApi();
+
   const registerTableDataset = async (
     values: TableDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { postDatasetTable } = useApi();
     const data: TableDatasetRegisterParams = {
       dataset_type: 0,
       name: values.metadata?.name || '',
@@ -63,11 +64,11 @@ export const useRegisterTableDataset = () => {
 };
 
 export const useRegisterStreamDataset = () => {
+  const { postDatasetBroker } = useApi();
+
   const registerStreamDataset = async (
     values: StreamDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const { postDatasetBroker } = useApi();
-
     const data: StreamDatasetRegisterParams = {
       dataset_type: 0,
       dataset_name: values.metadata?.name || '',
@@ -88,6 +89,7 @@ export const useRegisterStreamDataset = () => {
 };
 
 export const useDatasetForm = () => {
+  // Инициализация всех composables на верхнем уровне
   const { registerFileDataset } = useRegisterFileDataset();
   const { registerTableDataset } = useRegisterTableDataset();
   const { registerStreamDataset } = useRegisterStreamDataset();
@@ -95,32 +97,30 @@ export const useDatasetForm = () => {
   const submitDatasetForm = async (
     values: DatasetFormValues,
   ): Promise<DatasetRegisterResponse | undefined> => {
-    const toaster = useToaster();
+    if (!values.type) {
+      throw new Error('error.dataset_type_required');
+    }
+
     try {
       let res: DatasetRegisterResponse;
 
       switch (values.type) {
         case 'file':
-          res = await registerFileDataset(values);
+          res = await registerFileDataset(values as FileDatasetValues);
           break;
         case 'table':
-          res = await registerTableDataset(values);
+          res = await registerTableDataset(values as TableDatasetValues);
           break;
         case 'data_stream':
-          res = await registerStreamDataset(values);
+          res = await registerStreamDataset(values as StreamDatasetValues);
           break;
         default:
-          throw new Error(`error.unknown_dataset_type`);
-      }
-      if (res && 'data' in res && res.data) {
-        toaster.show('success', 'dataset_added');
+          throw new Error(`error.unknown_dataset_type: ${values.type}`);
       }
 
       return res;
     } catch (error) {
-      console.log('error');
-      console.log(error);
-      toaster.show('error', 'dataset_add_failed');
+      console.error('Error in submitDatasetForm:', error);
       throw error;
     }
   };
