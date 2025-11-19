@@ -674,10 +674,10 @@ const clearAllColumnFilters = () => {
 const add = () => {
   const section = page.value.section;
   switch (section) {
-    case 'dataset_management':
+    case 'datasets':
       openAddDataset.value = true;
       break;
-    case 'model_management':
+    case 'models':
       openAddModel.value = true;
       break;
     case 'pipelines':

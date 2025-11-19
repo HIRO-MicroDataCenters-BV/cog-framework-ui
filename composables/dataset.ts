@@ -89,7 +89,6 @@ export const useRegisterStreamDataset = () => {
 };
 
 export const useDatasetForm = () => {
-  // Инициализация всех composables на верхнем уровне
   const { registerFileDataset } = useRegisterFileDataset();
   const { registerTableDataset } = useRegisterTableDataset();
   const { registerStreamDataset } = useRegisterStreamDataset();
