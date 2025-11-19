@@ -106,6 +106,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { page } = useApp();
+const menu = uselistMenus();
 
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
@@ -314,6 +315,11 @@ const getValueLabel = (columnId: string, value: string | number): string => {
     }
   }
   return String(value);
+};
+
+const getSectionIcon = (section: string | undefined) => {
+  if (!section) return null;
+  return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
 const getColumns = (list: TableColumn[]) => {
@@ -716,6 +722,7 @@ defineExpose({ fetchData });
         <div class="pb-4 flex justify-between gap-2">
           <div>
             <h2 class="text-2xl font-medium flex items-center gap-2">
+              <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
               {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
               <Button
                 v-if="hasActiveColumnFilters"

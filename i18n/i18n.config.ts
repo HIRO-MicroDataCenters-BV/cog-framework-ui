@@ -52,6 +52,9 @@ export default defineI18nConfig(() => ({
         project_name: 'Cognitive Engine',
       },
       title: {
+        datasets: 'Datasets',
+        models: 'Models',
+        pipelines: 'Pipelines',
         platform: 'Platform',
         actions: 'Actions',
         select_filter: 'Select Filter',
@@ -65,7 +68,6 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
         are_you_sure: 'Are you sure?',
         run_details: 'Run Details',
-        pipelines: 'Pipelines',
       },
       alert: {
         delete_dataset:
@@ -192,6 +194,7 @@ export default defineI18nConfig(() => ({
         data_stream: 'Ingest real-time data from a streaming source.',
       },
       placeholder: {
+        dataset_type: 'Select Dataset Type',
         name: 'Enter a name',
         version: 'Version',
         search: 'Search...',
@@ -252,8 +255,8 @@ export default defineI18nConfig(() => ({
         delete_broker: 'Delete Broker',
         delete_message: 'Delete Message',
         delete_file: 'Delete File',
-        add_dataset_management: 'Add Dataset',
-        add_model_management: 'Add Model',
+        add_datasets: 'Add Dataset',
+        add_models: 'Add Model',
         add_training_builder: 'Add Training Builder',
         add_runs: 'Add Runs',
         add_model_validation: 'Add Model Validation',
@@ -328,6 +331,7 @@ export default defineI18nConfig(() => ({
         pipelines: 'Pipelines',
         pipelines_builder: 'Pipelines',
         datasets: 'Datasets',
+        models: 'Models',
       },
       step: {
         type: 'Type',
