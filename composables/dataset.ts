@@ -29,7 +29,7 @@ export const useRegisterFileDataset = () => {
     return await postDatasetFile({
       files,
       name: values.metadata?.name || '',
-      dataset_type: 2,
+      dataset_type: values.dataset_type || 0,
       description: values.metadata?.description || '',
       id: 0, // Not used by postDatasetFile, but required by type
     });
@@ -47,7 +47,7 @@ export const useRegisterTableDataset = () => {
     values: TableDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
     const data: TableDatasetRegisterParams = {
-      dataset_type: 0,
+      dataset_type: values.dataset_type || 0,
       name: values.metadata?.name || '',
       description: values.metadata?.description || '',
       db_url: values.source_settings?.db_url || '',
@@ -70,7 +70,7 @@ export const useRegisterStreamDataset = () => {
     values: StreamDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
     const data: StreamDatasetRegisterParams = {
-      dataset_type: 0,
+      dataset_type: values.dataset_type || 0,
       dataset_name: values.metadata?.name || '',
       description: values.metadata?.description || '',
       broker_name: values.source_settings?.broker_name || '',

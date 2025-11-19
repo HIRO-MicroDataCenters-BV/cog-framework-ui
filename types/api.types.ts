@@ -1,6 +1,7 @@
-import type { FormValues } from './form';
+import type { FormValues } from './form.types';
 
 export interface FileDatasetValues extends FormValues {
+  dataset_type?: number;
   metadata?: {
     name?: string;
     description?: string;
@@ -11,6 +12,7 @@ export interface FileDatasetValues extends FormValues {
 }
 
 export interface TableDatasetValues extends FormValues {
+  dataset_type?: number;
   metadata?: {
     name?: string;
     description?: string;
@@ -23,6 +25,7 @@ export interface TableDatasetValues extends FormValues {
 }
 
 export interface StreamDatasetValues extends FormValues {
+  dataset_type?: number;
   metadata?: {
     name?: string;
     description?: string;

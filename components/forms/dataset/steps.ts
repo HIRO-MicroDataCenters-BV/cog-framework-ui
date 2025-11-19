@@ -51,6 +51,26 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
             },
           ],
         },
+        {
+          fields: [
+            {
+              type: 'select',
+              name: 'dataset_type',
+              label: t('label.dataset_type'),
+              placeholder: t('placeholder.dataset_type'),
+              options: [
+                {
+                  value: 0,
+                  label: t('label.train'),
+                },
+                {
+                  value: 1,
+                  label: t('label.inference'),
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
     {
