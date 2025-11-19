@@ -9,7 +9,7 @@ const { getModels } = useApi();
 const { setPage, page } = useApp();
 
 setPage({
-  section: 'model_management',
+  section: 'models',
 });
 
 const baseUrl = page.value.section;

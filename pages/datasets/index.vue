@@ -21,7 +21,7 @@ const {
 } = useApi();
 
 setPage({
-  section: 'dataset_management',
+  section: 'datasets',
 });
 
 const baseUrl = page.value.section;
