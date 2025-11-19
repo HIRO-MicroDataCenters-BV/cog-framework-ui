@@ -75,7 +75,6 @@ const actionLabels = getModelActionLabels(t);
 
 const formSteps = getModelFormSteps(t);
 
-// Инициализация composable на верхнем уровне setup функции
 const { submitModelForm } = useModelForm();
 
 const handleClose = async () => {
@@ -103,8 +102,9 @@ const onSubmit = async (values: FormValues) => {
   isSubmit.value = false;
   try {
     const response = await submitModelForm(values);
-    if (response) {
+    if (response && !('detail' in response)) {
       emit('on-close');
+      currentStep.value = 0;
     }
     return response;
   } catch (error) {
