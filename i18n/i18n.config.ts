@@ -364,7 +364,7 @@ export default defineI18nConfig(() => ({
         register_date_time: 'Created',
         version: 'Version',
         last_modified_time: 'Updated',
-        register_date: 'Registred Date',
+        register_date: 'Created',
         dataset_name: 'Name',
         data_source_type: 'Type',
         train_and_inference_type: 'Train and Inference Type',
@@ -376,6 +376,7 @@ export default defineI18nConfig(() => ({
         duration: 'Duration',
         created_by: 'Created By',
         user_id: 'Owner',
+        register_user_id: 'Author',
       },
       status: {
         completed: 'Completed',
