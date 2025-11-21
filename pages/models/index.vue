@@ -16,7 +16,15 @@ setPage({
 const baseUrl = page.value.section;
 
 const columns = [
-  /*
+  {
+    id: 'name',
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'a',
+        { href: `${baseUrl}/${row.getValue('id')}` },
+        row.getValue('name'),
+      ),
+  },
   {
     id: 'id',
     size: 180,
@@ -36,16 +44,6 @@ const columns = [
         },
       );
     },
-  },
-  */
-  {
-    id: 'name',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        { href: `${baseUrl}/${row.getValue('id')}` },
-        row.getValue('name'),
-      ),
   },
   {
     id: 'version',
