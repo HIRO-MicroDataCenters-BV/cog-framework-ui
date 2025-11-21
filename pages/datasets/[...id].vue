@@ -467,7 +467,7 @@ onMounted(async () => {
         content.value.data_source_type as number,
       );
       setPage({
-        section: 'dataset_management',
+        section: 'datasets',
         title: content.value.dataset_name as string,
         subtitle: '',
       });

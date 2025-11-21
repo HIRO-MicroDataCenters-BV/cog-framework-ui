@@ -246,7 +246,7 @@ export const useApi = () => {
      *
      * Updates the information of a specified model in the database.
      *
-     * @param {number} id - The ID of the model to update
+     * @param {string} id - The UUID of the model to update
      * @param {Object} data - Updated model information
      * @param {string} [data.name] - Updated model name
      * @param {string} [data.type] - Updated model type
@@ -256,13 +256,13 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const updated = await api.patchModel(123, {
+     * const updated = await api.patchModel('123e4567-e89b-12d3-a456-426614174000', {
      *   name: 'updated-model-name',
      *   description: 'Updated description'
      * });
      * ```
      */
-    patchModel: async (id: number, data: unknown) => {
+    patchModel: async (id: string, data: unknown) => {
       return request(`/models/${id}`, 'PATCH', data);
     },
 
@@ -271,16 +271,16 @@ export const useApi = () => {
      *
      * Removes the specified model from the database.
      *
-     * @param {number} id - The ID of the model to delete
+     * @param {string} id - The UUID of the model to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteModel(123);
+     * await api.deleteModel('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteModel: async (id: number) => {
+    deleteModel: async (id: string) => {
       return request(`/models/${id}`, 'DELETE');
     },
     /**
@@ -289,16 +289,16 @@ export const useApi = () => {
      * Fetches detailed information about a model including its associations with datasets
      * and model files using the model's unique identifier.
      *
-     * @param {number} id - The ID of the model to retrieve
+     * @param {string} id - The UUID of the model to retrieve
      *
      * @returns {Promise<Object>} Standard response containing the model and its associated details
      *
      * @example
      * ```typescript
-     * const modelDetails = await api.getModelAssociationsById(123);
+     * const modelDetails = await api.getModelAssociationsById('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getModelAssociationsById: async (id: number) => {
+    getModelAssociationsById: async (id: string) => {
       return request(`/models/${id}/associations`);
     },
 
@@ -362,18 +362,18 @@ export const useApi = () => {
      * Retrieves information about model files based on model ID or name.
      *
      * @param {Object} [params={}] - Query parameters
-     * @param {number} [params.model_id] - Model ID
+     * @param {string} [params.model_id] - Model UUID
      * @param {string} [params.model_name] - Model name
      *
      * @returns {Promise<Object>} Standard response containing model file information
      *
      * @example
      * ```typescript
-     * const fileInfo = await api.getModelFile({ model_id: 123 });
+     * const fileInfo = await api.getModelFile({ model_id: '123e4567-e89b-12d3-a456-426614174000' });
      * ```
      */
     getModelFile: async (
-      params: { model_id?: number; model_name?: string } = {},
+      params: { model_id?: string; model_name?: string } = {},
     ) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
@@ -427,16 +427,16 @@ export const useApi = () => {
      * Retrieves detailed information about a specific model file.
      *
      * @param {string} file_name - The name of the file
-     * @param {number} model_id - The ID of the model
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response containing file details
      *
      * @example
      * ```typescript
-     * const details = await api.getModelFileDetails('model.pkl', 123);
+     * const details = await api.getModelFileDetails('model.pkl', '123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getModelFileDetails: async (file_name: string, model_id: number) => {
+    getModelFileDetails: async (file_name: string, model_id: string) => {
       return request(`/models/file/${file_name}/details?model_id=${model_id}`);
     },
 
@@ -634,11 +634,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const details = await api.getModelDetails({ id: 123 });
+     * const details = await api.getModelDetails({ id: '123e4567-e89b-12d3-a456-426614174000' });
      * const detailsByName = await api.getModelDetails({ name: 'my-model' });
      * ```
      */
-    getModelDetails: async (params: { id?: number; name?: string } = {}) => {
+    getModelDetails: async (params: { id?: string; name?: string } = {}) => {
       if (params.id) {
         return request(`/models/${params.id}/associations`);
       }
@@ -731,14 +731,14 @@ export const useApi = () => {
      *
      * Retrieves metadata for a specific model file.
      *
-     * @param {string} id - The ID of the model
+     * @param {string} id - The UUID of the model
      * @param {number} file_id - The ID of the file
      *
      * @returns {Promise<Object>} Standard response containing file metadata
      *
      * @example
      * ```typescript
-     * const metadata = await api.getModelFileMetadata('123', 456);
+     * const metadata = await api.getModelFileMetadata('123e4567-e89b-12d3-a456-426614174000', 456);
      * ```
      */
     getModelFileMetadata: async (id: string, file_id: number) => {
@@ -865,7 +865,7 @@ export const useApi = () => {
      * and uploading a new file to replace the existing one.
      *
      * @param {DatasetFileUploadParams} params - Dataset update parameters
-     * @param {number} params.id - The ID of the dataset to be updated
+     * @param {string} params.id - The UUID of the dataset to be updated
      * @param {File[]} params.files - The new file containing the dataset
      * @param {string} params.name - The updated name for the dataset
      * @param {number} params.dataset_type - Dataset type: 0 (train), 1 (inference), or 2 (both)
@@ -876,7 +876,7 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const result = await api.putDatasetFile({
-     *   id: 123,
+     *   id: '123e4567-e89b-12d3-a456-426614174000',
      *   files: [newFile],
      *   name: 'updated-dataset',
      *   dataset_type: 0,
@@ -893,7 +893,7 @@ export const useApi = () => {
     }: DatasetFileUploadParams) => {
       const data = new FormData();
       files.forEach((file) => data.append('files', file));
-      data.append('id', id.toString());
+      data.append('id', id);
       data.append('name', name);
       data.append('dataset_type', dataset_type.toString());
       if (description) data.append('description', description);
@@ -958,17 +958,17 @@ export const useApi = () => {
      *
      * Establishes a relationship between a dataset and a model.
      *
-     * @param {number} dataset_id - The ID of the dataset
-     * @param {number} model_id - The ID of the model
+     * @param {string} dataset_id - The UUID of the dataset
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response indicating successful linking
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetModelLink(123, 456);
+     * const result = await api.postDatasetModelLink('123e4567-e89b-12d3-a456-426614174000', '456e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    postDatasetModelLink: async (dataset_id: number, model_id: number) => {
+    postDatasetModelLink: async (dataset_id: string, model_id: string) => {
       return request(`/datasets/${dataset_id}/models/${model_id}/link`, 'POST');
     },
 
@@ -977,17 +977,17 @@ export const useApi = () => {
      *
      * Removes the relationship between a dataset and a model.
      *
-     * @param {number} dataset_id - The ID of the dataset
-     * @param {number} model_id - The ID of the model
+     * @param {string} dataset_id - The UUID of the dataset
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response indicating successful unlinking
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetModelUnlink(123, 456);
+     * const result = await api.postDatasetModelUnlink('123e4567-e89b-12d3-a456-426614174000', '456e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    postDatasetModelUnlink: async (dataset_id: number, model_id: number) => {
+    postDatasetModelUnlink: async (dataset_id: string, model_id: string) => {
       return request(
         `/datasets/${dataset_id}/models/${model_id}/unlink`,
         'POST',
@@ -1260,16 +1260,16 @@ export const useApi = () => {
      *
      * Retrieves message information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing message details
      *
      * @example
      * ```typescript
-     * const messages = await api.getDatasetMessageDetails(123);
+     * const messages = await api.getDatasetMessageDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetMessageDetails: async (dataset_id: number) => {
+    getDatasetMessageDetails: async (dataset_id: string) => {
       if (mockEnabled) {
         return Promise.resolve(datasetsDetailsStreamData);
       }
@@ -1281,16 +1281,16 @@ export const useApi = () => {
      *
      * Retrieves file information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing file details
      *
      * @example
      * ```typescript
-     * const files = await api.getDatasetFileDetails(123);
+     * const files = await api.getDatasetFileDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetFileDetails: async (dataset_id: number) => {
+    getDatasetFileDetails: async (dataset_id: string) => {
       if (mockEnabled) {
         return Promise.resolve(datasetsDetailsFileData);
       }
@@ -1302,16 +1302,16 @@ export const useApi = () => {
      *
      * Retrieves table information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing table details
      *
      * @example
      * ```typescript
-     * const tables = await api.getDatasetTableDetails(123);
+     * const tables = await api.getDatasetTableDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetTableDetails: async (dataset_id: number) => {
+    getDatasetTableDetails: async (dataset_id: string) => {
       if (mockEnabled) {
         return Promise.resolve(datasetsDetailsTableData);
       }
@@ -1323,17 +1323,17 @@ export const useApi = () => {
      *
      * Retrieves records from a dataset table with optional limit.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [limit] - Optional limit on number of records
      *
      * @returns {Promise<Object>} Standard response containing table records
      *
      * @example
      * ```typescript
-     * const records = await api.getDatasetTableRecords(123, 100);
+     * const records = await api.getDatasetTableRecords('123e4567-e89b-12d3-a456-426614174000', 100);
      * ```
      */
-    getDatasetTableRecords: async (dataset_id: number, limit?: number) => {
+    getDatasetTableRecords: async (dataset_id: string, limit?: number) => {
       const params = limit ? `?limit=${limit}` : '';
       return request(`/datasets/${dataset_id}/table/records${params}`);
     },
@@ -1343,7 +1343,7 @@ export const useApi = () => {
      *
      * Retrieves data from a dataset topic with optional filtering.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [no_of_records] - Number of records to retrieve
      * @param {'earliest'|'latest'} [offset_reset] - Offset reset strategy
      *
@@ -1351,11 +1351,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const data = await api.getDatasetTopicData(123, 50, 'latest');
+     * const data = await api.getDatasetTopicData('123e4567-e89b-12d3-a456-426614174000', 50, 'latest');
      * ```
      */
     getDatasetTopicData: async (
-      dataset_id: number,
+      dataset_id: string,
       no_of_records?: number,
       offset_reset?: 'earliest' | 'latest',
     ) => {
@@ -1411,7 +1411,7 @@ export const useApi = () => {
      *
      * Retrieves subject-specific data from a dataset with various filtering options.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [no_of_records] - Number of records to retrieve
      * @param {'all'|'last'|'new'|'by_start_sequence'|'by_start_time'|'last_per_subject'} [offset_reset] - Offset reset strategy
      *
@@ -1419,11 +1419,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const data = await api.getDatasetSubjectData(123, 100, 'last_per_subject');
+     * const data = await api.getDatasetSubjectData('123e4567-e89b-12d3-a456-426614174000', 100, 'last_per_subject');
      * ```
      */
     getDatasetSubjectData: async (
-      dataset_id: number,
+      dataset_id: string,
       no_of_records?: number,
       offset_reset?:
         | 'all'
@@ -1473,20 +1473,20 @@ export const useApi = () => {
      *
      * Retrieves a specific Prometheus dataset by ID.
      *
-     * @param {number} id - The ID of the Prometheus dataset
+     * @param {string} id - The UUID of the Prometheus dataset
      *
      * @returns {Promise<Object>} Standard response containing Prometheus dataset information
      *
      * @example
      * ```typescript
-     * const dataset = await api.getDatasetPrometheus(123);
+     * const dataset = await api.getDatasetPrometheus('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetPrometheus: async (id: number) => {
+    getDatasetPrometheus: async (id: string) => {
       if (mockEnabled) {
         return Promise.resolve(datasetsDetailsPrometheusData);
       }
-      return request(`/datasets/prometheus/${id}`);
+      return request(`/datasets/${id}/prometheus`);
     },
     // ============================================================================
     // VALIDATION API
