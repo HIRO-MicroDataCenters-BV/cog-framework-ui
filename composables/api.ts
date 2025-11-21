@@ -20,6 +20,8 @@ import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.promethe
 import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
 import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
+import modelsDetailsData from '@/mocks/get.models.details.json';
+import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
 import runsData from '@/mocks/get.runs.json';
 import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
@@ -299,6 +301,9 @@ export const useApi = () => {
      * ```
      */
     getModelAssociationsById: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsDetailsAssociationsData);
+      }
       return request(`/models/${id}/associations`);
     },
 
@@ -663,6 +668,9 @@ export const useApi = () => {
      * ```
      */
     getModelById: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsDetailsData);
+      }
       return request(`/models/${id}`);
     },
 

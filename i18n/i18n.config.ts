@@ -98,6 +98,7 @@ export default defineI18nConfig(() => ({
         },
       },
       label: {
+        id: 'ID',
         METRIC_FEATURES: 'Metric Features',
         TARGET_NAMESPACE: 'Target Namespace',
         QUERY_DURATION: 'Query Duration',

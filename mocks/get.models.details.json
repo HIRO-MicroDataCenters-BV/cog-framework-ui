@@ -1,0 +1,15 @@
+{
+  "status_code": 200,
+  "message": "Model retrieved successfully.",
+  "data": {
+    "name": "FedSCVI_Model",
+    "type": "pytorch",
+    "description": "log_model",
+    "id": "e655d2c1-c2b5-459e-9652-c3125312fb74",
+    "version": 29,
+    "last_modified_time": "2025-11-14T08:10:50.998932",
+    "register_date": "2025-11-14T08:08:12.274000",
+    "register_user_id": "admin@hiro.com",
+    "last_modified_user_id": "admin@hiro.com"
+  }
+}
