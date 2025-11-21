@@ -129,8 +129,8 @@ export interface DatasetQueryParams {
  * Model file upload parameters
  */
 export interface ModelFileUploadParams {
-  /** Model ID */
-  id: number;
+  /** Model UUID */
+  id: string;
   /** Files to upload */
   files: File[];
   /** File type: 0 - Model Policy File, 1 - Model File */
@@ -143,8 +143,8 @@ export interface ModelFileUploadParams {
  * Dataset file upload parameters
  */
 export interface DatasetFileUploadParams {
-  /** Dataset ID */
-  id: number;
+  /** Dataset UUID */
+  id: string;
   /** Files to upload */
   files: File[];
   /** Dataset name */

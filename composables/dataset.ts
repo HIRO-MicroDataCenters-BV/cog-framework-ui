@@ -31,7 +31,7 @@ export const useRegisterFileDataset = () => {
       name: values.metadata?.name || '',
       dataset_type: values.dataset_type || 0,
       description: values.metadata?.description || '',
-      id: 0, // Not used by postDatasetFile, but required by type
+      id: '', // Not used by postDatasetFile, but required by type
     });
   };
 
