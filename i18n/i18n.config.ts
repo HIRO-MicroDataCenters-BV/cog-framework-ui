@@ -99,6 +99,7 @@ export default defineI18nConfig(() => ({
       },
       label: {
         id: 'ID',
+        train_and_inference: 'Train and Inference',
         METRIC_FEATURES: 'Metric Features',
         TARGET_NAMESPACE: 'Target Namespace',
         QUERY_DURATION: 'Query Duration',
@@ -165,7 +166,6 @@ export default defineI18nConfig(() => ({
         fields: 'Fields',
         train: 'Train',
         inference: 'Inference',
-        train_and_inference: 'Train and Inference',
         register_date_time: 'Register Date Time',
         train_and_inference_type: 'Train and Inference Type',
         user_id: 'User ID',

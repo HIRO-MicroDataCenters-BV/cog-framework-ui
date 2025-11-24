@@ -21,6 +21,15 @@ const baseUrl = page.value.section;
 
 const columns = [
   {
+    id: 'run_name',
+    cell: ({ row }: { row: TableRowType }) =>
+      h(
+        'a',
+        { href: `${baseUrl}/${row.getValue('run_id')}` },
+        row.getValue('run_name') || row.getValue('run_id'),
+      ),
+  },
+  {
     id: 'run_id',
     size: 180,
     minSize: 180,
@@ -40,15 +49,6 @@ const columns = [
         },
       );
     },
-  },
-  {
-    id: 'run_name',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        { href: `${baseUrl}/${row.getValue('run_id')}` },
-        row.getValue('run_name') || row.getValue('run_id'),
-      ),
   },
   {
     id: 'start_time',
