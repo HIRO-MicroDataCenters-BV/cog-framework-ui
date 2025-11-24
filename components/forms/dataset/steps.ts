@@ -67,6 +67,10 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
                   value: 1,
                   label: t('label.inference'),
                 },
+                {
+                  value: 2,
+                  label: t('label.train_and_inference'),
+                },
               ],
             },
           ],
