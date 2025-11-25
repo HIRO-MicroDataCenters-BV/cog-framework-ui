@@ -1076,24 +1076,22 @@ export const useApi = () => {
      * Registers a new dataset broker
      *
      * Creates a new message broker for dataset streaming.
+     * This is the first step in registering a stream dataset.
+     * Returns broker_id that should be used for topic registration.
      *
      * @param {Object} data - Broker registration data
      * @param {string} data.name - Broker name
-     * @param {string} data.host - Broker host
-     * @param {number} data.port - Broker port
-     * @param {string} data.username - Broker username
-     * @param {string} data.password - Broker password
+     * @param {string} data.ip - Broker IP address
+     * @param {number} data.port - Broker port number
      *
-     * @returns {Promise<Object>} Standard response containing broker information
+     * @returns {Promise<Object>} Standard response containing broker information with broker_id
      *
      * @example
      * ```typescript
      * const result = await api.postDatasetBroker({
-     *   name: 'kafka-broker',
-     *   host: 'localhost',
-     *   port: 9092,
-     *   username: 'user',
-     *   password: 'pass'
+     *   name: 'nats-broker',
+     *   ip: '10.43.245.13',
+     *   port: 4222
      * });
      * ```
      */
@@ -1145,21 +1143,21 @@ export const useApi = () => {
      * Registers a new dataset topic
      *
      * Creates a new topic for dataset streaming on a specific broker.
+     * This is the second step in registering a stream dataset (after broker registration).
+     * Returns topic_id that should be used for message/dataset registration.
      *
-     * @param {number} broker_id - The ID of the broker
+     * @param {number} broker_id - The ID of the broker (obtained from postDatasetBroker)
      * @param {Object} data - Topic registration data
      * @param {string} data.name - Topic name
-     * @param {number} data.partitions - Number of partitions
-     * @param {number} data.replication_factor - Replication factor
+     * @param {string} [data.schema] - Optional topic schema (JSON string)
      *
-     * @returns {Promise<Object>} Standard response containing topic information
+     * @returns {Promise<Object>} Standard response containing topic information with topic_id
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetTopic(123, {
-     *   name: 'sensor-data',
-     *   partitions: 3,
-     *   replication_factor: 1
+     * const result = await api.postDatasetTopic(3, {
+     *   name: 'nats-1',
+     *   schema: '{"feature_list": {...}}'
      * });
      * ```
      */
@@ -1241,21 +1239,26 @@ export const useApi = () => {
     /**
      * Registers dataset message
      *
-     * Sends a message to a dataset topic.
+     * Registers a dataset that uses a broker and topic (message stream).
+     * This should be called after registering the broker and topic.
      *
-     * @param {Object} data - Message data
-     * @param {string} data.topic_name - Topic name
-     * @param {string} data.message - Message content
-     * @param {Object} [data.headers] - Optional message headers
+     * @param {Object} data - Dataset message registration data
+     * @param {number} data.dataset_type - Dataset type (0 - train, 1 - inference, 2 - both)
+     * @param {string} data.name - Dataset name
+     * @param {string} data.description - Dataset description
+     * @param {number} data.broker_id - ID of the registered broker
+     * @param {number} data.topic_id - ID of the registered topic
      *
-     * @returns {Promise<Object>} Standard response indicating successful message send
+     * @returns {Promise<Object>} Standard response containing dataset information
      *
      * @example
      * ```typescript
      * const result = await api.postDatasetMessage({
-     *   topic_name: 'sensor-data',
-     *   message: '{"sensor_id": 1, "value": 25.5}',
-     *   headers: { "content-type": "application/json" }
+     *   dataset_type: 0,
+     *   name: 'sensor-data-stream',
+     *   description: 'Streaming sensor data',
+     *   broker_id: 3,
+     *   topic_id: 7
      * });
      * ```
      */

@@ -64,6 +64,25 @@ export interface TableDatasetRegisterParams {
   selected_fields: string;
 }
 
+export interface BrokerRegisterParams {
+  name: string;
+  ip: string;
+  port: number;
+}
+
+export interface TopicRegisterParams {
+  name: string;
+  schema?: string;
+}
+
+export interface DatasetMessageRegisterParams {
+  dataset_type: number;
+  name: string;
+  description: string;
+  broker_id: number;
+  topic_id: number;
+}
+
 export interface StreamDatasetRegisterParams {
   dataset_type: number;
   dataset_name: string;

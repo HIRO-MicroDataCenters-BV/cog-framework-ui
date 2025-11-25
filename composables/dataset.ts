@@ -7,7 +7,9 @@ import type {
   DatasetFormValues,
   FileDatasetRegisterParams,
   TableDatasetRegisterParams,
-  StreamDatasetRegisterParams,
+  BrokerRegisterParams,
+  TopicRegisterParams,
+  DatasetMessageRegisterParams,
 } from '~/types/api.types';
 
 type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
@@ -64,23 +66,96 @@ export const useRegisterTableDataset = () => {
 };
 
 export const useRegisterStreamDataset = () => {
-  const { postDatasetBroker } = useApi();
+  const { postDatasetBroker, postDatasetTopic, postDatasetMessage } = useApi();
 
   const registerStreamDataset = async (
     values: StreamDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    const data: StreamDatasetRegisterParams = {
-      dataset_type: values.dataset_type || 0,
-      dataset_name: values.metadata?.name || '',
-      description: values.metadata?.description || '',
-      broker_name: values.source_settings?.broker_name || '',
-      broker_ip_address: values.source_settings?.broker_ip_address || '',
-      broker_port: values.source_settings?.broker_port || 9092,
-      topic_name: values.source_settings?.topic_name || '',
-      topic_schema: values.source_settings?.topic_schema || '',
+    if (!values.source_settings?.broker_name) {
+      throw new Error('error.broker_name_required');
+    }
+    if (!values.source_settings?.broker_ip_address) {
+      throw new Error('error.broker_ip_address_required');
+    }
+    if (!values.source_settings?.topic_name) {
+      throw new Error('error.topic_name_required');
+    }
+
+    const brokerData: BrokerRegisterParams = {
+      name: values.source_settings.broker_name,
+      ip: values.source_settings.broker_ip_address,
+      port: values.source_settings.broker_port || 4222,
     };
 
-    return await postDatasetBroker(data);
+    const brokerResponse = await postDatasetBroker(brokerData);
+
+    if (!brokerResponse || 'detail' in brokerResponse) {
+      throw new Error('error.broker_registration_failed');
+    }
+
+    let brokerId: number;
+    if ('data' in brokerResponse && brokerResponse.data) {
+      if (
+        typeof brokerResponse.data === 'object' &&
+        'id' in brokerResponse.data
+      ) {
+        brokerId = brokerResponse.data.id as number;
+      } else if (
+        typeof brokerResponse.data === 'object' &&
+        'broker_id' in brokerResponse.data
+      ) {
+        brokerId = brokerResponse.data.broker_id as number;
+      } else {
+        throw new Error('error.broker_id_not_found_in_response');
+      }
+    } else {
+      throw new Error('error.broker_id_not_found_in_response');
+    }
+
+    const topicSchema = values.source_settings.topic_schema;
+    const topicData: TopicRegisterParams = {
+      name: values.source_settings.topic_name,
+      schema: topicSchema
+        ? typeof topicSchema === 'string'
+          ? topicSchema
+          : JSON.stringify(topicSchema)
+        : undefined,
+    };
+
+    const topicResponse = await postDatasetTopic(brokerId, topicData);
+
+    if (!topicResponse || 'detail' in topicResponse) {
+      throw new Error('error.topic_registration_failed');
+    }
+
+    let topicId: number;
+    if ('data' in topicResponse && topicResponse.data) {
+      if (
+        typeof topicResponse.data === 'object' &&
+        'id' in topicResponse.data
+      ) {
+        topicId = topicResponse.data.id as number;
+      } else if (
+        typeof topicResponse.data === 'object' &&
+        'topic_id' in topicResponse.data
+      ) {
+        topicId = topicResponse.data.topic_id as number;
+      } else {
+        throw new Error('error.topic_id_not_found_in_response');
+      }
+    } else {
+      throw new Error('error.topic_id_not_found_in_response');
+    }
+
+    const messageData: DatasetMessageRegisterParams = {
+      dataset_type: values.dataset_type || 0,
+      name: values.metadata?.name || '',
+      description: values.metadata?.description || '',
+      broker_id: brokerId,
+      topic_id: topicId,
+    };
+
+    return await postDatasetMessage(messageData);
   };
 
   return {
