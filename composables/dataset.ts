@@ -82,8 +82,8 @@ export const useRegisterStreamDataset = () => {
     }
 
     const brokerData: BrokerRegisterParams = {
-      name: values.source_settings.broker_name,
-      ip: values.source_settings.broker_ip_address,
+      name: values.source_settings.broker_name.trim(),
+      ip: values.source_settings.broker_ip_address.trim(),
       port: values.source_settings.broker_port || 4222,
     };
 
@@ -113,13 +113,32 @@ export const useRegisterStreamDataset = () => {
     }
 
     const topicSchema = values.source_settings.topic_schema;
+    let schemaValue: string | Record<string, unknown> | undefined;
+
+    if (topicSchema) {
+      if (typeof topicSchema === 'string') {
+        const trimmed = topicSchema.trim();
+        if (trimmed === '' || trimmed === '{}') {
+          schemaValue = {};
+        } else {
+          try {
+            const parsed = JSON.parse(trimmed);
+            schemaValue =
+              typeof parsed === 'object' && parsed !== null ? parsed : {};
+          } catch {
+            schemaValue = {};
+          }
+        }
+      } else if (typeof topicSchema === 'object' && topicSchema !== null) {
+        schemaValue = topicSchema;
+      }
+    } else {
+      schemaValue = {};
+    }
+
     const topicData: TopicRegisterParams = {
-      name: values.source_settings.topic_name,
-      schema: topicSchema
-        ? typeof topicSchema === 'string'
-          ? topicSchema
-          : JSON.stringify(topicSchema)
-        : undefined,
+      name: values.source_settings.topic_name.trim(),
+      schema: schemaValue,
     };
 
     const topicResponse = await postDatasetTopic(brokerId, topicData);
@@ -149,8 +168,8 @@ export const useRegisterStreamDataset = () => {
 
     const messageData: DatasetMessageRegisterParams = {
       dataset_type: values.dataset_type || 0,
-      name: values.metadata?.name || '',
-      description: values.metadata?.description || '',
+      name: values.metadata?.name?.trim() || '',
+      description: values.metadata?.description?.trim() || '',
       broker_id: brokerId,
       topic_id: topicId,
     };
@@ -175,28 +194,23 @@ export const useDatasetForm = () => {
       throw new Error('error.dataset_type_required');
     }
 
-    try {
-      let res: DatasetRegisterResponse;
+    let res: DatasetRegisterResponse;
 
-      switch (values.type) {
-        case 'file':
-          res = await registerFileDataset(values as FileDatasetValues);
-          break;
-        case 'table':
-          res = await registerTableDataset(values as TableDatasetValues);
-          break;
-        case 'data_stream':
-          res = await registerStreamDataset(values as StreamDatasetValues);
-          break;
-        default:
-          throw new Error(`error.unknown_dataset_type: ${values.type}`);
-      }
-
-      return res;
-    } catch (error) {
-      console.error('Error in submitDatasetForm:', error);
-      throw error;
+    switch (values.type) {
+      case 'file':
+        res = await registerFileDataset(values as FileDatasetValues);
+        break;
+      case 'table':
+        res = await registerTableDataset(values as TableDatasetValues);
+        break;
+      case 'data_stream':
+        res = await registerStreamDataset(values as StreamDatasetValues);
+        break;
+      default:
+        throw new Error(`error.unknown_dataset_type: ${values.type}`);
     }
+
+    return res;
   };
 
   return {
