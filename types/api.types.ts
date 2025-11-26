@@ -72,7 +72,7 @@ export interface BrokerRegisterParams {
 
 export interface TopicRegisterParams {
   name: string;
-  schema?: string;
+  schema?: string | Record<string, unknown>;
 }
 
 export interface DatasetMessageRegisterParams {
