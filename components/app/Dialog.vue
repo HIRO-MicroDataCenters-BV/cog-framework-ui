@@ -50,31 +50,23 @@
           <slot />
 
           <DialogFooter v-if="props.navigation.length > 0">
-            <div class="flex gap-2 w-full">
-              <div v-if="props.navigation.length == 0" class="flex-1">
-                <DialogClose as-child>
-                  <Button type="button" variant="outline">
-                    {{ t(`action.close`) }}
-                  </Button>
-                </DialogClose>
-              </div>
-              <div class="flex gap-2">
-                <Button
-                  v-for="item in props.stepFormActions.length > 0
-                    ? props.stepFormActions
-                    : props.actions"
-                  :key="item"
-                  :variant="variantByActionType(item)"
-                  :type="typeByActionType(item, step)"
-                  @click="onAction(item)"
-                >
-                  {{ t(`action.${item}`) }}
-                </Button>
-              </div>
+            <div class="flex gap-2 w-full justify-end">
+              <Button
+                v-for="item in props.stepFormActions.length > 0
+                  ? props.stepFormActions
+                  : props.actions"
+                :key="item"
+                :variant="variantByActionType(item)"
+                :type="typeByActionType(item, step)"
+                :disabled="item === 'next' && !isNextEnabled"
+                @click="onAction(item)"
+              >
+                {{ t(`action.${item}`) }}
+              </Button>
             </div>
           </DialogFooter>
-          <DialogFooter v-else class="justify-start!">
-            <div class="flex mt-8 gap-2" as-child>
+          <DialogFooter v-else class="justify-end">
+            <div class="flex mt-8 gap-2">
               <Button
                 v-for="item in props.stepFormActions.length > 0
                   ? props.stepFormActions
@@ -108,6 +100,7 @@ const props = withDefaults(
     step?: number;
     stepFormActions?: string[];
     class?: string;
+    isNextEnabled?: boolean;
   }>(),
   {
     open: false,
@@ -119,6 +112,7 @@ const props = withDefaults(
     actions: () => ['cancel', 'save'],
     stepFormActions: () => [],
     class: '',
+    isNextEnabled: true,
   },
 );
 

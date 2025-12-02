@@ -5,6 +5,7 @@
     :step-form-actions="stepFormActions"
     :navigation="formNavigation"
     :step="currentStep"
+    :is-next-enabled="isNextEnabled"
     class="max-h-full overflow-hidden h-[552px]"
     @on-close="handleClose"
     @on-action="handleAction"
@@ -21,6 +22,7 @@
       :is-submit="isSubmit"
       @on-submit="onSubmit"
       @update-actions="(actions) => (stepFormActions = actions)"
+      @update-next-enabled="(enabled) => (isNextEnabled = enabled)"
     />
   </AppDialog>
 </template>
@@ -49,6 +51,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const currentStep = ref(0);
 const stepFormActions = ref<string[]>([]);
+const isNextEnabled = ref(true);
 const isSubmit = ref(false);
 watch(
   () => props.open,
