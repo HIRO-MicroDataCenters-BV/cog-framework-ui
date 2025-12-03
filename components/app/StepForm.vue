@@ -24,7 +24,6 @@
                   <div
                     v-if="checkFieldCondition(field)"
                     :class="{
-                      'mb-6': row.fields.length === 1,
                       'flex-1': row.fields.length > 1,
                     }"
                   >
@@ -77,12 +76,10 @@
                         :name="field.name"
                       >
                         <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                          :class="row.fields.length > 1 ? 'w-full' : 'w-full'"
                         >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
-                            field.label
-                          }}</FormLabel>
-                          <FormControl class="w-full">
+                          <FormLabel>{{ field.label }}</FormLabel>
+                          <FormControl>
                             <Input
                               type="text"
                               v-bind="componentField"
@@ -100,13 +97,9 @@
                         type="number"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
-                            field.label
-                          }}</FormLabel>
-                          <FormControl class="w-full">
+                        <FormItem class="w-full">
+                          <FormLabel>{{ field.label }}</FormLabel>
+                          <FormControl>
                             <Input
                               type="number"
                               v-bind="componentField"
@@ -124,14 +117,10 @@
                         type="textarea"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel
-                            v-if="field.label"
-                            class="font-normal mb-2"
-                            >{{ field.label }}</FormLabel
-                          >
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
+                            field.label
+                          }}</FormLabel>
                           <FormControl>
                             <Textarea
                               v-bind="componentField"
@@ -146,13 +135,11 @@
 
                     <template v-else-if="field.type === 'file'">
                       <FormField type="file" :name="field.name">
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
                             field.label
                           }}</FormLabel>
-                          <FormControl class="w-full">
+                          <FormControl>
                             <Input
                               type="file"
                               :accept="field.accept || '.csv,.json'"
@@ -173,10 +160,8 @@
                         type="select"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
                             field.label
                           }}</FormLabel>
                           <Select v-bind="componentField">
@@ -254,6 +239,7 @@
 
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
+import { nextTick, onMounted } from 'vue';
 // import { get as useGet } from 'lodash-es';
 
 import {
@@ -297,16 +283,282 @@ const emit = defineEmits<{
   'on-submit': [values: FormValues];
   'on-step-change': [step: number, actions: ActionType[]];
   'update-actions': [actions: ActionType[]];
+  'update-step-validity': [isValid: boolean];
+  'update-next-enabled': [enabled: boolean];
 }>();
 const currentStep = ref(props.step);
 
 const form = useForm<FormValues>({
   validationSchema: props.validationSchema,
   initialValues: props.initialValues || {},
+  validateOnBlur: true,
+  validateOnChange: true,
 });
 
-const handleAction = (action: ActionType) => {
+const checkFieldCondition = (field: Field): boolean => {
+  if (!field.condition) return true;
+
+  const { field: conditionField, operator, value } = field.condition;
+  const fieldValue = form.values[conditionField];
+
+  switch (operator) {
+    case 'eq':
+      return fieldValue === value;
+    case 'neq':
+      return fieldValue !== value;
+    case 'contains':
+      return Array.isArray(fieldValue) && fieldValue.includes(value as unknown);
+    case 'not_contains':
+      return (
+        Array.isArray(fieldValue) && !fieldValue.includes(value as unknown)
+      );
+    default:
+      return true;
+  }
+};
+
+// Get all field names for a specific step
+const getStepFields = (stepIndex: number): string[] => {
+  const step = Array.isArray(props.steps) ? props.steps[stepIndex] : null;
+  if (!step || !step.rows) return [];
+
+  const fields: string[] = [];
+  step.rows.forEach((row) => {
+    row.fields.forEach((field) => {
+      if (checkFieldCondition(field)) {
+        fields.push(field.name);
+      }
+    });
+  });
+  return fields;
+};
+
+// Validate fields for a specific step
+const validateStep = async (stepIndex: number): Promise<boolean> => {
+  const stepFields = getStepFields(stepIndex);
+  if (stepFields.length === 0) return true;
+
+  // Validate all fields in the step
+  const validations = await Promise.all(
+    stepFields.map((fieldName) => form.validateField(fieldName)),
+  );
+
+  return validations.every((result) => result.valid);
+};
+
+// Check if current step is valid (computed for reactivity)
+const isStepValid = ref(true);
+
+// Check step validity based on field errors and required values
+const checkStepValidity = () => {
+  const stepFields = getStepFields(currentStep.value);
+  if (stepFields.length === 0) {
+    isStepValid.value = true;
+    return;
+  }
+
+  const errors = form.errors.value;
+  const formValues = form.values;
+
+  // Check for errors in step fields
+  const hasErrors = stepFields.some((fieldName) => {
+    return errors[fieldName];
+  });
+
+  if (hasErrors) {
+    isStepValid.value = false;
+    return;
+  }
+
+  // Check if required fields have values (basic check)
+  // Full validation happens on blur/change through form.validateField
+  const step = Array.isArray(props.steps)
+    ? props.steps[currentStep.value]
+    : null;
+  if (!step) {
+    isStepValid.value = true;
+    return;
+  }
+
+  // For step 0 (type selection), check if type is selected
+  if (currentStep.value === 0) {
+    isStepValid.value = !!formValues.type;
+    return;
+  }
+
+  const type = formValues.type as string;
+  const metadata = formValues.metadata as Record<string, unknown> | undefined;
+
+  // Detect form type: dataset has 'dataset_type' and 'source_settings', model has 'file' or 'datastream'
+  const isDatasetForm =
+    'dataset_type' in formValues || 'source_settings' in formValues;
+  const isModelForm = 'file' in formValues || 'datastream' in formValues;
+
+  // For step 1 (metadata)
+  if (currentStep.value === 1) {
+    // Common: name and description required
+    const hasName = !!(
+      metadata &&
+      metadata.name &&
+      String(metadata.name).trim()
+    );
+    const hasDescription = !!(
+      metadata &&
+      metadata.description &&
+      String(metadata.description).trim()
+    );
+
+    if (isDatasetForm) {
+      // Dataset: also requires dataset_type
+      const datasetType = formValues.dataset_type;
+      isStepValid.value = !!(
+        hasName &&
+        hasDescription &&
+        datasetType !== undefined &&
+        datasetType !== null
+      );
+    } else if (isModelForm) {
+      // Model: also requires file_type based on type
+      const fileData = formValues.file as Record<string, unknown> | undefined;
+      const datastreamData = formValues.datastream as
+        | Record<string, unknown>
+        | undefined;
+
+      if (type === 'file') {
+        isStepValid.value = !!(
+          hasName &&
+          hasDescription &&
+          fileData?.file_type !== undefined &&
+          fileData?.file_type !== null
+        );
+      } else if (type === 'datastream') {
+        isStepValid.value = !!(
+          hasName &&
+          hasDescription &&
+          datastreamData?.model_id &&
+          String(datastreamData.model_id).trim() &&
+          datastreamData?.file_type !== undefined &&
+          datastreamData?.file_type !== null
+        );
+      } else {
+        isStepValid.value = hasName && hasDescription;
+      }
+    } else {
+      isStepValid.value = hasName && hasDescription;
+    }
+    return;
+  }
+
+  // For step 2 (source/file settings)
+  if (currentStep.value === 2) {
+    if (isDatasetForm) {
+      // Dataset form validation
+      const sourceSettings = formValues.source_settings as
+        | Record<string, unknown>
+        | undefined;
+
+      if (type === 'file') {
+        isStepValid.value = !!(sourceSettings && sourceSettings.dataset_file);
+      } else if (type === 'table') {
+        isStepValid.value = !!(
+          sourceSettings &&
+          sourceSettings.db_url &&
+          String(sourceSettings.db_url).trim() &&
+          sourceSettings.table_name &&
+          String(sourceSettings.table_name).trim() &&
+          sourceSettings.selected_fields &&
+          String(sourceSettings.selected_fields).trim()
+        );
+      } else if (type === 'data_stream') {
+        const ipAddressRegex =
+          /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+        const brokerName = sourceSettings?.broker_name
+          ? String(sourceSettings.broker_name).trim()
+          : '';
+        const brokerIp = sourceSettings?.broker_ip_address
+          ? String(sourceSettings.broker_ip_address).trim()
+          : '';
+        const brokerPort = sourceSettings?.broker_port;
+        const topicName = sourceSettings?.topic_name
+          ? String(sourceSettings.topic_name).trim()
+          : '';
+
+        let portValid = false;
+        if (
+          brokerPort !== undefined &&
+          brokerPort !== null &&
+          brokerPort !== 0
+        ) {
+          const port =
+            typeof brokerPort === 'string'
+              ? parseInt(brokerPort.trim(), 10)
+              : Number(brokerPort);
+          portValid = !isNaN(port) && port >= 1 && port <= 65535;
+        }
+
+        isStepValid.value = !!(
+          brokerName &&
+          brokerIp &&
+          ipAddressRegex.test(brokerIp) &&
+          portValid &&
+          topicName
+        );
+      } else {
+        isStepValid.value = true;
+      }
+    } else if (isModelForm) {
+      // Model form validation
+      const fileData = formValues.file as Record<string, unknown> | undefined;
+      const datastreamData = formValues.datastream as
+        | Record<string, unknown>
+        | undefined;
+
+      if (type === 'file') {
+        isStepValid.value = !!(fileData && fileData.files);
+      } else if (type === 'datastream') {
+        isStepValid.value = !!(
+          datastreamData &&
+          datastreamData.uri &&
+          String(datastreamData.uri).trim()
+        );
+      } else {
+        isStepValid.value = true;
+      }
+    } else {
+      isStepValid.value = true;
+    }
+    return;
+  }
+
+  isStepValid.value = true;
+};
+
+// Watch form values and errors to update step validity
+watch(
+  () => [form.values, form.errors.value, currentStep.value],
+  async () => {
+    await nextTick();
+    checkStepValidity();
+  },
+  { deep: true },
+);
+
+// Initialize step validity after component is mounted
+onMounted(() => {
+  nextTick(() => {
+    checkStepValidity();
+  });
+});
+
+const handleAction = async (action: ActionType) => {
   if (action === 'next') {
+    // Validate current step before moving to next
+    const isValid = await validateStep(currentStep.value);
+    if (!isValid) {
+      // Don't proceed to next step if validation fails
+      return;
+    }
     currentStep.value++;
     emit('on-step-change', currentStep.value, currentActions.value);
   } else if (action === 'back' && currentStep.value > 0) {
@@ -324,12 +576,23 @@ const currentActions = computed(() => {
   const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
 
   if (currentStep.value === 0) {
+    // On first step, always show next button
     return ['next'];
   } else if (currentStep.value === totalSteps - 1) {
     return ['back', 'submit'];
   } else {
+    // Always show next button, but it will be disabled if step is invalid
     return ['back', 'next'];
   }
+});
+
+// Computed property to determine if Next button should be enabled
+const isNextEnabled = computed(() => {
+  if (currentStep.value === 0) {
+    // First step: next is enabled if type is selected
+    return !!form.values.type;
+  }
+  return isStepValid.value;
 });
 
 watch(
@@ -341,8 +604,20 @@ watch(
 );
 
 watch(
+  isNextEnabled,
+  (enabled: boolean) => {
+    emit('update-next-enabled', enabled);
+  },
+  { immediate: true },
+);
+
+watch(
   currentStep,
   (value: number) => {
+    // Check validity when step changes
+    nextTick(() => {
+      checkStepValidity();
+    });
     emit('on-step-change', value, currentActions.value);
   },
   { immediate: true },
@@ -410,28 +685,6 @@ const handleFileChange = (event: Event, fieldName: string): void => {
     form.setFieldValue(fieldName, file ? [file] : []);
   } else {
     form.setFieldValue(fieldName, file || null);
-  }
-};
-
-const checkFieldCondition = (field: Field): boolean => {
-  if (!field.condition) return true;
-
-  const { field: conditionField, operator, value } = field.condition;
-  const fieldValue = form.values[conditionField];
-
-  switch (operator) {
-    case 'eq':
-      return fieldValue === value;
-    case 'neq':
-      return fieldValue !== value;
-    case 'contains':
-      return Array.isArray(fieldValue) && fieldValue.includes(value as unknown);
-    case 'not_contains':
-      return (
-        Array.isArray(fieldValue) && !fieldValue.includes(value as unknown)
-      );
-    default:
-      return true;
   }
 };
 

@@ -437,6 +437,11 @@ export default defineI18nConfig(() => ({
         },
       },
       validation: {
+        required: 'This field is required',
+        invalid_port: 'Port must be between 1 and 65535',
+        invalid_ip_address: 'Please enter a valid IP address',
+        invalid_url: 'Please enter a valid URL',
+        invalid_dataset_type: 'Invalid dataset type',
         model: {
           name: 'Model name is required',
           version: 'Version is required',
