@@ -168,6 +168,7 @@ export const useRegisterStreamDataset = () => {
 
     const messageData: DatasetMessageRegisterParams = {
       dataset_type: values.dataset_type || 0,
+      data_source_type: values.data_source_type || 10,
       name: values.metadata?.name?.trim() || '',
       description: values.metadata?.description?.trim() || '',
       broker_id: brokerId,

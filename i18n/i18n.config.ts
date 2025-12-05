@@ -233,6 +233,7 @@ export default defineI18nConfig(() => ({
         uri: 'Enter the URI of the data source',
         model_id: 'Model Id',
         file_type: 'Select File Type',
+        data_source_type: 'Select Data Source Type',
       },
       action: {
         upload: 'Upload',

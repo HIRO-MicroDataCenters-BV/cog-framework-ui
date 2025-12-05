@@ -483,6 +483,7 @@ const checkStepValidity = () => {
         const topicName = sourceSettings?.topic_name
           ? String(sourceSettings.topic_name).trim()
           : '';
+        const dataSourceType = formValues.data_source_type;
 
         let portValid = false;
         if (
@@ -502,7 +503,9 @@ const checkStepValidity = () => {
           brokerIp &&
           ipAddressRegex.test(brokerIp) &&
           portValid &&
-          topicName
+          topicName &&
+          dataSourceType !== undefined &&
+          dataSourceType !== null
         );
       } else {
         isStepValid.value = true;

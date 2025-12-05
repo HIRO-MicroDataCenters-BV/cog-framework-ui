@@ -29,6 +29,12 @@ export const datasetFormSchema = toTypedSchema(
         .min(0)
         .max(2, 'validation.invalid_dataset_type')
         .optional(),
+      data_source_type: z
+        .number()
+        .int()
+        .min(10)
+        .max(11, 'validation.invalid_data_source_type')
+        .optional(),
       source_settings: z
         .object({
           dataset_file: z.any().nullable().optional(),
@@ -144,6 +150,18 @@ export const datasetFormSchema = toTypedSchema(
       }
 
       if (data.type === 'data_stream') {
+        // Data source type is required for data_stream
+        if (
+          data.data_source_type === undefined ||
+          data.data_source_type === null
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'validation.required',
+            path: ['data_source_type'],
+          });
+        }
+
         // Broker name is required
         if (
           !data.source_settings ||
@@ -287,6 +305,10 @@ export const datasetReviewItems = {
     {
       label: 'topic_name',
       valuePath: 'source_settings.topic_name',
+    },
+    {
+      label: 'data_source_type',
+      valuePath: 'data_source_type',
     },
     {
       label: 'topic_schema',
