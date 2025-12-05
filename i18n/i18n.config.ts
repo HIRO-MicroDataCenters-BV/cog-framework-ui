@@ -108,6 +108,7 @@ export default defineI18nConfig(() => ({
       },
       label: {
         id: 'ID',
+        broker_ip: 'Broker IP',
         train_and_inference: 'Train and Inference',
         METRIC_FEATURES: 'Metric Features',
         TARGET_NAMESPACE: 'Target Namespace',
