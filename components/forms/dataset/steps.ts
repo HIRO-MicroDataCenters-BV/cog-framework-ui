@@ -199,6 +199,31 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
         {
           fields: [
             {
+              type: 'select',
+              name: 'data_source_type',
+              label: t('label.data_source_type'),
+              placeholder: t('placeholder.data_source_type'),
+              options: [
+                {
+                  value: 10,
+                  label: 'Kafka',
+                },
+                {
+                  value: 11,
+                  label: 'NATS',
+                },
+              ],
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'data_stream',
+              },
+            },
+          ],
+        },
+        {
+          fields: [
+            {
               type: 'textarea',
               name: 'source_settings.topic_schema',
               label: t('label.topic_schema'),

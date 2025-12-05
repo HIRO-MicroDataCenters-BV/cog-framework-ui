@@ -26,6 +26,7 @@ export interface TableDatasetValues extends FormValues {
 
 export interface StreamDatasetValues extends FormValues {
   dataset_type?: number;
+  data_source_type?: number;
   metadata?: {
     name?: string;
     description?: string;
@@ -77,6 +78,7 @@ export interface TopicRegisterParams {
 
 export interface DatasetMessageRegisterParams {
   dataset_type: number;
+  data_source_type: number;
   name: string;
   description: string;
   broker_id: number;
