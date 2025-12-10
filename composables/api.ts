@@ -2204,7 +2204,7 @@ export const useApi = () => {
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      return request(`/training-builder-pipeline?${q}`);
+      return request(`/training-builder-pipelines?${q}`);
     },
 
     /**
@@ -2238,7 +2238,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
-      return request(`/training-builder-pipeline`, 'POST', data, {
+      return request(`/training-builder-pipelines`, 'POST', data, {
         showToast: true,
       });
     },
@@ -2258,7 +2258,7 @@ export const useApi = () => {
      * ```
      */
     deleteTrainingBuilderPipeline: async (pipeline_id: string) => {
-      return request(`/training-builder-pipeline/${pipeline_id}`, 'DELETE');
+      return request(`/training-builder-pipelines/${pipeline_id}`, 'DELETE');
     },
 
     /**

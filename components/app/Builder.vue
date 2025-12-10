@@ -215,6 +215,7 @@ const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
   setPage({
     ...page.value,
     data: {
+      ...page.value.data,
       builder: {
         name: page.value.data?.builder?.name || '',
         nodes: nodes as Node[],
