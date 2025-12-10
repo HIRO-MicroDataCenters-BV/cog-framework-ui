@@ -30,6 +30,8 @@ export const useApp = () => {
           nodes: value.data?.builder?.nodes || [],
           edges: value.data?.builder?.edges || [],
         },
+        // Preserve orderId for federated pipeline from dataspace
+        orderId: value.data?.orderId,
       },
     };
   };

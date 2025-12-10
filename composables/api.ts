@@ -141,7 +141,10 @@ export const useApi = () => {
             toaster.show('error', 'server_error');
             return null;
           default:
-            toaster.show('error', data.message || 'request_failed');
+            toaster.show(
+              'error',
+              data.message || data.detail || 'request_failed',
+            );
             return null;
         }
       } else {

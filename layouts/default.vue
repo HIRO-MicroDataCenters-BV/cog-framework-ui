@@ -2,7 +2,7 @@
   <SidebarProvider class="sidebar-wrapper">
     <AppSidebar />
     <SidebarInset class="overflow-hidden overflow-y-auto">
-      <AppHeader v-if="page.title !== ''" :page="page" />
+      <AppHeader v-if="page.title !== '' || page.section === 'pipelines_builder'" :page="page" />
       <AppContent>
         <div class="flex flex-1 flex-col gap-4 h-full">
           <div class="h-full flex flex-col flex-grow">
@@ -38,7 +38,6 @@ import { Spinner } from '@/components/ui/spinner';
 
 const { t } = useI18n();
 const { page } = useApp();
-console.log('page', page);
 </script>
 
 <style>
