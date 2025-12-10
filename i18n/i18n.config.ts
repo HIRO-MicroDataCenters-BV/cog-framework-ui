@@ -444,6 +444,7 @@ export default defineI18nConfig(() => ({
         invalid_ip_address: 'Please enter a valid IP address',
         invalid_url: 'Please enter a valid URL',
         invalid_dataset_type: 'Invalid dataset type',
+        invalid_data_source_type: 'Invalid data source type',
         model: {
           name: 'Model name is required',
           version: 'Version is required',
