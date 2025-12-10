@@ -50,7 +50,6 @@
             }}</span></Button
           >
         </div>
-        <!-- <AppColorModeSwitch /> -->
       </div>
     </div>
   </header>
@@ -59,19 +58,12 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import type { Edge, Component } from '~/types/builder.types';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-  FormMessage,
-} from '~/components/ui/form';
+import { Form, FormField, FormItem, FormControl } from '~/components/ui/form';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const api = useApi();
 
-// Safe access to pipeline name
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
   set: (value: string) => {
@@ -81,42 +73,6 @@ const pipelineName = computed({
   },
 });
 
-/*
-{
-  "name": "example_pipeline",
-  "pipeline_components": [
-    {
-      "id": "component_id1",
-      "name": "component_id_name1",
-      "inputs": ["file"],
-    },
-    {
-      "id": "component_id2",
-      "name": "component_id_name2",
-      "inputs": ["component_id1.output"],
-    },
-    {
-      "id": "component_id3",
-      "name": "component_id_name3",
-      "inputs": ["component_id2.output"],
-    },
-    {
-      "id": "component_id4",
-      "name": "component_id_name4",
-      "inputs": ["component_id1.output", "component_id2.output", "isvc"],
-    }
-  ],
-  "input_path": [
-    {"name": "file", "type": "string"},
-    {"name": "isvc", "type": "string"}
-  ],
-  "output_path": [
-    {"name": "final_serving_output", "type": "artifact"}
-  ]
-}
-*/
-
-// Component input/output path (per format.md)
 interface ComponentPath {
   name: string;
   type: string;
@@ -125,14 +81,12 @@ interface ComponentPath {
   optional?: boolean;
 }
 
-// Top-level input path (per format.md)
 interface TopLevelInputPath {
   name: string;
   type: string;
   default?: unknown;
 }
 
-// Top-level output path (per format.md) - has source object
 interface TopLevelOutputPath {
   name: string;
   source: {
@@ -141,7 +95,6 @@ interface TopLevelOutputPath {
   };
 }
 
-// Regular pipeline component (with inputs)
 interface RegularPipelineComponent {
   id: string;
   name: string;
@@ -150,7 +103,6 @@ interface RegularPipelineComponent {
   output_path: ComponentPath[];
 }
 
-// Federated pipeline component (per format.md)
 interface FederatedPipelineComponent {
   id: string;
   name: string;
@@ -163,7 +115,6 @@ interface FederatedPipelineComponent {
 
 type PipelineComponent = RegularPipelineComponent | FederatedPipelineComponent;
 
-// Get order_id from page data (passed from dataspace)
 const orderId = computed(() => page.value.data?.orderId as string | undefined);
 
 const runPipeline = () => {
@@ -185,7 +136,6 @@ const runPipeline = () => {
     output_path: [] as TopLevelOutputPath[],
   };
 
-  // Build components based on whether it's federated (with order_id) or regular pipeline
   const components =
     builder?.nodes?.map((node) => {
       const component = node?.data?.component as Component;
@@ -194,7 +144,6 @@ const runPipeline = () => {
       const input_path = component?.input_path || [];
       const output_path = component?.output_path || [];
 
-      // For federated dataspace (with order_id), use format.md format
       if (orderId.value) {
         return {
           id,
@@ -207,7 +156,6 @@ const runPipeline = () => {
         };
       }
 
-      // For regular pipeline, include inputs
       const inputs: string[] = [];
       input_path.forEach((path: ComponentPath) => {
         inputs.push(path.name as string);
@@ -231,20 +179,12 @@ const runPipeline = () => {
       };
     }) || [];
 
-  // Build top-level input_path and output_path based on format
   if (orderId.value) {
-    // Federated format (per format.md):
-    // - input_path: collect all unique inputs with defaults
-    // - output_path: format with source object
     const inputPathMap = new Map<string, TopLevelInputPath>();
-    const outputPathList: TopLevelOutputPath[] = [];
 
     components.forEach((comp) => {
-      const compName = comp.name;
-
-      // Collect input_path items with defaults
       comp.input_path.forEach((path: ComponentPath) => {
-        if (!inputPathMap.has(path.name)) {
+        if (path.default !== undefined && !inputPathMap.has(path.name)) {
           inputPathMap.set(path.name, {
             name: path.name,
             type: path.type,
@@ -252,23 +192,44 @@ const runPipeline = () => {
           });
         }
       });
-
-      // Build output_path with source object
-      comp.output_path.forEach((path: ComponentPath) => {
-        outputPathList.push({
-          name: path.name,
-          source: {
-            component_name: compName,
-            output_name: path.name,
-          },
-        });
-      });
     });
 
     data.input_path = Array.from(inputPathMap.values());
-    data.output_path = outputPathList;
+
+    const serverComp = components.find(
+      (c) =>
+        c.name.toLowerCase().includes('server') ||
+        ('category' in c &&
+          (c as FederatedPipelineComponent).category
+            ?.toLowerCase()
+            .includes('server')),
+    );
+
+    if (serverComp) {
+      data.output_path = [
+        {
+          name: 'final_global_model',
+          source: {
+            component_name: serverComp.name,
+            output_name: serverComp.output_path[0]?.name || 'Output',
+          },
+        },
+      ];
+    } else {
+      const lastComp = components[components.length - 1];
+      if (lastComp) {
+        data.output_path = [
+          {
+            name: 'final_global_model',
+            source: {
+              component_name: lastComp.name,
+              output_name: lastComp.output_path[0]?.name || 'Output',
+            },
+          },
+        ];
+      }
+    }
   } else {
-    // Regular format - just copy paths
     const input_path: TopLevelInputPath[] = [];
     const output_path: TopLevelOutputPath[] = [];
 
@@ -297,7 +258,6 @@ const runPipeline = () => {
 
   data.pipeline_components = components;
 
-  // If order_id exists, use federated dataspace endpoint
   if (orderId.value) {
     data.order_id = orderId.value;
     api.postTrainingBuilderPipelineDataspaceFederatedRun(data);
