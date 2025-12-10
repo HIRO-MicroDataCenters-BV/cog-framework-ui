@@ -81,8 +81,6 @@ const pipelineName = computed({
   },
 });
 
-console.log('page', page);
-
 /*
 {
   "name": "example_pipeline",
@@ -131,13 +129,22 @@ interface PipelinePath {
   type: string;
 }
 
-const runPipeline = () => {
-  console.log('runPipeline', page.value.data?.builder);
+// Get order_id from page data (passed from dataspace)
+const orderId = computed(() => page.value.data?.orderId as string | undefined);
 
+const runPipeline = () => {
   const builder = page.value.data?.builder;
   if (!builder) return;
-  console.log('builder', builder);
-  const data = {
+
+  interface PipelineData {
+    name: string;
+    pipeline_components: PipelineComponent[];
+    input_path: PipelinePath[];
+    output_path: PipelinePath[];
+    order_id?: string;
+  }
+
+  const data: PipelineData = {
     name: builder.name,
     pipeline_components: [] as PipelineComponent[],
     input_path: [] as PipelinePath[],
@@ -145,7 +152,6 @@ const runPipeline = () => {
   };
 
   const nodes = builder?.nodes?.map((node): PipelineComponent => {
-    console.log('node', node);
     const component = node?.data?.component as Component;
     const result: PipelineComponent = {
       id: String(component?.id || ''),
@@ -155,7 +161,6 @@ const runPipeline = () => {
       output_path: component?.output_path || [],
     };
 
-    console.log('component', component);
     const input_path = component.input_path;
     input_path.forEach((path: PipelinePath) => {
       result.inputs.push(path.name as string);
@@ -165,7 +170,6 @@ const runPipeline = () => {
     const inputs: string[] = [];
 
     edges?.forEach((edge) => {
-      console.log('edge', edge);
       const sourceName = edge?.sourceNode?.data?.label + '';
       inputs.push(`${sourceName}.output`);
     });
@@ -195,12 +199,13 @@ const runPipeline = () => {
   data.output_path = output_path;
   data.pipeline_components = components;
 
-  console.log('data', data);
-
-  console.log('postTrainingBuilderPipeline');
-  api.postTrainingBuilderPipeline(data).then((res: unknown) => {
-    console.log('res', res);
-  });
+  // If order_id exists, use federated dataspace endpoint
+  if (orderId.value) {
+    data.order_id = orderId.value;
+    api.postTrainingBuilderPipelineDataspaceFederatedRun(data);
+  } else {
+    api.postTrainingBuilderPipeline(data);
+  }
 };
 </script>
 
