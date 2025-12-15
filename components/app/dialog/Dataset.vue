@@ -94,19 +94,39 @@ const formSteps = computed(
   () => getDatasetFormSteps(t, brokerOptions, topicOptions).value,
 );
 
+interface BrokerDetail {
+  id: number;
+  broker_name: string;
+  broker_ip: string;
+  broker_port: number;
+  creation_date: string;
+}
+
+interface TopicDetail {
+  id: number;
+  topic_name: string;
+  topic_schema: string | Record<string, unknown>;
+  broker_id: number;
+  creation_date: string;
+}
+
 onMounted(async () => {
   try {
-    const brokers = (await getBrokerDetails()) as any;
+    const brokers = (await getBrokerDetails()) as {
+      data?: BrokerDetail[];
+    } | null;
     if (brokers?.data) {
-      brokerOptions.value = brokers.data.map((b: any) => ({
+      brokerOptions.value = brokers.data.map((b: BrokerDetail) => ({
         label: `${b.broker_name} (${b.broker_ip}:${b.broker_port})`,
         value: b.id,
       }));
     }
 
-    const topics = (await getTopicDetails()) as any;
+    const topics = (await getTopicDetails()) as {
+      data?: TopicDetail[];
+    } | null;
     if (topics?.data) {
-      topicOptions.value = topics.data.map((topic: any) => ({
+      topicOptions.value = topics.data.map((topic: TopicDetail) => ({
         label: topic.topic_name,
         value: topic.id,
       }));

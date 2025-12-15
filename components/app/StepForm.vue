@@ -296,13 +296,18 @@ const form = useForm<FormValues>({
   validateOnChange: true,
 });
 
-const getNestedValue = (obj: any, path: string): any => {
-  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+const getNestedValue = (
+  obj: Record<string, unknown>,
+  path: string,
+): unknown => {
+  return path
+    .split('.')
+    .reduce((acc, part) => acc && (acc as Record<string, unknown>)[part], obj);
 };
 
 const evaluateCondition = (
   condition: FieldCondition,
-  formValues: any,
+  formValues: Record<string, unknown>,
 ): boolean => {
   if (condition.group) {
     if (!condition.conditions || condition.conditions.length === 0) return true;
@@ -348,7 +353,8 @@ watch(
 );
 
 const checkFieldCondition = computed(() => {
-  formValuesKey.value;
+  // Access formValuesKey to trigger reactivity
+  const _ = formValuesKey.value;
   const values = form.values;
   return (field: Field): boolean => {
     if (!field.condition) return true;

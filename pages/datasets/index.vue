@@ -113,7 +113,7 @@ const columns = [
       const id = row.getValue<string>('id');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
       const isStream = [10, 11].includes(dataSourceType);
-      
+
       const items = [];
 
       if (isStream) {
@@ -128,7 +128,7 @@ const columns = [
         });
       } else {
         items.push(
-            {
+          {
             key: 'download_file',
             label: 'download_file',
             action: async () => {
@@ -139,12 +139,12 @@ const columns = [
             key: 'preview_file',
             label: 'preview_file',
             action: async () => {
-             // Preview logic usually requires a modal or separate view. 
-             // For now we will just call the API.
+              // Preview logic usually requires a modal or separate view.
+              // For now we will just call the API.
               await previewDatasetFile(id);
             },
           },
-           {
+          {
             key: 'delete_file',
             label: 'delete_file',
             hasConfirmation: true,
@@ -152,7 +152,7 @@ const columns = [
               await deleteDatasetFile(id);
               tableRef.value.fetchData();
             },
-          }
+          },
         );
       }
 

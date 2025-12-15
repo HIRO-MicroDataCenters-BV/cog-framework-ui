@@ -138,7 +138,7 @@ const runPipeline = () => {
 
   const components =
     builder?.nodes?.map((node) => {
-    const component = node?.data?.component as Component;
+      const component = node?.data?.component as Component;
       const id = String(component?.id || '');
       const name = node?.data?.label || component?.name || '';
       const input_path = component?.input_path || [];
@@ -159,18 +159,18 @@ const runPipeline = () => {
       const inputs: string[] = [];
       input_path.forEach((path: ComponentPath) => {
         inputs.push(path.name as string);
-    });
+      });
 
       const nodeId = node?.id;
       const edges = builder?.edges?.filter(
         (edge: Edge) => edge.target === nodeId,
       );
-    edges?.forEach((edge) => {
-      const sourceName = edge?.sourceNode?.data?.label + '';
-      inputs.push(`${sourceName}.output`);
-    });
+      edges?.forEach((edge) => {
+        const sourceName = edge?.sourceNode?.data?.label + '';
+        inputs.push(`${sourceName}.output`);
+      });
 
-    return {
+      return {
         id,
         name,
         inputs,
@@ -249,11 +249,11 @@ const runPipeline = () => {
             output_name: path.name,
           },
         });
-  });
+      });
     });
 
-  data.input_path = input_path;
-  data.output_path = output_path;
+    data.input_path = input_path;
+    data.output_path = output_path;
   }
 
   data.pipeline_components = components;
