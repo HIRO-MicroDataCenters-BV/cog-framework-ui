@@ -18,6 +18,8 @@ const {
   deleteDatasetBroker,
   deleteDatasetTopic,
   deleteDatasetMessage,
+  downloadDatasetFile,
+  previewDatasetFile,
 } = useApi();
 
 setPage({
@@ -109,11 +111,39 @@ const columns = [
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('id');
+      const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
+      const isStream = [10, 11].includes(dataSourceType);
 
-      return h(DropdownAction, {
-        title: row.getValue('dataset_name') as string,
-        id,
-        items: [
+      const items = [];
+
+      if (isStream) {
+        items.push({
+          key: 'delete_message',
+          label: 'delete_message',
+          hasConfirmation: true,
+          action: async () => {
+            await deleteDatasetMessage(id);
+            tableRef.value.fetchData();
+          },
+        });
+      } else {
+        items.push(
+          {
+            key: 'download_file',
+            label: 'download_file',
+            action: async () => {
+              await downloadDatasetFile(id);
+            },
+          },
+          {
+            key: 'preview_file',
+            label: 'preview_file',
+            action: async () => {
+              // Preview logic usually requires a modal or separate view.
+              // For now we will just call the API.
+              await previewDatasetFile(id);
+            },
+          },
           {
             key: 'delete_file',
             label: 'delete_file',
@@ -123,34 +153,13 @@ const columns = [
               tableRef.value.fetchData();
             },
           },
-          {
-            key: 'delete_broker',
-            label: 'delete_broker',
-            hasConfirmation: true,
-            action: async () => {
-              await deleteDatasetBroker(id);
-              tableRef.value.fetchData();
-            },
-          },
-          {
-            key: 'delete_topic',
-            label: 'delete_topic',
-            hasConfirmation: true,
-            action: async () => {
-              await deleteDatasetTopic(id);
-              tableRef.value.fetchData();
-            },
-          },
-          {
-            key: 'delete_message',
-            label: 'delete_message',
-            hasConfirmation: true,
-            action: async () => {
-              await deleteDatasetMessage(id);
-              tableRef.value.fetchData();
-            },
-          },
-        ],
+        );
+      }
+
+      return h(DropdownAction, {
+        title: row.getValue('dataset_name') as string,
+        id,
+        items,
       });
     },
   },

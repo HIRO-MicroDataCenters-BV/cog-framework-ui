@@ -1,4 +1,8 @@
-export const getDatasetFormSteps = (t: (key: string) => string) =>
+export const getDatasetFormSteps = (
+  t: (key: string) => string,
+  brokerOptions: Ref<{ label: string; value: string | number }[]>,
+  topicOptions: Ref<{ label: string; value: string | number }[]>,
+) =>
   ref([
     {
       rows: [
@@ -140,6 +144,49 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
             },
           ],
         },
+        // Broker Selection Mode
+        {
+          fields: [
+            {
+              type: 'radio',
+              name: 'source_settings.broker_selection',
+              label: 'Broker Selection',
+              options: [
+                { value: 'existing', label: 'Existing Broker' },
+                { value: 'new', label: 'New Broker' },
+              ],
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'data_stream',
+              },
+            },
+          ],
+        },
+        // Existing Broker Dropdown
+        {
+          fields: [
+            {
+              type: 'select',
+              name: 'source_settings.broker_id',
+              label: 'Select Broker',
+              placeholder: t('placeholder.select_broker'),
+              options: brokerOptions,
+              condition: {
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.broker_selection',
+                    operator: 'eq',
+                    value: 'existing',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        // New Broker Fields
         {
           fields: [
             {
@@ -148,9 +195,15 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
               label: t('label.broker_name'),
               placeholder: t('placeholder.broker_name'),
               condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'data_stream',
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.broker_selection',
+                    operator: 'eq',
+                    value: 'new',
+                  },
+                ],
               },
             },
           ],
@@ -163,9 +216,15 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
               label: t('label.broker_ip_address'),
               placeholder: t('placeholder.broker_ip_address'),
               condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'data_stream',
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.broker_selection',
+                    operator: 'eq',
+                    value: 'new',
+                  },
+                ],
               },
             },
             {
@@ -174,6 +233,31 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
               label: t('label.broker_port'),
               placeholder: t('placeholder.broker_port'),
               condition: {
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.broker_selection',
+                    operator: 'eq',
+                    value: 'new',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        // Topic Selection Mode
+        {
+          fields: [
+            {
+              type: 'radio',
+              name: 'source_settings.topic_selection',
+              label: 'Topic Selection',
+              options: [
+                { value: 'existing', label: 'Existing Topic' },
+                { value: 'new', label: 'New Topic' },
+              ],
+              condition: {
                 field: 'type',
                 operator: 'eq',
                 value: 'data_stream',
@@ -181,6 +265,30 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
             },
           ],
         },
+        // Existing Topic Dropdown
+        {
+          fields: [
+            {
+              type: 'select',
+              name: 'source_settings.topic_id',
+              label: 'Select Topic',
+              placeholder: t('placeholder.select_topic'),
+              options: topicOptions,
+              condition: {
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.topic_selection',
+                    operator: 'eq',
+                    value: 'existing',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        // New Topic Fields
         {
           fields: [
             {
@@ -189,9 +297,15 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
               label: t('label.topic_name'),
               placeholder: t('placeholder.topic_name'),
               condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'data_stream',
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.topic_selection',
+                    operator: 'eq',
+                    value: 'new',
+                  },
+                ],
               },
             },
           ],
@@ -229,9 +343,15 @@ export const getDatasetFormSteps = (t: (key: string) => string) =>
               label: t('label.topic_schema'),
               placeholder: t('placeholder.topic_schema'),
               condition: {
-                field: 'type',
-                operator: 'eq',
-                value: 'data_stream',
+                group: 'and',
+                conditions: [
+                  { field: 'type', operator: 'eq', value: 'data_stream' },
+                  {
+                    field: 'source_settings.topic_selection',
+                    operator: 'eq',
+                    value: 'new',
+                  },
+                ],
               },
             },
           ],

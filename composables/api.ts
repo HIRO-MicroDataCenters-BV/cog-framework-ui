@@ -964,6 +964,43 @@ export const useApi = () => {
     deleteDatasetFile: async (id: string) => {
       return request(`/datasets/file/${id}`, 'DELETE');
     },
+
+    /**
+     * Downloads a dataset file
+     *
+     * Downloads a specific dataset file by dataset ID.
+     *
+     * @param {string} id - The ID of the dataset
+     *
+     * @returns {Promise<Object>} File download response
+     *
+     * @example
+     * ```typescript
+     * const file = await api.downloadDatasetFile('123');
+     * ```
+     */
+    downloadDatasetFile: async (id: string) => {
+      return request(`/datasets/${id}/file/download`);
+    },
+
+    /**
+     * Previews a dataset file
+     *
+     * Previews the content of a dataset file (CSV only).
+     *
+     * @param {string} id - The ID of the dataset
+     * @param {number} [limit=10] - Number of lines to preview
+     *
+     * @returns {Promise<Object>} Preview response
+     *
+     * @example
+     * ```typescript
+     * const preview = await api.previewDatasetFile('123', 5);
+     * ```
+     */
+    previewDatasetFile: async (id: string, limit: number = 10) => {
+      return request(`/datasets/${id}/file/preview?limit=${limit}`);
+    },
     /**
      * Links a dataset to a model
      *
@@ -1397,6 +1434,30 @@ export const useApi = () => {
      */
     deleteDatasetMessage: async (id: string) => {
       return request(`/datasets/message/${id}`, 'DELETE');
+    },
+
+    /**
+     * Gets broker details
+     *
+     * Retrieves a list of existing brokers.
+     *
+     * @returns {Promise<Object>} Standard response containing broker details
+     */
+    getBrokerDetails: async () => {
+      const res = await request(`/datasets/broker/details`);
+      return res;
+    },
+
+    /**
+     * Gets topic details
+     *
+     * Retrieves a list of existing topics.
+     *
+     * @returns {Promise<Object>} Standard response containing topic details
+     */
+    getTopicDetails: async () => {
+      const res = await request(`/datasets/topic/details`);
+      return res;
     },
 
     /**
