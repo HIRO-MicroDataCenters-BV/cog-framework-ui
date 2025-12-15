@@ -121,6 +121,14 @@ export const useApi = () => {
     };
     try {
       const res = await fetch(`${baseUrl}${url}`, opts);
+      if (res.status === 204) {
+        if (isModifyingRequest && showToast) {
+          const successMessage = 'operation_completed';
+          toaster.show('success', successMessage);
+        }
+        return null;
+      }
+
       const data = await res.json();
 
       if (!res.ok) {
