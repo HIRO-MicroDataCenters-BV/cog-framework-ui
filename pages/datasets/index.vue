@@ -20,6 +20,7 @@ const {
   deleteDatasetMessage,
   downloadDatasetFile,
   previewDatasetFile,
+  getDatasetMessageDetails,
 } = useApi();
 
 setPage({
@@ -122,8 +123,15 @@ const columns = [
           label: 'delete_message',
           hasConfirmation: true,
           action: async () => {
-            await deleteDatasetMessage(id);
-            tableRef.value.fetchData();
+            // Retrieve the real integer ID for the message dataset
+            const res = await getDatasetMessageDetails(id);
+            // @ts-expect-error -- response type from getDatasetMessageDetails is complex union
+            if (res && res.data && res.data.dataset && res.data.dataset.id) {
+              // @ts-expect-error -- dataset property not inferred correctly in union
+              const integerId = res.data.dataset.id;
+              await deleteDatasetMessage(String(integerId));
+              tableRef.value.fetchData();
+            }
           },
         });
       } else {

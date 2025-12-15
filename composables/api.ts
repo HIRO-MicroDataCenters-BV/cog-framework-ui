@@ -970,7 +970,7 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetFile: async (id: string) => {
-      return request(`/datasets/file/${id}`, 'DELETE');
+      return request(`/datasets/${id}/file`, 'DELETE');
     },
 
     /**
