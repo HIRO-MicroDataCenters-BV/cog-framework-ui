@@ -9,18 +9,17 @@ import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
 const { setPage, page } = useApp();
-const { getDatasets } = useApi();
 
 const tableRef = ref();
 
 const {
+  getDatasets,
   deleteDatasetFile,
   deleteDatasetBroker,
   deleteDatasetTopic,
-  deleteDatasetMessage,
   downloadDatasetFile,
   previewDatasetFile,
-  getDatasetMessageDetails,
+  getDatasetById,
 } = useApi();
 
 setPage({
@@ -124,14 +123,28 @@ const columns = [
           hasConfirmation: true,
           action: async () => {
             // Retrieve the real integer ID for the message dataset
-            const res = await getDatasetMessageDetails(id);
-            // @ts-expect-error -- response type from getDatasetMessageDetails is complex union
-            if (res && res.data && res.data.dataset && res.data.dataset.id) {
-              // @ts-expect-error -- dataset property not inferred correctly in union
-              const integerId = res.data.dataset.id;
-              await deleteDatasetMessage(String(integerId));
-              tableRef.value.fetchData();
+            console.log('DELETE MESSAGE: Starting, dataset UUID:', id);
+            const res = await getDatasetById(id);
+            console.log('DELETE MESSAGE: getDatasetById response:', res);
+            console.log('DELETE MESSAGE: res?.data:', res?.data);
+            console.log('DELETE MESSAGE: topic_details:', res?.data?.topic_details);
+            console.log('DELETE MESSAGE: broker_details:', res?.data?.broker_details);
+            
+            if (res?.data?.topic_details?.id) {
+              console.log('DELETE MESSAGE: Deleting topic with ID:', res.data.topic_details.id);
+              await deleteDatasetTopic(String(res.data.topic_details.id));
+            } else {
+              console.log('DELETE MESSAGE: No topic_details.id found');
             }
+            
+            if (res?.data?.broker_details?.id) {
+              console.log('DELETE MESSAGE: Deleting broker with ID:', res.data.broker_details.id);
+              await deleteDatasetBroker(String(res.data.broker_details.id));
+            } else {
+              console.log('DELETE MESSAGE: No broker_details.id found');
+            }
+            
+            tableRef.value.fetchData();
           },
         });
       } else {
@@ -140,16 +153,27 @@ const columns = [
             key: 'download_file',
             label: 'download_file',
             action: async () => {
-              await downloadDatasetFile(id);
+              console.log('DOWNLOAD FILE: Starting, dataset UUID:', id);
+              const res = await getDatasetById(id);
+              console.log('DOWNLOAD FILE: getDatasetById response:', res);
+              console.log('DOWNLOAD FILE: res?.data?.file_id:', res?.data?.file_id);
+              
+              if (res?.data?.file_id) {
+                console.log('DOWNLOAD FILE: Downloading file with ID:', res.data.file_id);
+                await downloadDatasetFile(String(res.data.file_id));
+              } else {
+                console.log('DOWNLOAD FILE: No file_id found in response');
+              }
             },
           },
           {
             key: 'preview_file',
             label: 'preview_file',
             action: async () => {
-              // Preview logic usually requires a modal or separate view.
-              // For now we will just call the API.
-              await previewDatasetFile(id);
+              const res = await getDatasetById(id);
+              if (res?.data?.file_id) {
+                await previewDatasetFile(String(res.data.file_id));
+              }
             },
           },
           {
@@ -157,8 +181,11 @@ const columns = [
             label: 'delete_file',
             hasConfirmation: true,
             action: async () => {
-              await deleteDatasetFile(id);
-              tableRef.value.fetchData();
+              const res = await getDatasetById(id);
+              if (res?.data?.file_id) {
+                await deleteDatasetFile(String(res.data.file_id));
+                tableRef.value.fetchData();
+              }
             },
           },
         );
