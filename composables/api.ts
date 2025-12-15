@@ -1163,7 +1163,9 @@ export const useApi = () => {
      */
     deleteDatasetBroker: async (id: string) => {
       console.log('deleteDatasetBroker called with ID:', id);
-      console.log('deleteDatasetBroker: Making DELETE request to /datasets/broker/' + id);
+      console.log(
+        'deleteDatasetBroker: Making DELETE request to /datasets/broker/' + id,
+      );
       return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
@@ -1252,7 +1254,9 @@ export const useApi = () => {
      */
     deleteDatasetTopic: async (id: string) => {
       console.log('deleteDatasetTopic called with ID:', id);
-      console.log('deleteDatasetTopic: Making DELETE request to /datasets/topic/' + id);
+      console.log(
+        'deleteDatasetTopic: Making DELETE request to /datasets/topic/' + id,
+      );
       return request(`/datasets/topic/${id}`, 'DELETE');
     },
 

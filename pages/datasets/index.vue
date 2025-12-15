@@ -127,23 +127,35 @@ const columns = [
             const res = await getDatasetById(id);
             console.log('DELETE MESSAGE: getDatasetById response:', res);
             console.log('DELETE MESSAGE: res?.data:', res?.data);
-            console.log('DELETE MESSAGE: topic_details:', res?.data?.topic_details);
-            console.log('DELETE MESSAGE: broker_details:', res?.data?.broker_details);
-            
+            console.log(
+              'DELETE MESSAGE: topic_details:',
+              res?.data?.topic_details,
+            );
+            console.log(
+              'DELETE MESSAGE: broker_details:',
+              res?.data?.broker_details,
+            );
+
             if (res?.data?.topic_details?.id) {
-              console.log('DELETE MESSAGE: Deleting topic with ID:', res.data.topic_details.id);
+              console.log(
+                'DELETE MESSAGE: Deleting topic with ID:',
+                res.data.topic_details.id,
+              );
               await deleteDatasetTopic(String(res.data.topic_details.id));
             } else {
               console.log('DELETE MESSAGE: No topic_details.id found');
             }
-            
+
             if (res?.data?.broker_details?.id) {
-              console.log('DELETE MESSAGE: Deleting broker with ID:', res.data.broker_details.id);
+              console.log(
+                'DELETE MESSAGE: Deleting broker with ID:',
+                res.data.broker_details.id,
+              );
               await deleteDatasetBroker(String(res.data.broker_details.id));
             } else {
               console.log('DELETE MESSAGE: No broker_details.id found');
             }
-            
+
             tableRef.value.fetchData();
           },
         });
@@ -156,10 +168,16 @@ const columns = [
               console.log('DOWNLOAD FILE: Starting, dataset UUID:', id);
               const res = await getDatasetById(id);
               console.log('DOWNLOAD FILE: getDatasetById response:', res);
-              console.log('DOWNLOAD FILE: res?.data?.file_id:', res?.data?.file_id);
-              
+              console.log(
+                'DOWNLOAD FILE: res?.data?.file_id:',
+                res?.data?.file_id,
+              );
+
               if (res?.data?.file_id) {
-                console.log('DOWNLOAD FILE: Downloading file with ID:', res.data.file_id);
+                console.log(
+                  'DOWNLOAD FILE: Downloading file with ID:',
+                  res.data.file_id,
+                );
                 await downloadDatasetFile(String(res.data.file_id));
               } else {
                 console.log('DOWNLOAD FILE: No file_id found in response');
