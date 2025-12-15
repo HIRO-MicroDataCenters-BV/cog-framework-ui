@@ -4,10 +4,12 @@ import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
 import { Badge } from '~/components/ui/badge';
+import DropdownAction from '@/components/app/menu/Actions.vue';
 
 const dayjs = useDayjs();
-const { getModels } = useApi();
+const { getModels, deleteModel } = useApi();
 const { setPage, page } = useApp();
+const tableRef = ref();
 
 setPage({
   section: 'models',
@@ -104,6 +106,29 @@ const columns = [
         dayjs(row.getValue<string>('last_modified_time')).format('DD.MM.YYYY'),
       ),
   },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      const id = row.getValue<string>('id');
+
+      return h(DropdownAction, {
+        title: row.getValue('name') as string,
+        id,
+        items: [
+          {
+            key: 'delete_model',
+            label: 'delete_model',
+            hasConfirmation: true,
+            action: async () => {
+              await deleteModel(id);
+              tableRef.value.fetchData();
+            },
+          },
+        ],
+      });
+    },
+  },
 ];
 
 const tabs = uselistTabs().value.model_management;
@@ -111,6 +136,7 @@ const tabs = uselistTabs().value.model_management;
 
 <template>
   <AppTable
+    ref="tableRef"
     :columns="columns"
     :data-source="getModels"
     :tabs="tabs"

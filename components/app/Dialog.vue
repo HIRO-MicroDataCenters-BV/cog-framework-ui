@@ -46,10 +46,20 @@
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset>
-          <slot />
+        <SidebarInset
+          class="flex flex-col overflow-hidden overflow-y-auto flex-1] overflow-hidden overflow-y-auto h-[504px]"
+        >
+          <div
+            data-slot="sidebar-inset"
+            class="flex-1 min-h-0 overflow-y-auto overflow-hidden h-[calc(100%-65px)]"
+          >
+            <slot />
+          </div>
 
-          <DialogFooter v-if="props.navigation.length > 0">
+          <DialogFooter
+            v-if="props.navigation.length > 0"
+            class="flex-shrink-0"
+          >
             <div class="flex gap-2 w-full justify-end">
               <Button
                 v-for="item in props.stepFormActions.length > 0
@@ -65,7 +75,7 @@
               </Button>
             </div>
           </DialogFooter>
-          <DialogFooter v-else class="justify-end">
+          <DialogFooter v-else class="flex-shrink-0 justify-end">
             <div class="flex mt-8 gap-2">
               <Button
                 v-for="item in props.stepFormActions.length > 0

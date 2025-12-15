@@ -234,6 +234,8 @@ export default defineI18nConfig(() => ({
         uri: 'Enter the URI of the data source',
         model_id: 'Model Id',
         file_type: 'Select File Type',
+        select_broker: 'Select Broker',
+        select_topic: 'Select Topic',
         data_source_type: 'Select Data Source Type',
       },
       action: {
@@ -268,6 +270,9 @@ export default defineI18nConfig(() => ({
         delete_message: 'Delete Message',
         delete_file: 'Delete File',
         add_datasets: 'Add Dataset',
+        download_file: 'Download File',
+        preview_file: 'Preview File',
+        delete_model: 'Delete Model',
         add_models: 'Add Model',
         add_training_builder: 'Add Training Builder',
         add_runs: 'Add Runs',

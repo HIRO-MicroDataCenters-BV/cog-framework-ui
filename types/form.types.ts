@@ -16,9 +16,11 @@ export interface FieldOption {
 }
 
 export interface FieldCondition {
-  field: string;
-  operator: 'eq' | 'neq' | 'contains' | 'not_contains';
-  value: string | number | boolean;
+  field?: string;
+  operator?: 'eq' | 'neq' | 'contains' | 'not_contains';
+  value?: string | number | boolean;
+  group?: 'and' | 'or';
+  conditions?: FieldCondition[];
 }
 
 export interface Field {

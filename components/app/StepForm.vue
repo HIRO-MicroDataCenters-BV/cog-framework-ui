@@ -254,6 +254,7 @@ import {
 import type {
   ActionType,
   Field,
+  FieldCondition,
   ReviewItem,
   ReviewItemsByType,
   ReviewTableItem,
@@ -295,11 +296,30 @@ const form = useForm<FormValues>({
   validateOnChange: true,
 });
 
-const checkFieldCondition = (field: Field): boolean => {
-  if (!field.condition) return true;
+const getNestedValue = (obj: any, path: string): any => {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
 
-  const { field: conditionField, operator, value } = field.condition;
-  const fieldValue = form.values[conditionField];
+const evaluateCondition = (
+  condition: FieldCondition,
+  formValues: any,
+): boolean => {
+  if (condition.group) {
+    if (!condition.conditions || condition.conditions.length === 0) return true;
+    if (condition.group === 'and') {
+      return condition.conditions.every((c) =>
+        evaluateCondition(c, formValues),
+      );
+    } else if (condition.group === 'or') {
+      return condition.conditions.some((c) => evaluateCondition(c, formValues));
+    }
+    return true;
+  }
+
+  if (!condition.field || !condition.operator) return true;
+
+  const { field: conditionField, operator, value } = condition;
+  const fieldValue = getNestedValue(formValues, conditionField);
 
   switch (operator) {
     case 'eq':
@@ -317,6 +337,25 @@ const checkFieldCondition = (field: Field): boolean => {
   }
 };
 
+const formValuesKey = ref(0);
+
+watch(
+  () => form.values,
+  () => {
+    formValuesKey.value++;
+  },
+  { deep: true },
+);
+
+const checkFieldCondition = computed(() => {
+  formValuesKey.value;
+  const values = form.values;
+  return (field: Field): boolean => {
+    if (!field.condition) return true;
+    return evaluateCondition(field.condition, values);
+  };
+});
+
 // Get all field names for a specific step
 const getStepFields = (stepIndex: number): string[] => {
   const step = Array.isArray(props.steps) ? props.steps[stepIndex] : null;
@@ -325,7 +364,7 @@ const getStepFields = (stepIndex: number): string[] => {
   const fields: string[] = [];
   step.rows.forEach((row) => {
     row.fields.forEach((field) => {
-      if (checkFieldCondition(field)) {
+      if (checkFieldCondition.value(field)) {
         fields.push(field.name);
       }
     });

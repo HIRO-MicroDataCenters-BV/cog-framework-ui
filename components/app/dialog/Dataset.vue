@@ -37,9 +37,12 @@ import {
 } from '@/schemas/dataset-form.schema';
 import {
   getDatasetFormSteps,
-  datasetFormNavigation,
   getDatasetActionLabels,
+  datasetFormNavigation,
 } from '@/components/forms/dataset/steps';
+import { useApi } from '@/composables/api';
+
+const { getBrokerDetails, getTopicDetails } = useApi();
 
 const { t } = useI18n();
 const props = withDefaults(
@@ -73,13 +76,45 @@ const formSchema = datasetFormSchema;
 
 const form = useForm<FormValues>({
   validationSchema: formSchema,
-  // initialValues: datasetFormInitialValues,
+  initialValues: {
+    source_settings: {
+      broker_selection: 'existing',
+      topic_selection: 'existing',
+    },
+  },
 });
 
 const formNavigation = datasetFormNavigation;
 const actionLabels = getDatasetActionLabels(t);
 
-const formSteps = getDatasetFormSteps(t);
+const brokerOptions = ref<{ label: string; value: string | number }[]>([]);
+const topicOptions = ref<{ label: string; value: string | number }[]>([]);
+
+const formSteps = computed(
+  () => getDatasetFormSteps(t, brokerOptions, topicOptions).value,
+);
+
+onMounted(async () => {
+  try {
+    const brokers = (await getBrokerDetails()) as any;
+    if (brokers?.data) {
+      brokerOptions.value = brokers.data.map((b: any) => ({
+        label: `${b.broker_name} (${b.broker_ip}:${b.broker_port})`,
+        value: b.id,
+      }));
+    }
+
+    const topics = (await getTopicDetails()) as any;
+    if (topics?.data) {
+      topicOptions.value = topics.data.map((topic: any) => ({
+        label: topic.topic_name,
+        value: topic.id,
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to fetch broker/topic details:', error);
+  }
+});
 
 const { submitDatasetForm } = useDatasetForm();
 

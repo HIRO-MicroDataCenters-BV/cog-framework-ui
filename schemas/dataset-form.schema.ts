@@ -38,6 +38,8 @@ export const datasetFormSchema = toTypedSchema(
       source_settings: z
         .object({
           dataset_file: z.any().nullable().optional(),
+          broker_selection: z.enum(['existing', 'new']).optional(),
+          broker_id: z.number().optional(),
           broker_name: z.string().optional(),
           broker_ip_address: z.string().optional(),
           broker_port: z
@@ -46,6 +48,8 @@ export const datasetFormSchema = toTypedSchema(
               z.string().regex(portRegex, 'validation.invalid_port'),
             ])
             .optional(),
+          topic_selection: z.enum(['existing', 'new']).optional(),
+          topic_id: z.number().optional(),
           topic_name: z.string().optional(),
           topic_schema: z.string().optional(),
           db_url: z.string().optional(),
@@ -162,92 +166,116 @@ export const datasetFormSchema = toTypedSchema(
           });
         }
 
-        // Broker name is required
-        if (
-          !data.source_settings ||
-          !data.source_settings.broker_name ||
-          data.source_settings.broker_name.trim() === ''
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'validation.required',
-            path: ['source_settings', 'broker_name'],
-          });
-        }
+        const brokerSelection = data.source_settings?.broker_selection || 'new';
 
-        // Broker IP address is required and must be valid IP
-        if (
-          !data.source_settings ||
-          !data.source_settings.broker_ip_address ||
-          data.source_settings.broker_ip_address.trim() === ''
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'validation.required',
-            path: ['source_settings', 'broker_ip_address'],
-          });
-        } else if (
-          !ipAddressRegex.test(data.source_settings.broker_ip_address.trim())
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'validation.invalid_ip_address',
-            path: ['source_settings', 'broker_ip_address'],
-          });
-        }
-
-        // Broker port is required and must be valid
-        if (
-          !data.source_settings ||
-          data.source_settings.broker_port === undefined ||
-          data.source_settings.broker_port === null ||
-          data.source_settings.broker_port === 0
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'validation.required',
-            path: ['source_settings', 'broker_port'],
-          });
+        if (brokerSelection === 'existing') {
+          if (!data.source_settings?.broker_id) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'broker_id'],
+            });
+          }
         } else {
-          let port: number;
-          if (typeof data.source_settings.broker_port === 'string') {
-            const parsed = parseInt(
-              data.source_settings.broker_port.trim(),
-              10,
-            );
-            if (isNaN(parsed)) {
+          // Broker name is required
+          if (
+            !data.source_settings ||
+            !data.source_settings.broker_name ||
+            data.source_settings.broker_name.trim() === ''
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'broker_name'],
+            });
+          }
+
+          // Broker IP address is required and must be valid IP
+          if (
+            !data.source_settings ||
+            !data.source_settings.broker_ip_address ||
+            data.source_settings.broker_ip_address.trim() === ''
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'broker_ip_address'],
+            });
+          } else if (
+            !ipAddressRegex.test(data.source_settings.broker_ip_address.trim())
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.invalid_ip_address',
+              path: ['source_settings', 'broker_ip_address'],
+            });
+          }
+
+          // Broker port is required and must be valid
+          if (
+            !data.source_settings ||
+            data.source_settings.broker_port === undefined ||
+            data.source_settings.broker_port === null ||
+            data.source_settings.broker_port === 0
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'broker_port'],
+            });
+          } else {
+            let port: number;
+            if (typeof data.source_settings.broker_port === 'string') {
+              const parsed = parseInt(
+                data.source_settings.broker_port.trim(),
+                10,
+              );
+              if (isNaN(parsed)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: 'validation.invalid_port',
+                  path: ['source_settings', 'broker_port'],
+                });
+                return;
+              }
+              port = parsed;
+            } else {
+              port = data.source_settings.broker_port;
+            }
+
+            if (port < 1 || port > 65535) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'validation.invalid_port',
                 path: ['source_settings', 'broker_port'],
               });
-              return;
             }
-            port = parsed;
-          } else {
-            port = data.source_settings.broker_port;
-          }
-
-          if (port < 1 || port > 65535) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'validation.invalid_port',
-              path: ['source_settings', 'broker_port'],
-            });
           }
         }
 
-        // Topic name is required
-        if (
-          !data.source_settings ||
-          !data.source_settings.topic_name ||
-          data.source_settings.topic_name.trim() === ''
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'validation.required',
-            path: ['source_settings', 'topic_name'],
-          });
+        const topicSelection = data.source_settings?.topic_selection || 'new';
+
+        if (topicSelection === 'existing') {
+          if (!data.source_settings?.topic_id) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'topic_id'],
+            });
+          }
+        } else {
+          // Topic name is required
+          if (
+            !data.source_settings ||
+            !data.source_settings.topic_name ||
+            data.source_settings.topic_name.trim() === ''
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'validation.required',
+              path: ['source_settings', 'topic_name'],
+            });
+          }
         }
       }
     }),
@@ -260,9 +288,13 @@ export const datasetFormInitialValues = {
     description: '',
   },
   source_settings: {
+    broker_selection: 'existing',
+    broker_id: undefined,
     broker_name: '',
     broker_ip_address: '',
     broker_port: 0,
+    topic_selection: 'existing',
+    topic_id: undefined,
     topic_name: '',
     topic_schema: '',
   },
