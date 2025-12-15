@@ -123,11 +123,11 @@ const columns = [
           label: 'delete_message',
           hasConfirmation: true,
           action: async () => {
-             // Retrieve the real integer ID for the message dataset
+            // Retrieve the real integer ID for the message dataset
             const res = await getDatasetMessageDetails(id);
-             // @ts-ignore
+            // @ts-expect-error
             if (res && res.data && res.data.dataset && res.data.dataset.id) {
-               // @ts-ignore
+              // @ts-expect-error
               const integerId = res.data.dataset.id;
               await deleteDatasetMessage(String(integerId));
               tableRef.value.fetchData();
