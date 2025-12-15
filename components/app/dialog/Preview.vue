@@ -2,7 +2,7 @@
 const props = defineProps<{
   open: boolean;
   title: string;
-  data: any;
+  data: unknown;
   type: 'file' | 'table' | 'prometheus';
 }>();
 
@@ -12,11 +12,11 @@ const emit = defineEmits<{
 
 const formattedData = computed(() => {
   if (!props.data) return '';
-  
+
   if (typeof props.data === 'string') {
     return props.data;
   }
-  
+
   return JSON.stringify(props.data, null, 2);
 });
 
@@ -24,9 +24,20 @@ const isTableData = computed(() => {
   return props.type === 'table' && Array.isArray(props.data);
 });
 
+const tableData = computed(() => {
+  if (Array.isArray(props.data)) {
+    return props.data as Array<Record<string, unknown>>;
+  }
+  return [];
+});
+
 const tableColumns = computed(() => {
-  if (!isTableData.value || !props.data || props.data.length === 0) return [];
-  return Object.keys(props.data[0]);
+  if (!isTableData.value || tableData.value.length === 0) return [];
+  const firstRow = tableData.value[0];
+  if (typeof firstRow === 'object' && firstRow !== null) {
+    return Object.keys(firstRow);
+  }
+  return [];
 });
 </script>
 
@@ -36,10 +47,10 @@ const tableColumns = computed(() => {
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
       </DialogHeader>
-      
+
       <div class="flex-1 overflow-auto">
         <!-- Table Preview -->
-        <template v-if="isTableData && data && data.length > 0">
+        <template v-if="isTableData && tableData.length > 0">
           <div class="rounded-md border">
             <Table>
               <TableHeader>
@@ -50,7 +61,7 @@ const tableColumns = computed(() => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="(row, index) in data" :key="index">
+                <TableRow v-for="(row, index) in tableData" :key="index">
                   <TableCell v-for="column in tableColumns" :key="column">
                     {{ row[column] }}
                   </TableCell>
@@ -62,7 +73,9 @@ const tableColumns = computed(() => {
 
         <!-- JSON/Text Preview -->
         <template v-else>
-          <pre class="bg-muted p-4 rounded-md overflow-auto text-sm">{{ formattedData }}</pre>
+          <pre class="bg-muted p-4 rounded-md overflow-auto text-sm">{{
+            formattedData
+          }}</pre>
         </template>
       </div>
 

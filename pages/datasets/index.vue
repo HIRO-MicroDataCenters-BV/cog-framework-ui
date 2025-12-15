@@ -105,16 +105,13 @@ const columns = [
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();
-      
+
       const id = row.getValue<string>('id');
       const datasetName = row.getValue<string>('dataset_name');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
 
-      const items = getDatasetActions(
-        id,
-        datasetName,
-        dataSourceType,
-        () => tableRef.value.fetchData()
+      const items = getDatasetActions(id, datasetName, dataSourceType, () =>
+        tableRef.value.fetchData(),
       );
 
       return h(DropdownAction, {
@@ -128,21 +125,23 @@ const columns = [
 </script>
 
 <template>
-  <AppTable
-    ref="tableRef"
-    :columns="columns"
-    :data-source="getDatasets"
-    :tabs="tabs"
-    :sortable-columns="['last_modified_time']"
-    :filterable-columns="['data_source_type']"
-    class="flex-grow"
-  />
-  
-  <!-- Preview Dialog -->
-  <PreviewDialog
-    v-model:open="previewState.open"
-    :title="previewState.title"
-    :data="previewState.data"
-    :type="previewState.type"
-  />
+  <div>
+    <AppTable
+      ref="tableRef"
+      :columns="columns"
+      :data-source="getDatasets"
+      :tabs="tabs"
+      :sortable-columns="['last_modified_time']"
+      :filterable-columns="['data_source_type']"
+      class="flex-grow"
+    />
+
+    <!-- Preview Dialog -->
+    <PreviewDialog
+      v-model:open="previewState.open"
+      :title="previewState.title"
+      :data="previewState.data"
+      :type="previewState.type"
+    />
+  </div>
 </template>
