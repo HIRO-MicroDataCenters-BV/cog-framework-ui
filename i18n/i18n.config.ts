@@ -272,6 +272,8 @@ export default defineI18nConfig(() => ({
         add_datasets: 'Add Dataset',
         download_file: 'Download File',
         preview_file: 'Preview File',
+        preview_table: 'Preview Table',
+        preview_prometheus: 'Preview Metrics',
         delete_model: 'Delete Model',
         add_models: 'Add Model',
         add_training_builder: 'Add Training Builder',

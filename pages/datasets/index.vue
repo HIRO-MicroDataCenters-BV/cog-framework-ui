@@ -2,6 +2,7 @@
 import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
+import PreviewDialog from '@/components/app/dialog/Preview.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
@@ -12,15 +13,8 @@ const { setPage, page } = useApp();
 
 const tableRef = ref();
 
-const {
-  getDatasets,
-  deleteDatasetFile,
-  deleteDatasetBroker,
-  deleteDatasetTopic,
-  downloadDatasetFile,
-  previewDatasetFile,
-  getDatasetById,
-} = useApi();
+const { getDatasets } = useApi();
+const { previewState } = useDatasetActions();
 
 setPage({
   section: 'datasets',
@@ -110,107 +104,18 @@ const columns = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
+      const { getDatasetActions } = useDatasetActions();
+
       const id = row.getValue<string>('id');
+      const datasetName = row.getValue<string>('dataset_name');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
-      const isStream = [10, 11].includes(dataSourceType);
 
-      const items = [];
-
-      if (isStream) {
-        items.push({
-          key: 'delete_message',
-          label: 'delete_message',
-          hasConfirmation: true,
-          action: async () => {
-            // Retrieve the real integer ID for the message dataset
-            console.log('DELETE MESSAGE: Starting, dataset UUID:', id);
-            const res = await getDatasetById(id);
-            console.log('DELETE MESSAGE: getDatasetById response:', res);
-            console.log('DELETE MESSAGE: res?.data:', res?.data);
-            console.log(
-              'DELETE MESSAGE: topic_details:',
-              res?.data?.topic_details,
-            );
-            console.log(
-              'DELETE MESSAGE: broker_details:',
-              res?.data?.broker_details,
-            );
-
-            if (res?.data?.topic_details?.id) {
-              console.log(
-                'DELETE MESSAGE: Deleting topic with ID:',
-                res.data.topic_details.id,
-              );
-              await deleteDatasetTopic(String(res.data.topic_details.id));
-            } else {
-              console.log('DELETE MESSAGE: No topic_details.id found');
-            }
-
-            if (res?.data?.broker_details?.id) {
-              console.log(
-                'DELETE MESSAGE: Deleting broker with ID:',
-                res.data.broker_details.id,
-              );
-              await deleteDatasetBroker(String(res.data.broker_details.id));
-            } else {
-              console.log('DELETE MESSAGE: No broker_details.id found');
-            }
-
-            tableRef.value.fetchData();
-          },
-        });
-      } else {
-        items.push(
-          {
-            key: 'download_file',
-            label: 'download_file',
-            action: async () => {
-              console.log('DOWNLOAD FILE: Starting, dataset UUID:', id);
-              const res = await getDatasetById(id);
-              console.log('DOWNLOAD FILE: getDatasetById response:', res);
-              console.log(
-                'DOWNLOAD FILE: res?.data?.file_id:',
-                res?.data?.file_id,
-              );
-
-              if (res?.data?.file_id) {
-                console.log(
-                  'DOWNLOAD FILE: Downloading file with ID:',
-                  res.data.file_id,
-                );
-                await downloadDatasetFile(String(res.data.file_id));
-              } else {
-                console.log('DOWNLOAD FILE: No file_id found in response');
-              }
-            },
-          },
-          {
-            key: 'preview_file',
-            label: 'preview_file',
-            action: async () => {
-              const res = await getDatasetById(id);
-              if (res?.data?.file_id) {
-                await previewDatasetFile(String(res.data.file_id));
-              }
-            },
-          },
-          {
-            key: 'delete_file',
-            label: 'delete_file',
-            hasConfirmation: true,
-            action: async () => {
-              const res = await getDatasetById(id);
-              if (res?.data?.file_id) {
-                await deleteDatasetFile(String(res.data.file_id));
-                tableRef.value.fetchData();
-              }
-            },
-          },
-        );
-      }
+      const items = getDatasetActions(id, datasetName, dataSourceType, () =>
+        tableRef.value.fetchData(),
+      );
 
       return h(DropdownAction, {
-        title: row.getValue('dataset_name') as string,
+        title: datasetName,
         id,
         items,
       });
@@ -220,13 +125,23 @@ const columns = [
 </script>
 
 <template>
-  <AppTable
-    ref="tableRef"
-    :columns="columns"
-    :data-source="getDatasets"
-    :tabs="tabs"
-    :sortable-columns="['last_modified_time']"
-    :filterable-columns="['data_source_type']"
-    class="flex-grow"
-  />
+  <div>
+    <AppTable
+      ref="tableRef"
+      :columns="columns"
+      :data-source="getDatasets"
+      :tabs="tabs"
+      :sortable-columns="['last_modified_time']"
+      :filterable-columns="['data_source_type']"
+      class="flex-grow"
+    />
+
+    <!-- Preview Dialog -->
+    <PreviewDialog
+      v-model:open="previewState.open"
+      :title="previewState.title"
+      :data="previewState.data"
+      :type="previewState.type"
+    />
+  </div>
 </template>
