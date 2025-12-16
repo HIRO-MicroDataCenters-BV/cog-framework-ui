@@ -54,6 +54,33 @@ jobs:
           images: ${{ env.DOCKER_IMAGE_NAME }}
           tags: ${{ env.DOCKER_TAGS }}
 
+      - name: Debug - Verify secrets are available
+        run: |
+          echo "=== Checking DEX Configuration ==="
+          echo "NUXT_DEX_HOST is set: ${{ secrets.NUXT_DEX_HOST != '' }}"
+          echo "NUXT_DEX_USERNAME is set: ${{ secrets.NUXT_DEX_USERNAME != '' }}"
+          echo "NUXT_DEX_PASSWORD is set: ${{ secrets.NUXT_DEX_PASSWORD != '' }}"
+          echo "NUXT_DEX_AUTH_TYPE is set: ${{ secrets.NUXT_DEX_AUTH_TYPE != '' }}"
+          echo "NUXT_DEX_SKIP_TLS_VERIFY is set: ${{ secrets.NUXT_DEX_SKIP_TLS_VERIFY != '' }}"
+          echo ""
+          echo "=== Checking API Configuration ==="
+          echo "NUXT_PUBLIC_API_BASE is set: ${{ secrets.NUXT_PUBLIC_API_BASE != '' }}"
+          echo "NUXT_PUBLIC_API_REMOTE is set: ${{ secrets.NUXT_PUBLIC_API_REMOTE != '' }}"
+          echo "NUXT_PUBLIC_API_RUNS is set: ${{ secrets.NUXT_PUBLIC_API_RUNS != '' }}"
+          echo ""
+          echo "=== Checking Variables ==="
+          echo "URL_PREFIX is set: ${{ vars.URL_PREFIX != '' }}"
+          echo "URL_PREFIX value: ${{ vars.URL_PREFIX }}"
+          echo ""
+          echo "=== Secret Lengths (for verification) ==="
+          echo "DEX_HOST length: ${#NUXT_DEX_HOST}"
+          echo "DEX_USERNAME length: ${#NUXT_DEX_USERNAME}"
+          echo "DEX_PASSWORD length: ${#NUXT_DEX_PASSWORD}"
+        env:
+          NUXT_DEX_HOST: ${{ secrets.NUXT_DEX_HOST }}
+          NUXT_DEX_USERNAME: ${{ secrets.NUXT_DEX_USERNAME }}
+          NUXT_DEX_PASSWORD: ${{ secrets.NUXT_DEX_PASSWORD }}
+
       - name: Push docker image with version
         uses: docker/build-push-action@v6
         with:

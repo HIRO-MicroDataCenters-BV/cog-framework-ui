@@ -61,12 +61,27 @@ COPY . .
 # This avoids exposing credentials in ARG/ENV
 RUN --mount=type=secret,id=dex_username \
     --mount=type=secret,id=dex_password \
+    echo "=== DEX Secrets Debug ===" && \
+    echo "Checking for dex_username secret..." && \
     if [ -f /run/secrets/dex_username ]; then \
+    echo "✓ dex_username secret found (length: $(wc -c < /run/secrets/dex_username))"; \
     export NUXT_DEX_USERNAME=$(cat /run/secrets/dex_username); \
+    else \
+    echo "✗ dex_username secret NOT found"; \
     fi && \
+    echo "Checking for dex_password secret..." && \
     if [ -f /run/secrets/dex_password ]; then \
+    echo "✓ dex_password secret found (length: $(wc -c < /run/secrets/dex_password))"; \
     export NUXT_DEX_PASSWORD=$(cat /run/secrets/dex_password); \
+    else \
+    echo "✗ dex_password secret NOT found"; \
     fi && \
+    echo "=== Environment Variables ===" && \
+    echo "NUXT_DEX_HOST: ${NUXT_DEX_HOST:-NOT SET}" && \
+    echo "NUXT_DEX_USERNAME: ${NUXT_DEX_USERNAME:+SET (hidden)}" && \
+    echo "NUXT_DEX_PASSWORD: ${NUXT_DEX_PASSWORD:+SET (hidden)}" && \
+    echo "NUXT_DEX_AUTH_TYPE: ${NUXT_DEX_AUTH_TYPE:-NOT SET}" && \
+    echo "=== Running build ===" && \
     pnpm run build
 
 ################################################################################
