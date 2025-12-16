@@ -44,6 +44,13 @@ export default defineNuxtConfig({
   },
   */
   runtimeConfig: {
+    // Server-side only configuration (never exposed to client)
+    dexHost: process.env.NUXT_DEX_HOST || '',
+    dexUsername: process.env.NUXT_DEX_USERNAME || '',
+    dexPassword: process.env.NUXT_DEX_PASSWORD || '',
+    dexAuthType: process.env.NUXT_DEX_AUTH_TYPE || 'local',
+    dexSkipTlsVerify: process.env.NUXT_DEX_SKIP_TLS_VERIFY === 'true',
+
     public: {
       apiBase: URL_PREFIX,
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',

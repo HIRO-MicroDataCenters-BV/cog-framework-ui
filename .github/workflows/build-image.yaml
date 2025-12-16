@@ -63,6 +63,15 @@ jobs:
           platforms: linux/amd64, linux/arm64
           build-args: |
             NUXT_PUBLIC_APP_VERSION=${{ env.APP_VERSION }}
+            NUXT_DEX_HOST=${{ secrets.NUXT_DEX_HOST }}
+            NUXT_DEX_USERNAME=${{ secrets.NUXT_DEX_USERNAME }}
+            NUXT_DEX_PASSWORD=${{ secrets.NUXT_DEX_PASSWORD }}
+            NUXT_DEX_AUTH_TYPE=${{ secrets.NUXT_DEX_AUTH_TYPE }}
+            NUXT_DEX_SKIP_TLS_VERIFY=${{ secrets.NUXT_DEX_SKIP_TLS_VERIFY }}
+            NUXT_PUBLIC_API_BASE=${{ secrets.NUXT_PUBLIC_API_BASE }}
+            NUXT_PUBLIC_API_REMOTE=${{ secrets.NUXT_PUBLIC_API_REMOTE }}
+            NUXT_PUBLIC_API_RUNS=${{ secrets.NUXT_PUBLIC_API_RUNS }}
+            URL_PREFIX=${{ vars.URL_PREFIX }}
 
       #      - name: Push docker image for Juju
       #        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' }}
