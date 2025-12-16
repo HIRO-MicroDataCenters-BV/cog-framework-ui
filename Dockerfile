@@ -28,21 +28,18 @@ ARG NUXT_PUBLIC_APP_VERSION=1.0.0
 ARG URL_PREFIX=/uidev/
 
 # DEX Authentication Configuration (from GitHub Secrets)
+# Note: Sensitive values (password, username) will be passed via build secrets
 ARG NUXT_DEX_HOST
-ARG NUXT_DEX_USERNAME
-ARG NUXT_DEX_PASSWORD
 ARG NUXT_DEX_AUTH_TYPE=local
 ARG NUXT_DEX_SKIP_TLS_VERIFY=false
 
-# Set environment variables
+# Set environment variables for non-sensitive data
 ENV NUXT_PUBLIC_APP_VERSION=$NUXT_PUBLIC_APP_VERSION
 ENV NUXT_PUBLIC_API_BASE=$NUXT_PUBLIC_API_BASE
 ENV NUXT_PUBLIC_API_REMOTE=$NUXT_PUBLIC_API_REMOTE
 ENV NUXT_PUBLIC_API_RUNS=$NUXT_PUBLIC_API_RUNS
 ENV URL_PREFIX=$URL_PREFIX
 ENV NUXT_DEX_HOST=$NUXT_DEX_HOST
-ENV NUXT_DEX_USERNAME=$NUXT_DEX_USERNAME
-ENV NUXT_DEX_PASSWORD=$NUXT_DEX_PASSWORD
 ENV NUXT_DEX_AUTH_TYPE=$NUXT_DEX_AUTH_TYPE
 ENV NUXT_DEX_SKIP_TLS_VERIFY=$NUXT_DEX_SKIP_TLS_VERIFY
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -59,8 +56,18 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 
 # Copy the rest of the source files into the image.
 COPY . .
-# Run the build script.
-RUN pnpm run build
+
+# Inject DEX credentials from build secrets if available
+# This avoids exposing credentials in ARG/ENV
+RUN --mount=type=secret,id=dex_username \
+    --mount=type=secret,id=dex_password \
+    if [ -f /run/secrets/dex_username ]; then \
+    export NUXT_DEX_USERNAME=$(cat /run/secrets/dex_username); \
+    fi && \
+    if [ -f /run/secrets/dex_password ]; then \
+    export NUXT_DEX_PASSWORD=$(cat /run/secrets/dex_password); \
+    fi && \
+    pnpm run build
 
 ################################################################################
 FROM nginx:stable-alpine AS nginx

@@ -61,11 +61,12 @@ jobs:
           tags: ${{ env.DOCKER_IMAGES }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64, linux/arm64
+          secrets: |
+            dex_username=${{ secrets.NUXT_DEX_USERNAME }}
+            dex_password=${{ secrets.NUXT_DEX_PASSWORD }}
           build-args: |
             NUXT_PUBLIC_APP_VERSION=${{ env.APP_VERSION }}
             NUXT_DEX_HOST=${{ secrets.NUXT_DEX_HOST }}
-            NUXT_DEX_USERNAME=${{ secrets.NUXT_DEX_USERNAME }}
-            NUXT_DEX_PASSWORD=${{ secrets.NUXT_DEX_PASSWORD }}
             NUXT_DEX_AUTH_TYPE=${{ secrets.NUXT_DEX_AUTH_TYPE }}
             NUXT_DEX_SKIP_TLS_VERIFY=${{ secrets.NUXT_DEX_SKIP_TLS_VERIFY }}
             NUXT_PUBLIC_API_BASE=${{ secrets.NUXT_PUBLIC_API_BASE }}
