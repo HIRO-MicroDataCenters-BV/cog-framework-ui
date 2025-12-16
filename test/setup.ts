@@ -1,6 +1,6 @@
 /**
  * Test Setup
- * 
+ *
  * Global test setup and utilities
  */
 
@@ -15,27 +15,35 @@ process.env.NUXT_DEX_SKIP_TLS_VERIFY = 'true';
 
 // Global test utilities
 global.testUtils = {
-    createMockResponse: (status: number, headers: Record<string, string> = {}, body: any = {}) => ({
-        status,
-        ok: status >= 200 && status < 300,
-        headers: new Headers(headers),
-        json: async () => body,
-        text: async () => JSON.stringify(body),
-    }),
+  createMockResponse: (
+    status: number,
+    headers: Record<string, string> = {},
+    body: unknown = {},
+  ) => ({
+    status,
+    ok: status >= 200 && status < 300,
+    headers: new Headers(headers),
+    json: async () => body,
+    text: async () => JSON.stringify(body),
+  }),
 
-    createMockCookie: (name: string, value: string, expires?: Date) => {
-        let cookie = `${name}=${value}`;
-        if (expires) {
-            cookie += `; expires=${expires.toUTCString()}`;
-        }
-        return cookie;
-    },
+  createMockCookie: (name: string, value: string, expires?: Date) => {
+    let cookie = `${name}=${value}`;
+    if (expires) {
+      cookie += `; expires=${expires.toUTCString()}`;
+    }
+    return cookie;
+  },
 };
 
 // Extend global types
 declare global {
-    var testUtils: {
-        createMockResponse: (status: number, headers?: Record<string, string>, body?: any) => any;
-        createMockCookie: (name: string, value: string, expires?: Date) => string;
-    };
+  var testUtils: {
+    createMockResponse: (
+      status: number,
+      headers?: Record<string, string>,
+      body?: unknown,
+    ) => unknown;
+    createMockCookie: (name: string, value: string, expires?: Date) => string;
+  };
 }
