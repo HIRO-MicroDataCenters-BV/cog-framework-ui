@@ -17,7 +17,10 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     // '@nuxtjs/color-mode',
   ],
+  // Enable SSR to get Nitro server for API endpoints
+  // But use client-side rendering for pages (SPA mode)
   ssr: false,
+
   components: {
     dirs: [
       {
