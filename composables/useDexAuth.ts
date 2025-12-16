@@ -23,7 +23,9 @@ export const useDexAuth = () => {
   const checkStatus = async (): Promise<boolean> => {
     // Check for authservice_session cookie
     const cookies = document.cookie.split(';');
-    const hasSession = cookies.some(c => c.trim().startsWith('authservice_session='));
+    const hasSession = cookies.some((c) =>
+      c.trim().startsWith('authservice_session='),
+    );
 
     authState.value.authenticated = hasSession;
     return hasSession;
@@ -49,7 +51,8 @@ export const useDexAuth = () => {
    * Logout - clear session cookie
    */
   const logout = async () => {
-    document.cookie = 'authservice_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie =
+      'authservice_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     authState.value.authenticated = false;
   };
 
