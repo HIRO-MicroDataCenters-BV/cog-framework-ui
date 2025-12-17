@@ -27,7 +27,9 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
-        { href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}` },
+        {
+          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+        },
         row.getValue('run_name') || row.getValue('run_id'),
       ),
   },
