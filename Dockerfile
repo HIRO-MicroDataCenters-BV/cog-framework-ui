@@ -87,7 +87,9 @@ RUN --mount=type=secret,id=dex_username \
 ################################################################################
 FROM nginx:stable-alpine AS nginx
 
-COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/uidev
+# Copy files from uidev subdirectory (created by postbuild) to nginx root
+# Files are already in /uidev/ structure, so copy to root
+COPY --from=build /usr/src/app/.output/public/uidev /usr/share/nginx/html/uidev
 
 COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
 COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
