@@ -18,6 +18,7 @@ setPage({
 });
 
 const baseUrl = page.value.section;
+const urlOrigin = window.location.origin;
 
 const columns = [
   {
@@ -25,7 +26,7 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
-        { href: `${baseUrl}/${row.getValue('run_id')}` },
+        { href: `${urlOrigin}${baseUrl}/${row.getValue('run_id')}` },
         row.getValue('run_name') || row.getValue('run_id'),
       ),
   },
@@ -45,7 +46,11 @@ const columns = [
         },
         {
           default: () =>
-            h('a', { href: `${baseUrl}/${runIdValue}` }, shortenedId),
+            h(
+              'a',
+              { href: `${urlOrigin}${baseUrl}/${runIdValue}` },
+              shortenedId,
+            ),
         },
       );
     },

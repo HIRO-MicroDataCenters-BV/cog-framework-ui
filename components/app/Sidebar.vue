@@ -8,6 +8,7 @@ const config = useRuntimeConfig();
 const menu = uselistMenus();
 const version = config.public.appVersion;
 const baseUrl = config.app.baseURL;
+const urlOrigin = window.location.origin;
 
 const route = useRoute();
 const query = computed(() => route.query);
@@ -67,7 +68,7 @@ setOpen(!isIframe.value);
           <template v-for="item in menu.main" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton as-child>
-                <a :href="`${baseUrl}${item.url}`">
+                <a :href="`${urlOrigin}${baseUrl}${item.url}`">
                   <span class="text-lg">
                     <Icon :name="item.icon" />
                   </span>
@@ -103,7 +104,7 @@ setOpen(!isIframe.value);
                       :key="subItem.title"
                     >
                       <SidebarMenuSubButton as-child>
-                        <a :href="`${baseUrl}${subItem.url}`">
+                        <a :href="`${urlOrigin}${baseUrl}${subItem.url}`">
                           <span>{{ subItem.title }}</span>
                         </a>
                       </SidebarMenuSubButton>

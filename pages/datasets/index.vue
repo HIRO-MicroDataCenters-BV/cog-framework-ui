@@ -21,6 +21,7 @@ setPage({
 });
 
 const baseUrl = page.value.section;
+const urlOrigin = window.location.origin;
 
 const tabs = uselistTabs().value.dataset_management;
 
@@ -30,7 +31,7 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
-        { href: `${baseUrl}/${row.getValue('id')}` },
+        { href: `${urlOrigin}${baseUrl}/${row.getValue('id')}` },
         row.getValue('dataset_name'),
       ),
   },
