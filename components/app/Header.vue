@@ -7,7 +7,7 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink :href="`${$config.app.baseURL}${page.section}`">
+              <BreadcrumbLink :href="`${urlOrigin}${baseUrl}${page.section}`">
                 {{ $t(`menu.${page.section}`) }}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -63,6 +63,9 @@ import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const api = useApi();
+const config = useRuntimeConfig();
+const baseUrl = config.app.baseURL;
+const urlOrigin = window.location.origin;
 
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
