@@ -68,12 +68,12 @@ setOpen(!isIframe.value);
           <template v-for="item in menu.main" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton as-child>
-                <a :href="`${urlOrigin}${baseUrl}${item.url}`">
+                <NuxtLink :to="`${item.url}`">
                   <span class="text-lg">
                     <Icon :name="item.icon" />
                   </span>
                   <span>{{ item.title }}</span>
-                </a>
+                </NuxtLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
@@ -104,9 +104,9 @@ setOpen(!isIframe.value);
                       :key="subItem.title"
                     >
                       <SidebarMenuSubButton as-child>
-                        <a :href="`${urlOrigin}${baseUrl}${subItem.url}`">
+                        <NuxtLink :to="`${subItem.url}`">
                           <span>{{ subItem.title }}</span>
-                        </a>
+                        </NuxtLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
