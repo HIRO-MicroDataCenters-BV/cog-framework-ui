@@ -7,7 +7,7 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <NuxtLink :to="`${baseUrl}${page.section}`">
+              <NuxtLink :to="`/${page.section}`">
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
