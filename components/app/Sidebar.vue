@@ -6,9 +6,9 @@ import NavUser from './NavUser.vue';
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
-const version = config.public.appVersion;
+// const version = config.public.appVersion;
 const baseUrl = config.app.baseURL;
-const urlOrigin = window.location.origin;
+// const urlOrigin = window.location.origin;
 
 const route = useRoute();
 const query = computed(() => route.query);
