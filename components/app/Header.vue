@@ -7,9 +7,9 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink :href="`${urlOrigin}${baseUrl}${page.section}`">
+              <NuxtLink :to="`${baseUrl}${page.section}`">
                 {{ $t(`menu.${page.section}`) }}
-              </BreadcrumbLink>
+              </NuxtLink>
             </BreadcrumbItem>
             <template v-if="page.title !== ''">
               <BreadcrumbSeparator />
