@@ -4,7 +4,9 @@
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt build && npm run postbuild",
+    "postbuild": "node scripts/postbuild.js",
+    "dev": "nuxt dev",
     "start": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
