@@ -39,6 +39,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   app: {
     baseURL: process.env.URL_PREFIX,
+    buildAssetsDir: '/_nuxt/',
   },
   css: ['~/assets/css/tailwind.css'],
   /*
@@ -62,13 +63,15 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2024-11-01',
   nitro: {
-    preset: 'github-pages',
-    runtimeConfig: {
-      app: {
-        baseURL: URL_PREFIX,
-      },
+    preset: 'static',
+    output: {
+      dir: '.output',
+      publicDir: '.output/public',
     },
-    baseURL: URL_PREFIX,
+    prerender: {
+      crawlLinks: true,
+      routes: ['/'],
+    },
     devProxy: {
       '/cogapi': {
         target: process.env.NUXT_PUBLIC_API_REMOTE || '',
