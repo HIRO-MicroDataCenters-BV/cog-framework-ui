@@ -16,6 +16,7 @@ setPage({
 });
 
 const baseUrl = page.value.section;
+const config = useRuntimeConfig();
 const urlOrigin = window.location.origin;
 
 const columns = [
@@ -24,7 +25,9 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
-        { href: `${urlOrigin}${baseUrl}/${row.getValue('id')}` },
+        {
+          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+        },
         row.getValue('name'),
       ),
   },
