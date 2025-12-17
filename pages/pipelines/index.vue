@@ -46,7 +46,11 @@ const columns = [
         },
         {
           default: () =>
-            h('a', { href: `${urlOrigin}${baseUrl}/${runIdValue}` }, shortenedId),
+            h(
+              'a',
+              { href: `${urlOrigin}${baseUrl}/${runIdValue}` },
+              shortenedId,
+            ),
         },
       );
     },
