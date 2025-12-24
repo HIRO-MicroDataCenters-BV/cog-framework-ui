@@ -118,7 +118,7 @@ export const useApi = () => {
       headers: getHeaders(isFormData),
       ...(method !== 'DELETE' &&
         method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
-    }
+    };
     try {
       const res = await fetch(`${baseUrl}${url}`, opts);
 

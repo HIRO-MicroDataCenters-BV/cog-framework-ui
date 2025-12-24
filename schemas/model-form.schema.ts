@@ -9,10 +9,12 @@ export const modelFormSchema = toTypedSchema(
       model_type: z.string().optional(),
       description: z.string().min(1, 'validation.required'),
     }),
-    file: z.object({
-      file_type: z.number().optional(),
-      files: z.any().optional(),
-    }).optional(),
+    file: z
+      .object({
+        file_type: z.number().optional(),
+        files: z.any().optional(),
+      })
+      .optional(),
   }),
 );
 

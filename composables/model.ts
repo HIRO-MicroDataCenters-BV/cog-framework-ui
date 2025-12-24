@@ -33,8 +33,7 @@ export const useModelForm = () => {
       // Robust file extraction
       let fileList = values.file?.files;
       if (fileList && !Array.isArray(fileList)) {
-        // @ts-ignore
-        fileList = [fileList];
+        fileList = [fileList] as File[];
       }
 
       // 1. Validate required fields
@@ -54,19 +53,34 @@ export const useModelForm = () => {
         description: values.metadata.description || '',
       };
 
-      const registerRes: any = await postRegisterModel(registerPayload);
+      const registerRes = (await postRegisterModel(registerPayload)) as Record<
+        string,
+        unknown
+      >;
 
-      if (!registerRes || !registerRes.data || !registerRes.data.id) {
+      if (
+        !registerRes ||
+        !registerRes.data ||
+        typeof registerRes.data !== 'object' ||
+        registerRes.data === null
+      ) {
         throw new Error('error.model_registration_failed');
       }
 
-      const modelId = registerRes.data.id;
+      const responseData = registerRes.data as Record<string, unknown>;
+      if (!responseData.id) {
+        throw new Error('error.model_registration_failed');
+      }
+
+      const modelId = responseData.id as string;
       console.log('Model registered, ID:', modelId);
 
       // 3. Upload file with FormData to /models/{id}/file
       console.log('Step 2: Uploading file with FormData');
-      // @ts-ignore
-      const uploadRes: any = await postUploadModelFile(modelId, fileList);
+      const uploadRes = (await postUploadModelFile(
+        modelId,
+        fileList,
+      )) as Record<string, unknown>;
 
       if (!uploadRes || !uploadRes.data) {
         throw new Error('error.file_upload_failed');

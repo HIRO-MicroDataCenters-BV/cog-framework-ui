@@ -77,11 +77,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
     },
   ]);
 
-export const modelFormNavigation = [
-  'metadata',
-  'source_settings',
-  'review',
-];
+export const modelFormNavigation = ['metadata', 'source_settings', 'review'];
 
 export const getModelActionLabels = (t: (key: string) => string) => ({
   close: t('action.close'),

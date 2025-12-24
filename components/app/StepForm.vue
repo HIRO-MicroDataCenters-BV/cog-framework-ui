@@ -298,14 +298,12 @@ const getNestedValue = (
   obj: Record<string, unknown>,
   path: string,
 ): unknown => {
-  return path
-    .split('.')
-    .reduce((acc: unknown, part: string) => {
-       if (acc && typeof acc === 'object') {
-         return (acc as Record<string, unknown>)[part];
-       }
-       return undefined;
-    }, obj);
+  return path.split('.').reduce((acc: unknown, part: string) => {
+    if (acc && typeof acc === 'object') {
+      return (acc as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, obj);
 };
 
 const evaluateCondition = (
@@ -399,7 +397,9 @@ const isStepValid = ref(true);
 
 // Check step validity based on field errors and required values
 const checkStepValidity = () => {
-  const step = Array.isArray(props.steps) ? props.steps[currentStep.value] : null;
+  const step = Array.isArray(props.steps)
+    ? props.steps[currentStep.value]
+    : null;
   if (!step || !step.rows) {
     isStepValid.value = true;
     return;
@@ -434,7 +434,7 @@ const checkStepValidity = () => {
     // 2. Check if field is required and has value
     if (field.required) {
       const val = getNestedValue(values, field.name);
-      
+
       // Check for empty values
       if (val === undefined || val === null) {
         return false;
