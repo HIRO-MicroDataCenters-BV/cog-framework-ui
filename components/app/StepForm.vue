@@ -292,17 +292,18 @@ const currentStep = ref(props.step);
 const form = useForm<FormValues>({
   validationSchema: props.validationSchema,
   initialValues: props.initialValues || {},
-  validateOnBlur: true,
-  validateOnChange: true,
 });
 
 const getNestedValue = (
   obj: Record<string, unknown>,
   path: string,
 ): unknown => {
-  return path
-    .split('.')
-    .reduce((acc, part) => acc && (acc as Record<string, unknown>)[part], obj);
+  return path.split('.').reduce((acc: unknown, part: string) => {
+    if (acc && typeof acc === 'object') {
+      return (acc as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, obj);
 };
 
 const evaluateCondition = (
@@ -396,190 +397,60 @@ const isStepValid = ref(true);
 
 // Check step validity based on field errors and required values
 const checkStepValidity = () => {
-  const stepFields = getStepFields(currentStep.value);
-  if (stepFields.length === 0) {
+  const step = Array.isArray(props.steps)
+    ? props.steps[currentStep.value]
+    : null;
+  if (!step || !step.rows) {
     isStepValid.value = true;
     return;
   }
 
   const errors = form.errors.value;
-  const formValues = form.values;
+  const values = form.values;
 
-  // Check for errors in step fields
-  const hasErrors = stepFields.some((fieldName) => {
-    return errors[fieldName];
+  // Get active fields for current step
+  const activeFields: Field[] = [];
+  step.rows.forEach((row) => {
+    row.fields.forEach((field) => {
+      // Check condition
+      if (checkFieldCondition.value(field)) {
+        activeFields.push(field);
+      }
+    });
   });
 
-  if (hasErrors) {
-    isStepValid.value = false;
-    return;
-  }
-
-  // Check if required fields have values (basic check)
-  // Full validation happens on blur/change through form.validateField
-  const step = Array.isArray(props.steps)
-    ? props.steps[currentStep.value]
-    : null;
-  if (!step) {
+  if (activeFields.length === 0) {
     isStepValid.value = true;
     return;
   }
 
-  // For step 0 (type selection), check if type is selected
-  if (currentStep.value === 0) {
-    isStepValid.value = !!formValues.type;
-    return;
-  }
-
-  const type = formValues.type as string;
-  const metadata = formValues.metadata as Record<string, unknown> | undefined;
-
-  // Detect form type: dataset has 'dataset_type' and 'source_settings', model has 'file' or 'datastream'
-  const isDatasetForm =
-    'dataset_type' in formValues || 'source_settings' in formValues;
-  const isModelForm = 'file' in formValues || 'datastream' in formValues;
-
-  // For step 1 (metadata)
-  if (currentStep.value === 1) {
-    // Common: name and description required
-    const hasName = !!(
-      metadata &&
-      metadata.name &&
-      String(metadata.name).trim()
-    );
-    const hasDescription = !!(
-      metadata &&
-      metadata.description &&
-      String(metadata.description).trim()
-    );
-
-    if (isDatasetForm) {
-      // Dataset: also requires dataset_type
-      const datasetType = formValues.dataset_type;
-      isStepValid.value = !!(
-        hasName &&
-        hasDescription &&
-        datasetType !== undefined &&
-        datasetType !== null
-      );
-    } else if (isModelForm) {
-      // Model: also requires file_type based on type
-      const fileData = formValues.file as Record<string, unknown> | undefined;
-      const datastreamData = formValues.datastream as
-        | Record<string, unknown>
-        | undefined;
-
-      if (type === 'file') {
-        isStepValid.value = !!(
-          hasName &&
-          hasDescription &&
-          fileData?.file_type !== undefined &&
-          fileData?.file_type !== null
-        );
-      } else if (type === 'datastream') {
-        isStepValid.value = !!(
-          hasName &&
-          hasDescription &&
-          datastreamData?.model_id &&
-          String(datastreamData.model_id).trim() &&
-          datastreamData?.file_type !== undefined &&
-          datastreamData?.file_type !== null
-        );
-      } else {
-        isStepValid.value = hasName && hasDescription;
-      }
-    } else {
-      isStepValid.value = hasName && hasDescription;
+  // Check for errors and required values
+  const isValid = activeFields.every((field) => {
+    // 1. Check if field has error
+    if (errors[field.name]) {
+      return false;
     }
-    return;
-  }
 
-  // For step 2 (source/file settings)
-  if (currentStep.value === 2) {
-    if (isDatasetForm) {
-      // Dataset form validation
-      const sourceSettings = formValues.source_settings as
-        | Record<string, unknown>
-        | undefined;
+    // 2. Check if field is required and has value
+    if (field.required) {
+      const val = getNestedValue(values, field.name);
 
-      if (type === 'file') {
-        isStepValid.value = !!(sourceSettings && sourceSettings.dataset_file);
-      } else if (type === 'table') {
-        isStepValid.value = !!(
-          sourceSettings &&
-          sourceSettings.db_url &&
-          String(sourceSettings.db_url).trim() &&
-          sourceSettings.table_name &&
-          String(sourceSettings.table_name).trim() &&
-          sourceSettings.selected_fields &&
-          String(sourceSettings.selected_fields).trim()
-        );
-      } else if (type === 'data_stream') {
-        const ipAddressRegex =
-          /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-        const brokerName = sourceSettings?.broker_name
-          ? String(sourceSettings.broker_name).trim()
-          : '';
-        const brokerIp = sourceSettings?.broker_ip_address
-          ? String(sourceSettings.broker_ip_address).trim()
-          : '';
-        const brokerPort = sourceSettings?.broker_port;
-        const topicName = sourceSettings?.topic_name
-          ? String(sourceSettings.topic_name).trim()
-          : '';
-        const dataSourceType = formValues.data_source_type;
-
-        let portValid = false;
-        if (
-          brokerPort !== undefined &&
-          brokerPort !== null &&
-          brokerPort !== 0
-        ) {
-          const port =
-            typeof brokerPort === 'string'
-              ? parseInt(brokerPort.trim(), 10)
-              : Number(brokerPort);
-          portValid = !isNaN(port) && port >= 1 && port <= 65535;
-        }
-
-        isStepValid.value = !!(
-          brokerName &&
-          brokerIp &&
-          ipAddressRegex.test(brokerIp) &&
-          portValid &&
-          topicName &&
-          dataSourceType !== undefined &&
-          dataSourceType !== null
-        );
-      } else {
-        isStepValid.value = true;
+      // Check for empty values
+      if (val === undefined || val === null) {
+        return false;
       }
-    } else if (isModelForm) {
-      // Model form validation
-      const fileData = formValues.file as Record<string, unknown> | undefined;
-      const datastreamData = formValues.datastream as
-        | Record<string, unknown>
-        | undefined;
-
-      if (type === 'file') {
-        isStepValid.value = !!(fileData && fileData.files);
-      } else if (type === 'datastream') {
-        isStepValid.value = !!(
-          datastreamData &&
-          datastreamData.uri &&
-          String(datastreamData.uri).trim()
-        );
-      } else {
-        isStepValid.value = true;
+      if (typeof val === 'string' && val.trim() === '') {
+        return false;
       }
-    } else {
-      isStepValid.value = true;
+      if (Array.isArray(val) && val.length === 0) {
+        return false;
+      }
     }
-    return;
-  }
 
-  isStepValid.value = true;
+    return true;
+  });
+
+  isStepValid.value = isValid;
 };
 
 // Watch form values and errors to update step validity
@@ -636,10 +507,6 @@ const currentActions = computed(() => {
 
 // Computed property to determine if Next button should be enabled
 const isNextEnabled = computed(() => {
-  if (currentStep.value === 0) {
-    // First step: next is enabled if type is selected
-    return !!form.values.type;
-  }
   return isStepValid.value;
 });
 

@@ -32,6 +32,7 @@ export interface Field {
   options?: FieldOption[];
   accept?: string;
   condition?: FieldCondition;
+  required?: boolean;
 }
 
 export interface FieldRow {
