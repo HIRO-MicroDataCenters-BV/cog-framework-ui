@@ -7,34 +7,27 @@ export const getModelFormSteps = (t: (key: string) => string) =>
         {
           fields: [
             {
-              type: 'radio',
-              name: 'type',
-              options: [
-                {
-                  value: 'file',
-                  label: t('label.file'),
-                  subtitle: t('label_subtitle.file'),
-                },
-                {
-                  value: 'datastream',
-                  label: t('label.data_stream'),
-                  subtitle: t('label_subtitle.data_stream'),
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      rows: [
-        {
-          fields: [
-            {
               type: 'text',
               name: 'metadata.name',
               label: t('label.name'),
               placeholder: t('placeholder.model_name'),
+              required: true,
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'select',
+              name: 'metadata.model_type',
+              label: t('label.model_type'),
+              placeholder: t('placeholder.model_type'),
+              options: [
+                { value: 'classification', label: t('label.classification') },
+                { value: 'regression', label: t('label.regression') },
+                { value: 'clustering', label: t('label.clustering') },
+                { value: 'general', label: t('label.general') },
+              ],
             },
           ],
         },
@@ -45,21 +38,14 @@ export const getModelFormSteps = (t: (key: string) => string) =>
               name: 'metadata.description',
               label: t('label.description'),
               placeholder: t('placeholder.description'),
+              required: true,
             },
           ],
         },
-        {
-          fields: [
-            {
-              type: 'text',
-              name: 'datastream.model_id',
-              label: t('label.model_id'),
-              placeholder: t('placeholder.model_id'),
-              condition: { field: 'type', operator: 'eq', value: 'datastream' },
-            },
-          ],
-        },
-
+      ],
+    },
+    {
+      rows: [
         {
           fields: [
             {
@@ -71,25 +57,10 @@ export const getModelFormSteps = (t: (key: string) => string) =>
                 { value: 0, label: t('label.model_policy_file') },
                 { value: 1, label: t('label.model_file') },
               ],
-              condition: { field: 'type', operator: 'eq', value: 'file' },
-            },
-            {
-              type: 'select',
-              name: 'datastream.file_type',
-              label: t('label.file_type'),
-              placeholder: t('placeholder.file_type'),
-              options: [
-                { value: 0, label: t('label.model_policy_file') },
-                { value: 1, label: t('label.model_file') },
-              ],
-              condition: { field: 'type', operator: 'eq', value: 'datastream' },
+              required: true,
             },
           ],
         },
-      ],
-    },
-    {
-      rows: [
         {
           fields: [
             {
@@ -98,18 +69,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
               label: t('label.file'),
               placeholder: t('placeholder.browse'),
               accept: '.csv,.json',
-              condition: { field: 'type', operator: 'eq', value: 'file' },
-            },
-          ],
-        },
-        {
-          fields: [
-            {
-              type: 'text',
-              name: 'datastream.uri',
-              label: t('label.uri'),
-              placeholder: t('placeholder.uri'),
-              condition: { field: 'type', operator: 'eq', value: 'datastream' },
+              required: true,
             },
           ],
         },
@@ -118,7 +78,6 @@ export const getModelFormSteps = (t: (key: string) => string) =>
   ]);
 
 export const modelFormNavigation = [
-  'type',
   'metadata',
   'source_settings',
   'review',

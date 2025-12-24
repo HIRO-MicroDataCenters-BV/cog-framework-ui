@@ -198,6 +198,11 @@ export default defineI18nConfig(() => ({
         duration: 'Duration',
         experiment_id: 'Experiment ID',
         start_time: 'Start Time',
+        model_type: 'Model Type',
+        classification: 'Classification',
+        regression: 'Regression',
+        clustering: 'Clustering',
+        general: 'General',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -237,6 +242,7 @@ export default defineI18nConfig(() => ({
         select_broker: 'Select Broker',
         select_topic: 'Select Topic',
         data_source_type: 'Select Data Source Type',
+        model_type: 'Select Model Type',
       },
       action: {
         upload: 'Upload',

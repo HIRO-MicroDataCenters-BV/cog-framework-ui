@@ -118,9 +118,19 @@ export const useApi = () => {
       headers: getHeaders(isFormData),
       ...(method !== 'DELETE' &&
         method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
-    };
+    }
     try {
       const res = await fetch(`${baseUrl}${url}`, opts);
+
+      // Handle redirects (302, 301, etc.) - usually means authentication issue
+      if (res.status >= 300 && res.status < 400) {
+        console.error(`Redirect detected (${res.status}) for ${method} ${url}`);
+        toaster.show('error', 'unauthorized');
+        useLocalStorage(accessTokenKey, null);
+        token.value = null;
+        return null;
+      }
+
       if (res.status === 204) {
         if (isModifyingRequest && showToast) {
           const successMessage = 'operation_completed';
@@ -169,6 +179,7 @@ export const useApi = () => {
           : apiResponseSchema.parse(data);
       return result;
     } catch (err) {
+      console.error(`Request error for ${method} ${url}:`, err);
       // Always show error toast for network errors
       toaster.show('error', 'connection_error');
 
@@ -552,6 +563,21 @@ export const useApi = () => {
       data.append('file_type', file_type);
       data.append('description', description);
       return request(`/models/save`, 'POST', data);
+    },
+
+    postRegisterModel: async (data: unknown) => {
+      return request(`/models`, 'POST', data);
+    },
+
+    postUploadModelFile: async (id: string, files: File[]) => {
+      const data = new FormData();
+      if (Array.isArray(files)) {
+        files.forEach((file) => data.append('files', file));
+      } else if (files) {
+        // Fallback if single file is passed
+        data.append('files', files);
+      }
+      return request(`/models/${id}/file`, 'POST', data);
     },
 
     /**

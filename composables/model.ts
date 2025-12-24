@@ -6,6 +6,7 @@ export interface ModelFormValues extends FormValues {
   metadata?: {
     name?: string;
     description?: string;
+    model_type?: string;
   };
   file?: {
     file_type?: number;
@@ -21,58 +22,58 @@ export interface ModelFormValues extends FormValues {
 type ModelFormResponse = ApiResponse | ApiErrorResponse | null;
 
 export const useModelForm = () => {
-  const { postModelSave, postModelUri } = useApi();
+  const { postRegisterModel, postUploadModelFile } = useApi();
 
   const submitModelForm = async (
     values: ModelFormValues,
   ): Promise<ModelFormResponse | undefined> => {
-    if (!values.type) {
-      throw new Error('error.model_type_required');
-    }
-
     try {
-      let res: ModelFormResponse;
+      console.log('submitModelForm values:', values);
 
-      switch (values.type) {
-        case 'file':
-          if (!values.file?.files?.length) {
-            throw new Error('error.no_file_selected');
-          }
-
-          if (!values.metadata?.name?.trim()) {
-            throw new Error('error.model_name_required');
-          }
-
-          res = await postModelSave({
-            files: values.file.files,
-            model_name: values.metadata.name.trim(),
-            file_type: values.file.file_type?.toString() || '0',
-            description: values.metadata?.description || '',
-          });
-          break;
-
-        case 'datastream':
-          if (!values.datastream?.uri?.trim()) {
-            throw new Error('error.no_uri_provided');
-          }
-
-          if (!values.metadata?.name?.trim()) {
-            throw new Error('error.model_name_required');
-          }
-
-          res = await postModelUri({
-            model_id: values.datastream.model_id || '',
-            file_type: values.datastream.file_type || 0,
-            description: values.metadata?.description || '',
-            uri: values.datastream.uri.trim(),
-          });
-          break;
-
-        default:
-          throw new Error(`error.unknown_model_type: ${values.type}`);
+      // Robust file extraction
+      let fileList = values.file?.files;
+      if (fileList && !Array.isArray(fileList)) {
+        // @ts-ignore
+        fileList = [fileList];
       }
 
-      return res;
+      // 1. Validate required fields
+      if (!values.metadata?.name?.trim()) {
+        throw new Error('error.model_name_required');
+      }
+
+      if (!fileList?.length) {
+        throw new Error('error.no_file_selected');
+      }
+
+      // 2. Register model with JSON (name, type, description)
+      console.log('Step 1: Registering model with JSON');
+      const registerPayload = {
+        name: values.metadata.name.trim(),
+        type: values.metadata.model_type || 'default',
+        description: values.metadata.description || '',
+      };
+
+      const registerRes: any = await postRegisterModel(registerPayload);
+
+      if (!registerRes || !registerRes.data || !registerRes.data.id) {
+        throw new Error('error.model_registration_failed');
+      }
+
+      const modelId = registerRes.data.id;
+      console.log('Model registered, ID:', modelId);
+
+      // 3. Upload file with FormData to /models/{id}/file
+      console.log('Step 2: Uploading file with FormData');
+      // @ts-ignore
+      const uploadRes: any = await postUploadModelFile(modelId, fileList);
+
+      if (!uploadRes || !uploadRes.data) {
+        throw new Error('error.file_upload_failed');
+      }
+
+      console.log('File uploaded successfully');
+      return registerRes;
     } catch (error) {
       console.error('Error in submitModelForm:', error);
       throw error;
