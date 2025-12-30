@@ -68,7 +68,7 @@ export const getModelFormSteps = (t: (key: string) => string) =>
               name: 'file.files',
               label: t('label.file'),
               placeholder: t('placeholder.browse'),
-              accept: '.csv,.json',
+              accept: '.csv,.json,.pkl',
               required: true,
             },
           ],
