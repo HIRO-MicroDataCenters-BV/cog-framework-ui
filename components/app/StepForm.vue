@@ -87,6 +87,9 @@
                             />
                           </FormControl>
                           <FormMessage />
+                          <FormDescription v-if="field.hint === 'db_url_hint'">
+                            {{ getDbUrlHint(componentField.modelValue) }}
+                          </FormDescription>
                         </FormItem>
                       </FormField>
                     </template>
@@ -620,6 +623,26 @@ const handleFileChange = (event: Event, fieldName: string): void => {
     form.setFieldValue(fieldName, file ? [file] : []);
   } else {
     form.setFieldValue(fieldName, file || null);
+  }
+};
+
+const getDbUrlHint = (url: string | undefined): string => {
+  if (!url) return t('hint.db_url_default');
+  
+  const protocol = url.split(':')[0].toLowerCase();
+  
+  switch (protocol) {
+    case 'postgresql':
+    case 'postgres':
+      return t('hint.db_url_postgresql');
+    case 'mysql':
+      return t('hint.db_url_mysql');
+    case 'sqlite':
+      return t('hint.db_url_sqlite');
+    case 'mongodb':
+      return t('hint.db_url_mongodb');
+    default:
+      return t('hint.db_url_default');
   }
 };
 

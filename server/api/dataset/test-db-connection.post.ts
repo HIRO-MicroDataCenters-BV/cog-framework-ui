@@ -1,4 +1,7 @@
-import { Client } from 'pg';
+import { Client as PgClient } from 'pg';
+import mysql from 'mysql2/promise';
+import Database from 'better-sqlite3';
+import { MongoClient } from 'mongodb';
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
@@ -11,31 +14,33 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    let client: Client | null = null;
+    // Detect database type from URL protocol
+    const dbType = db_url.split(':')[0].toLowerCase();
 
     try {
-        // Create PostgreSQL client
-        client = new Client({
-            connectionString: db_url,
-        });
-
-        // Connect to database
-        await client.connect();
-
-        // Get list of tables
-        const tablesResult = await client.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-      ORDER BY table_name;
-    `);
-
-        const tables = tablesResult.rows.map((row) => row.table_name);
-
-        // Check if specific table exists
+        let tables: string[] = [];
         let tableExists = false;
-        if (table_name) {
-            tableExists = tables.includes(table_name);
+
+        switch (dbType) {
+            case 'postgresql':
+            case 'postgres':
+                ({ tables, tableExists } = await testPostgreSQL(db_url, table_name));
+                break;
+
+            case 'mysql':
+                ({ tables, tableExists } = await testMySQL(db_url, table_name));
+                break;
+
+            case 'sqlite':
+                ({ tables, tableExists } = await testSQLite(db_url, table_name));
+                break;
+
+            case 'mongodb':
+                ({ tables, tableExists } = await testMongoDB(db_url, table_name));
+                break;
+
+            default:
+                throw new Error(`Unsupported database type: ${dbType}`);
         }
 
         return {
@@ -44,6 +49,7 @@ export default defineEventHandler(async (event) => {
                 tables,
                 tableExists,
                 tableName: table_name,
+                dbType,
             },
         };
     } catch (error: any) {
@@ -62,14 +68,67 @@ export default defineEventHandler(async (event) => {
                 port: error.port,
             },
         };
-    } finally {
-        // Always close the connection
-        if (client) {
-            try {
-                await client.end();
-            } catch (e) {
-                console.error('Error closing database connection:', e);
-            }
-        }
     }
 });
+
+async function testPostgreSQL(db_url: string, table_name?: string) {
+    const client = new PgClient({ connectionString: db_url });
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+            ORDER BY table_name;
+        `);
+        const tables = result.rows.map((row) => row.table_name);
+        const tableExists = table_name ? tables.includes(table_name) : false;
+        return { tables, tableExists };
+    } finally {
+        await client.end();
+    }
+}
+
+async function testMySQL(db_url: string, table_name?: string) {
+    const connection = await mysql.createConnection(db_url);
+    try {
+        const [rows] = await connection.query('SHOW TABLES');
+        const tables = (rows as any[]).map(row => Object.values(row)[0] as string);
+        const tableExists = table_name ? tables.includes(table_name) : false;
+        return { tables, tableExists };
+    } finally {
+        await connection.end();
+    }
+}
+
+async function testSQLite(db_url: string, table_name?: string) {
+    // Extract file path from sqlite:///path/to/file.db
+    const filePath = db_url.replace(/^sqlite:\/\/\//, '');
+    const db = new Database(filePath, { readonly: true });
+    try {
+        const rows = db.prepare(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' 
+            ORDER BY name;
+        `).all() as { name: string }[];
+        const tables = rows.map(row => row.name);
+        const tableExists = table_name ? tables.includes(table_name) : false;
+        return { tables, tableExists };
+    } finally {
+        db.close();
+    }
+}
+
+async function testMongoDB(db_url: string, table_name?: string) {
+    const client = new MongoClient(db_url);
+    try {
+        await client.connect();
+        const db = client.db();
+        const collections = await db.listCollections().toArray();
+        const tables = collections.map(col => col.name);
+        const tableExists = table_name ? tables.includes(table_name) : false;
+        return { tables, tableExists };
+    } finally {
+        await client.close();
+    }
+}

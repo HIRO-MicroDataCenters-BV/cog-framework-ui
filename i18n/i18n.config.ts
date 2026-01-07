@@ -354,6 +354,11 @@ export default defineI18nConfig(() => ({
         loading: 'Loading...',
         by: 'by',
         filter_by: 'Filter by',
+        db_url_postgresql: 'Format: postgresql://user:password@host:port/database',
+        db_url_mysql: 'Format: mysql://user:password@host:port/database',
+        db_url_sqlite: 'Format: sqlite:///path/to/database.db',
+        db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
+        db_url_default: 'Enter database connection URL',
       },
       menu: {
         upload: 'Upload',

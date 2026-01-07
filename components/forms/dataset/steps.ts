@@ -110,6 +110,7 @@ export const getDatasetFormSteps = (
               name: 'source_settings.db_url',
               label: t('label.db_url'),
               placeholder: t('placeholder.db_url'),
+              hint: 'db_url_hint', // Will be resolved dynamically in StepForm
               condition: {
                 field: 'type',
                 operator: 'eq',

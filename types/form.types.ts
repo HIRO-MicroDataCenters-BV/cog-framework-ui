@@ -36,6 +36,7 @@ export interface Field {
   required?: boolean;
   actionName?: string;
   buttonLabel?: string;
+  hint?: string;
 }
 
 export interface FieldRow {
