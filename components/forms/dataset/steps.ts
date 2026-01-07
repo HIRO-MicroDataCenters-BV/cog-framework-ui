@@ -42,6 +42,7 @@ export const getDatasetFormSteps = (
               name: 'metadata.name',
               label: t('label.name'),
               placeholder: t('placeholder.dataset_name'),
+              required: true,
             },
           ],
         },
@@ -52,6 +53,7 @@ export const getDatasetFormSteps = (
               name: 'metadata.description',
               label: t('label.description'),
               placeholder: t('placeholder.dataset_description'),
+              required: true,
             },
           ],
         },
@@ -62,6 +64,7 @@ export const getDatasetFormSteps = (
               name: 'dataset_type',
               label: t('label.dataset_type'),
               placeholder: t('placeholder.dataset_type'),
+              required: true,
               options: [
                 {
                   value: 0,
@@ -96,6 +99,7 @@ export const getDatasetFormSteps = (
                 operator: 'eq',
                 value: 'file',
               },
+              required: true,
             },
           ],
         },
@@ -111,6 +115,7 @@ export const getDatasetFormSteps = (
                 operator: 'eq',
                 value: 'table',
               },
+              required: true,
             },
           ],
         },
@@ -126,6 +131,7 @@ export const getDatasetFormSteps = (
                 operator: 'eq',
                 value: 'table',
               },
+              required: true,
             },
           ],
         },
@@ -136,6 +142,23 @@ export const getDatasetFormSteps = (
               name: 'source_settings.selected_fields',
               label: t('label.selected_fields'),
               placeholder: t('placeholder.selected_fields'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'table',
+              },
+              required: true,
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'action_button',
+              name: 'source_settings.test_connection',
+              label: t('label.test_connection'),
+              buttonLabel: t('action.test_connection'),
+              actionName: 'test_connection',
               condition: {
                 field: 'type',
                 operator: 'eq',

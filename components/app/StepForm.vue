@@ -208,6 +208,24 @@
                         </FormItem>
                       </FormField>
                     </template>
+
+                    <template v-else-if="field.type === 'action_button'">
+                      <div class="flex items-center pt-8">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          @click.prevent="
+                            emit(
+                              'on-field-action',
+                              field.actionName || field.name,
+                              form.values,
+                            )
+                          "
+                        >
+                          {{ field.buttonLabel || field.label }}
+                        </Button>
+                      </div>
+                    </template>
                   </div>
                 </template>
               </div>
@@ -250,6 +268,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 
 import type {
   ActionType,
@@ -286,6 +305,7 @@ const emit = defineEmits<{
   'update-actions': [actions: ActionType[]];
   'update-step-validity': [isValid: boolean];
   'update-next-enabled': [enabled: boolean];
+  'on-field-action': [actionName: string, values: FormValues];
 }>();
 const currentStep = ref(props.step);
 

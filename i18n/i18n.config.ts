@@ -15,6 +15,8 @@ export default defineI18nConfig(() => ({
           operation_completed: 'Operation completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
+          test_connection: 'Connection successful! Table found.',
+          test_connection_no_table: 'Connection successful!',
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -48,12 +50,15 @@ export default defineI18nConfig(() => ({
           topic_id_not_found_in_response: 'Topic ID not found in response',
           dataset_type_required: 'Dataset type is required',
           unknown_dataset_type: 'Unknown dataset type',
+          required_field: 'This field is required',
+          connection_failed: 'Connection failed',
         },
         info: {
           operation_in_progress: 'Operation in progress',
         },
         warning: {
           validation_error: 'Please check the form for errors',
+          test_connection: 'Connection successful, but table not found',
         },
       },
       general: {
@@ -203,6 +208,9 @@ export default defineI18nConfig(() => ({
         regression: 'Regression',
         clustering: 'Clustering',
         general: 'General',
+        test_request_data: 'Request Data',
+        test_report_config: 'Report Config',
+        test_connection: 'Test Connection',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -243,6 +251,8 @@ export default defineI18nConfig(() => ({
         select_topic: 'Select Topic',
         data_source_type: 'Select Data Source Type',
         model_type: 'Select Model Type',
+        test_request_data: 'Enter request data (JSON)',
+        test_report_config: 'Enter report config',
       },
       action: {
         upload: 'Upload',
@@ -305,6 +315,8 @@ export default defineI18nConfig(() => ({
           model_added: 'Model successfully added',
           operation_completed: 'Operation completed successfully',
           data_saved: 'Data saved successfully',
+          test_connection: 'Connection successful! Table found.',
+          test_connection_no_table: 'Connection successful!',
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -312,6 +324,7 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           operation_failed: 'Operation failed',
           connection_error: 'Connection error',
+          connection_failed: 'Connection failed: {error}',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:
@@ -326,6 +339,7 @@ export default defineI18nConfig(() => ({
         },
         warning: {
           validation_error: 'Please check the form for errors',
+          test_connection: 'Connection successful, but table not found',
         },
       },
       hint: {
@@ -362,6 +376,7 @@ export default defineI18nConfig(() => ({
         type: 'Type',
         metadata: 'Metadata',
         source_settings: 'Source Settings',
+        test_config: 'Test Config',
         review: 'Review',
       },
       tab: {
