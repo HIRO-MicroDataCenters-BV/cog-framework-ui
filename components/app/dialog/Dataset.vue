@@ -174,10 +174,10 @@ const handleFieldAction = async (action: string, values: FormValues) => {
 
     try {
       console.log('Testing connection to:', db_url, 'table:', table_name);
-      
+
       const config = useRuntimeConfig();
       const baseURL = config.app.baseURL || '/';
-      
+
       const response = await fetch(`${baseURL}api/dataset/test-db-connection`, {
         method: 'POST',
         headers: {
@@ -203,7 +203,7 @@ const handleFieldAction = async (action: string, values: FormValues) => {
       } else {
         toaster.show('error', 'connection_failed');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Connection test error:', e);
       toaster.show('error', 'connection_failed');
     }

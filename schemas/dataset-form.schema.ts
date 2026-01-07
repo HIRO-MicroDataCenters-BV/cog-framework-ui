@@ -151,7 +151,6 @@ export const datasetFormSchema = toTypedSchema(
             path: ['source_settings', 'selected_fields'],
           });
         }
-
       }
 
       if (data.type === 'data_stream') {

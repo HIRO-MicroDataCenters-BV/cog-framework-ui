@@ -628,9 +628,9 @@ const handleFileChange = (event: Event, fieldName: string): void => {
 
 const getDbUrlHint = (url: string | undefined): string => {
   if (!url) return t('hint.db_url_default');
-  
+
   const protocol = url.split(':')[0].toLowerCase();
-  
+
   switch (protocol) {
     case 'postgresql':
     case 'postgres':
