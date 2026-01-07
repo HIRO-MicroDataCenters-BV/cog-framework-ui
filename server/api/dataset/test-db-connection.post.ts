@@ -53,7 +53,11 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (error: unknown) {
-    const err = error as Error & { code?: string; host?: string; port?: number };
+    const err = error as Error & {
+      code?: string;
+      host?: string;
+      port?: number;
+    };
     console.error('Database connection error:', err);
     console.error('Error details:', {
       message: err.message,
