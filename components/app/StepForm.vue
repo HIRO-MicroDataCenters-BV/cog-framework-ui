@@ -87,6 +87,9 @@
                             />
                           </FormControl>
                           <FormMessage />
+                          <FormDescription v-if="field.hint === 'db_url_hint'">
+                            {{ getDbUrlHint(componentField.modelValue) }}
+                          </FormDescription>
                         </FormItem>
                       </FormField>
                     </template>
@@ -208,6 +211,24 @@
                         </FormItem>
                       </FormField>
                     </template>
+
+                    <template v-else-if="field.type === 'action_button'">
+                      <div class="flex items-center pt-8">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          @click.prevent="
+                            emit(
+                              'on-field-action',
+                              field.actionName || field.name,
+                              form.values,
+                            )
+                          "
+                        >
+                          {{ field.buttonLabel || field.label }}
+                        </Button>
+                      </div>
+                    </template>
                   </div>
                 </template>
               </div>
@@ -250,6 +271,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 
 import type {
   ActionType,
@@ -286,6 +308,7 @@ const emit = defineEmits<{
   'update-actions': [actions: ActionType[]];
   'update-step-validity': [isValid: boolean];
   'update-next-enabled': [enabled: boolean];
+  'on-field-action': [actionName: string, values: FormValues];
 }>();
 const currentStep = ref(props.step);
 
@@ -600,6 +623,26 @@ const handleFileChange = (event: Event, fieldName: string): void => {
     form.setFieldValue(fieldName, file ? [file] : []);
   } else {
     form.setFieldValue(fieldName, file || null);
+  }
+};
+
+const getDbUrlHint = (url: string | undefined): string => {
+  if (!url) return t('hint.db_url_default');
+
+  const protocol = url.split(':')[0].toLowerCase();
+
+  switch (protocol) {
+    case 'postgresql':
+    case 'postgres':
+      return t('hint.db_url_postgresql');
+    case 'mysql':
+      return t('hint.db_url_mysql');
+    case 'sqlite':
+      return t('hint.db_url_sqlite');
+    case 'mongodb':
+      return t('hint.db_url_mongodb');
+    default:
+      return t('hint.db_url_default');
   }
 };
 

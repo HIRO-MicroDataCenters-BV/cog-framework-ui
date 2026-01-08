@@ -23,6 +23,7 @@
       @on-submit="onSubmit"
       @update-actions="(actions) => (stepFormActions = actions)"
       @update-next-enabled="(enabled) => (isNextEnabled = enabled)"
+      @on-field-action="handleFieldAction"
     />
   </AppDialog>
 </template>
@@ -45,6 +46,7 @@ import { useApi } from '@/composables/api';
 const { getBrokerDetails, getTopicDetails } = useApi();
 
 const { t } = useI18n();
+const toaster = useToaster();
 const props = withDefaults(
   defineProps<{
     open?: boolean;
@@ -155,6 +157,56 @@ const handleAction = (action: string | number | boolean) => {
     handleClose();
   } else if (action === 'submit') {
     isSubmit.value = true;
+  }
+};
+
+const handleFieldAction = async (action: string, values: FormValues) => {
+  if (action === 'test_connection') {
+    const sourceSettings = values.source_settings as Record<string, unknown>;
+    const db_url = sourceSettings?.db_url;
+    const table_name = sourceSettings?.table_name;
+
+    // Basic validation
+    if (!db_url) {
+      toaster.show('error', 'required_field');
+      return;
+    }
+
+    try {
+      console.log('Testing connection to:', db_url, 'table:', table_name);
+
+      const config = useRuntimeConfig();
+      const baseURL = config.app.baseURL || '/';
+
+      const response = await fetch(`${baseURL}api/dataset/test-db-connection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ db_url, table_name }),
+      });
+
+      const result = await response.json();
+      console.log('Connection test result:', result);
+
+      if (result.success) {
+        const { data } = result;
+        if (table_name) {
+          if (data.tableExists) {
+            toaster.show('success', 'test_connection');
+          } else {
+            toaster.show('warning', 'test_connection');
+          }
+        } else {
+          toaster.show('success', 'test_connection_no_table');
+        }
+      } else {
+        toaster.show('error', 'connection_failed');
+      }
+    } catch (e: unknown) {
+      console.error('Connection test error:', e);
+      toaster.show('error', 'connection_failed');
+    }
   }
 };
 

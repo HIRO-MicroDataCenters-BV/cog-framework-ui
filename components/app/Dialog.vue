@@ -160,6 +160,7 @@ const icons = {
   type: 'lucide:shapes',
   metadata: 'lucide:text',
   source_settings: 'lucide:settings-2',
+  test_config: 'lucide:flask-conical',
   file: 'lucide:file',
   datastream: 'lucide:database',
   review: 'lucide:circle-check',

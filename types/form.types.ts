@@ -5,7 +5,8 @@ export type FieldType =
   | 'radio'
   | 'checkbox'
   | 'file'
-  | 'number';
+  | 'number'
+  | 'action_button';
 
 export type ActionType = 'close' | 'back' | 'next' | 'submit' | string;
 
@@ -33,6 +34,9 @@ export interface Field {
   accept?: string;
   condition?: FieldCondition;
   required?: boolean;
+  actionName?: string;
+  buttonLabel?: string;
+  hint?: string;
 }
 
 export interface FieldRow {
