@@ -71,101 +71,128 @@ export const useRegisterStreamDataset = () => {
   const registerStreamDataset = async (
     values: StreamDatasetValues,
   ): Promise<DatasetRegisterResponse> => {
-    if (!values.source_settings?.broker_name) {
-      throw new Error('error.broker_name_required');
-    }
-    if (!values.source_settings?.broker_ip_address) {
-      throw new Error('error.broker_ip_address_required');
-    }
-    if (!values.source_settings?.topic_name) {
-      throw new Error('error.topic_name_required');
-    }
-
-    const brokerData: BrokerRegisterParams = {
-      name: values.source_settings.broker_name.trim(),
-      ip: values.source_settings.broker_ip_address.trim(),
-      port: values.source_settings.broker_port || 4222,
-    };
-
-    const brokerResponse = await postDatasetBroker(brokerData);
-
-    if (!brokerResponse || 'detail' in brokerResponse) {
-      throw new Error('error.broker_registration_failed');
-    }
-
     let brokerId: number;
-    if ('data' in brokerResponse && brokerResponse.data) {
-      if (
-        typeof brokerResponse.data === 'object' &&
-        'id' in brokerResponse.data
-      ) {
-        brokerId = brokerResponse.data.id as number;
-      } else if (
-        typeof brokerResponse.data === 'object' &&
-        'broker_id' in brokerResponse.data
-      ) {
-        brokerId = brokerResponse.data.broker_id as number;
+    let topicId: number;
+
+    // Handle Broker Selection
+    const brokerSelection = values.source_settings?.broker_selection;
+
+    if (brokerSelection === 'existing') {
+      // Use existing broker
+      if (!values.source_settings?.broker_id) {
+        throw new Error('error.broker_id_required');
+      }
+      brokerId = values.source_settings.broker_id;
+    } else {
+      // Create new broker
+      if (!values.source_settings?.broker_name) {
+        throw new Error('error.broker_name_required');
+      }
+      if (!values.source_settings?.broker_ip_address) {
+        throw new Error('error.broker_ip_address_required');
+      }
+
+      const brokerData: BrokerRegisterParams = {
+        name: values.source_settings.broker_name.trim(),
+        ip: values.source_settings.broker_ip_address.trim(),
+        port: values.source_settings.broker_port || 4222,
+      };
+
+      const brokerResponse = await postDatasetBroker(brokerData);
+
+      if (!brokerResponse || 'detail' in brokerResponse) {
+        throw new Error('error.broker_registration_failed');
+      }
+
+      if ('data' in brokerResponse && brokerResponse.data) {
+        if (
+          typeof brokerResponse.data === 'object' &&
+          'id' in brokerResponse.data
+        ) {
+          brokerId = brokerResponse.data.id as number;
+        } else if (
+          typeof brokerResponse.data === 'object' &&
+          'broker_id' in brokerResponse.data
+        ) {
+          brokerId = brokerResponse.data.broker_id as number;
+        } else {
+          throw new Error('error.broker_id_not_found_in_response');
+        }
       } else {
         throw new Error('error.broker_id_not_found_in_response');
       }
-    } else {
-      throw new Error('error.broker_id_not_found_in_response');
     }
 
-    const topicSchema = values.source_settings.topic_schema;
-    let schemaValue: string | Record<string, unknown> | undefined;
+    // Handle Topic Selection
+    const topicSelection = values.source_settings?.topic_selection;
 
-    if (topicSchema) {
-      if (typeof topicSchema === 'string') {
-        const trimmed = topicSchema.trim();
-        if (trimmed === '' || trimmed === '{}') {
-          schemaValue = {};
-        } else {
-          try {
-            const parsed = JSON.parse(trimmed);
-            schemaValue =
-              typeof parsed === 'object' && parsed !== null ? parsed : {};
-          } catch {
-            schemaValue = {};
-          }
-        }
-      } else if (typeof topicSchema === 'object' && topicSchema !== null) {
-        schemaValue = topicSchema;
+    if (topicSelection === 'existing') {
+      // Use existing topic
+      if (!values.source_settings?.topic_id) {
+        throw new Error('error.topic_id_required');
       }
+      topicId = values.source_settings.topic_id;
     } else {
-      schemaValue = {};
-    }
+      // Create new topic
+      if (!values.source_settings?.topic_name) {
+        throw new Error('error.topic_name_required');
+      }
 
-    const topicData: TopicRegisterParams = {
-      name: values.source_settings.topic_name.trim(),
-      schema: schemaValue,
-    };
+      const topicSchema = values.source_settings.topic_schema;
+      let schemaValue: string | Record<string, unknown> | undefined;
 
-    const topicResponse = await postDatasetTopic(brokerId, topicData);
+      if (topicSchema) {
+        if (typeof topicSchema === 'string') {
+          const trimmed = topicSchema.trim();
+          if (trimmed === '' || trimmed === '{}') {
+            schemaValue = {};
+          } else {
+            try {
+              const parsed = JSON.parse(trimmed);
+              schemaValue =
+                typeof parsed === 'object' && parsed !== null ? parsed : {};
+            } catch {
+              schemaValue = {};
+            }
+          }
+        } else if (typeof topicSchema === 'object' && topicSchema !== null) {
+          schemaValue = topicSchema;
+        }
+      } else {
+        schemaValue = {};
+      }
 
-    if (!topicResponse || 'detail' in topicResponse) {
-      throw new Error('error.topic_registration_failed');
-    }
+      const topicData: TopicRegisterParams = {
+        name: values.source_settings.topic_name.trim(),
+        schema: schemaValue,
+      };
 
-    let topicId: number;
-    if ('data' in topicResponse && topicResponse.data) {
-      if (
-        typeof topicResponse.data === 'object' &&
-        'id' in topicResponse.data
-      ) {
-        topicId = topicResponse.data.id as number;
-      } else if (
-        typeof topicResponse.data === 'object' &&
-        'topic_id' in topicResponse.data
-      ) {
-        topicId = topicResponse.data.topic_id as number;
+      const topicResponse = await postDatasetTopic(brokerId, topicData);
+
+      if (!topicResponse || 'detail' in topicResponse) {
+        throw new Error('error.topic_registration_failed');
+      }
+
+      if ('data' in topicResponse && topicResponse.data) {
+        if (
+          typeof topicResponse.data === 'object' &&
+          'id' in topicResponse.data
+        ) {
+          topicId = topicResponse.data.id as number;
+        } else if (
+          typeof topicResponse.data === 'object' &&
+          'topic_id' in topicResponse.data
+        ) {
+          topicId = topicResponse.data.topic_id as number;
+        } else {
+          throw new Error('error.topic_id_not_found_in_response');
+        }
       } else {
         throw new Error('error.topic_id_not_found_in_response');
       }
-    } else {
-      throw new Error('error.topic_id_not_found_in_response');
     }
 
+    // Register dataset with broker and topic IDs
     const messageData: DatasetMessageRegisterParams = {
       dataset_type: values.dataset_type || 0,
       data_source_type: values.data_source_type || 10,
