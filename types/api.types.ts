@@ -32,9 +32,13 @@ export interface StreamDatasetValues extends FormValues {
     description?: string;
   };
   source_settings?: {
+    broker_selection?: 'existing' | 'new';
+    broker_id?: number;
     broker_name?: string;
     broker_ip_address?: string;
     broker_port?: number;
+    topic_selection?: 'existing' | 'new';
+    topic_id?: number;
     topic_name?: string;
     topic_schema?: string;
   };
