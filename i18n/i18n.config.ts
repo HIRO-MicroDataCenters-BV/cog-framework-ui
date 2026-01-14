@@ -231,6 +231,7 @@ export default defineI18nConfig(() => ({
         data_stream: 'Ingest real-time data from a streaming source.',
       },
       placeholder: {
+        select_parameter: 'Select Parameter',
         dataset_type: 'Select Dataset Type',
         name: 'Enter a name',
         version: 'Version',
