@@ -42,6 +42,7 @@
               :input="getInputForDefinition(inputDef)"
               :available-components="availableUpstreamComponents"
               :pipeline-params="pipelineParameters"
+              :readonly="readonly"
               @update="(updatedInput) => onInputUpdate(inputDef, updatedInput)"
             />
             <div

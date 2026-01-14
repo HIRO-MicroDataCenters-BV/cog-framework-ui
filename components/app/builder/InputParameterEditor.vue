@@ -8,8 +8,21 @@
       </div>
     </div>
 
-    <!-- Source Type and Value on same line (40/60 split) -->
-    <div class="grid grid-cols-[40%_60%] gap-3">
+    <!-- Readonly View -->
+    <div v-if="readonly" class="text-sm p-2 bg-muted/20 border rounded-md">
+      <div class="flex flex-col gap-1">
+        <div class="font-medium break-all">
+          {{ localInput.source || '-' }}
+        </div>
+        <div class="text-xs text-muted-foreground flex items-center gap-1">
+          <Icon name="lucide:info" class="w-3 h-3" />
+          {{ $t(`label.${localInput.value_source_type}`) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit View -->
+    <div v-else class="grid grid-cols-[40%_60%] gap-3">
       <!-- Value Source Type Selector -->
       <div>
         <Select
@@ -127,9 +140,12 @@ interface Props {
   input?: ComponentInput;
   availableComponents: Node[];
   pipelineParams: PipelineInputParam[];
+  readonly?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  readonly: false,
+});
 
 const emit = defineEmits<{
   update: [input: ComponentInput];
