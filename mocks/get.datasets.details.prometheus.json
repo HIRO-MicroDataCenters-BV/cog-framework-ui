@@ -1,0 +1,38 @@
+{
+  "status_code": 200,
+  "message": "Prometheus dataset retrieved successfully",
+  "data": {
+    "id": 1,
+    "dataset_id": 35,
+    "connection_type": {
+      "prometheus_url": "http://prometheus.monitoring.svc.cluster.local:9090",
+      "frequency": "30s",
+      "timeout": "10s",
+      "data_source": "kubernetes"
+    },
+    "metric_list": {
+      "METRIC_FEATURES": "container_cpu_usage_seconds_total,container_memory_usage_bytes,container_network_receive_bytes_total",
+      "TARGET_NAMESPACE": "default",
+      "QUERY_DURATION": "1m"
+    },
+    "feature_list": {
+      "component": "apiserver",
+      "endpoint": "https",
+      "group": "admissionregistration.k8s.io",
+      "instance": "192.168.122.216:6443",
+      "job": "apiserver",
+      "le": "5",
+      "namespace": "default",
+      "resource": "validatingadmissionpolicybindings",
+      "scope": "cluster",
+      "service": "kubernetes",
+      "verb": "LIST",
+      "version": "v1"
+    },
+    "connection_parameter": {},
+    "dataset_name": "prometheus_monitoring_dataset",
+    "description": "Prometheus dataset for monitoring Kubernetes cluster",
+    "dataset_type": 1,
+    "dataset_source_type": 20
+  }
+}

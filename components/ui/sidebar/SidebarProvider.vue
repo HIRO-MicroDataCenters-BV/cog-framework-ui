@@ -10,7 +10,7 @@ import {
   SIDEBAR_WIDTH,
   SIDEBAR_WIDTH_ICON,
 } from './utils';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = withDefaults(
   defineProps<{

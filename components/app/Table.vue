@@ -3,6 +3,7 @@ import type {
   ColumnFiltersState,
   ExpandedState,
   VisibilityState,
+  ColumnDef,
 } from '@tanstack/vue-table';
 import {
   FlexRender,
@@ -13,11 +14,17 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { ref, watch, onMounted } from 'vue';
-import { valueUpdater } from '~/utils';
-/*
-import { AppMenuActions } from '#components';
-*/
+import {
+  ref,
+  watch,
+  onMounted,
+  computed,
+  h,
+  resolveComponent,
+  nextTick,
+  type VNode,
+} from 'vue';
+import { valueUpdater, getDataTypeFromValue } from '~/utils';
 import type {
   SearchFilter,
   SearchFilterParams,
@@ -28,6 +35,7 @@ import type {
 } from '~/types/table.types';
 import AppDialogDataset from '~/components/app/dialog/Dataset.vue';
 import AppDialogModel from '~/components/app/dialog/Model.vue';
+import ColumnFilter from '~/components/app/table/ColumnFilter.vue';
 
 const props = defineProps({
   dataSource: {
@@ -77,6 +85,18 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
+  sortableColumns: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
+  filterableColumns: {
+    type: Array as PropType<string[]>,
+    default: () => [],
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -86,6 +106,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { page } = useApp();
+const menu = uselistMenus();
 
 const data = shallowRef<DataItem[]>([]);
 const totalItems = ref(0);
@@ -102,6 +123,10 @@ const tabs = computed(() => props.tabs || []);
 const validTabs = computed(() => {
   return tabs.value.filter((tab) => tab && tab.key && tab.value && tab.title);
 });
+
+const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
+const canPreviousPage = computed(() => currentPage.value > 1);
+const canNextPage = computed(() => currentPage.value < totalPages.value);
 
 const stat = ref({
   total: {
@@ -137,11 +162,26 @@ const stat = ref({
 const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
 };
+
+const getAutoColumn = (searchValue: string): string => {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(searchValue)) {
+    return 'id';
+  }
+  return 'name';
+};
+
 const fetchData = async () => {
   const params: Record<string, unknown> = {
-    page: table.getState().pagination.pageIndex + 1,
+    page: currentPage.value,
     limit: pageSize.value,
+    sort_order: (route.query.sort_order as string) || 'desc',
   };
+
+  if (route.query.sort_by) {
+    params.sort_by = route.query.sort_by as string;
+  }
 
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
@@ -160,19 +200,43 @@ const fetchData = async () => {
     params[getFilterColumnName(route.query.column as string)] = route.query.q;
   }
 
-  const response = await props.dataSource(params);
-  const tableData = response?.data;
-  const pagination = response?.pagination;
-  data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
-  pageSize.value = pagination?.limit ?? 0;
-  totalItems.value = pagination?.total_items ?? 0;
+  try {
+    const response = await props.dataSource(params);
 
-  if (pagination) {
-    const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
-    table.setPageSize(pageSize.value);
-    if (currentPage.value >= totalPages) {
-      table.setPageIndex(currentPage.value);
+    if (response && 'data' in response && 'pagination' in response) {
+      const tableData = response.data;
+      const pagination = response.pagination;
+      data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+
+      if (pagination) {
+        if (route.query.limit) {
+          pageSize.value =
+            parseInt(route.query.limit as string) || props.pageSize;
+        } else {
+          pageSize.value = pagination.limit ?? props.pageSize;
+        }
+        totalItems.value = pagination.total_items ?? 0;
+
+        const totalPages = Math.ceil(totalItems.value / pageSize.value) || 1;
+        table.setPageSize(pageSize.value);
+
+        if (currentPage.value > totalPages) {
+          currentPage.value = Math.max(1, totalPages);
+          table.setPageIndex(currentPage.value - 1);
+        }
+      } else {
+        pageSize.value = props.pageSize;
+        totalItems.value = data.value.length;
+      }
+    } else {
+      data.value = [];
+      pageSize.value = props.pageSize;
+      totalItems.value = 0;
     }
+  } catch (error) {
+    data.value = [];
+    pageSize.value = props.pageSize;
+    totalItems.value = 0;
   }
 };
 
@@ -194,25 +258,200 @@ const rowSelection = ref<Record<string, boolean>>({});
 const expanded = ref<ExpandedState>({});
 
 const currentPage = ref<number>(
-  route.query.page ? parseInt(route.query.page as string) : 0,
+  route.query.page ? parseInt(route.query.page as string) : 1,
 );
+
+const currentSortBy = computed(() => (route.query.sort_by as string) || '');
+const currentSortOrder = computed(
+  () => (route.query.sort_order as string) || 'desc',
+);
+
+const handleSort = (columnId: string) => {
+  const query = { ...route.query };
+
+  if (currentSortBy.value === columnId) {
+    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    query.sort_by = columnId;
+    query.sort_order = 'asc';
+  }
+
+  query.page = '1';
+  currentPage.value = 1;
+
+  router.replace({ query });
+};
+
+const handleColumnFilter = (columnId: string, values: (string | number)[]) => {
+  const currentFilters = [...columnFilters.value];
+  const existingFilterIndex = currentFilters.findIndex(
+    (f) => f.id === columnId,
+  );
+
+  if (values.length === 0) {
+    if (existingFilterIndex !== -1) {
+      currentFilters.splice(existingFilterIndex, 1);
+    }
+  } else {
+    const filter = {
+      id: columnId,
+      value: values,
+    };
+    if (existingFilterIndex !== -1) {
+      currentFilters[existingFilterIndex] = filter;
+    } else {
+      currentFilters.push(filter);
+    }
+  }
+
+  columnFilters.value = currentFilters;
+};
+
+const getValueLabel = (columnId: string, value: string | number): string => {
+  if (columnId === 'data_source_type' && typeof value === 'number') {
+    const typeName = getDataTypeFromValue(value);
+    if (typeName) {
+      return t(`label.${typeName}`);
+    }
+  }
+  return String(value);
+};
+
+const getSectionIcon = (section: string | undefined) => {
+  if (!section) return null;
+  return menu.value.main.find((item) => item.key === section)?.icon;
+};
 
 const getColumns = (list: TableColumn[]) => {
   return list.map((item) => {
+    const isSortable = props.sortableColumns.includes(item.id);
+    const isFilterable = props.filterableColumns.includes(item.id);
+
+    const headerContent = () => {
+      const headerElements: VNode[] = [];
+
+      if (isSortable) {
+        const isSorted = currentSortBy.value === item.id;
+        const sortOrder = isSorted ? currentSortOrder.value : null;
+
+        headerElements.push(
+          h(
+            'div',
+            {
+              class:
+                'flex items-center gap-2 cursor-pointer select-none hover:text-foreground',
+              onClick: () => handleSort(item.id),
+            },
+            [
+              h('span', t(`column.${item.id}`)),
+              h(
+                'div',
+                {
+                  class: 'flex flex-col',
+                },
+                [
+                  h(resolveComponent('Icon'), {
+                    name: 'lucide:chevron-up',
+                    class: [
+                      'h-3 w-3',
+                      sortOrder === 'asc'
+                        ? 'text-foreground'
+                        : 'text-muted-foreground opacity-30',
+                    ],
+                  }),
+                  h(resolveComponent('Icon'), {
+                    name: 'lucide:chevron-down',
+                    class: [
+                      'h-3 w-3 -mt-1',
+                      sortOrder === 'desc'
+                        ? 'text-foreground'
+                        : 'text-muted-foreground opacity-30',
+                    ],
+                  }),
+                ],
+              ),
+            ],
+          ),
+        );
+      } else {
+        headerElements.push(h('span', t(`column.${item.id}`)));
+      }
+
+      if (isFilterable && table) {
+        headerElements.push(
+          h(ColumnFilter, {
+            columnId: item.id,
+            table: table,
+            getValueLabel: (value: string | number) =>
+              getValueLabel(item.id, value),
+            onFilterChange: (colId: string, values: (string | number)[]) =>
+              handleColumnFilter(colId, values),
+          }),
+        );
+      }
+
+      return h(
+        'div',
+        {
+          class: 'flex items-center gap-2',
+        },
+        headerElements,
+      );
+    };
+
     return {
       id: item.id,
       accessorKey: item.id,
-      header: t(`column.${item.id}`),
+      header:
+        isSortable || isFilterable ? headerContent : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
-    } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      size: item.size,
+      minSize: item.minSize,
+      maxSize: item.maxSize,
+      filterFn: (row: unknown, columnId: string) => {
+        const columnFilter = columnFilters.value.find((f) => f.id === columnId);
+        if (
+          !columnFilter ||
+          !Array.isArray(columnFilter.value) ||
+          columnFilter.value.length === 0
+        ) {
+          return true;
+        }
+
+        const rowObj = row as {
+          original: DataItem;
+          getValue: (columnId: string) => unknown;
+        };
+        const rowValue = rowObj.getValue
+          ? rowObj.getValue(columnId)
+          : (rowObj.original as DataItem)[columnId];
+
+        if (rowValue === null || rowValue === undefined) {
+          return false;
+        }
+        const normalizedRowValue =
+          typeof rowValue === 'number' ? rowValue : String(rowValue);
+        const matches = columnFilter.value.some((val) => {
+          const normalizedVal = typeof val === 'number' ? val : String(val);
+          return normalizedRowValue === normalizedVal;
+        });
+
+        return matches;
+      },
+    } as ColumnDef<DataItem>;
   });
 };
 
-const columns = ref(getColumns(props.columns ?? []) as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+const columns = ref<ColumnDef<DataItem>[]>(
+  getColumns(props.columns ?? []) as ColumnDef<DataItem>[],
+);
+
 const table = useVueTable({
   data,
-  columns: columns.value,
+  get columns() {
+    return columns.value;
+  },
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -221,7 +460,10 @@ const table = useVueTable({
   onColumnFiltersChange: (updaterOrValue) => {
     valueUpdater(updaterOrValue, columnFilters);
     if (!isUpdatingFromState.value) {
-      updateUrlParams();
+      const searchFilter = columnFilters.value.find((f) => f.id === 'search');
+      if (searchFilter) {
+        updateUrlParams();
+      }
     }
   },
   onColumnVisibilityChange: (updaterOrValue) => {
@@ -234,6 +476,7 @@ const table = useVueTable({
     valueUpdater(updaterOrValue, rowSelection),
   onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
   manualPagination: true,
+  manualFiltering: false,
   globalFilterFn: (row, columnId) => {
     const searchFilter = columnFilters.value.find(
       (filter) => filter.id === 'search',
@@ -248,7 +491,7 @@ const table = useVueTable({
   },
   initialState: {
     pagination: {
-      pageIndex: currentPage.value,
+      pageIndex: currentPage.value - 1,
       pageSize: pageSize.value,
     },
   },
@@ -259,13 +502,14 @@ const table = useVueTable({
         ? updater(table.getState().pagination)
         : updater;
 
-    if (newPagination.pageIndex !== currentPage.value) {
-      currentPage.value = newPagination.pageIndex;
+    const newPage = newPagination.pageIndex + 1;
+    if (newPage !== currentPage.value) {
       const query = { ...route.query };
-      query.page = currentPage.value.toString();
-      router.replace({
-        query,
-      });
+      query.page = newPage.toString();
+      if (!query.sort_order) {
+        query.sort_order = 'desc';
+      }
+      router.replace({ query });
     }
   },
 
@@ -284,21 +528,18 @@ const table = useVueTable({
     },
     get pagination() {
       return {
-        pageIndex: currentPage.value,
+        pageIndex: currentPage.value - 1,
         pageSize: pageSize.value,
       };
     },
   },
 });
 
-// const tabs = uselistTabs();
-
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
 const applySearchFilter = () => {
-  table.setPageIndex(0);
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
   );
@@ -306,10 +547,13 @@ const applySearchFilter = () => {
     updateUrlParams();
     return;
   }
+
+  const columnToUse = getAutoColumn(searchValue.value);
+
   const searchFilter: SearchFilter = {
     id: 'search',
     value: searchValue.value,
-    column: selectedFilterColumn.value,
+    column: columnToUse,
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
@@ -324,12 +568,24 @@ const updateUrlParams = () => {
     query.q = filter.value;
     query.column = filter.column;
   }
-  query.page = (currentPage.value + 1).toString();
+
+  currentPage.value = 1;
+  query.page = '1';
 
   if (pageSize.value) {
     query.limit = pageSize.value.toString();
-    table.setPageSize(pageSize.value);
   }
+
+  if (route.query.sort_order) {
+    query.sort_order = route.query.sort_order as string;
+  } else {
+    query.sort_order = 'desc';
+  }
+
+  if (route.query.sort_by) {
+    query.sort_by = route.query.sort_by as string;
+  }
+
   isUpdatingFromState.value = true;
   router.replace({ query }).then(() => {
     setTimeout(() => {
@@ -377,22 +633,23 @@ watch(
       if (newQuery.page) {
         const pageIndex = parseInt(newQuery.page as string);
         currentPage.value = pageIndex;
-        table.setPageIndex(pageIndex);
+        table.setPageIndex(pageIndex - 1);
       } else {
-        currentPage.value = 0;
+        currentPage.value = 1;
         table.setPageIndex(0);
       }
 
       if (newQuery.limit) {
-        const pageSize = parseInt(newQuery.limit as string);
-        if (pageSize > 0 && pageSize !== props.pageSize) {
-          table.setPageSize(pageSize);
+        const newPageSize = parseInt(newQuery.limit as string);
+        if (newPageSize > 0 && newPageSize !== pageSize.value) {
+          pageSize.value = newPageSize;
+          table.setPageSize(newPageSize);
         }
       }
     } catch (error) {
       columnFilters.value = [];
       columnVisibility.value = {};
-      currentPage.value = 0;
+      currentPage.value = 1;
       table.setPageIndex(0);
     } finally {
       setTimeout(() => {
@@ -401,16 +658,26 @@ watch(
       }, 100);
     }
   },
-  { deep: true },
+  { deep: true, immediate: false },
 );
+
+const hasActiveColumnFilters = computed(() => {
+  return columnFilters.value.some(
+    (f) => f.id !== 'search' && Array.isArray(f.value) && f.value.length > 0,
+  );
+});
+
+const clearAllColumnFilters = () => {
+  columnFilters.value = columnFilters.value.filter((f) => f.id === 'search');
+};
 
 const add = () => {
   const section = page.value.section;
   switch (section) {
-    case 'dataset_management':
+    case 'datasets':
       openAddDataset.value = true;
       break;
-    case 'model_management':
+    case 'models':
       openAddModel.value = true;
       break;
     case 'pipelines':
@@ -420,109 +687,84 @@ const add = () => {
 };
 
 onMounted(() => {
-  fetchData();
   setTimeout(() => {
     if (Object.keys(route.query).length === 0) {
       updateUrlParams();
+    } else {
+      fetchData();
     }
   }, 50);
+  nextTick(() => {
+    columns.value = getColumns(props.columns ?? []) as ColumnDef<DataItem>[];
+  });
 });
+
+watch(
+  () => data.value.length,
+  () => {
+    if (data.value.length > 0) {
+      nextTick(() => {
+        columns.value = getColumns(
+          props.columns ?? [],
+        ) as ColumnDef<DataItem>[];
+      });
+    }
+  },
+);
 
 defineExpose({ fetchData });
 </script>
 
 <template>
-  <div
-    :class="['w-full flex flex-col', props.class]"
-    style="height: calc(100vh - 80px)"
-  >
-    <div class="p-4">
+  <div :class="['w-full flex flex-col relative h-[100svh]', props.class]">
+    <div class="pl-4 p-4">
       <div>
-        <div class="pb-4 flex">
-          <div class="flex-auto">
-            <div
-              v-if="page.description != ''"
-              class="w-full md:w-96 max-w-full"
-            >
-              <p class="text-sm text-slate-500">{{ page.description }}</p>
-            </div>
-            <div
-              v-if="hasStats"
-              class="frame grid gap-4 auto-cols-max grid-flow-col"
-            >
-              <div v-for="item in stat" :key="item.key" class="frame-item">
-                <div
-                  class="frame-item-label uppercase text-zinc-500 mb-2 text-sm"
-                >
-                  {{ item.label }}
-                </div>
-                <div class="frame-item-content flex items-center">
-                  <Icon
-                    :name="item.icon"
-                    :class="`h-4 w-4 mr-2 ${item.color}`"
-                  />
-                  <span class="stat-value">{{ item.value }}</span>
-                </div>
-              </div>
-            </div>
+        <div class="pb-4 flex justify-between gap-2">
+          <div>
+            <h2 class="text-2xl font-medium flex items-center gap-2">
+              <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
+              {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
+              <Button
+                v-if="hasActiveColumnFilters"
+                variant="ghost"
+                size="sm"
+                class="h-6 px-2 text-xs border border-border"
+                @click="clearAllColumnFilters"
+              >
+                {{ t('action.clear_filters') }}
+                <Icon name="lucide:x" class="ml-1 h-3 w-3" />
+              </Button>
+            </h2>
           </div>
-          <div class="flex gap-6 items-center">
-            <div v-if="hasFilters" class="flex gap-2">
-              <Switch
-                :model-value="isFiltersOpen"
-                @update:model-value="toggleTableFilters"
+
+          <div class="flex gap-2">
+            <div class="relative">
+              <Input
+                v-model="searchValue"
+                class="w-64 pl-8"
+                type="search"
+                :placeholder="t('placeholder.search_by_name_or_id')"
+                @update:model-value="applySearchFilter"
               />
-              <Label class="flex items-center">{{ t('label.filters') }}</Label>
+              <Icon
+                name="lucide:search"
+                class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
             </div>
-            <Button @click="() => add()"
-              ><Icon name="lucide:plus"></Icon
-              >{{ t(`action.add_${page.section}`) }}</Button
-            >
+
+            <div class="flex gap-6 items-center">
+              <Button @click="() => add()"
+                ><Icon name="lucide:plus"></Icon
+                >{{ t(`action.add_${page.section}`) }}</Button
+              >
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- table filters -->
-      <div v-if="isFiltersOpen">
-        <Separator />
+      <!-- 
+      <div>
         <div class="flex gap-2 items-center py-4">
-          <div v-if="hasSearch" class="flex-auto flex">
-            <div class="flex gap-2">
-              <Input
-                v-model="searchValue"
-                class="w-64"
-                type="search"
-                :placeholder="t('placeholder.search')"
-                @update:model-value="applySearchFilter"
-              />
-
-              <Select
-                v-model="selectedFilterColumn"
-                @update:model-value="applySearchFilter"
-              >
-                <SelectTrigger class="w-[180px]">
-                  <SelectValue :placeholder="t('placeholder.select_filter')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>{{ t('title.select_filter') }}</SelectLabel>
-                    <SelectItem value="all"
-                      >{{ t('hint.in') }} {{ t('hint.all') }}</SelectItem
-                    >
-                    <SelectItem
-                      v-for="column in table
-                        .getAllColumns()
-                        .filter((column) => column.getCanHide())"
-                      :key="column.id"
-                      :value="column.id"
-                    >
-                      {{ t('hint.in') }} {{ t(`column.${column.id}`) }}
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
           <div v-if="validTabs.length > 0" class="flex gap-2">
             <Tabs default-value="all">
               <TabsList class="flex">
@@ -545,23 +787,27 @@ defineExpose({ fetchData });
           </div>
         </div>
       </div>
+      -->
     </div>
-    <!-- end table filters -->
-    <div class="overflow-x-auto w-full">
-      <Table
-        :data-source="dataSource"
-        :columns="columns"
-        :page-size="pageSize"
-        class="border-b"
-      >
+    <div class="overflow-x-auto w-full flex-1">
+      <table class="border-b w-full border-collapse">
         <TableHeader
-          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 z-10 shadow-xs"
+          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-t bg-gray-50 dark:bg-gray-900 border-gray-200 z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
           >
-            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+            <TableHead
+              v-for="header in headerGroup.headers"
+              :key="header.id"
+              :class="[
+                'border-l border-r border-border',
+                header.column.id === 'id'
+                  ? 'w-[180px] min-w-[180px] max-w-[180px]'
+                  : '',
+              ]"
+            >
               <FlexRender
                 v-if="!header.isPlaceholder"
                 :render="header.column.columnDef.header"
@@ -571,10 +817,22 @@ defineExpose({ fetchData });
           </TableRow>
         </TableHeader>
         <TableBody>
-          <template v-if="table.getRowModel().rows?.length">
-            <template v-for="row in table.getRowModel().rows" :key="row.id">
+          <template v-if="table.getFilteredRowModel().rows?.length">
+            <template
+              v-for="row in table.getFilteredRowModel().rows"
+              :key="row.id"
+            >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
-                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                <TableCell
+                  v-for="cell in row.getVisibleCells()"
+                  :key="cell.id"
+                  :class="[
+                    'border-l border-r border-border py-2 px-4',
+                    cell.column.id === 'id'
+                      ? 'w-[180px] min-w-[180px] max-w-[180px]'
+                      : '',
+                  ]"
+                >
                   <FlexRender
                     :render="cell.column.columnDef.cell"
                     :props="cell.getContext()"
@@ -582,7 +840,10 @@ defineExpose({ fetchData });
                 </TableCell>
               </TableRow>
               <TableRow v-if="row.getIsExpanded()">
-                <TableCell :colspan="row.getAllCells().length">
+                <TableCell
+                  :colspan="row.getAllCells().length"
+                  class="border-l border-r border-border py-2 px-4"
+                >
                   {{ JSON.stringify(row.original) }}
                 </TableCell>
               </TableRow>
@@ -590,31 +851,55 @@ defineExpose({ fetchData });
           </template>
 
           <TableRow v-else>
-            <TableCell :colspan="columns.length" class="h-24 text-center">
+            <TableCell
+              :colspan="columns.length"
+              class="h-24 text-center border-l border-r border-border"
+            >
               {{ t('hint.no_results') }}
             </TableCell>
           </TableRow>
         </TableBody>
-      </Table>
+      </table>
     </div>
 
-    <div class="py-4 p-4 bg-sidebar-background sticky bottom-0">
+    <div
+      class="py-4 px-6 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+    >
       <div class="flex items-center justify-between">
-        <div class="flex-1 text-sm text-muted-foreground">
+        <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
           {{ table.getFilteredSelectedRowModel().rows.length }}
           {{ t('hint.of') }} {{ table.getFilteredRowModel().rows.length }}
           {{ t('hint.rows_selected') }}
         </div>
-        {{ currentPage }}
-        <AppTablePagination
+        <div v-else class="flex-1"></div>
+        <AppPagination
           :current-page="currentPage"
-          :total-items="Math.ceil(totalItems / pageSize)"
-          :page-size="table.getPageCount()"
-          :can-previous-page="table.getCanPreviousPage()"
-          :can-next-page="table.getCanNextPage()"
+          :total-items="totalItems"
+          :page-size="pageSize"
+          :can-previous-page="canPreviousPage"
+          :can-next-page="canNextPage"
+          :sibling-count="2"
+          :show-edges="true"
+          :page-size-options="[10, 20, 50, 100]"
           @on-set-page="
-            (page) => {
-              table.setPageIndex(page);
+            (page: number) => {
+              const query = { ...route.query };
+              query.page = page.toString();
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
+              router.replace({ query });
+            }
+          "
+          @on-set-page-size="
+            (size: number) => {
+              const query = { ...route.query };
+              query.limit = size.toString();
+              query.page = '1';
+              if (!query.sort_order) {
+                query.sort_order = 'desc';
+              }
+              router.replace({ query });
             }
           "
         />

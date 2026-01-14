@@ -4,10 +4,18 @@ export const uselistMenus = () => {
     return {
       main: [
         {
-          key: 'dataset_management',
+          key: 'datasets',
           title: t('menu.datasets'),
-          url: 'dataset_management',
+          url: 'datasets',
           icon: 'lucide:table-2',
+          items: [],
+          isActive: false,
+        },
+        {
+          key: 'models',
+          title: t('menu.models'),
+          url: 'models',
+          icon: 'lucide:bot',
           items: [],
           isActive: false,
         },
@@ -16,14 +24,6 @@ export const uselistMenus = () => {
           title: t('menu.pipelines'),
           url: 'pipelines',
           icon: 'lucide:route',
-          items: [],
-          isActive: false,
-        },
-        {
-          key: 'model_management',
-          title: t('menu.model_management'),
-          url: 'model_management',
-          icon: 'lucide:package',
           items: [],
           isActive: false,
         },

@@ -1,6 +1,7 @@
-import type { FormValues } from './form';
+import type { FormValues } from './form.types';
 
 export interface FileDatasetValues extends FormValues {
+  dataset_type?: number;
   metadata?: {
     name?: string;
     description?: string;
@@ -11,6 +12,7 @@ export interface FileDatasetValues extends FormValues {
 }
 
 export interface TableDatasetValues extends FormValues {
+  dataset_type?: number;
   metadata?: {
     name?: string;
     description?: string;
@@ -23,14 +25,20 @@ export interface TableDatasetValues extends FormValues {
 }
 
 export interface StreamDatasetValues extends FormValues {
+  dataset_type?: number;
+  data_source_type?: number;
   metadata?: {
     name?: string;
     description?: string;
   };
   source_settings?: {
+    broker_selection?: 'existing' | 'new';
+    broker_id?: number;
     broker_name?: string;
     broker_ip_address?: string;
     broker_port?: number;
+    topic_selection?: 'existing' | 'new';
+    topic_id?: number;
     topic_name?: string;
     topic_schema?: string;
   };
@@ -59,6 +67,26 @@ export interface TableDatasetRegisterParams {
   db_url: string;
   table_name: string;
   selected_fields: string;
+}
+
+export interface BrokerRegisterParams {
+  name: string;
+  ip: string;
+  port: number;
+}
+
+export interface TopicRegisterParams {
+  name: string;
+  schema?: string | Record<string, unknown>;
+}
+
+export interface DatasetMessageRegisterParams {
+  dataset_type: number;
+  data_source_type: number;
+  name: string;
+  description: string;
+  broker_id: number;
+  topic_id: number;
 }
 
 export interface StreamDatasetRegisterParams {
@@ -94,6 +122,12 @@ export interface ModelQueryParams {
   name?: string;
   /** Sort order for last_modified_time: 'asc' or 'desc' */
   sort_order?: 'asc' | 'desc';
+  /** Column name to sort by */
+  sort_by?: string;
+  /** Page number for pagination */
+  page?: number;
+  /** Number of items per page */
+  limit?: number;
 }
 
 /**
@@ -106,14 +140,22 @@ export interface DatasetQueryParams {
   id?: number;
   /** Duration of the dataset in days */
   last_days?: number;
+  /** Sort order: 'asc' or 'desc' (default: 'desc') */
+  sort_order?: 'asc' | 'desc';
+  /** Column name to sort by */
+  sort_by?: string;
+  /** Page number for pagination */
+  page?: number;
+  /** Number of items per page */
+  limit?: number;
 }
 
 /**
  * Model file upload parameters
  */
 export interface ModelFileUploadParams {
-  /** Model ID */
-  id: number;
+  /** Model UUID */
+  id: string;
   /** Files to upload */
   files: File[];
   /** File type: 0 - Model Policy File, 1 - Model File */
@@ -126,8 +168,8 @@ export interface ModelFileUploadParams {
  * Dataset file upload parameters
  */
 export interface DatasetFileUploadParams {
-  /** Dataset ID */
-  id: number;
+  /** Dataset UUID */
+  id: string;
   /** Files to upload */
   files: File[];
   /** Dataset name */

@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="open" @update:open="onClose">
-    <DialogContent class="overflow-hidden max-h-full">
+    <DialogContent class="overflow-hidden max-h-full" :class="props.class">
       <DialogHeader v-if="props.navigation.length == 0">
         <DialogTitle>{{ props.title }}</DialogTitle>
       </DialogHeader>
@@ -46,35 +46,37 @@
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset>
-          <slot />
+        <SidebarInset
+          class="flex flex-col overflow-hidden overflow-y-auto flex-1] overflow-hidden overflow-y-auto h-[504px]"
+        >
+          <div
+            data-slot="sidebar-inset"
+            class="flex-1 min-h-0 overflow-y-auto overflow-hidden h-[calc(100%-65px)]"
+          >
+            <slot />
+          </div>
 
-          <DialogFooter v-if="props.navigation.length > 0">
-            <div class="flex gap-2 w-full">
-              <div v-if="props.navigation.length == 0" class="flex-1">
-                <DialogClose as-child>
-                  <Button type="button" variant="outline">
-                    {{ t(`action.close`) }}
-                  </Button>
-                </DialogClose>
-              </div>
-              <div class="flex gap-2">
-                <Button
-                  v-for="item in props.stepFormActions.length > 0
-                    ? props.stepFormActions
-                    : props.actions"
-                  :key="item"
-                  :variant="variantByActionType(item)"
-                  :type="typeByActionType(item, step)"
-                  @click="onAction(item)"
-                >
-                  {{ t(`action.${item}`) }}
-                </Button>
-              </div>
+          <DialogFooter
+            v-if="props.navigation.length > 0"
+            class="flex-shrink-0"
+          >
+            <div class="flex gap-2 w-full justify-end">
+              <Button
+                v-for="item in props.stepFormActions.length > 0
+                  ? props.stepFormActions
+                  : props.actions"
+                :key="item"
+                :variant="variantByActionType(item)"
+                :type="typeByActionType(item, step)"
+                :disabled="item === 'next' && !isNextEnabled"
+                @click="onAction(item)"
+              >
+                {{ t(`action.${item}`) }}
+              </Button>
             </div>
           </DialogFooter>
-          <DialogFooter v-else class="justify-start!">
-            <div class="flex mt-8 gap-2" as-child>
+          <DialogFooter v-else class="flex-shrink-0 justify-end">
+            <div class="flex mt-8 gap-2">
               <Button
                 v-for="item in props.stepFormActions.length > 0
                   ? props.stepFormActions
@@ -107,6 +109,8 @@ const props = withDefaults(
     navigation?: string[];
     step?: number;
     stepFormActions?: string[];
+    class?: string;
+    isNextEnabled?: boolean;
   }>(),
   {
     open: false,
@@ -117,6 +121,8 @@ const props = withDefaults(
     navigation: () => [],
     actions: () => ['cancel', 'save'],
     stepFormActions: () => [],
+    class: '',
+    isNextEnabled: true,
   },
 );
 
@@ -154,6 +160,7 @@ const icons = {
   type: 'lucide:shapes',
   metadata: 'lucide:text',
   source_settings: 'lucide:settings-2',
+  test_config: 'lucide:flask-conical',
   file: 'lucide:file',
   datastream: 'lucide:database',
   review: 'lucide:circle-check',

@@ -5,6 +5,8 @@
     :step-form-actions="stepFormActions"
     :navigation="formNavigation"
     :step="currentStep"
+    :is-next-enabled="isNextEnabled"
+    class="max-h-full overflow-hidden h-[552px]"
     @on-close="handleClose"
     @on-action="handleAction"
     @on-set-step="handleSetStep"
@@ -20,6 +22,7 @@
       :is-submit="isSubmit"
       @on-submit="onSubmit"
       @update-actions="(actions) => (stepFormActions = actions)"
+      @update-next-enabled="(enabled) => (isNextEnabled = enabled)"
     />
   </AppDialog>
 </template>
@@ -48,6 +51,7 @@ const props = withDefaults(
 const open = ref(props.open);
 const currentStep = ref(0);
 const stepFormActions = ref<string[]>([]);
+const isNextEnabled = ref(true);
 const isSubmit = ref(false);
 watch(
   () => props.open,
@@ -74,6 +78,8 @@ const actionLabels = getModelActionLabels(t);
 
 const formSteps = getModelFormSteps(t);
 
+const { submitModelForm } = useModelForm();
+
 const handleClose = async () => {
   await emit('on-close');
   currentStep.value = 0;
@@ -98,12 +104,14 @@ const onSubmit = async (values: FormValues) => {
   console.log('onSubmit', values);
   isSubmit.value = false;
   try {
-    const { submitModelForm } = useModelForm();
     const response = await submitModelForm(values);
-    emit('on-close');
-
+    if (response && !('detail' in response)) {
+      emit('on-close');
+      currentStep.value = 0;
+    }
     return response;
-  } catch (_) {
+  } catch (error) {
+    console.error('Error submitting model form:', error);
     currentStep.value = 0;
     return undefined;
   }

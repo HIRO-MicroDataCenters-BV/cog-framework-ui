@@ -1,0 +1,15 @@
+{
+  "status_code": 200,
+  "message": "Dataset details",
+  "data": {
+    "id": 20,
+    "dataset_name": "test_dataset2",
+    "user_id": "admin@hiro.com",
+    "last_modified_time": "2025-09-09T14:59:16.320320",
+    "train_and_inference_type": 0,
+    "data_source_type": 10,
+    "description": "test_dataset",
+    "register_date_time": "2025-03-09T14:59:16.320319",
+    "last_modified_user_id": "admin@hiro.com"
+  }
+}

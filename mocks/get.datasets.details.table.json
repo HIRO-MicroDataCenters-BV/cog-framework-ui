@@ -1,0 +1,17 @@
+{
+  "status_code": 200,
+  "message": "Dataset Table Details",
+  "data": {
+    "dataset_id": 38,
+    "db_url": "postgresql://hiro:test@postgres:5432/test",
+    "table_name": "model_info1",
+    "fields_selected_list": "id,version1",
+    "id": 2,
+    "register_date": "2025-10-01T08:35:44.541701",
+    "dataset_name": "test_ds_table_updated",
+    "description": "test_ds_table",
+    "dataset_type": 1,
+    "user_id": "admin@hiro.com",
+    "last_modified_user_id": "admin@hiro.com"
+  }
+}

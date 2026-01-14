@@ -128,3 +128,52 @@ export function generateUniqueName(existingNames: string[]): string {
 
   return `${mostCommonBase}_${counter}`;
 }
+
+/**
+ * Mapping for numeric values to data types
+ */
+export const DATA_TYPE_MAPPING = {
+  file: [0],
+  database: [1],
+  stream: [10, 11],
+  time_series: [20],
+} as const;
+
+export type DataTypeName = keyof typeof DATA_TYPE_MAPPING;
+
+/**
+ * Get data type name from numeric value
+ * @param value - Numeric value representing the data type
+ * @returns Data type name (e.g., 'file', 'database', 'stream', 'time_series') or null if not found
+ *
+ * @example
+ * ```typescript
+ * getDataTypeFromValue(0) // returns 'file'
+ * getDataTypeFromValue(10) // returns 'stream'
+ * getDataTypeFromValue(99) // returns null
+ * ```
+ */
+export function getDataTypeFromValue(value: number): DataTypeName | null {
+  for (const [type, values] of Object.entries(DATA_TYPE_MAPPING)) {
+    if ((values as readonly number[]).includes(value)) {
+      return type as DataTypeName;
+    }
+  }
+  return null;
+}
+
+/**
+ * Shortens UUID to a more readable format
+ * @param uuid - UUID string to shorten
+ * @returns Shortened UUID format (e.g., "842be4...9dba") or original string if too short
+ *
+ * @example
+ * ```typescript
+ * shortenUuid('842be490-7910-422a-97bb-a56ad10b9dba') // returns '842be4...9dba'
+ * shortenUuid('abc') // returns 'abc'
+ * ```
+ */
+export function shortenUuid(uuid: string): string {
+  if (!uuid || uuid.length < 12) return uuid;
+  return `${uuid.slice(0, 6)}...${uuid.slice(-6)}`;
+}

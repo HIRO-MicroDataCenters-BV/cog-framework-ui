@@ -4,7 +4,7 @@ import type { HTMLAttributes } from 'vue';
 import { CircleIcon } from 'lucide-vue-next';
 import { RadioGroupIndicator, RadioGroupItem, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<
   RadioGroupItemProps & { class?: HTMLAttributes['class'] }

@@ -3,7 +3,7 @@ import type { CheckboxRootEmits, CheckboxRootProps } from 'reka-ui';
 import { Check } from 'lucide-vue-next';
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<
   CheckboxRootProps & { class?: HTMLAttributes['class'] }

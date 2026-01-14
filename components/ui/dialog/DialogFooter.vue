@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const props = defineProps<{ class?: HTMLAttributes['class'] }>();
 </script>
@@ -9,7 +9,10 @@ const props = defineProps<{ class?: HTMLAttributes['class'] }>();
   <div
     data-slot="dialog-footer"
     :class="
-      cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', props.class)
+      cn(
+        'flex flex-col-reverse gap-2 border-t border-gray-200 pt-2 sm:flex-row sm:justify-end',
+        props.class,
+      )
     "
   >
     <slot />

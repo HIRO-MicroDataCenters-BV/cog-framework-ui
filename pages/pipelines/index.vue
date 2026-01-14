@@ -2,6 +2,8 @@
 import type { TableRowType } from '@/types/row.types';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { useApi } from '@/composables/api';
+import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
 
 const { t } = useI18n();
 
@@ -16,20 +18,45 @@ setPage({
 });
 
 const baseUrl = page.value.section;
+const config = useRuntimeConfig();
+const urlOrigin = window.location.origin;
 
 const columns = [
-  {
-    id: 'run_id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('run_id'),
-  },
   {
     id: 'run_name',
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
-        { href: `${baseUrl}/${row.getValue('run_id')}` },
+        {
+          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+        },
         row.getValue('run_name') || row.getValue('run_id'),
       ),
+  },
+  {
+    id: 'run_id',
+    size: 180,
+    minSize: 180,
+    maxSize: 180,
+    cell: ({ row }: { row: TableRowType }) => {
+      const runIdValue = row.getValue<string>('run_id');
+      const shortenedId = shortenUuid(runIdValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: runIdValue,
+        },
+        {
+          default: () =>
+            h(
+              'a',
+              { href: `${urlOrigin}${baseUrl}/${runIdValue}` },
+              shortenedId,
+            ),
+        },
+      );
+    },
   },
   {
     id: 'start_time',
@@ -46,9 +73,14 @@ const columns = [
     id: 'status',
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
-      return h(Badge, {
-        status: status?.toLowerCase() || 'pending',
-      });
+      return h(
+        Badge,
+        {
+          value: status?.toLowerCase() || 'pending',
+          type: 'status',
+        },
+        () => [],
+      );
     },
   },
   {
@@ -56,37 +88,6 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => row.getValue('duration'),
   },
 ];
-
-// Data source function for pipeline runs
-const dataSource = async (params = {}) => {
-  try {
-    const response = await getPipelineRunsList();
-
-    if (response && 'data' in response && response.data) {
-      return {
-        data: Array.isArray(response.data) ? response.data : [response.data],
-        total: Array.isArray(response.data) ? response.data.length : 1,
-        page: 1,
-        pageSize: Array.isArray(response.data) ? response.data.length : 1,
-      };
-    }
-
-    return {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    };
-  } catch (error) {
-    console.error('Failed to fetch pipeline runs:', error);
-    return {
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-    };
-  }
-};
 
 const tabs = [
   {
@@ -116,5 +117,6 @@ console.log(data);
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"
+    :selectable="false"
   />
 </template>

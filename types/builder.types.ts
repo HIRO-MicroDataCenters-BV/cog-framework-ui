@@ -81,3 +81,39 @@ export interface Category {
   isOpen: boolean;
   components: Component[];
 }
+
+export interface PipelineTemplate {
+  name: string;
+  container?: Record<string, unknown>;
+  inputs?: {
+    artifacts?: Array<{ name: string }>;
+    parameters?: Array<{ name: string }>;
+  };
+  outputs?: {
+    artifacts?: Array<{ name: string }>;
+    parameters?: Array<{ name: string }>;
+  };
+  dag?: {
+    tasks: Array<{
+      name: string;
+      dependencies?: string[];
+    }>;
+  };
+}
+
+export interface TaskDetail {
+  display_name: string;
+  state: string;
+}
+
+export interface PipelineData {
+  display_name: string;
+  pipeline_spec: {
+    spec: {
+      templates: PipelineTemplate[];
+    };
+  };
+  run_details?: {
+    task_details: TaskDetail[];
+  };
+}

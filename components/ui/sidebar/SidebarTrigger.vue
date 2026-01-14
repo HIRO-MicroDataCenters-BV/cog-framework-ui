@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from 'vue';
 import { PanelLeft } from 'lucide-vue-next';
 import { useSidebar } from './utils';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { Button } from '@/components/ui/button';
 
 const props = defineProps<{

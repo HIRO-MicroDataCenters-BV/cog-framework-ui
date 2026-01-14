@@ -1,10 +1,17 @@
 <template>
-  <div class="h-full bg-muted/20 relative">
+  <div
+    class="h-full bg-muted/20 relative"
+    :class="{ readonly: props.readonly }"
+  >
     <VueFlow
       v-model:nodes="nodes"
       v-model:edges="edges"
       class="w-full h-full"
       fit-view
+      :nodes-draggable="!props.readonly"
+      :nodes-connectable="!props.readonly"
+      :edges-updatable="!props.readonly"
+      :elements-selectable="!props.readonly"
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
@@ -13,32 +20,47 @@
       @edges-change="onEdgesChange"
       @edge-update-end="onEdgesChange"
     >
+      <Background
+        variant="dots"
+        :gap="20"
+        :size="0.75"
+        color="hsl(var(--muted-foreground))"
+      />
       <template #node-default="{ data, targetPosition, sourcePosition }">
         <div
-          class="bg-white border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
+          class="bg-card border border-border rounded-lg shadow-sm w-3xs min-h-[86px] overflow-hidden node-inner"
         >
           <SheetTrigger as-child>
             <div
-              class="flex items-center flex-nowrap gap-2 border-b px-4 py-2 text-gray-700"
+              class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground"
             >
               <span class="text-sm flex-auto overflow-hidden">{{
                 data.label
               }}</span>
-              <Badge v-if="data.status" :status="data.status"></Badge>
+              <Badge v-if="data.status" :value="data.status" type="status" />
             </div>
             <div v-if="data.category" class="px-4 py-2">
-              <p>{{ $t(`builder.category`) }} {{ data.category }}</p>
+              <p class="flex items-center gap-2 text-xs text-muted-foreground">
+                <Icon name="lucide:folder" class="w-3 h-3" />
+                {{ data.category }}
+              </p>
             </div>
           </SheetTrigger>
           <Handle
             type="target"
             :position="targetPosition"
-            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
+            :class="[
+              'bg-foreground rounded w-2 h-2 handle',
+              props.readonly ? 'opacity-0' : 'opacity-20',
+            ]"
           />
           <Handle
             type="source"
             :position="sourcePosition"
-            class="bg-black dark:bg-white rounded w-2 h-2 opacity-20 handle"
+            :class="[
+              'bg-foreground rounded w-2 h-2 handle',
+              props.readonly ? 'opacity-0' : 'opacity-20',
+            ]"
           />
         </div>
       </template>
@@ -56,6 +78,7 @@ import {
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
 } from '@vue-flow/core';
+import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
 
 import type { Node, Edge, Component } from '~/types/builder.types';
@@ -63,11 +86,13 @@ import type { Node, Edge, Component } from '~/types/builder.types';
 interface Props {
   nodes?: VueFlowNode[];
   edges?: VueFlowEdge[];
+  readonly?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   nodes: () => [],
   edges: () => [],
+  readonly: false,
 });
 
 const nodes = ref<VueFlowNode[]>(props.nodes);
@@ -75,14 +100,8 @@ const edges = ref<VueFlowEdge[]>(props.edges);
 
 watch(
   () => props.nodes,
-  (newNodes, oldNodes) => {
-    console.log('CanvasArea - received new nodes:', newNodes);
-    console.log('CanvasArea - old nodes:', oldNodes);
-    console.log('CanvasArea - nodes changed?', newNodes !== oldNodes);
-
-    // Force reactivity by creating new array
+  (newNodes) => {
     nodes.value = [...(newNodes || [])];
-    console.log('CanvasArea - local nodes.value updated to:', nodes.value);
   },
   { deep: true, immediate: true },
 );
@@ -104,11 +123,13 @@ const emit = defineEmits<{
 }>();
 
 const onDragOver = (event: DragEvent) => {
+  if (props.readonly) return;
   event.preventDefault();
   event.dataTransfer!.dropEffect = 'copy';
 };
 
 const onDrop = (event: DragEvent) => {
+  if (props.readonly) return;
   event.preventDefault();
 
   const data = event.dataTransfer?.getData('application/json');
@@ -118,6 +139,19 @@ const onDrop = (event: DragEvent) => {
     const component = JSON.parse(data);
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
+    const existingLabels = nodes.value
+      .map((node) => node.data?.label as string)
+      .filter(Boolean);
+
+    const baseName = component.name || 'Component';
+    let counter = 1;
+    let newLabel = baseName;
+
+    while (existingLabels.includes(newLabel)) {
+      newLabel = `${baseName}_${counter}`;
+      counter++;
+    }
+
     const newNode: VueFlowNode = {
       id: `compoent-${component.id}-${Date.now()}`,
       type: 'default',
@@ -125,10 +159,7 @@ const onDrop = (event: DragEvent) => {
       targetPosition: Position.Top,
       sourcePosition: Position.Bottom,
       data: {
-        label: generateUniqueName([
-          ...nodes.value.map((node) => node.data.label),
-          component.name,
-        ]),
+        label: newLabel,
         status: component.status,
         category: component.category,
         component: component,
@@ -142,80 +173,17 @@ const onDrop = (event: DragEvent) => {
   }
 };
 
-const validateTypeCompatibility = (
-  sourceComponent: Component,
-  targetComponent: Component,
-): { isValid: boolean; sourceType?: string; targetType?: string } => {
-  const sourceOutputType = sourceComponent.output_path[0]?.type;
-  const targetInputType = targetComponent.input_path[0]?.type;
-
-  if (!sourceOutputType || !targetInputType) {
-    return {
-      isValid: false,
-      sourceType: sourceOutputType,
-      targetType: targetInputType,
-    };
-  }
-
-  const isCompatible = sourceOutputType === targetInputType;
-
-  return {
-    isValid: isCompatible,
-    sourceType: sourceOutputType,
-    targetType: targetInputType,
-  };
-};
-
 const onNodeClick = (event: { node: VueFlowNode | null }) => {
   const node = event.node;
   emit('nodeClick', node);
 };
 
 const onConnect = (connection: { source: string; target: string }) => {
+  if (props.readonly) return;
+
   const size = 23;
-  const color = '#9BB2BB';
-  console.log('connection', connection);
+  const color = 'hsl(var(--muted-foreground))';
 
-  const existingIncomingEdges = edges.value.filter(
-    (edge) => edge.target === connection.target,
-  );
-
-  if (existingIncomingEdges.length > 0) {
-    emit('error', 'multiple_inputs_not_allowed');
-    return;
-  }
-
-  const existingOutgoingEdges = edges.value.filter(
-    (edge) => edge.source === connection.source,
-  );
-
-  if (existingOutgoingEdges.length > 0) {
-    emit('error', 'multiple_outputs_not_allowed');
-    return;
-  }
-
-  const sourceNode = nodes.value.find((node) => node.id === connection.source);
-  const targetNode = nodes.value.find((node) => node.id === connection.target);
-
-  if (sourceNode && targetNode) {
-    const sourceComponent = sourceNode.data?.component as Component;
-    const targetComponent = targetNode.data?.component as Component;
-
-    if (sourceComponent && targetComponent) {
-      const validation = validateTypeCompatibility(
-        sourceComponent,
-        targetComponent,
-      );
-
-      if (!validation.isValid) {
-        emit('error', 'type_mismatch', {
-          sourceType: validation.sourceType,
-          targetType: validation.targetType,
-        });
-        return;
-      }
-    }
-  }
   const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}`,
     source: connection.source,
@@ -229,8 +197,6 @@ const onConnect = (connection: { source: string; target: string }) => {
       height: size,
       color: color,
     },
-    // sourceNode and targetNode are not part of Vue Flow Edge type
-    // but we need them for our API, so we'll add them as additional properties
   };
 
   edges.value.push(newEdge);
@@ -239,16 +205,33 @@ const onConnect = (connection: { source: string; target: string }) => {
 };
 
 const onEdgesChange = () => {
-  console.log('onEdgesChange', edges);
   setTimeout(() => {
     emit('update', nodes.value, edges.value);
   }, 100);
 };
 
 const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
+  if (props.readonly) return;
+
   emit('edgeUpdate', edgeUpdateEvent.edge);
   emit('update', nodes.value, edges.value);
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.readonly .vue-flow__node {
+  cursor: pointer !important;
+}
+
+.readonly .vue-flow__node:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.readonly .vue-flow__edge {
+  pointer-events: none;
+}
+
+.readonly .vue-flow__handle {
+  pointer-events: none;
+}
+</style>

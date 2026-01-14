@@ -13,6 +13,20 @@ import type {
   InferenceServiceParams,
 } from '~/types/api.types';
 
+import datasetsData from '@/mocks/get.datasets.json';
+import datasetsDetailsData from '@/mocks/get.datasets.details.json';
+import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
+import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.prometheus.json';
+import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
+import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
+import modelsData from '@/mocks/get.models.json';
+import modelsDetailsData from '@/mocks/get.models.details.json';
+import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
+import runsData from '@/mocks/get.runs.json';
+import runsDetailsData from '@/mocks/get.runs.details.json';
+import componentsData from '@/mocks/get.training-builder-components.json';
+import runsFlowData from '@/mocks/get.runs.flow.json';
+
 /**
  * @fileoverview Cognitive Framework API client
  *
@@ -46,8 +60,12 @@ export const useApi = () => {
   }
 
   const baseUrl = config.public.apiBase;
+  const apiRuns = config.public.apiRuns;
+  const mockEnabled = config.public.mockEnabled;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  const { setPage, page } = useApp();
+  const toaster = useToaster();
 
   /**
    * Generates appropriate headers for API requests
@@ -92,31 +110,73 @@ export const useApi = () => {
     options?: { showToast?: boolean },
   ) => {
     const isFormData = body instanceof FormData;
-    const showToast = options?.showToast;
-    const toaster = useToaster();
-
+    const showToast = options?.showToast ?? true;
+    const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+      method,
+    );
+    // Set loading state
+    setPage({
+      ...page.value,
+      isLoading: true,
+    });
     const opts: RequestInit = {
       method,
       headers: getHeaders(isFormData),
       ...(method !== 'DELETE' &&
         method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
     };
-
     try {
-      console.log('request', `${baseUrl}${url}`, opts);
       const res = await fetch(`${baseUrl}${url}`, opts);
+
+      // Handle redirects (302, 301, etc.) - usually means authentication issue
+      if (res.status >= 300 && res.status < 400) {
+        console.error(`Redirect detected (${res.status}) for ${method} ${url}`);
+        toaster.show('error', 'unauthorized');
+        useLocalStorage(accessTokenKey, null);
+        token.value = null;
+        return null;
+      }
+
+      if (res.status === 204) {
+        if (isModifyingRequest && showToast) {
+          const successMessage = 'operation_completed';
+          toaster.show('success', successMessage);
+        }
+        return null;
+      }
+
       const data = await res.json();
+
       if (!res.ok) {
+        // Always show error toasts
         switch (res.status) {
           case 401:
             useLocalStorage(accessTokenKey, null);
             token.value = null;
-            if (showToast) toaster.show('error', 'unauthorized');
+            toaster.show('error', 'unauthorized');
+            return null;
+          case 403:
+            toaster.show('error', 'forbidden');
+            return null;
+          case 404:
+            toaster.show('error', 'not_found');
+            return null;
+          case 500:
+            toaster.show('error', 'server_error');
+            return null;
+          default:
+            toaster.show(
+              'error',
+              data.message || data.detail || 'request_failed',
+            );
             return null;
         }
       } else {
-        const successMessage = data.message || 'operation_completed';
-        if (showToast) toaster.show('success', successMessage);
+        // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
+        if (isModifyingRequest && showToast) {
+          const successMessage = 'operation_completed';
+          toaster.show('success', successMessage);
+        }
       }
 
       const result =
@@ -125,13 +185,18 @@ export const useApi = () => {
           : apiResponseSchema.parse(data);
       return result;
     } catch (err) {
-      if (method === 'DELETE') {
-        return;
-      } else {
-        console.error('Fetch error:', err);
-        if (showToast) toaster.show('error', 'connection_error');
-        throw err;
-      }
+      console.error(`Request error for ${method} ${url}:`, err);
+      // Always show error toast for network errors
+      toaster.show('error', 'connection_error');
+
+      // Return null instead of throwing to prevent app crashes
+      return null;
+    } finally {
+      // Reset loading state
+      setPage({
+        ...page.value,
+        isLoading: false,
+      });
     }
   };
 
@@ -151,6 +216,8 @@ export const useApi = () => {
      * @param {number} [params.last_days] - Duration filter in days to fetch models
      * @param {string} [params.name] - The name of the model to retrieve
      * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order for last_modified_time
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing list of models
      *
@@ -164,9 +231,15 @@ export const useApi = () => {
      *
      * // Get specific model by name
      * const model = await api.getModels({ name: 'my-model' });
+     *
+     * // Get models with pagination
+     * const paginatedModels = await api.getModels({ page: 1, limit: 10 });
      * ```
      */
     getModels: async (params: ModelQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -203,7 +276,7 @@ export const useApi = () => {
      *
      * Updates the information of a specified model in the database.
      *
-     * @param {number} id - The ID of the model to update
+     * @param {string} id - The UUID of the model to update
      * @param {Object} data - Updated model information
      * @param {string} [data.name] - Updated model name
      * @param {string} [data.type] - Updated model type
@@ -213,13 +286,13 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const updated = await api.patchModel(123, {
+     * const updated = await api.patchModel('123e4567-e89b-12d3-a456-426614174000', {
      *   name: 'updated-model-name',
      *   description: 'Updated description'
      * });
      * ```
      */
-    patchModel: async (id: number, data: unknown) => {
+    patchModel: async (id: string, data: unknown) => {
       return request(`/models/${id}`, 'PATCH', data);
     },
 
@@ -228,16 +301,16 @@ export const useApi = () => {
      *
      * Removes the specified model from the database.
      *
-     * @param {number} id - The ID of the model to delete
+     * @param {string} id - The UUID of the model to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteModel(123);
+     * await api.deleteModel('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteModel: async (id: number) => {
+    deleteModel: async (id: string) => {
       return request(`/models/${id}`, 'DELETE');
     },
     /**
@@ -246,16 +319,19 @@ export const useApi = () => {
      * Fetches detailed information about a model including its associations with datasets
      * and model files using the model's unique identifier.
      *
-     * @param {number} id - The ID of the model to retrieve
+     * @param {string} id - The UUID of the model to retrieve
      *
      * @returns {Promise<Object>} Standard response containing the model and its associated details
      *
      * @example
      * ```typescript
-     * const modelDetails = await api.getModelAssociationsById(123);
+     * const modelDetails = await api.getModelAssociationsById('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getModelAssociationsById: async (id: number) => {
+    getModelAssociationsById: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsDetailsAssociationsData);
+      }
       return request(`/models/${id}/associations`);
     },
 
@@ -319,18 +395,18 @@ export const useApi = () => {
      * Retrieves information about model files based on model ID or name.
      *
      * @param {Object} [params={}] - Query parameters
-     * @param {number} [params.model_id] - Model ID
+     * @param {string} [params.model_id] - Model UUID
      * @param {string} [params.model_name] - Model name
      *
      * @returns {Promise<Object>} Standard response containing model file information
      *
      * @example
      * ```typescript
-     * const fileInfo = await api.getModelFile({ model_id: 123 });
+     * const fileInfo = await api.getModelFile({ model_id: '123e4567-e89b-12d3-a456-426614174000' });
      * ```
      */
     getModelFile: async (
-      params: { model_id?: number; model_name?: string } = {},
+      params: { model_id?: string; model_name?: string } = {},
     ) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
@@ -384,16 +460,16 @@ export const useApi = () => {
      * Retrieves detailed information about a specific model file.
      *
      * @param {string} file_name - The name of the file
-     * @param {number} model_id - The ID of the model
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response containing file details
      *
      * @example
      * ```typescript
-     * const details = await api.getModelFileDetails('model.pkl', 123);
+     * const details = await api.getModelFileDetails('model.pkl', '123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getModelFileDetails: async (file_name: string, model_id: number) => {
+    getModelFileDetails: async (file_name: string, model_id: string) => {
       return request(`/models/file/${file_name}/details?model_id=${model_id}`);
     },
 
@@ -495,6 +571,21 @@ export const useApi = () => {
       return request(`/models/save`, 'POST', data);
     },
 
+    postRegisterModel: async (data: unknown) => {
+      return request(`/models`, 'POST', data);
+    },
+
+    postUploadModelFile: async (id: string, files: File[]) => {
+      const data = new FormData();
+      if (Array.isArray(files)) {
+        files.forEach((file) => data.append('files', file));
+      } else if (files) {
+        // Fallback if single file is passed
+        data.append('files', files);
+      }
+      return request(`/models/${id}/file`, 'POST', data);
+    },
+
     /**
      * Deploys a model to Cogflow
      *
@@ -591,11 +682,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const details = await api.getModelDetails({ id: 123 });
+     * const details = await api.getModelDetails({ id: '123e4567-e89b-12d3-a456-426614174000' });
      * const detailsByName = await api.getModelDetails({ name: 'my-model' });
      * ```
      */
-    getModelDetails: async (params: { id?: number; name?: string } = {}) => {
+    getModelDetails: async (params: { id?: string; name?: string } = {}) => {
       if (params.id) {
         return request(`/models/${params.id}/associations`);
       }
@@ -620,6 +711,9 @@ export const useApi = () => {
      * ```
      */
     getModelById: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsDetailsData);
+      }
       return request(`/models/${id}`);
     },
 
@@ -688,14 +782,14 @@ export const useApi = () => {
      *
      * Retrieves metadata for a specific model file.
      *
-     * @param {string} id - The ID of the model
+     * @param {string} id - The UUID of the model
      * @param {number} file_id - The ID of the file
      *
      * @returns {Promise<Object>} Standard response containing file metadata
      *
      * @example
      * ```typescript
-     * const metadata = await api.getModelFileMetadata('123', 456);
+     * const metadata = await api.getModelFileMetadata('123e4567-e89b-12d3-a456-426614174000', 456);
      * ```
      */
     getModelFileMetadata: async (id: string, file_id: number) => {
@@ -785,6 +879,8 @@ export const useApi = () => {
      * @param {string} [params.name] - The name of the dataset to search for
      * @param {number} [params.id] - Dataset ID
      * @param {number} [params.last_days] - The number of days to look back for datasets
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing the list of datasets
      *
@@ -798,9 +894,15 @@ export const useApi = () => {
      *
      * // Get specific dataset by name
      * const dataset = await api.getDatasets({ name: 'training-data' });
+     *
+     * // Get datasets with pagination
+     * const paginatedDatasets = await api.getDatasets({ page: 1, limit: 10 });
      * ```
      */
     getDatasets: async (params: DatasetQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsData);
+      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
@@ -814,7 +916,7 @@ export const useApi = () => {
      * and uploading a new file to replace the existing one.
      *
      * @param {DatasetFileUploadParams} params - Dataset update parameters
-     * @param {number} params.id - The ID of the dataset to be updated
+     * @param {string} params.id - The UUID of the dataset to be updated
      * @param {File[]} params.files - The new file containing the dataset
      * @param {string} params.name - The updated name for the dataset
      * @param {number} params.dataset_type - Dataset type: 0 (train), 1 (inference), or 2 (both)
@@ -825,7 +927,7 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const result = await api.putDatasetFile({
-     *   id: 123,
+     *   id: '123e4567-e89b-12d3-a456-426614174000',
      *   files: [newFile],
      *   name: 'updated-dataset',
      *   dataset_type: 0,
@@ -842,7 +944,7 @@ export const useApi = () => {
     }: DatasetFileUploadParams) => {
       const data = new FormData();
       files.forEach((file) => data.append('files', file));
-      data.append('id', id.toString());
+      data.append('id', id);
       data.append('name', name);
       data.append('dataset_type', dataset_type.toString());
       if (description) data.append('description', description);
@@ -890,34 +992,71 @@ export const useApi = () => {
      *
      * Removes a specific dataset from the database using its ID.
      *
-     * @param {number} id - The ID of the dataset to delete
+     * @param {string} id - The UUID of the dataset to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetFile(123);
+     * await api.deleteDatasetFile('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetFile: async (id: number) => {
-      return request(`/datasets/file/${id}`, 'DELETE');
+    deleteDatasetFile: async (id: string) => {
+      return request(`/datasets/${id}/file`, 'DELETE');
+    },
+
+    /**
+     * Downloads a dataset file
+     *
+     * Downloads a specific dataset file by dataset ID.
+     *
+     * @param {string} id - The ID of the dataset
+     *
+     * @returns {Promise<Object>} File download response
+     *
+     * @example
+     * ```typescript
+     * const file = await api.downloadDatasetFile('123');
+     * ```
+     */
+    downloadDatasetFile: async (id: string) => {
+      return request(`/datasets/${id}/file/download`);
+    },
+
+    /**
+     * Previews a dataset file
+     *
+     * Previews the content of a dataset file (CSV only).
+     *
+     * @param {string} id - The ID of the dataset
+     * @param {number} [limit=10] - Number of lines to preview
+     *
+     * @returns {Promise<Object>} Preview response
+     *
+     * @example
+     * ```typescript
+     * const preview = await api.previewDatasetFile('123', 5);
+     * ```
+     */
+    previewDatasetFile: async (id: string, limit: number = 10) => {
+      return request(`/datasets/${id}/file/preview?limit=${limit}`);
     },
     /**
      * Links a dataset to a model
      *
      * Establishes a relationship between a dataset and a model.
      *
-     * @param {number} dataset_id - The ID of the dataset
-     * @param {number} model_id - The ID of the model
+     * @param {string} dataset_id - The UUID of the dataset
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response indicating successful linking
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetModelLink(123, 456);
+     * const result = await api.postDatasetModelLink('123e4567-e89b-12d3-a456-426614174000', '456e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    postDatasetModelLink: async (dataset_id: number, model_id: number) => {
+    postDatasetModelLink: async (dataset_id: string, model_id: string) => {
       return request(`/datasets/${dataset_id}/models/${model_id}/link`, 'POST');
     },
 
@@ -926,17 +1065,17 @@ export const useApi = () => {
      *
      * Removes the relationship between a dataset and a model.
      *
-     * @param {number} dataset_id - The ID of the dataset
-     * @param {number} model_id - The ID of the model
+     * @param {string} dataset_id - The UUID of the dataset
+     * @param {string} model_id - The UUID of the model
      *
      * @returns {Promise<Object>} Standard response indicating successful unlinking
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetModelUnlink(123, 456);
+     * const result = await api.postDatasetModelUnlink('123e4567-e89b-12d3-a456-426614174000', '456e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    postDatasetModelUnlink: async (dataset_id: number, model_id: number) => {
+    postDatasetModelUnlink: async (dataset_id: string, model_id: string) => {
       return request(
         `/datasets/${dataset_id}/models/${model_id}/unlink`,
         'POST',
@@ -1017,24 +1156,22 @@ export const useApi = () => {
      * Registers a new dataset broker
      *
      * Creates a new message broker for dataset streaming.
+     * This is the first step in registering a stream dataset.
+     * Returns broker_id that should be used for topic registration.
      *
      * @param {Object} data - Broker registration data
      * @param {string} data.name - Broker name
-     * @param {string} data.host - Broker host
-     * @param {number} data.port - Broker port
-     * @param {string} data.username - Broker username
-     * @param {string} data.password - Broker password
+     * @param {string} data.ip - Broker IP address
+     * @param {number} data.port - Broker port number
      *
-     * @returns {Promise<Object>} Standard response containing broker information
+     * @returns {Promise<Object>} Standard response containing broker information with broker_id
      *
      * @example
      * ```typescript
      * const result = await api.postDatasetBroker({
-     *   name: 'kafka-broker',
-     *   host: 'localhost',
-     *   port: 9092,
-     *   username: 'user',
-     *   password: 'pass'
+     *   name: 'nats-broker',
+     *   ip: '10.43.245.13',
+     *   port: 4222
      * });
      * ```
      */
@@ -1047,16 +1184,20 @@ export const useApi = () => {
      *
      * Removes a message broker from the system.
      *
-     * @param {number} id - The ID of the broker to delete
+     * @param {string} id - The UUID of the broker to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetBroker(123);
+     * await api.deleteDatasetBroker('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetBroker: async (id: number) => {
+    deleteDatasetBroker: async (id: string) => {
+      console.log('deleteDatasetBroker called with ID:', id);
+      console.log(
+        'deleteDatasetBroker: Making DELETE request to /datasets/broker/' + id,
+      );
       return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
@@ -1086,21 +1227,21 @@ export const useApi = () => {
      * Registers a new dataset topic
      *
      * Creates a new topic for dataset streaming on a specific broker.
+     * This is the second step in registering a stream dataset (after broker registration).
+     * Returns topic_id that should be used for message/dataset registration.
      *
-     * @param {number} broker_id - The ID of the broker
+     * @param {number} broker_id - The ID of the broker (obtained from postDatasetBroker)
      * @param {Object} data - Topic registration data
      * @param {string} data.name - Topic name
-     * @param {number} data.partitions - Number of partitions
-     * @param {number} data.replication_factor - Replication factor
+     * @param {string} [data.schema] - Optional topic schema (JSON string)
      *
-     * @returns {Promise<Object>} Standard response containing topic information
+     * @returns {Promise<Object>} Standard response containing topic information with topic_id
      *
      * @example
      * ```typescript
-     * const result = await api.postDatasetTopic(123, {
-     *   name: 'sensor-data',
-     *   partitions: 3,
-     *   replication_factor: 1
+     * const result = await api.postDatasetTopic(3, {
+     *   name: 'nats-1',
+     *   schema: '{"feature_list": {...}}'
      * });
      * ```
      */
@@ -1134,16 +1275,20 @@ export const useApi = () => {
      *
      * Removes a topic from the system.
      *
-     * @param {number} id - The ID of the topic to delete
+     * @param {string} id - The UUID of the topic to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetTopic(456);
+     * await api.deleteDatasetTopic('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetTopic: async (id: number) => {
+    deleteDatasetTopic: async (id: string) => {
+      console.log('deleteDatasetTopic called with ID:', id);
+      console.log(
+        'deleteDatasetTopic: Making DELETE request to /datasets/topic/' + id,
+      );
       return request(`/datasets/topic/${id}`, 'DELETE');
     },
 
@@ -1182,21 +1327,26 @@ export const useApi = () => {
     /**
      * Registers dataset message
      *
-     * Sends a message to a dataset topic.
+     * Registers a dataset that uses a broker and topic (message stream).
+     * This should be called after registering the broker and topic.
      *
-     * @param {Object} data - Message data
-     * @param {string} data.topic_name - Topic name
-     * @param {string} data.message - Message content
-     * @param {Object} [data.headers] - Optional message headers
+     * @param {Object} data - Dataset message registration data
+     * @param {number} data.dataset_type - Dataset type (0 - train, 1 - inference, 2 - both)
+     * @param {string} data.name - Dataset name
+     * @param {string} data.description - Dataset description
+     * @param {number} data.broker_id - ID of the registered broker
+     * @param {number} data.topic_id - ID of the registered topic
      *
-     * @returns {Promise<Object>} Standard response indicating successful message send
+     * @returns {Promise<Object>} Standard response containing dataset information
      *
      * @example
      * ```typescript
      * const result = await api.postDatasetMessage({
-     *   topic_name: 'sensor-data',
-     *   message: '{"sensor_id": 1, "value": 25.5}',
-     *   headers: { "content-type": "application/json" }
+     *   dataset_type: 0,
+     *   name: 'sensor-data-stream',
+     *   description: 'Streaming sensor data',
+     *   broker_id: 3,
+     *   topic_id: 7
      * });
      * ```
      */
@@ -1209,16 +1359,19 @@ export const useApi = () => {
      *
      * Retrieves message information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing message details
      *
      * @example
      * ```typescript
-     * const messages = await api.getDatasetMessageDetails(123);
+     * const messages = await api.getDatasetMessageDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetMessageDetails: async (dataset_id: number) => {
+    getDatasetMessageDetails: async (dataset_id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsStreamData);
+      }
       return request(`/datasets/${dataset_id}/message/details`);
     },
 
@@ -1227,16 +1380,19 @@ export const useApi = () => {
      *
      * Retrieves file information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing file details
      *
      * @example
      * ```typescript
-     * const files = await api.getDatasetFileDetails(123);
+     * const files = await api.getDatasetFileDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetFileDetails: async (dataset_id: number) => {
+    getDatasetFileDetails: async (dataset_id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsFileData);
+      }
       return request(`/datasets/${dataset_id}/file`);
     },
 
@@ -1245,16 +1401,19 @@ export const useApi = () => {
      *
      * Retrieves table information for a specific dataset.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing table details
      *
      * @example
      * ```typescript
-     * const tables = await api.getDatasetTableDetails(123);
+     * const tables = await api.getDatasetTableDetails('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetTableDetails: async (dataset_id: number) => {
+    getDatasetTableDetails: async (dataset_id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsTableData);
+      }
       return request(`/datasets/${dataset_id}/table`);
     },
 
@@ -1263,17 +1422,17 @@ export const useApi = () => {
      *
      * Retrieves records from a dataset table with optional limit.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [limit] - Optional limit on number of records
      *
      * @returns {Promise<Object>} Standard response containing table records
      *
      * @example
      * ```typescript
-     * const records = await api.getDatasetTableRecords(123, 100);
+     * const records = await api.getDatasetTableRecords('123e4567-e89b-12d3-a456-426614174000', 100);
      * ```
      */
-    getDatasetTableRecords: async (dataset_id: number, limit?: number) => {
+    getDatasetTableRecords: async (dataset_id: string, limit?: number) => {
       const params = limit ? `?limit=${limit}` : '';
       return request(`/datasets/${dataset_id}/table/records${params}`);
     },
@@ -1283,7 +1442,7 @@ export const useApi = () => {
      *
      * Retrieves data from a dataset topic with optional filtering.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [no_of_records] - Number of records to retrieve
      * @param {'earliest'|'latest'} [offset_reset] - Offset reset strategy
      *
@@ -1291,11 +1450,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const data = await api.getDatasetTopicData(123, 50, 'latest');
+     * const data = await api.getDatasetTopicData('123e4567-e89b-12d3-a456-426614174000', 50, 'latest');
      * ```
      */
     getDatasetTopicData: async (
-      dataset_id: number,
+      dataset_id: string,
       no_of_records?: number,
       offset_reset?: 'earliest' | 'latest',
     ) => {
@@ -1312,17 +1471,41 @@ export const useApi = () => {
      *
      * Removes a specific message from the system.
      *
-     * @param {number} id - The ID of the message to delete
+     * @param {string} id - The UUID of the message to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteDatasetMessage(789);
+     * await api.deleteDatasetMessage('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    deleteDatasetMessage: async (id: number) => {
+    deleteDatasetMessage: async (id: string) => {
       return request(`/datasets/message/${id}`, 'DELETE');
+    },
+
+    /**
+     * Gets broker details
+     *
+     * Retrieves a list of existing brokers.
+     *
+     * @returns {Promise<Object>} Standard response containing broker details
+     */
+    getBrokerDetails: async () => {
+      const res = await request(`/datasets/broker/details`);
+      return res;
+    },
+
+    /**
+     * Gets topic details
+     *
+     * Retrieves a list of existing topics.
+     *
+     * @returns {Promise<Object>} Standard response containing topic details
+     */
+    getTopicDetails: async () => {
+      const res = await request(`/datasets/topic/details`);
+      return res;
     },
 
     /**
@@ -1330,16 +1513,22 @@ export const useApi = () => {
      *
      * Retrieves a specific dataset using its unique identifier.
      *
-     * @param {number} id - The ID of the dataset
+     * @param {string} id - The UUID of the dataset
      *
      * @returns {Promise<Object>} Standard response containing dataset information
      *
      * @example
      * ```typescript
-     * const dataset = await api.getDatasetById(123);
+     * const dataset = await api.getDatasetById('842be490-7910-422a-97bb-a56ad10b9dba');
      * ```
      */
-    getDatasetById: async (id: number) => {
+    getDatasetById: async (id: string) => {
+      console.log(id);
+      if (mockEnabled) {
+        console.log('mockEnabled', datasetsDetailsData);
+        return Promise.resolve(datasetsDetailsData);
+      }
+      console.log(`/datasets/${id}`);
       return request(`/datasets/${id}`);
     },
 
@@ -1348,7 +1537,7 @@ export const useApi = () => {
      *
      * Retrieves subject-specific data from a dataset with various filtering options.
      *
-     * @param {number} dataset_id - The ID of the dataset
+     * @param {string} dataset_id - The UUID of the dataset
      * @param {number} [no_of_records] - Number of records to retrieve
      * @param {'all'|'last'|'new'|'by_start_sequence'|'by_start_time'|'last_per_subject'} [offset_reset] - Offset reset strategy
      *
@@ -1356,11 +1545,11 @@ export const useApi = () => {
      *
      * @example
      * ```typescript
-     * const data = await api.getDatasetSubjectData(123, 100, 'last_per_subject');
+     * const data = await api.getDatasetSubjectData('123e4567-e89b-12d3-a456-426614174000', 100, 'last_per_subject');
      * ```
      */
     getDatasetSubjectData: async (
-      dataset_id: number,
+      dataset_id: string,
       no_of_records?: number,
       offset_reset?:
         | 'all'
@@ -1410,17 +1599,20 @@ export const useApi = () => {
      *
      * Retrieves a specific Prometheus dataset by ID.
      *
-     * @param {number} id - The ID of the Prometheus dataset
+     * @param {string} id - The UUID of the Prometheus dataset
      *
      * @returns {Promise<Object>} Standard response containing Prometheus dataset information
      *
      * @example
      * ```typescript
-     * const dataset = await api.getDatasetPrometheus(123);
+     * const dataset = await api.getDatasetPrometheus('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getDatasetPrometheus: async (id: number) => {
-      return request(`/datasets/prometheus/${id}`);
+    getDatasetPrometheus: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsDetailsPrometheusData);
+      }
+      return request(`/datasets/${id}/prometheus`);
     },
     // ============================================================================
     // VALIDATION API
@@ -1802,17 +1994,43 @@ export const useApi = () => {
     /**
      * Gets pipeline runs list
      *
-     * Retrieves a list of all pipeline runs.
+     * Retrieves a list of pipeline runs with optional filtering, sorting and pagination.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.run_id] - Run ID to filter by
+     * @param {string} [params.run_name] - Run name to filter by
+     * @param {string} [params.sort_by] - Attribute to sort by
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
      *
      * @returns {Promise<Object>} Standard response containing list of pipeline runs
      *
      * @example
      * ```typescript
      * const runs = await api.getPipelineRunsList();
+     * const specificRun = await api.getPipelineRunsList({ run_id: 'dbe1d349-c117-46d5-9b6f-62ed8efafb2b' });
+     * const sortedRuns = await api.getPipelineRunsList({ sort_by: 'start_time', sort_order: 'asc' });
+     * const paginatedRuns = await api.getPipelineRunsList({ page: 1, limit: 10 });
      * ```
      */
-    getPipelineRunsList: async () => {
-      return request(`/pipelines/runs`);
+    getPipelineRunsList: async (
+      params: {
+        run_id?: string;
+        run_name?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
+      } = {},
+    ) => {
+      if (mockEnabled) {
+        return Promise.resolve(runsDetailsData);
+      }
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/pipelines/runs?${q}`);
     },
     // ============================================================================
     // POD MANAGEMENT API
@@ -1952,17 +2170,34 @@ export const useApi = () => {
     /**
      * Gets training builder components
      *
-     * Retrieves all available training builder components.
+     * Retrieves all available training builder components with optional filters.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.name] - Wildcard search by component name (case-insensitive)
+     * @param {string} [params.category] - Filter by category (case-insensitive)
      *
      * @returns {Promise<Object>} Standard response containing training builder components
      *
      * @example
      * ```typescript
      * const components = await api.getTrainingBuilderComponents();
+     * const components = await api.getTrainingBuilderComponents({ name: 'preprocessor' });
+     * const components = await api.getTrainingBuilderComponents({ category: 'training' });
      * ```
      */
-    getTrainingBuilderComponents: async () => {
-      return request(`/training-builder-components`);
+    getTrainingBuilderComponents: async (
+      params: {
+        name?: string;
+        category?: string;
+      } = {},
+    ) => {
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      if (mockEnabled) {
+        return Promise.resolve(componentsData);
+      }
+      return request(`/training-builder-components?${q}`);
     },
 
     /**
@@ -1972,9 +2207,11 @@ export const useApi = () => {
      *
      * @param {Object} data - Component creation data
      * @param {string} data.name - Component name
-     * @param {string} data.type - Component type
-     * @param {string} data.description - Component description
-     * @param {Object} data.config - Component configuration
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
+     * @param {string} data.component_file - Component file path
+     * @param {string} data.category - Component category
+     * @param {string} [data.creator] - Optional creator
      *
      * @returns {Promise<Object>} Standard response containing created component information
      *
@@ -1982,9 +2219,10 @@ export const useApi = () => {
      * ```typescript
      * const result = await api.postTrainingBuilderComponent({
      *   name: 'data-preprocessor',
-     *   type: 'preprocessing',
-     *   description: 'Data preprocessing component',
-     *   config: { method: 'normalization' }
+     *   input_path: [{ name: 'input', type: 'String' }],
+     *   output_path: [{ name: 'output', type: 'String' }],
+     *   component_file: '/path/to/component.yaml',
+     *   category: 'training'
      * });
      * ```
      */
@@ -1993,92 +2231,183 @@ export const useApi = () => {
     },
 
     /**
+     * Updates training builder component
+     *
+     * Updates an existing component by either its ID or name.
+     *
+     * @param {Object} data - Component update data
+     * @param {string} [data.id] - Component UUID (alternative to name)
+     * @param {string} [data.name] - Component name (alternative to ID)
+     * @param {Array} [data.input_path] - Input path configuration
+     * @param {Array} [data.output_path] - Output path configuration
+     * @param {string} [data.component_file] - Component file path
+     * @param {string} [data.category] - Component category
+     *
+     * @returns {Promise<Object>} Standard response containing updated component information
+     *
+     * @example
+     * ```typescript
+     * const result = await api.patchTrainingBuilderComponent({
+     *   id: '123e4567-e89b-12d3-a456-426614174000',
+     *   category: 'updated-category'
+     * });
+     * ```
+     */
+    patchTrainingBuilderComponent: async (data: unknown) => {
+      return request(`/training-builder-components`, 'PATCH', data);
+    },
+
+    /**
+     * Gets training builder component by ID
+     *
+     * Retrieves a specific component by its UUID.
+     *
+     * @param {string} component_id - The UUID of the component to retrieve
+     *
+     * @returns {Promise<Object>} Standard response containing component information
+     *
+     * @example
+     * ```typescript
+     * const component = await api.getTrainingBuilderComponentById('123e4567-e89b-12d3-a456-426614174000');
+     * ```
+     */
+    getTrainingBuilderComponentById: async (component_id: string) => {
+      return request(`/training-builder-components/${component_id}`);
+    },
+
+    /**
      * Deletes training builder component
      *
      * Removes a training builder component from the system.
      *
-     * @param {number} component_id - The ID of the component to delete
+     * @param {string} component_id - The UUID of the component to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteTrainingBuilderComponent(123);
+     * await api.deleteTrainingBuilderComponent('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteTrainingBuilderComponent: async (component_id: number) => {
+    deleteTrainingBuilderComponent: async (component_id: string) => {
       return request(`/training-builder-components/${component_id}`, 'DELETE');
     },
 
     // ============================================================================
-    // TRAINING BUILDER PIPELINE COMPONENT APIs
+    // TRAINING BUILDER PIPELINE APIs
     // ============================================================================
 
     /**
-     * Gets training builder pipeline components
+     * Gets training builder pipelines
      *
-     * Retrieves all available training builder pipeline components.
+     * Retrieves all available training builder pipelines filtered by name.
+     *
+     * @param {Object} params - Query parameters
+     * @param {string} params.name - Name filter for pipeline (required)
      *
      * @returns {Promise<Object>} Standard response containing pipeline components
      *
      * @example
      * ```typescript
-     * const components = await api.getTrainingBuilderPipelineComponents();
+     * const pipelines = await api.getTrainingBuilderPipelines({ name: 'my-pipeline' });
      * ```
      */
-    getTrainingBuilderPipelineComponents: async () => {
-      return request(`/training-builder-pipeline-components`);
+    getTrainingBuilderPipelines: async (params: { name: string }) => {
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/training-builder-pipelines?${q}`);
     },
 
     /**
-     * Creates training builder pipeline component
+     * Creates training builder pipeline
      *
-     * Creates a new training builder pipeline component.
+     * Creates a new training builder pipeline.
      *
-     * @param {Object} data - Pipeline component creation data
-     * @param {string} data.name - Component name
-     * @param {string} data.pipeline_id - Pipeline ID
-     * @param {string} data.component_type - Component type
-     * @param {Object} data.config - Component configuration
+     * @param {Object} data - Pipeline creation data
+     * @param {string} data.name - Pipeline name
+     * @param {Array} data.pipeline_components - Pipeline components array
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
      *
-     * @returns {Promise<Object>} Standard response containing created pipeline component information
+     * @returns {Promise<Object>} Standard response containing created pipeline information
      *
      * @example
      * ```typescript
-     * const result = await api.postTrainingBuilderPipelineComponent({
-     *   name: 'pipeline-preprocessor',
-     *   pipeline_id: 'pipeline-123',
-     *   component_type: 'preprocessing',
-     *   config: { method: 'scaling' }
+     * const result = await api.postTrainingBuilderPipeline({
+     *   name: 'example_pipeline',
+     *   pipeline_components: [
+     *     {
+     *       id: 'component_id1',
+     *       name: 'component_id_name1',
+     *       inputs: ['url'],
+     *       outputs: ['downloaded_data']
+     *     }
+     *   ],
+     *   input_path: [{ name: 'url', type: 'string' }],
+     *   output_path: [{ name: 'final_serving_output', type: 'artifact' }]
      * });
      * ```
      */
-    postTrainingBuilderPipelineComponent: async (data: unknown) => {
-      return request(`/training-builder-pipeline-components`, 'POST', data, {
+    postTrainingBuilderPipeline: async (data: unknown) => {
+      return request(`/training-builder-pipelines`, 'POST', data, {
         showToast: true,
       });
     },
 
     /**
-     * Deletes training builder pipeline component
+     * Deletes training builder pipeline
      *
-     * Removes a training builder pipeline component from the system.
+     * Removes a training builder pipeline from the system.
      *
-     * @param {number} pipeline_component_id - The ID of the pipeline component to delete
+     * @param {string} pipeline_id - The UUID of the pipeline to delete
      *
      * @returns {Promise<void>} No content response on successful deletion
      *
      * @example
      * ```typescript
-     * await api.deleteTrainingBuilderPipelineComponent(456);
+     * await api.deleteTrainingBuilderPipeline('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    deleteTrainingBuilderPipelineComponent: async (
-      pipeline_component_id: number,
-    ) => {
+    deleteTrainingBuilderPipeline: async (pipeline_id: string) => {
+      return request(`/training-builder-pipelines/${pipeline_id}`, 'DELETE');
+    },
+
+    /**
+     * Runs federated learning pipeline with dataspace configuration
+     *
+     * Creates and triggers a federated learning (FL) pipeline using dataspace configuration.
+     *
+     * @param {Object} data - Federated pipeline creation data
+     * @param {string} data.name - Pipeline name
+     * @param {Array} data.pipeline_components - Pipeline components array
+     * @param {Object} data.dataspace_config - Dataspace configuration object
+     * @param {Array} data.input_path - Input path configuration
+     * @param {Array} data.output_path - Output path configuration
+     * @param {Array} data.data_products - Data products array
+     *
+     * @returns {Promise<Object>} Standard response containing pipeline run details and status
+     *
+     * @example
+     * ```typescript
+     * const result = await api.postTrainingBuilderPipelineDataspaceFederatedRun({
+     *   name: 'federated-pipeline',
+     *   pipeline_components: [...],
+     *   dataspace_config: {...},
+     *   input_path: [...],
+     *   output_path: [...],
+     *   data_products: [...]
+     * });
+     * ```
+     */
+    postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
       return request(
-        `/training-builder-pipeline-components/${pipeline_component_id}`,
-        'DELETE',
+        `/training-builder-pipelines/dataspace/federated/run`,
+        'POST',
+        data,
+        {
+          showToast: true,
+        },
       );
     },
     // ============================================================================
@@ -2242,6 +2571,43 @@ export const useApi = () => {
      */
     getHeaders: async () => {
       return request(`/headers`);
+    },
+
+    /**
+     * Gets pipeline run flow data by run ID
+     *
+     * Retrieves flow data for a specific pipeline run using the external API.
+     *
+     * @param {string} id - The run ID
+     *
+     * @returns {Promise<Object>} Standard response containing pipeline run flow data
+     *
+     * @example
+     * ```typescript
+     * const flowData = await api.getPipelineRunFlow('75011b49-1bd1-469a-ae63-38a7d26f1a7f');
+     * ```
+     */
+    getPipelineRunFlow: async (id: string) => {
+      if (mockEnabled) {
+        return Promise.resolve(runsFlowData);
+      }
+
+      const url = `${apiRuns}/runs/${id}`;
+      const headers = getHeaders();
+
+      try {
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Error fetching pipeline run flow:', error);
+        throw error;
+      }
     },
   };
 };

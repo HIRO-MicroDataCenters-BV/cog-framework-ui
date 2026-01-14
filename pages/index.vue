@@ -1,3 +1,3 @@
 <script setup>
-await navigateTo('/dataset_management');
+await navigateTo('/datasets');
 </script>

@@ -1,19 +1,17 @@
 <template>
   <header
-    class="border-b flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
+    class="border-b w-full flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
   >
     <div class="flex items-center gap-2 px-4 justify-between w-full">
       <div class="flex items-center gap-2">
-        <SidebarTrigger class="-ml-1" />
-        <Separator orientation="vertical" class="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbLink href="../">
+              <NuxtLink :to="`/${page.section}`">
                 {{ $t(`menu.${page.section}`) }}
-              </BreadcrumbLink>
+              </NuxtLink>
             </BreadcrumbItem>
-            <template v-if="page.title != ''">
+            <template v-if="page.title !== ''">
               <BreadcrumbSeparator />
               <BreadcrumbItem class="hidden md:block">{{
                 page.title
@@ -52,7 +50,6 @@
             }}</span></Button
           >
         </div>
-        <!-- <AppColorModeSwitch /> -->
       </div>
     </div>
   </header>
@@ -60,21 +57,16 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import type { Edge, Component, Node } from '~/types/builder.types';
-import { detectCycle, validateAllComponents } from '~/utils/builder-validation';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-  FormMessage,
-} from '~/components/ui/form';
+import type { Edge, Component } from '~/types/builder.types';
+import { Form, FormField, FormItem, FormControl } from '~/components/ui/form';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const api = useApi();
+const config = useRuntimeConfig();
+const baseUrl = config.app.baseURL;
+const urlOrigin = window.location.origin;
 
-// Safe access to pipeline name
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
   set: (value: string) => {
@@ -84,162 +76,197 @@ const pipelineName = computed({
   },
 });
 
-console.log('page', page);
-
-/*
-{
-  "name": "example_pipeline",
-  "pipeline_components": [
-    {
-      "id": "component_id1",
-      "name": "component_id_name1",
-      "inputs": ["file"],
-    },
-    {
-      "id": "component_id2",
-      "name": "component_id_name2",
-      "inputs": ["component_id1.output"],
-    },
-    {
-      "id": "component_id3",
-      "name": "component_id_name3",
-      "inputs": ["component_id2.output"],
-    },
-    {
-      "id": "component_id4",
-      "name": "component_id_name4",
-      "inputs": ["component_id1.output", "component_id2.output", "isvc"],
-    }
-  ],
-  "input_path": [
-    {"name": "file", "type": "string"},
-    {"name": "isvc", "type": "string"}
-  ],
-  "output_path": [
-    {"name": "final_serving_output", "type": "artifact"}
-  ]
+interface ComponentPath {
+  name: string;
+  type: string;
+  description?: string;
+  default?: unknown;
+  optional?: boolean;
 }
-*/
 
-interface PipelineComponent {
+interface TopLevelInputPath {
+  name: string;
+  type: string;
+  default?: unknown;
+}
+
+interface TopLevelOutputPath {
+  name: string;
+  source: {
+    component_name: string;
+    output_name: string;
+  };
+}
+
+interface RegularPipelineComponent {
   id: string;
   name: string;
   inputs: string[];
-  input_path: PipelinePath[];
-  output_path: PipelinePath[];
+  input_path: ComponentPath[];
+  output_path: ComponentPath[];
 }
 
-interface PipelinePath {
+interface FederatedPipelineComponent {
+  id: string;
   name: string;
-  type: string;
+  input_path: ComponentPath[];
+  output_path: ComponentPath[];
+  component_file: string | null;
+  category: string | null;
+  creator: string | null;
 }
+
+type PipelineComponent = RegularPipelineComponent | FederatedPipelineComponent;
+
+const orderId = computed(() => page.value.data?.orderId as string | undefined);
 
 const runPipeline = () => {
-  console.log('runPipeline', page.value.data?.builder);
-
   const builder = page.value.data?.builder;
   if (!builder) return;
 
-  const nodes = (builder.nodes || []) as Node[];
-  const toaster = useToaster();
-
-  // Check for cycles
-  if (detectCycle(nodes)) {
-    toaster.show('error', 'message.error.cycle_detected', {
-      duration: 5000,
-    });
-    return;
+  interface PipelineData {
+    name: string;
+    pipeline_components: PipelineComponent[];
+    input_path: TopLevelInputPath[];
+    output_path: TopLevelOutputPath[];
+    order_id?: string;
   }
 
-  // Check for validation errors
-  const validationErrors = validateAllComponents(nodes, []);
-  if (validationErrors.length > 0) {
-    const errorMessage = validationErrors
-      .map((e) => `${e.componentName}: ${e.error}`)
-      .join(', ');
-    toaster.show('error', 'message.error.validation_errors', {
-      duration: 5000,
-    });
-    console.error('Validation errors:', validationErrors);
-    return;
-  }
-
-  console.log('builder', builder);
-  const data = {
+  const data: PipelineData = {
     name: builder.name,
     pipeline_components: [] as PipelineComponent[],
-    input_path: [] as PipelinePath[],
-    output_path: [] as PipelinePath[],
+    input_path: [] as TopLevelInputPath[],
+    output_path: [] as TopLevelOutputPath[],
   };
 
-  const pipelineNodes = builder?.nodes?.map((node): PipelineComponent => {
-    console.log('node', node);
-    const component = node?.data?.component as Component;
-    const result: PipelineComponent = {
-      id: String(component?.id || ''),
-      name: node?.data?.label || component?.name || '',
-      inputs: [],
-      input_path: component?.input_path || [],
-      output_path: component?.output_path || [],
-    };
+  const components =
+    builder?.nodes?.map((node) => {
+      const component = node?.data?.component as Component;
+      const id = String(component?.id || '');
+      const name = node?.data?.label || component?.name || '';
+      const input_path = component?.input_path || [];
+      const output_path = component?.output_path || [];
 
-    console.log('component', component);
-    const input_path = component.input_path;
-    input_path.forEach((path: PipelinePath) => {
-      result.inputs.push(path.name as string);
+      if (orderId.value) {
+        return {
+          id,
+          name,
+          input_path,
+          output_path,
+          component_file: component?.component_file || null,
+          category: component?.category || null,
+          creator: component?.creator || null,
+        };
+      }
+
+      const inputs: string[] = [];
+      input_path.forEach((path: ComponentPath) => {
+        inputs.push(path.name as string);
+      });
+
+      const nodeId = node?.id;
+      const edges = builder?.edges?.filter(
+        (edge: Edge) => edge.target === nodeId,
+      );
+      edges?.forEach((edge) => {
+        const sourceName = edge?.sourceNode?.data?.label + '';
+        inputs.push(`${sourceName}.output`);
+      });
+
+      return {
+        id,
+        name,
+        inputs,
+        input_path,
+        output_path,
+      };
+    }) || [];
+
+  if (orderId.value) {
+    const inputPathMap = new Map<string, TopLevelInputPath>();
+
+    components.forEach((comp) => {
+      comp.input_path.forEach((path: ComponentPath) => {
+        if (path.default !== undefined && !inputPathMap.has(path.name)) {
+          inputPathMap.set(path.name, {
+            name: path.name,
+            type: path.type,
+            default: path.default,
+          });
+        }
+      });
     });
-    const id = node?.id;
-    const edges = builder?.edges?.filter((edge: Edge) => edge.target === id);
-    const inputs: string[] = [];
 
-    edges?.forEach((edge) => {
-      console.log('edge', edge);
-      const sourceName = edge?.sourceNode?.data?.label + '';
-      inputs.push(`${sourceName}.output`);
+    data.input_path = Array.from(inputPathMap.values());
+
+    const serverComp = components.find(
+      (c) =>
+        c.name.toLowerCase().includes('server') ||
+        ('category' in c &&
+          (c as FederatedPipelineComponent).category
+            ?.toLowerCase()
+            .includes('server')),
+    );
+
+    if (serverComp) {
+      data.output_path = [
+        {
+          name: 'final_global_model',
+          source: {
+            component_name: serverComp.name,
+            output_name: serverComp.output_path[0]?.name || 'Output',
+          },
+        },
+      ];
+    } else {
+      const lastComp = components[components.length - 1];
+      if (lastComp) {
+        data.output_path = [
+          {
+            name: 'final_global_model',
+            source: {
+              component_name: lastComp.name,
+              output_name: lastComp.output_path[0]?.name || 'Output',
+            },
+          },
+        ];
+      }
+    }
+  } else {
+    const input_path: TopLevelInputPath[] = [];
+    const output_path: TopLevelOutputPath[] = [];
+
+    components.forEach((comp) => {
+      comp.input_path.forEach((path: ComponentPath) => {
+        input_path.push({
+          name: path.name,
+          type: path.type,
+          default: path.default,
+        });
+      });
+      comp.output_path.forEach((path: ComponentPath) => {
+        output_path.push({
+          name: path.name,
+          source: {
+            component_name: comp.name,
+            output_name: path.name,
+          },
+        });
+      });
     });
 
-    result.inputs = [...result.inputs, ...inputs];
-    return result;
-  });
+    data.input_path = input_path;
+    data.output_path = output_path;
+  }
 
-  const components = pipelineNodes.map((node) => {
-    return {
-      id: node.id,
-      name: node.name,
-      inputs: node.inputs,
-      input_path: node.input_path,
-      output_path: node.output_path,
-    };
-  });
-
-  const input_path: PipelinePath[] = [];
-  const output_path: PipelinePath[] = [];
-
-  pipelineNodes.forEach((node) => {
-    input_path.push(...node.input_path);
-    output_path.push(...node.output_path);
-  });
-  data.input_path = input_path;
-  data.output_path = output_path;
   data.pipeline_components = components;
 
-  console.log('data', data);
-
-  console.log('postTrainingBuilderPipelineComponent');
-  api
-    .postTrainingBuilderPipelineComponent(data)
-    .then((res: unknown) => {
-      console.log('res', res);
-      toaster.show('success', 'message.success.pipeline_saved', {
-        duration: 3000,
-      });
-    })
-    .catch((error: unknown) => {
-      console.error('Pipeline save error:', error);
-      toaster.show('error', 'message.error.pipeline_save_failed', {
-        duration: 5000,
-      });
-    });
+  if (orderId.value) {
+    data.order_id = orderId.value;
+    api.postTrainingBuilderPipelineDataspaceFederatedRun(data);
+  } else {
+    api.postTrainingBuilderPipeline(data);
+  }
 };
 </script>
 

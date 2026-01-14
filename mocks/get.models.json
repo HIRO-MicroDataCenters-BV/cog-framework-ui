@@ -1,0 +1,121 @@
+{
+  "status_code": 200,
+  "message": "Models retrieved successfully.",
+  "data": [
+    {
+      "name": "demo_run_lightweight",
+      "type": "sklearn",
+      "description": "log_model",
+      "id": "c6811991-9aec-4650-8bbe-163db8dd6110",
+      "version": 0,
+      "last_modified_time": "2025-11-17T16:24:18.883872",
+      "register_date": "2025-11-17T16:24:12.585000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "demo_run_lightweight",
+      "type": "sklearn",
+      "description": "log_model",
+      "id": "1cdb659c-f3f2-409d-91ee-00c594760898",
+      "version": 0,
+      "last_modified_time": "2025-11-17T16:23:38.753862",
+      "register_date": "2025-11-17T16:23:30.821000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "demo_run_lightweight",
+      "type": "sklearn",
+      "description": "log_model",
+      "id": "dde20336-7160-44fd-a380-aff386dfe242",
+      "version": 0,
+      "last_modified_time": "2025-11-17T16:16:15.464263",
+      "register_date": "2025-11-17T16:16:07.814000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "demo_run_lightweight",
+      "type": "sklearn",
+      "description": "log_model",
+      "id": "8308a71c-04ec-420e-9ea6-d150b73819ea",
+      "version": 0,
+      "last_modified_time": "2025-11-17T16:13:03.738027",
+      "register_date": "2025-11-17T16:12:53.847000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "demo_run_lightweight",
+      "type": "sklearn",
+      "description": "log_model",
+      "id": "c9bc7db8-60ac-4247-af25-dd9397a900c8",
+      "version": 0,
+      "last_modified_time": "2025-11-17T16:08:42.763258",
+      "register_date": "2025-11-17T16:08:34.247000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "FedSCVI_Model",
+      "type": "pytorch",
+      "description": "log_model",
+      "id": "e655d2c1-c2b5-459e-9652-c3125312fb74",
+      "version": 29,
+      "last_modified_time": "2025-11-14T08:10:50.998932",
+      "register_date": "2025-11-14T08:08:12.274000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "FedSCVI_Model",
+      "type": "pytorch",
+      "description": "log_model",
+      "id": "a5addbd6-2d0f-4fcb-8598-78dc688e278c",
+      "version": 28,
+      "last_modified_time": "2025-11-13T16:51:55.636819",
+      "register_date": "2025-11-13T16:49:30.441000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "FedSCVI_Model",
+      "type": "pytorch",
+      "description": "log_model",
+      "id": "d90f40eb-1a6d-4093-9745-87832d280186",
+      "version": 27,
+      "last_modified_time": "2025-11-13T14:37:48.374512",
+      "register_date": "2025-11-13T14:35:40.133000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "FedSCVI_Model",
+      "type": "pytorch",
+      "description": "log_model",
+      "id": "455820ca-b5ed-44b9-8e3a-0d28fbfe4bbc",
+      "version": 26,
+      "last_modified_time": "2025-11-12T11:43:54.673921",
+      "register_date": "2025-11-12T11:41:27.524000",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    },
+    {
+      "name": "model_12",
+      "type": "xcboost",
+      "description": "model_12 test",
+      "id": "62bdc9a4-7879-4d77-ae8f-a3d3ad43d637",
+      "version": 2,
+      "last_modified_time": "2025-11-12T09:26:29.512437",
+      "register_date": "2025-11-12T09:26:29.512434",
+      "register_user_id": "admin@hiro.com",
+      "last_modified_user_id": "admin@hiro.com"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total_items": 90
+  }
+}

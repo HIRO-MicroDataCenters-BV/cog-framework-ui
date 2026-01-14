@@ -1,21 +1,30 @@
 import { toast } from 'vue-sonner';
 
 export const useToaster = () => {
-  const nuxtApp = useNuxtApp();
+  const { t } = useI18n();
 
   return {
     show: (
-      type: string,
+      type: 'success' | 'error' | 'info' | 'warning',
       message: string,
       data?: Record<string, string | number>,
     ) => {
-      const msg = nuxtApp.$i18n.t(`message.${type}.${message}`);
-      toast(
-        msg,
-        data || {
-          duration: 2000,
-        },
-      );
+      const msg = t(`message.${type}.${message}`);
+      const options = { duration: 3000, ...data };
+      switch (type) {
+        case 'success':
+          toast.success(msg, options);
+          break;
+        case 'error':
+          toast.error(msg, options);
+          break;
+        case 'warning':
+          toast.warning(msg, options);
+          break;
+        case 'info':
+          toast.info(msg, options);
+          break;
+      }
     },
   };
 };

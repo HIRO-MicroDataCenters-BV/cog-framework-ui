@@ -1,0 +1,51 @@
+{
+  "status_code": 200,
+  "message": "Model Associations",
+  "data": [
+    {
+      "model_id": "e655d2c1-c2b5-459e-9652-c3125312fb74",
+      "model_name": "FedSCVI_Model",
+      "model_description": "log_model",
+      "user_id": "admin@hiro.com",
+      "register_date": "2025-11-14T08:08:12.274000",
+      "datasets": [],
+      "artifacts": {
+        "base_uri": "s3://mlflow/5/e655d2c1c2b5459e9652c3125312fb74/artifacts",
+        "model_files": [
+          {
+            "name": "tmp8nif6qve.csv",
+            "path": "metrics/tmp8nif6qve.csv"
+          },
+          {
+            "name": "tmp3ftnloxx.png",
+            "path": "plots/tmp3ftnloxx.png"
+          },
+          {
+            "name": "MLmodel",
+            "path": "scvi_model/MLmodel"
+          },
+          {
+            "name": "conda.yaml",
+            "path": "scvi_model/conda.yaml"
+          },
+          {
+            "name": "python_env.yaml",
+            "path": "scvi_model/python_env.yaml"
+          },
+          {
+            "name": "requirements.txt",
+            "path": "scvi_model/requirements.txt"
+          },
+          {
+            "name": "model.pth",
+            "path": "scvi_model/data/model.pth"
+          },
+          {
+            "name": "pickle_module_info.txt",
+            "path": "scvi_model/data/pickle_module_info.txt"
+          }
+        ]
+      }
+    }
+  ]
+}

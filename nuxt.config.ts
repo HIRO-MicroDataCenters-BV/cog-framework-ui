@@ -17,10 +17,29 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     // '@nuxtjs/color-mode',
   ],
+  // Enable SSR to get Nitro server for API endpoints
+  // But use client-side rendering for pages (SPA mode)
   ssr: false,
+
+  components: {
+    dirs: [
+      {
+        path: '~/components/app',
+        pathPrefix: false,
+        prefix: 'App',
+      },
+      {
+        path: '~/components/forms',
+        pathPrefix: false,
+        extensions: ['.vue'],
+      },
+      // UI components are handled by shadcn-nuxt, explicitly exclude from Nuxt scanning
+    ],
+  },
   devtools: { enabled: true },
   app: {
     baseURL: process.env.URL_PREFIX,
+    buildAssetsDir: '/_nuxt/',
   },
   css: ['~/assets/css/tailwind.css'],
   /*
@@ -29,23 +48,33 @@ export default defineNuxtConfig({
   },
   */
   runtimeConfig: {
+    // Server-side only configuration (never exposed to client)
+    dexHost: process.env.NUXT_DEX_HOST || '',
+    dexUsername: process.env.NUXT_DEX_USERNAME || '',
+    dexPassword: process.env.NUXT_DEX_PASSWORD || '',
+    dexAuthType: process.env.NUXT_DEX_AUTH_TYPE || 'local',
+    dexSkipTlsVerify: process.env.NUXT_DEX_SKIP_TLS_VERIFY === 'true',
+
     public: {
       apiBase: URL_PREFIX,
-      mockEnabled: process.env.MOCK_ENABLED === 'true',
+      mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
+      apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
     },
   },
   compatibilityDate: '2024-11-01',
   nitro: {
-    preset: 'github-pages',
-    runtimeConfig: {
-      app: {
-        baseURL: URL_PREFIX,
-      },
+    preset: 'static',
+    output: {
+      dir: '.output',
+      publicDir: '.output/public',
     },
-    baseURL: URL_PREFIX,
+    prerender: {
+      crawlLinks: true,
+      routes: ['/'],
+    },
     devProxy: {
       '/cogapi': {
-        target: process.env.NUXT_PUBLIC_API_REMOTE || 'http://localhost:8000',
+        target: process.env.NUXT_PUBLIC_API_REMOTE || '',
         changeOrigin: true,
         prependPath: true,
       },
@@ -54,6 +83,17 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  hooks: {
+    'components:extend'(components) {
+      // Remove UI components registered by Nuxt to prevent duplicates with shadcn-nuxt
+      for (let i = components.length - 1; i >= 0; i--) {
+        const c = components[i];
+        if (c.filePath.includes('/components/ui/')) {
+          components.splice(i, 1);
+        }
+      }
+    },
+  },
   eslint: {
     config: {
       stylistic: true,
@@ -61,6 +101,9 @@ export default defineNuxtConfig({
   },
   i18n: {
     vueI18n: './i18n.config.ts',
+    bundle: {
+      optimizeTranslationDirective: false,
+    },
   },
   icon: {
     serverBundle: {

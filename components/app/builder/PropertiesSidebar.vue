@@ -12,11 +12,14 @@
         >
           <div>
             <Input
+              v-if="!readonly"
               v-model="nodeName"
               type="text"
               :placeholder="$t('placeholder.component_name')"
               :class="{ 'border-red-500': !isComponentNameValid }"
             />
+            <div v-else>{{ selectedNode.data?.label }}</div>
+
             <div v-if="componentNameError" class="text-red-500 text-sm mt-1">
               {{ componentNameError }}
             </div>
@@ -58,9 +61,7 @@
           <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4 text-sm items-start">
               <div class="flex items-center gap-2 text-gray-500">
-                <Icon name="lucide:text" class="size-4" />{{
-                  $t('label.category')
-                }}<span></span>
+                <Icon name="lucide:folder" class="size-4" />
               </div>
               <div>{{ selectedNode.data?.component?.category }}</div>
             </div>
@@ -99,11 +100,18 @@ import { validateComponentInput } from '~/utils/builder-validation';
 const { t } = useI18n();
 
 interface Props {
-  selectedNode: Node | null;
+  selectedNode?: Node | null;
   allNodes?: Node[];
+  readonly?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  selectedNode: null,
+  allNodes: () => [],
+  readonly: false,
+});
+
+const readonly = computed(() => props.readonly);
 
 const emit = defineEmits<{
   updateNode: [nodeId: string, updates: Partial<Node>];

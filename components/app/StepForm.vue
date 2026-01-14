@@ -24,7 +24,6 @@
                   <div
                     v-if="checkFieldCondition(field)"
                     :class="{
-                      'mb-6': row.fields.length === 1,
                       'flex-1': row.fields.length > 1,
                     }"
                   >
@@ -43,15 +42,15 @@
                               class="flex flex-col space-y-1"
                               v-bind="componentField"
                             >
-                              <FormItem
+                              <div
                                 v-for="option in field.options"
                                 :key="option.value"
-                                class="flex space-y-0 gap-x-3"
+                                class="flex items-center items-start space-x-3"
                               >
-                                <FormControl>
-                                  <RadioGroupItem :value="option.value" />
-                                </FormControl>
-                                <FormLabel class="font-normal flex flex-col">
+                                <RadioGroupItem :value="option.value" />
+                                <FormLabel
+                                  class="font-normal flex flex-col cursor-pointer"
+                                >
                                   <div class="mb-1 w-full">
                                     {{ option.label }}
                                   </div>
@@ -62,7 +61,7 @@
                                     {{ option.subtitle }}
                                   </div>
                                 </FormLabel>
-                              </FormItem>
+                              </div>
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
@@ -77,20 +76,21 @@
                         :name="field.name"
                       >
                         <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
+                          :class="row.fields.length > 1 ? 'w-full' : 'w-full'"
                         >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
-                            field.label
-                          }}</FormLabel>
-                          <FormControl class="w-full">
+                          <FormLabel>{{ field.label }}</FormLabel>
+                          <FormControl>
                             <Input
                               type="text"
                               v-bind="componentField"
                               :placeholder="field.placeholder || ''"
                             />
                           </FormControl>
+                          <FormMessage />
+                          <FormDescription v-if="field.hint === 'db_url_hint'">
+                            {{ getDbUrlHint(componentField.modelValue) }}
+                          </FormDescription>
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -100,21 +100,17 @@
                         type="number"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
-                            field.label
-                          }}</FormLabel>
-                          <FormControl class="w-full">
+                        <FormItem class="w-full">
+                          <FormLabel>{{ field.label }}</FormLabel>
+                          <FormControl>
                             <Input
                               type="number"
                               v-bind="componentField"
                               :placeholder="field.placeholder || ''"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -124,14 +120,10 @@
                         type="textarea"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel
-                            v-if="field.label"
-                            class="font-normal mb-2"
-                            >{{ field.label }}</FormLabel
-                          >
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
+                            field.label
+                          }}</FormLabel>
                           <FormControl>
                             <Textarea
                               v-bind="componentField"
@@ -139,20 +131,18 @@
                               class="w-full"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
                     <template v-else-if="field.type === 'file'">
                       <FormField type="file" :name="field.name">
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
                             field.label
                           }}</FormLabel>
-                          <FormControl class="w-full">
+                          <FormControl>
                             <Input
                               type="file"
                               :accept="field.accept || '.csv,.json'"
@@ -162,8 +152,8 @@
                               "
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
-                        <FormMessage />
                       </FormField>
                     </template>
 
@@ -173,10 +163,8 @@
                         type="select"
                         :name="field.name"
                       >
-                        <FormItem
-                          class="flex space-y-0 gap-x-3 mb-1 w-full flex flex-col"
-                        >
-                          <FormLabel v-if="field.label" class="mb-1 w-full">{{
+                        <FormItem class="w-full">
+                          <FormLabel v-if="field.label">{{
                             field.label
                           }}</FormLabel>
                           <Select v-bind="componentField">
@@ -223,6 +211,24 @@
                         </FormItem>
                       </FormField>
                     </template>
+
+                    <template v-else-if="field.type === 'action_button'">
+                      <div class="flex items-center pt-8">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          @click.prevent="
+                            emit(
+                              'on-field-action',
+                              field.actionName || field.name,
+                              form.values,
+                            )
+                          "
+                        >
+                          {{ field.buttonLabel || field.label }}
+                        </Button>
+                      </div>
+                    </template>
                   </div>
                 </template>
               </div>
@@ -254,7 +260,8 @@
 
 <script lang="ts" setup>
 import { useForm } from 'vee-validate';
-import { get as useGet } from 'lodash-es';
+import { nextTick, onMounted } from 'vue';
+// import { get as useGet } from 'lodash-es';
 
 import {
   FormControl,
@@ -264,10 +271,12 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 
 import type {
   ActionType,
   Field,
+  FieldCondition,
   ReviewItem,
   ReviewItemsByType,
   ReviewTableItem,
@@ -297,6 +306,9 @@ const emit = defineEmits<{
   'on-submit': [values: FormValues];
   'on-step-change': [step: number, actions: ActionType[]];
   'update-actions': [actions: ActionType[]];
+  'update-step-validity': [isValid: boolean];
+  'update-next-enabled': [enabled: boolean];
+  'on-field-action': [actionName: string, values: FormValues];
 }>();
 const currentStep = ref(props.step);
 
@@ -305,8 +317,190 @@ const form = useForm<FormValues>({
   initialValues: props.initialValues || {},
 });
 
-const handleAction = (action: ActionType) => {
+const getNestedValue = (
+  obj: Record<string, unknown>,
+  path: string,
+): unknown => {
+  return path.split('.').reduce((acc: unknown, part: string) => {
+    if (acc && typeof acc === 'object') {
+      return (acc as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, obj);
+};
+
+const evaluateCondition = (
+  condition: FieldCondition,
+  formValues: Record<string, unknown>,
+): boolean => {
+  if (condition.group) {
+    if (!condition.conditions || condition.conditions.length === 0) return true;
+    if (condition.group === 'and') {
+      return condition.conditions.every((c) =>
+        evaluateCondition(c, formValues),
+      );
+    } else if (condition.group === 'or') {
+      return condition.conditions.some((c) => evaluateCondition(c, formValues));
+    }
+    return true;
+  }
+
+  if (!condition.field || !condition.operator) return true;
+
+  const { field: conditionField, operator, value } = condition;
+  const fieldValue = getNestedValue(formValues, conditionField);
+
+  switch (operator) {
+    case 'eq':
+      return fieldValue === value;
+    case 'neq':
+      return fieldValue !== value;
+    case 'contains':
+      return Array.isArray(fieldValue) && fieldValue.includes(value as unknown);
+    case 'not_contains':
+      return (
+        Array.isArray(fieldValue) && !fieldValue.includes(value as unknown)
+      );
+    default:
+      return true;
+  }
+};
+
+const formValuesKey = ref(0);
+
+watch(
+  () => form.values,
+  () => {
+    formValuesKey.value++;
+  },
+  { deep: true },
+);
+
+const checkFieldCondition = computed(() => {
+  // Access formValuesKey to trigger reactivity
+  const _ = formValuesKey.value;
+  const values = form.values;
+  return (field: Field): boolean => {
+    if (!field.condition) return true;
+    return evaluateCondition(field.condition, values);
+  };
+});
+
+// Get all field names for a specific step
+const getStepFields = (stepIndex: number): string[] => {
+  const step = Array.isArray(props.steps) ? props.steps[stepIndex] : null;
+  if (!step || !step.rows) return [];
+
+  const fields: string[] = [];
+  step.rows.forEach((row) => {
+    row.fields.forEach((field) => {
+      if (checkFieldCondition.value(field)) {
+        fields.push(field.name);
+      }
+    });
+  });
+  return fields;
+};
+
+// Validate fields for a specific step
+const validateStep = async (stepIndex: number): Promise<boolean> => {
+  const stepFields = getStepFields(stepIndex);
+  if (stepFields.length === 0) return true;
+
+  // Validate all fields in the step
+  const validations = await Promise.all(
+    stepFields.map((fieldName) => form.validateField(fieldName)),
+  );
+
+  return validations.every((result) => result.valid);
+};
+
+// Check if current step is valid (computed for reactivity)
+const isStepValid = ref(true);
+
+// Check step validity based on field errors and required values
+const checkStepValidity = () => {
+  const step = Array.isArray(props.steps)
+    ? props.steps[currentStep.value]
+    : null;
+  if (!step || !step.rows) {
+    isStepValid.value = true;
+    return;
+  }
+
+  const errors = form.errors.value;
+  const values = form.values;
+
+  // Get active fields for current step
+  const activeFields: Field[] = [];
+  step.rows.forEach((row) => {
+    row.fields.forEach((field) => {
+      // Check condition
+      if (checkFieldCondition.value(field)) {
+        activeFields.push(field);
+      }
+    });
+  });
+
+  if (activeFields.length === 0) {
+    isStepValid.value = true;
+    return;
+  }
+
+  // Check for errors and required values
+  const isValid = activeFields.every((field) => {
+    // 1. Check if field has error
+    if (errors[field.name]) {
+      return false;
+    }
+
+    // 2. Check if field is required and has value
+    if (field.required) {
+      const val = getNestedValue(values, field.name);
+
+      // Check for empty values
+      if (val === undefined || val === null) {
+        return false;
+      }
+      if (typeof val === 'string' && val.trim() === '') {
+        return false;
+      }
+      if (Array.isArray(val) && val.length === 0) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  isStepValid.value = isValid;
+};
+
+// Watch form values and errors to update step validity
+watch(
+  () => [form.values, form.errors.value, currentStep.value],
+  async () => {
+    await nextTick();
+    checkStepValidity();
+  },
+  { deep: true },
+);
+
+// Initialize step validity after component is mounted
+onMounted(() => {
+  nextTick(() => {
+    checkStepValidity();
+  });
+});
+
+const handleAction = async (action: ActionType) => {
   if (action === 'next') {
+    // Validate current step before moving to next
+    const isValid = await validateStep(currentStep.value);
+    if (!isValid) {
+      // Don't proceed to next step if validation fails
+      return;
+    }
     currentStep.value++;
     emit('on-step-change', currentStep.value, currentActions.value);
   } else if (action === 'back' && currentStep.value > 0) {
@@ -324,25 +518,44 @@ const currentActions = computed(() => {
   const totalSteps = props.steps.length + (props.showReviewStep ? 1 : 0);
 
   if (currentStep.value === 0) {
+    // On first step, always show next button
     return ['next'];
   } else if (currentStep.value === totalSteps - 1) {
     return ['back', 'submit'];
   } else {
+    // Always show next button, but it will be disabled if step is invalid
     return ['back', 'next'];
   }
 });
 
+// Computed property to determine if Next button should be enabled
+const isNextEnabled = computed(() => {
+  return isStepValid.value;
+});
+
 watch(
   currentActions,
-  (actions) => {
+  (actions: ActionType[]) => {
     emit('update-actions', actions);
   },
   { immediate: true },
 );
 
 watch(
+  isNextEnabled,
+  (enabled: boolean) => {
+    emit('update-next-enabled', enabled);
+  },
+  { immediate: true },
+);
+
+watch(
   currentStep,
-  (value) => {
+  (value: number) => {
+    // Check validity when step changes
+    nextTick(() => {
+      checkStepValidity();
+    });
     emit('on-step-change', value, currentActions.value);
   },
   { immediate: true },
@@ -350,7 +563,7 @@ watch(
 
 watch(
   () => props.isSubmit,
-  (value) => {
+  (value: boolean) => {
     if (value) {
       form.submitForm();
       onSubmit();
@@ -361,7 +574,7 @@ watch(
 
 watch(
   () => props.step,
-  (value) => {
+  (value: number) => {
     if (value !== undefined && value !== currentStep.value) {
       currentStep.value = value;
     }
@@ -392,7 +605,13 @@ const reviewData = computed((): ReviewTableItem[] => {
   return reviewList.map((item) => {
     return {
       label: item.label,
-      value: useGet(formValues, item.valuePath),
+      value: item.valuePath
+        .split('.')
+        .reduce(
+          (obj: Record<string, unknown>, key: string) =>
+            obj?.[key] as Record<string, unknown>,
+          formValues as Record<string, unknown>,
+        ),
     };
   });
 });
@@ -407,25 +626,23 @@ const handleFileChange = (event: Event, fieldName: string): void => {
   }
 };
 
-const checkFieldCondition = (field: Field): boolean => {
-  if (!field.condition) return true;
+const getDbUrlHint = (url: string | undefined): string => {
+  if (!url) return t('hint.db_url_default');
 
-  const { field: conditionField, operator, value } = field.condition;
-  const fieldValue = form.values[conditionField];
+  const protocol = url.split(':')[0].toLowerCase();
 
-  switch (operator) {
-    case 'eq':
-      return fieldValue === value;
-    case 'neq':
-      return fieldValue !== value;
-    case 'contains':
-      return Array.isArray(fieldValue) && fieldValue.includes(value as unknown);
-    case 'not_contains':
-      return (
-        Array.isArray(fieldValue) && !fieldValue.includes(value as unknown)
-      );
+  switch (protocol) {
+    case 'postgresql':
+    case 'postgres':
+      return t('hint.db_url_postgresql');
+    case 'mysql':
+      return t('hint.db_url_mysql');
+    case 'sqlite':
+      return t('hint.db_url_sqlite');
+    case 'mongodb':
+      return t('hint.db_url_mongodb');
     default:
-      return true;
+      return t('hint.db_url_default');
   }
 };
 
