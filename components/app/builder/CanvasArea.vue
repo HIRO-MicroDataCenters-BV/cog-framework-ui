@@ -12,6 +12,7 @@
       :nodes-connectable="!props.readonly"
       :edges-updatable="!props.readonly"
       :elements-selectable="!props.readonly"
+      :delete-key-code="null"
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
@@ -77,6 +78,7 @@ import {
   MarkerType,
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
+  useVueFlow,
 } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
@@ -120,7 +122,37 @@ const emit = defineEmits<{
   edgeUpdate: [edge: VueFlowEdge];
   update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
   error: [errorKey: string, data?: Record<string, unknown>];
+  requestDelete: [elements: any[]];
 }>();
+
+const { getSelectedElements } = useVueFlow();
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (props.readonly) return;
+
+  // Ignore if user is typing in an input
+  if (
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement
+  ) {
+    return;
+  }
+
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    const selected = getSelectedElements.value;
+    if (selected.length > 0) {
+      emit('requestDelete', selected);
+    }
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
 
 const onDragOver = (event: DragEvent) => {
   if (props.readonly) return;
