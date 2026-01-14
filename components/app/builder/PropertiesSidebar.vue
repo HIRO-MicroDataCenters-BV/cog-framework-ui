@@ -122,9 +122,7 @@ import { ref, reactive, watch, computed, nextTick } from 'vue';
 import PathSection from './PathSection.vue';
 import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
-import {
-  SheetTitle,
-} from '~/components/ui/sheet';
+import { SheetTitle } from '~/components/ui/sheet';
 import {
   AlertDialog,
   AlertDialogAction,
