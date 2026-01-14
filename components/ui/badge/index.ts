@@ -23,6 +23,8 @@ export const badgeVariants = cva(
           'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
         pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
         succeeded: 'border-transparent bg-green-700 text-white',
+        invalid:
+          'border-transparent bg-orange-600 text-white [a&]:hover:bg-orange-700',
       },
     },
     defaultVariants: {
@@ -57,6 +59,11 @@ export const statusConfig = {
   succeeded: {
     variant: 'succeeded' as const,
     icon: 'Check',
+    animate: false,
+  },
+  invalid: {
+    variant: 'invalid' as const,
+    icon: 'CircleSlash',
     animate: false,
   },
 } as const;

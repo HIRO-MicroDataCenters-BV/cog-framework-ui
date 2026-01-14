@@ -60,7 +60,8 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import type { Edge, Component } from '~/types/builder.types';
+import type { Edge, Component, Node } from '~/types/builder.types';
+import { detectCycle, validateAllComponents } from '~/utils/builder-validation';
 import {
   Form,
   FormField,
@@ -138,6 +139,31 @@ const runPipeline = () => {
 
   const builder = page.value.data?.builder;
   if (!builder) return;
+  
+  const nodes = (builder.nodes || []) as Node[];
+  const toaster = useToaster();
+  
+  // Check for cycles
+  if (detectCycle(nodes)) {
+    toaster.show('error', 'message.error.cycle_detected', {
+      duration: 5000,
+    });
+    return;
+  }
+  
+  // Check for validation errors
+  const validationErrors = validateAllComponents(nodes, []);
+  if (validationErrors.length > 0) {
+    const errorMessage = validationErrors
+      .map(e => `${e.componentName}: ${e.error}`)
+      .join(', ');
+    toaster.show('error', 'message.error.validation_errors', {
+      duration: 5000,
+    });
+    console.error('Validation errors:', validationErrors);
+    return;
+  }
+  
   console.log('builder', builder);
   const data = {
     name: builder.name,
@@ -146,7 +172,7 @@ const runPipeline = () => {
     output_path: [] as PipelinePath[],
   };
 
-  const nodes = builder?.nodes?.map((node): PipelineComponent => {
+  const pipelineNodes = builder?.nodes?.map((node): PipelineComponent => {
     console.log('node', node);
     const component = node?.data?.component as Component;
     const result: PipelineComponent = {
@@ -176,7 +202,7 @@ const runPipeline = () => {
     return result;
   });
 
-  const components = nodes.map((node) => {
+  const components = pipelineNodes.map((node) => {
     return {
       id: node.id,
       name: node.name,
@@ -189,7 +215,7 @@ const runPipeline = () => {
   const input_path: PipelinePath[] = [];
   const output_path: PipelinePath[] = [];
 
-  nodes.forEach((node) => {
+  pipelineNodes.forEach((node) => {
     input_path.push(...node.input_path);
     output_path.push(...node.output_path);
   });
@@ -202,6 +228,14 @@ const runPipeline = () => {
   console.log('postTrainingBuilderPipelineComponent');
   api.postTrainingBuilderPipelineComponent(data).then((res: unknown) => {
     console.log('res', res);
+    toaster.show('success', 'message.success.pipeline_saved', {
+      duration: 3000,
+    });
+  }).catch((error: unknown) => {
+    console.error('Pipeline save error:', error);
+    toaster.show('error', 'message.error.pipeline_save_failed', {
+      duration: 5000,
+    });
   });
 };
 </script>

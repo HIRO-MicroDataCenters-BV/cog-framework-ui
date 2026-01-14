@@ -39,6 +39,29 @@ export interface Edge {
 export interface ComponentPath {
   name: string;
   type: string | 'CSV' | 'parquet';
+  description?: string;
+  default?: string;
+  optional?: boolean;
+}
+
+export interface ComponentInput {
+  destination: string;
+  value_source_type: 'component_output' | 'pipeline_inputparam' | 'constant';
+  source: string;
+}
+
+export interface PipelineInputParam {
+  name: string;
+  default?: string;
+  description?: string;
+}
+
+export interface PipelineOutput {
+  name: string;
+  source: {
+    component_name: string;
+    output_name: string;
+  };
 }
 
 export interface Component {
@@ -46,6 +69,7 @@ export interface Component {
   name: string | null;
   input_path: ComponentPath[];
   output_path: ComponentPath[];
+  inputs?: ComponentInput[];
   component_file: string | null;
   category: string | null;
   creator: string | null;

@@ -58,11 +58,20 @@
             :all-nodes="(page.data?.builder?.nodes as any) || []"
             @update-node="onUpdateNode as any"
             @delete-node="onDeleteNode as any"
+            @rename-component="onRenameComponent as any"
           />
         </div>
       </SheetContent>
     </Sheet>
   </div>
+
+  <DeleteConfirmationDialog
+    :open="deleteConfirmation !== null"
+    :component-name="deleteConfirmation?.componentName || ''"
+    :dependencies="deleteConfirmation?.dependencies || []"
+    @cancel="deleteConfirmation = null"
+    @confirm="confirmDelete"
+  />
 
   <AppDialogPipelineComponent
     :open="openUploadComponentDialog"
@@ -83,7 +92,8 @@ import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
-import type { Node, Edge } from '~/types/builder.types';
+import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
+import type { Node, Edge, ComponentInput } from '~/types/builder.types';
 
 const { setPage, page } = useApp();
 
@@ -101,6 +111,13 @@ const externalBuilderUrl = ref(
 );
 
 const selectedNode = ref<VueFlowNode | null>(null);
+
+// Delete confirmation state
+const deleteConfirmation = ref<{
+  nodeId: string;
+  componentName: string;
+  dependencies: string[];
+} | null>(null);
 
 // Menu actions configuration
 interface MenuAction {
@@ -280,8 +297,79 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
   }
 };
 
-const onDeleteNode = (nodeId: string) => {
-  console.log('Delete node:', nodeId);
+const onRenameComponent = (nodeId: string, oldName: string, newName: string) => {
+  console.log('Rename component:', oldName, '->', newName);
+  
+  const currentBuilder = page.value.data?.builder;
+  if (!currentBuilder?.nodes) return;
+
+  // Update all component_output references in all nodes
+  currentBuilder.nodes.forEach((node: Node) => {
+    const inputs = node.data?.component?.inputs || [];
+    inputs.forEach((input: ComponentInput) => {
+      if (input.value_source_type === 'component_output' && 
+          input.source.startsWith(oldName + '.')) {
+        const [, outputName] = input.source.split('.', 2);
+        input.source = `${newName}.${outputName}`;
+        console.log(`Updated reference in ${node.data?.label}: ${oldName}.${outputName} -> ${newName}.${outputName}`);
+      }
+    });
+  });
+
+  // Trigger update
+  setPage({
+    ...page.value,
+    data: {
+      ...page.value.data,
+      builder: currentBuilder,
+    },
+  });
+};
+
+const onDeleteNode = (nodeId: string, componentName: string) => {
+  console.log('Delete node request:', nodeId, componentName);
+
+  const currentBuilder = page.value.data?.builder;
+  if (!currentBuilder?.nodes) return;
+
+  // Find downstream dependencies
+  const dependencies: string[] = [];
+  currentBuilder.nodes.forEach((node: Node) => {
+    if (node.id === nodeId) return;
+    const inputs = node.data?.component?.inputs || [];
+    inputs.forEach((input: ComponentInput) => {
+      if (input.value_source_type === 'component_output' && 
+          input.source.startsWith(componentName + '.')) {
+        const depName = node.data?.label || node.id;
+        if (!dependencies.includes(depName)) {
+          dependencies.push(depName);
+        }
+      }
+    });
+  });
+
+  if (dependencies.length > 0) {
+    // Show confirmation dialog
+    deleteConfirmation.value = {
+      nodeId,
+      componentName,
+      dependencies,
+    };
+  } else {
+    // Delete immediately if no dependencies
+    performDelete(nodeId);
+  }
+};
+
+const confirmDelete = () => {
+  if (deleteConfirmation.value) {
+    performDelete(deleteConfirmation.value.nodeId);
+    deleteConfirmation.value = null;
+  }
+};
+
+const performDelete = (nodeId: string) => {
+  console.log('Performing delete:', nodeId);
 
   const currentBuilder = page.value.data?.builder;
   if (currentBuilder?.nodes) {

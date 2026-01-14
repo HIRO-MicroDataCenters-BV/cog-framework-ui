@@ -39,6 +39,12 @@ import type {
  */
 export const useApi = () => {
   const config = useRuntimeConfig();
+
+  // Check if mock is enabled and return mock API wrapper
+  if (config.public.mockEnabled) {
+    return useApiWithMock();
+  }
+
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
