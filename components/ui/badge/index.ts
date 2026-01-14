@@ -92,6 +92,11 @@ export const badgeConfig = {
       animate: false,
     },
   },
+  invalid: {
+    variant: 'invalid' as const,
+    icon: 'CircleSlash',
+    animate: false,
+  },
 } as const;
 
 export type BadgeCategory = keyof typeof badgeConfig;

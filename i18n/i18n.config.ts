@@ -105,8 +105,12 @@ export default defineI18nConfig(() => ({
         components: 'Components',
         properties: 'Properties',
         properties_subtitle: 'Configure selected component',
-        empty_selection: 'Select a component to configure',
+        empty_selection: 'Select a component to view its properties',
         category: 'Category',
+        delete_component_title: 'Delete Component?',
+        delete_component_warning:
+          'Component "{name}" is used by {count} other component(s):',
+        delete_component_consequence: 'Deleting will break these connections.',
         categories: {
           inputs: 'Inputs',
           processing: 'Processing',
@@ -267,6 +271,7 @@ export default defineI18nConfig(() => ({
         filters: 'Filters',
         edit: 'Edit',
         delete: 'Delete',
+        delete_anyway: 'Delete Anyway',
         refresh: 'Refresh',
         minimize: 'Minimize',
         delete_component: 'Delete Component',
@@ -539,6 +544,20 @@ export default defineI18nConfig(() => ({
           input_path: 'Input path',
           output_path: 'Output path',
           component_file: 'Component file',
+        },
+        input: {
+          destination_required: 'Input destination is required',
+          destination_no_dot: 'Input destination cannot contain "."',
+          component_output_format:
+            'Component output must be in format "ComponentName.output"',
+          component_not_found: 'Referenced component not found',
+          param_required: 'Pipeline parameter is required',
+          param_not_found: 'Pipeline parameter not found',
+          constant_required: 'Constant value is required',
+          constant_integer: 'Value must be an integer',
+          constant_float: 'Value must be a number',
+          constant_boolean: 'Value must be true or false',
+          invalid_source_type: 'Invalid source type',
         },
         pipeline: {
           name: 'Pipeline name is required',

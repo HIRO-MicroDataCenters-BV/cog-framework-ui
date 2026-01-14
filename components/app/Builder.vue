@@ -63,11 +63,20 @@
             :all-nodes="(page.data?.builder?.nodes as any) || []"
             @update-node="onUpdateNode as any"
             @delete-node="onDeleteNode as any"
+            @rename-component="onRenameComponent as any"
           />
         </div>
       </SheetContent>
     </Sheet>
   </div>
+
+  <DeleteConfirmationDialog
+    :open="deleteConfirmation !== null"
+    :component-name="deleteConfirmation?.componentName || ''"
+    :dependencies="deleteConfirmation?.dependencies || []"
+    @cancel="deleteConfirmation = null"
+    @confirm="confirmDelete"
+  />
 
   <AppDialogPipelineComponent
     :open="openUploadComponentDialog"
@@ -87,7 +96,8 @@ import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
-import type { Node, Edge } from '~/types/builder.types';
+import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
+import type { Node, Edge, ComponentInput } from '~/types/builder.types';
 
 const props = withDefaults(
   defineProps<{
@@ -121,6 +131,13 @@ const externalBuilderUrl = ref(
 );
 
 const selectedNode = ref<VueFlowNode | null>(null);
+
+// Delete confirmation state
+const deleteConfirmation = ref<{
+  nodeId: string;
+  componentName: string;
+  dependencies: string[];
+} | null>(null);
 
 // Menu actions configuration
 interface MenuAction {

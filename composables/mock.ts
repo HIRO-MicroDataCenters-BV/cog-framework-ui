@@ -1,3 +1,8 @@
+import {
+  apiErrorResponseSchema,
+  apiResponseSchema,
+} from '~/schemas/response.schema';
+
 export const useMock = () => {
   const { t } = useI18n();
   const config = useRuntimeConfig();
@@ -275,6 +280,191 @@ export const useMock = () => {
         },
       ],
 
+      trainingComponents: [
+        {
+          id: '55455462-0957-4d57-9847-9cc36dd07068',
+          name: 'FedSCVI server',
+          input_path: [
+            {
+              name: 'number_of_iterations',
+              type: 'Integer',
+              description: 'Number of federated learning rounds',
+            },
+            {
+              name: 'server_address',
+              type: 'String',
+              description: 'Server address (e.g., "0.0.0.0:8080")',
+            },
+            {
+              name: 'experiment_name',
+              type: 'String',
+              description: 'Cogflow experiment name',
+              default: 'FedSCVI',
+              optional: true,
+            },
+            {
+              name: 'n_layers',
+              type: 'Integer',
+              description: 'Number of layers in scVI model',
+              default: '2',
+              optional: true,
+            },
+            {
+              name: 'dropout_rate',
+              type: 'Float',
+              description: 'Dropout rate for scVI model',
+              default: '0.2',
+              optional: true,
+            },
+            {
+              name: 'min_clients',
+              type: 'Integer',
+              description: 'Minimum number of clients to wait for',
+              default: '2',
+              optional: true,
+            },
+            {
+              name: 'fraction_fit',
+              type: 'Float',
+              description:
+                'Fraction of clients to use for training (default: 1.0 = all)',
+              default: '1.0',
+              optional: true,
+            },
+            {
+              name: 'fraction_evaluate',
+              type: 'Float',
+              description:
+                'Fraction of clients to use for evaluation (default: 1.0 = all)',
+              default: '1.0',
+              optional: true,
+            },
+          ],
+          output_path: [
+            {
+              name: 'Output',
+              type: 'JsonObject',
+            },
+          ],
+          component_file: 's3://components/FedSCVI_server.yaml',
+          category: 'federated server',
+          creator: 'admin@hiro.com',
+        },
+        {
+          id: '933cd6ed-40ff-4f38-860e-37a532b9a67c',
+          name: 'cogflow_refactor',
+          input_path: [
+            {
+              name: 'number_of_iterations',
+              type: 'Integer',
+              description: 'Number of federated learning rounds',
+            },
+            {
+              name: 'server_address',
+              type: 'String',
+              description: 'Server address (e.g., "0.0.0.0:8080")',
+            },
+            {
+              name: 'experiment_name',
+              type: 'String',
+              description: 'Cogflow experiment name',
+              default: 'FedSCVI',
+              optional: true,
+            },
+            {
+              name: 'n_layers',
+              type: 'Integer',
+              description: 'Number of layers in scVI model',
+              default: '2',
+              optional: true,
+            },
+            {
+              name: 'dropout_rate',
+              type: 'Float',
+              description: 'Dropout rate for scVI model',
+              default: '0.2',
+              optional: true,
+            },
+            {
+              name: 'min_clients',
+              type: 'Integer',
+              description: 'Minimum number of clients to wait for',
+              default: '2',
+              optional: true,
+            },
+            {
+              name: 'fraction_fit',
+              type: 'Float',
+              description:
+                'Fraction of clients to use for training (default: 1.0 = all)',
+              default: '1.0',
+              optional: true,
+            },
+            {
+              name: 'fraction_evaluate',
+              type: 'Float',
+              description:
+                'Fraction of clients to use for evaluation (default: 1.0 = all)',
+              default: '1.0',
+              optional: true,
+            },
+          ],
+          output_path: [
+            {
+              name: 'Output',
+              type: 'JsonObject',
+            },
+          ],
+          component_file: 's3://components/cogflow_refactor.yaml',
+          category: 'cogflow-refactor',
+          creator: 'admin@hiro.com',
+        },
+        {
+          id: '8fd340c3-960d-4be5-81be-8f4ca40698a1',
+          name: 'FedSCVI client',
+          input_path: [
+            {
+              name: 'local_data_connector',
+              type: 'String',
+            },
+            {
+              name: 'server_address',
+              type: 'String',
+              description: 'Server address (e.g., "localhost:8080")',
+            },
+            {
+              name: 'num_local_epochs',
+              type: 'Integer',
+              description: 'Number of local training epochs per round',
+            },
+            {
+              name: 'validation_split',
+              type: 'Float',
+              description: 'Fraction of data to use for validation',
+            },
+            {
+              name: 'n_layers',
+              type: 'Integer',
+              description: 'Number of layers in scVI model',
+            },
+            {
+              name: 'dropout_rate',
+              type: 'Float',
+              description: 'Dropout rate for scVI model',
+            },
+          ],
+          output_path: [
+            {
+              name: 'Output',
+              type: 'JsonObject',
+            },
+          ],
+          component_file: 's3://components/FedSCVI_client.yaml',
+          category: 'federated client',
+          creator: 'admin@hiro.com',
+        },
+      ],
+
       user: {
         id: 1,
         email: 'john.doe@company.com',
@@ -329,10 +519,76 @@ export const useMock = () => {
 
 export const useApiWithMock = () => {
   const mock = useMock();
-  const realApi = useApi();
+
+  // Prevent infinite recursion by directly accessing real API
+  const config = useRuntimeConfig();
+  const baseUrl = config.public.apiBase;
+  const accessTokenKey = 'access_token';
+  const token = useLocalStorage(accessTokenKey, null);
+
+  const getHeaders = (isFormData: boolean = false) => {
+    const headers: { 'Content-Type'?: string; Authorization?: string } = {};
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (token.value) {
+      headers['Authorization'] = `Bearer ${token.value}`;
+    }
+    return headers;
+  };
+
+  const request = async (
+    url: string,
+    method: string = 'GET',
+    body?: unknown,
+    options?: { showToast?: boolean },
+  ) => {
+    const isFormData = body instanceof FormData;
+    const showToast = options?.showToast;
+    const toaster = useToaster();
+
+    const opts: RequestInit = {
+      method,
+      headers: getHeaders(isFormData),
+      ...(method !== 'DELETE' &&
+        method !== 'GET' && { body: isFormData ? body : JSON.stringify(body) }),
+    };
+
+    try {
+      console.log('request', `${baseUrl}${url}`, opts);
+      const res = await fetch(`${baseUrl}${url}`, opts);
+      const data = await res.json();
+      if (!res.ok) {
+        switch (res.status) {
+          case 401:
+            useLocalStorage(accessTokenKey, null);
+            token.value = null;
+            if (showToast) toaster.show('error', 'unauthorized');
+            return null;
+        }
+      } else {
+        const successMessage = data.message || 'operation_completed';
+        if (showToast) toaster.show('success', successMessage);
+      }
+
+      const result =
+        res.status >= 400 && res.status < 600
+          ? apiErrorResponseSchema.parse(data)
+          : apiResponseSchema.parse(data);
+      return result;
+    } catch (err) {
+      if (method === 'DELETE') {
+        return;
+      } else {
+        console.error('Fetch error:', err);
+        if (showToast) toaster.show('error', 'connection_error');
+        throw err;
+      }
+    }
+  };
 
   return {
-    getDatasetsForTable: (params = {}) => {
+    getDatasets: (params = {}) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           status_code: 200,
@@ -345,31 +601,13 @@ export const useApiWithMock = () => {
           },
         });
       }
-      return realApi.getDatasets(params);
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/datasets?${q}`);
     },
 
-    fetchDatasets: (params = {}) => {
-      if (mock.value.enabled) {
-        if (params.dataset_id) {
-          const dataset = mock.value.datasets.find(
-            (d) => d.id === params.dataset_id,
-          );
-          return Promise.resolve({
-            status_code: 200,
-            message: 'Mock dataset data',
-            data: dataset ? [dataset] : [],
-          });
-        }
-        return Promise.resolve({
-          status_code: 200,
-          message: 'Mock datasets data',
-          data: mock.value.datasets,
-        });
-      }
-      return realApi.getDatasets(params);
-    },
-
-    getModelsForTable: (params = {}) => {
+    getModels: (params = {}) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           status_code: 200,
@@ -382,10 +620,13 @@ export const useApiWithMock = () => {
           },
         });
       }
-      return realApi.getModels(params);
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/models?${q}`);
     },
 
-    getModelDetails: (params = {}) => {
+    getModelDetails: (params: { id?: number; name?: string } = {}) => {
       if (mock.value.enabled) {
         const model = mock.value.models.find((m) => m.id === params.id);
         return Promise.resolve({
@@ -394,10 +635,16 @@ export const useApiWithMock = () => {
           data: model ? [model] : [],
         });
       }
-      return realApi.getModelDetails(params);
+      if (params.id) {
+        return request(`/models/${params.id}/associations`);
+      }
+      if (params.name) {
+        return request(`/models/associations?name=${params.name}`);
+      }
+      return null;
     },
 
-    getAllPipelineRuns: () => {
+    getPipelineRunsList: () => {
       if (mock.value.enabled) {
         return Promise.resolve({
           status_code: 200,
@@ -405,47 +652,58 @@ export const useApiWithMock = () => {
           data: mock.value.pipelineRuns,
         });
       }
-      return realApi.getPipelineRunsList();
+      return request(`/pipelines/runs`);
     },
 
-    deleteDatasetFile: (id) => {
+    deleteDatasetFile: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
           message: 'Dataset file deleted successfully',
         });
       }
-      return realApi.deleteDatasetFile(id);
+      return request(`/datasets/file/${id}`, 'DELETE');
     },
 
-    deleteDatasetBroker: (id) => {
+    deleteDatasetBroker: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
           message: 'Dataset broker deleted successfully',
         });
       }
-      return realApi.deleteDatasetBroker(id);
+      return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
-    deleteDatasetTopic: (id) => {
+    deleteDatasetTopic: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
           message: 'Dataset topic deleted successfully',
         });
       }
-      return realApi.deleteDatasetTopic(id);
+      return request(`/datasets/topic/${id}`, 'DELETE');
     },
 
-    deleteDatasetMessage: (id) => {
+    deleteDatasetMessage: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
           message: 'Dataset message deleted successfully',
         });
       }
-      return realApi.deleteDatasetMessage(id);
+      return request(`/datasets/message/${id}`, 'DELETE');
+    },
+
+    getTrainingBuilderComponents: () => {
+      if (mock.value.enabled) {
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock training builder components data',
+          data: mock.value.trainingComponents,
+        });
+      }
+      return request(`/training-builder-components`);
     },
   };
 };

@@ -30,8 +30,29 @@
         <Icon name="lucide:x" class="size-4" />
         <span class="sr-only">Close</span>
       </DialogClose>
-      <div class="p-4">
-        <PathSection :title="$t('label.input_path')" :paths="inputPaths" />
+      <div class="p-4 overflow-y-auto h-[calc(100vh-85px)]">
+        <!-- Editable Input Parameters -->
+        <div class="mb-4">
+          <h3 class="mb-2">{{ $t('label.input_path') }}</h3>
+          <div class="space-y-2">
+            <InputParameterEditor
+              v-for="(inputDef, index) in inputDefinitions"
+              :key="`input-${index}`"
+              :input-definition="inputDef"
+              :input="getInputForDefinition(inputDef)"
+              :available-components="availableUpstreamComponents"
+              :pipeline-params="pipelineParameters"
+              @update="(updatedInput) => onInputUpdate(inputDef, updatedInput)"
+            />
+            <div
+              v-if="inputDefinitions.length === 0"
+              class="text-sm text-gray-500"
+            >
+              No input parameters defined
+            </div>
+          </div>
+        </div>
+
         <PathSection :title="$t('label.output_path')" :paths="outputPaths" />
         <div class="mb-4">
           <h3 class="mb-2">
@@ -66,24 +87,17 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, nextTick } from 'vue';
 import PathSection from './PathSection.vue';
+import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
+import type {
+  ComponentInput,
+  ComponentPath,
+  PipelineInputParam,
+  Node,
+} from '~/types/builder.types';
+import { validateComponentInput } from '~/utils/builder-validation';
 
 const { t } = useI18n();
-
-interface Node {
-  id: string;
-  type: string;
-  data?: {
-    label?: string;
-    component?: {
-      input_path?: Array<{ name: string; type: string }>;
-      output_path?: Array<{ name: string; type: string }>;
-      category?: string;
-      component_file?: string;
-    };
-    [key: string]: unknown;
-  };
-}
 
 interface Props {
   selectedNode?: Node | null;
@@ -101,7 +115,8 @@ const readonly = computed(() => props.readonly);
 
 const emit = defineEmits<{
   updateNode: [nodeId: string, updates: Partial<Node>];
-  deleteNode: [nodeId: string];
+  deleteNode: [nodeId: string, componentName: string];
+  renameComponent: [nodeId: string, oldName: string, newName: string];
 }>();
 const formData = reactive({
   nodeName: '',
@@ -112,6 +127,7 @@ const formData = reactive({
 });
 
 const selectedNodeLabel = ref('');
+const previousNodeName = ref('');
 
 const nodeName = computed({
   get: () => formData.nodeName,
@@ -154,6 +170,103 @@ const renderPathList = (paths: Array<{ name: string; type: string }>) => {
   );
 };
 
+// Input definitions from component's input_path
+const inputDefinitions = computed(() => {
+  return props.selectedNode?.data?.component?.input_path || [];
+});
+
+// Get current inputs array from component
+const currentInputs = computed(() => {
+  return props.selectedNode?.data?.component?.inputs || [];
+});
+
+// Get input for a specific definition
+function getInputForDefinition(
+  inputDef: ComponentPath,
+): ComponentInput | undefined {
+  return currentInputs.value.find(
+    (input) => input.destination === inputDef.name,
+  );
+}
+
+// Available upstream components (all nodes except current)
+const availableUpstreamComponents = computed(() => {
+  if (!props.allNodes || !props.selectedNode) return [];
+  return props.allNodes.filter((node) => node.id !== props.selectedNode?.id);
+});
+
+// Check if any input has validation errors
+const hasValidationErrors = computed(() => {
+  if (!props.selectedNode || inputDefinitions.value.length === 0) return false;
+
+  return inputDefinitions.value.some((inputDef) => {
+    const input = getInputForDefinition(inputDef);
+    // Skip if no input configured (may be optional)
+    if (!input) return false;
+
+    const error = validateComponentInput(
+      input,
+      inputDef,
+      availableUpstreamComponents.value,
+      pipelineParameters.value,
+    );
+    return error !== null;
+  });
+});
+
+// Pipeline parameters (empty for now, will be implemented later)
+const pipelineParameters = computed((): PipelineInputParam[] => {
+  // TODO: Get from builder state when pipeline parameters UI is implemented
+  return [];
+});
+
+// Handle input update
+function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
+  if (!props.selectedNode) return;
+
+  // Get current inputs or initialize empty array
+  const inputs = [...currentInputs.value];
+
+  // Find existing input index
+  const existingIndex = inputs.findIndex(
+    (input) => input.destination === inputDef.name,
+  );
+
+  if (existingIndex >= 0) {
+    // Update existing input
+    inputs[existingIndex] = updatedInput;
+  } else {
+    // Add new input
+    inputs.push(updatedInput);
+  }
+
+  // Update node status based on validation
+  const hasErrors = inputDefinitions.value.some((def) => {
+    const inp = inputs.find((i) => i.destination === def.name);
+    if (!inp) return false;
+    return (
+      validateComponentInput(
+        inp,
+        def,
+        availableUpstreamComponents.value,
+        pipelineParameters.value,
+      ) !== null
+    );
+  });
+
+  // Emit update to parent
+  emit('updateNode', props.selectedNode.id, {
+    data: {
+      ...props.selectedNode.data,
+      status: hasErrors ? 'invalid' : undefined,
+      component: {
+        ...props.selectedNode.data?.component,
+        inputs,
+      },
+    },
+  });
+}
+
 const inputPaths = computed(() =>
   renderPathList(props.selectedNode?.data?.component?.input_path || []),
 );
@@ -176,7 +289,7 @@ const componentNameError = computed(() => {
     return t('validation.component.name_required');
   }
 
-  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+  if (!/^[a-zA-Z0-9_\s-]+$/.test(name)) {
     return t('validation.component.name_format');
   }
 
@@ -198,6 +311,7 @@ watch(
       const label = (newNode.data?.label as string) || '';
       nextTick(() => {
         formData.nodeName = label;
+        previousNodeName.value = label; // Track initial name
       });
 
       formData.nodeDescription = (newNode.data?.description as string) || '';
@@ -209,6 +323,44 @@ watch(
         (newNode.data?.transformExpression as string) || '';
       selectedNodeLabel.value = label;
     }
+  },
+  { immediate: true },
+);
+
+// Watch for component rename to update all references
+watch(
+  () => formData.nodeName,
+  (newName) => {
+    if (!props.selectedNode || !previousNodeName.value) return;
+
+    const oldName = previousNodeName.value;
+
+    // Only emit rename if name actually changed and is valid
+    if (
+      oldName !== newName &&
+      newName &&
+      oldName &&
+      isComponentNameValid.value
+    ) {
+      emit('renameComponent', props.selectedNode.id, oldName, newName);
+      previousNodeName.value = newName; // Update tracked name
+    }
+  },
+);
+
+// Watch for validation errors and update node status
+watch(
+  hasValidationErrors,
+  (hasErrors) => {
+    if (!props.selectedNode) return;
+
+    // Update node status based on validation
+    emit('updateNode', props.selectedNode.id, {
+      data: {
+        ...props.selectedNode.data,
+        status: hasErrors ? 'invalid' : undefined,
+      },
+    });
   },
   { immediate: true },
 );
@@ -231,7 +383,8 @@ function updateNode() {
 
 function deleteNode() {
   if (props.selectedNode) {
-    emit('deleteNode', props.selectedNode.id);
+    const componentName = (props.selectedNode.data?.label as string) || '';
+    emit('deleteNode', props.selectedNode.id, componentName);
   }
 }
 watch(
