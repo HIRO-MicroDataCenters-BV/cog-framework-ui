@@ -123,6 +123,8 @@ export default defineI18nConfig(() => ({
         component_input: 'Component Input',
         constant_value: 'Constant Value',
         pipeline_parameter: 'Pipeline Parameter',
+        pipeline_inputparam: 'Pipeline Input Parameter',
+
         id: 'ID',
         broker_ip: 'Broker IP',
         train_and_inference: 'Train and Inference',
