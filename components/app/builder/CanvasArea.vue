@@ -122,7 +122,7 @@ const emit = defineEmits<{
   edgeUpdate: [edge: VueFlowEdge];
   update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
   error: [errorKey: string, data?: Record<string, unknown>];
-  requestDelete: [elements: any[]];
+  requestDelete: [elements: (VueFlowNode | VueFlowEdge)[]];
 }>();
 
 const { getSelectedElements } = useVueFlow();

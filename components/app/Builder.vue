@@ -302,12 +302,16 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
   }
 };
 
-const onRequestDelete = (elements: any[]) => {
+const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   if (readonly.value) return;
 
   // Handle nodes
-  const nodesToDelete = elements.filter((el) => !el.source); // Nodes don't have source
-  const edgesToDelete = elements.filter((el) => el.source); // Edges have source
+  const nodesToDelete = elements.filter(
+    (el) => !('source' in el),
+  ) as VueFlowNode[]; // Nodes don't have source
+  const edgesToDelete = elements.filter(
+    (el) => 'source' in el,
+  ) as VueFlowEdge[]; // Edges have source
 
   // If selecting multiple nodes or single node, trigger confirmation for the first/primary one
   // TODO: Handle multiple node deletion better
@@ -316,7 +320,7 @@ const onRequestDelete = (elements: any[]) => {
     const dependencies = getDependencies(nodeToDelete.id);
     deleteConfirmation.value = {
       nodeId: nodeToDelete.id,
-      componentName: nodeToDelete.data?.label || 'Component',
+      componentName: (nodeToDelete.data?.label as string) || 'Component',
       dependencies,
     };
     return;
@@ -335,14 +339,14 @@ const onRequestDelete = (elements: any[]) => {
     // For now, let's just delete edges immediately to be safe, or just node logic.
     // Actually, let's just implement node deletion via key for now as that's the main safety concern.
     // If edges are deleted, they are usually trivial to restore.
-    
+
     // Deleting edges logic:
     const currentBuilder = page.value.data?.builder;
     if (currentBuilder) {
       const newEdges = (currentBuilder.edges || []).filter(
-        (e: Edge) => !edgesToDelete.find((del: any) => del.id === e.id)
+        (e: Edge) => !edgesToDelete.find((del: VueFlowEdge) => del.id === e.id),
       );
-      
+
       setPage({
         ...page.value,
         data: {
@@ -354,7 +358,7 @@ const onRequestDelete = (elements: any[]) => {
         },
       });
       // Update canvas
-       onUpdate(
+      onUpdate(
         (currentBuilder.nodes || []) as VueFlowNode[],
         newEdges as VueFlowEdge[],
       );
@@ -365,13 +369,13 @@ const onRequestDelete = (elements: any[]) => {
 const getDependencies = (nodeId: string): string[] => {
   const edges = (page.value.data?.builder?.edges as Edge[]) || [];
   const nodes = (page.value.data?.builder?.nodes as Node[]) || [];
-  
+
   // Find edges where this node is the source
   const outgoingEdges = edges.filter((e) => e.source === nodeId);
-  
+
   // Find target nodes
   const targetNodeIds = outgoingEdges.map((e) => e.target);
-  
+
   return nodes
     .filter((n) => targetNodeIds.includes(n.id))
     .map((n) => (n.data?.label as string) || n.id);
@@ -389,7 +393,7 @@ const performDeleteNode = (nodeId: string) => {
   if (currentBuilder?.nodes) {
     // Remove related edges first
     const newEdges = (currentBuilder.edges || []).filter(
-      (e: Edge) => e.source !== nodeId && e.target !== nodeId
+      (e: Edge) => e.source !== nodeId && e.target !== nodeId,
     );
 
     const newNodes = currentBuilder.nodes.filter(
@@ -411,7 +415,7 @@ const performDeleteNode = (nodeId: string) => {
         },
       },
     });
-    
+
     // Update canvas
     onUpdate(newNodes as VueFlowNode[], newEdges as VueFlowEdge[]);
   }
@@ -421,7 +425,7 @@ const performDeleteNode = (nodeId: string) => {
 const onDeleteNode = (nodeId: string) => {
   if (readonly.value) return;
   const nodes = (page.value.data?.builder?.nodes as Node[]) || [];
-  const node = nodes.find(n => n.id === nodeId);
+  const node = nodes.find((n) => n.id === nodeId);
   if (node) {
     const dependencies = getDependencies(nodeId);
     deleteConfirmation.value = {
@@ -438,14 +442,22 @@ const onRenameComponent = (
   newName: string,
 ) => {
   if (readonly.value) return;
-  
-  onUpdateNode(nodeId, {
-    data: {
-      label: newName,
-      component: {
-        name: newName,
-      } as any, // Partial update
-    } as any,
-  });
+
+  const currentNodes = page.value.data?.builder?.nodes as Node[] | undefined;
+  const node = currentNodes?.find((n) => n.id === nodeId);
+
+  if (node && node.data.component) {
+    const updatedComponent = {
+      ...node.data.component,
+      name: newName,
+    };
+
+    onUpdateNode(nodeId, {
+      data: {
+        label: newName,
+        component: updatedComponent,
+      },
+    });
+  }
 };
 </script>
