@@ -297,9 +297,13 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
   }
 };
 
-const onRenameComponent = (nodeId: string, oldName: string, newName: string) => {
+const onRenameComponent = (
+  nodeId: string,
+  oldName: string,
+  newName: string,
+) => {
   console.log('Rename component:', oldName, '->', newName);
-  
+
   const currentBuilder = page.value.data?.builder;
   if (!currentBuilder?.nodes) return;
 
@@ -307,11 +311,15 @@ const onRenameComponent = (nodeId: string, oldName: string, newName: string) => 
   currentBuilder.nodes.forEach((node: Node) => {
     const inputs = node.data?.component?.inputs || [];
     inputs.forEach((input: ComponentInput) => {
-      if (input.value_source_type === 'component_output' && 
-          input.source.startsWith(oldName + '.')) {
+      if (
+        input.value_source_type === 'component_output' &&
+        input.source.startsWith(oldName + '.')
+      ) {
         const [, outputName] = input.source.split('.', 2);
         input.source = `${newName}.${outputName}`;
-        console.log(`Updated reference in ${node.data?.label}: ${oldName}.${outputName} -> ${newName}.${outputName}`);
+        console.log(
+          `Updated reference in ${node.data?.label}: ${oldName}.${outputName} -> ${newName}.${outputName}`,
+        );
       }
     });
   });
@@ -338,8 +346,10 @@ const onDeleteNode = (nodeId: string, componentName: string) => {
     if (node.id === nodeId) return;
     const inputs = node.data?.component?.inputs || [];
     inputs.forEach((input: ComponentInput) => {
-      if (input.value_source_type === 'component_output' && 
-          input.source.startsWith(componentName + '.')) {
+      if (
+        input.value_source_type === 'component_output' &&
+        input.source.startsWith(componentName + '.')
+      ) {
         const depName = node.data?.label || node.id;
         if (!dependencies.includes(depName)) {
           dependencies.push(depName);

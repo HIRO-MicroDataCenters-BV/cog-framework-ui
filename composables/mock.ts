@@ -601,7 +601,9 @@ export const useApiWithMock = () => {
           },
         });
       }
-      const q = new URLSearchParams(params as Record<string, string>).toString();
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       return request(`/datasets?${q}`);
     },
 
@@ -618,7 +620,9 @@ export const useApiWithMock = () => {
           },
         });
       }
-      const q = new URLSearchParams(params as Record<string, string>).toString();
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       return request(`/models?${q}`);
     },
 
@@ -651,7 +655,7 @@ export const useApiWithMock = () => {
       return request(`/pipelines/runs`);
     },
 
-    deleteDatasetFile: (id: any) => {
+    deleteDatasetFile: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
@@ -661,7 +665,7 @@ export const useApiWithMock = () => {
       return request(`/datasets/file/${id}`, 'DELETE');
     },
 
-    deleteDatasetBroker: (id: any) => {
+    deleteDatasetBroker: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
@@ -671,7 +675,7 @@ export const useApiWithMock = () => {
       return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
-    deleteDatasetTopic: (id: any) => {
+    deleteDatasetTopic: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,
@@ -681,7 +685,7 @@ export const useApiWithMock = () => {
       return request(`/datasets/topic/${id}`, 'DELETE');
     },
 
-    deleteDatasetMessage: (id: any) => {
+    deleteDatasetMessage: (id: number | string) => {
       if (mock.value.enabled) {
         return Promise.resolve({
           success: true,

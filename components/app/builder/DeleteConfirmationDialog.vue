@@ -36,13 +36,25 @@ const onConfirm = () => {
   <AlertDialog :open="open">
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>{{ $t('builder.delete_component_title') }}</AlertDialogTitle>
+        <AlertDialogTitle>{{
+          $t('builder.delete_component_title')
+        }}</AlertDialogTitle>
         <AlertDialogDescription>
           <p class="mb-2">
-            {{ $t('builder.delete_component_warning', { name: componentName, count: dependencies.length }) }}
+            {{
+              $t('builder.delete_component_warning', {
+                name: componentName,
+                count: dependencies.length,
+              })
+            }}
           </p>
-          <ul v-if="dependencies.length > 0" class="list-disc pl-5 mt-2 space-y-1">
-            <li v-for="dep in dependencies" :key="dep" class="text-sm">{{ dep }}</li>
+          <ul
+            v-if="dependencies.length > 0"
+            class="list-disc pl-5 mt-2 space-y-1"
+          >
+            <li v-for="dep in dependencies" :key="dep" class="text-sm">
+              {{ dep }}
+            </li>
           </ul>
           <p class="mt-3 font-medium text-destructive">
             {{ $t('builder.delete_component_consequence') }}
@@ -54,8 +66,8 @@ const onConfirm = () => {
           {{ $t('action.cancel') }}
         </AlertDialogCancel>
         <AlertDialogAction
-          @click="onConfirm"
           class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          @click="onConfirm"
         >
           {{ $t('action.delete_anyway') }}
         </AlertDialogAction>

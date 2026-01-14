@@ -139,10 +139,10 @@ const runPipeline = () => {
 
   const builder = page.value.data?.builder;
   if (!builder) return;
-  
+
   const nodes = (builder.nodes || []) as Node[];
   const toaster = useToaster();
-  
+
   // Check for cycles
   if (detectCycle(nodes)) {
     toaster.show('error', 'message.error.cycle_detected', {
@@ -150,12 +150,12 @@ const runPipeline = () => {
     });
     return;
   }
-  
+
   // Check for validation errors
   const validationErrors = validateAllComponents(nodes, []);
   if (validationErrors.length > 0) {
     const errorMessage = validationErrors
-      .map(e => `${e.componentName}: ${e.error}`)
+      .map((e) => `${e.componentName}: ${e.error}`)
       .join(', ');
     toaster.show('error', 'message.error.validation_errors', {
       duration: 5000,
@@ -163,7 +163,7 @@ const runPipeline = () => {
     console.error('Validation errors:', validationErrors);
     return;
   }
-  
+
   console.log('builder', builder);
   const data = {
     name: builder.name,
@@ -226,17 +226,20 @@ const runPipeline = () => {
   console.log('data', data);
 
   console.log('postTrainingBuilderPipelineComponent');
-  api.postTrainingBuilderPipelineComponent(data).then((res: unknown) => {
-    console.log('res', res);
-    toaster.show('success', 'message.success.pipeline_saved', {
-      duration: 3000,
+  api
+    .postTrainingBuilderPipelineComponent(data)
+    .then((res: unknown) => {
+      console.log('res', res);
+      toaster.show('success', 'message.success.pipeline_saved', {
+        duration: 3000,
+      });
+    })
+    .catch((error: unknown) => {
+      console.error('Pipeline save error:', error);
+      toaster.show('error', 'message.error.pipeline_save_failed', {
+        duration: 5000,
+      });
     });
-  }).catch((error: unknown) => {
-    console.error('Pipeline save error:', error);
-    toaster.show('error', 'message.error.pipeline_save_failed', {
-      duration: 5000,
-    });
-  });
 };
 </script>
 

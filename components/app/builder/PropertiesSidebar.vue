@@ -41,7 +41,10 @@
               :pipeline-params="pipelineParameters"
               @update="(updatedInput) => onInputUpdate(inputDef, updatedInput)"
             />
-            <div v-if="inputDefinitions.length === 0" class="text-sm text-gray-500">
+            <div
+              v-if="inputDefinitions.length === 0"
+              class="text-sm text-gray-500"
+            >
               No input parameters defined
             </div>
           </div>
@@ -89,12 +92,11 @@ import type {
   ComponentInput,
   ComponentPath,
   PipelineInputParam,
+  Node,
 } from '~/types/builder.types';
 import { validateComponentInput } from '~/utils/builder-validation';
 
 const { t } = useI18n();
-
-import type { Node } from '~/types/builder.types';
 
 interface Props {
   selectedNode: Node | null;
@@ -171,7 +173,9 @@ const currentInputs = computed(() => {
 });
 
 // Get input for a specific definition
-function getInputForDefinition(inputDef: ComponentPath): ComponentInput | undefined {
+function getInputForDefinition(
+  inputDef: ComponentPath,
+): ComponentInput | undefined {
   return currentInputs.value.find(
     (input) => input.destination === inputDef.name,
   );
@@ -186,12 +190,12 @@ const availableUpstreamComponents = computed(() => {
 // Check if any input has validation errors
 const hasValidationErrors = computed(() => {
   if (!props.selectedNode || inputDefinitions.value.length === 0) return false;
-  
+
   return inputDefinitions.value.some((inputDef) => {
     const input = getInputForDefinition(inputDef);
     // Skip if no input configured (may be optional)
     if (!input) return false;
-    
+
     const error = validateComponentInput(
       input,
       inputDef,
@@ -232,12 +236,14 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
   const hasErrors = inputDefinitions.value.some((def) => {
     const inp = inputs.find((i) => i.destination === def.name);
     if (!inp) return false;
-    return validateComponentInput(
-      inp,
-      def,
-      availableUpstreamComponents.value,
-      pipelineParameters.value,
-    ) !== null;
+    return (
+      validateComponentInput(
+        inp,
+        def,
+        availableUpstreamComponents.value,
+        pipelineParameters.value,
+      ) !== null
+    );
   });
 
   // Emit update to parent
@@ -318,11 +324,16 @@ watch(
   () => formData.nodeName,
   (newName) => {
     if (!props.selectedNode || !previousNodeName.value) return;
-    
+
     const oldName = previousNodeName.value;
-    
+
     // Only emit rename if name actually changed and is valid
-    if (oldName !== newName && newName && oldName && isComponentNameValid.value) {
+    if (
+      oldName !== newName &&
+      newName &&
+      oldName &&
+      isComponentNameValid.value
+    ) {
       emit('renameComponent', props.selectedNode.id, oldName, newName);
       previousNodeName.value = newName; // Update tracked name
     }
@@ -334,7 +345,7 @@ watch(
   hasValidationErrors,
   (hasErrors) => {
     if (!props.selectedNode) return;
-    
+
     // Update node status based on validation
     emit('updateNode', props.selectedNode.id, {
       data: {
@@ -364,7 +375,7 @@ function updateNode() {
 
 function deleteNode() {
   if (props.selectedNode) {
-    const componentName = props.selectedNode.data?.label as string || '';
+    const componentName = (props.selectedNode.data?.label as string) || '';
     emit('deleteNode', props.selectedNode.id, componentName);
   }
 }

@@ -12,7 +12,10 @@
     <div class="grid grid-cols-[40%_60%] gap-3">
       <!-- Value Source Type Selector -->
       <div>
-        <Select v-model="localInput.value_source_type" @update:model-value="onSourceTypeChange">
+        <Select
+          v-model="localInput.value_source_type"
+          @update:model-value="onSourceTypeChange"
+        >
           <SelectTrigger class="h-9">
             <SelectValue :placeholder="$t('placeholder.select_source_type')" />
           </SelectTrigger>
@@ -34,9 +37,14 @@
       <div>
         <!-- Component Output Selector -->
         <div v-if="localInput.value_source_type === 'component_output'">
-          <Select v-model="selectedComponentOutput" @update:model-value="onComponentOutputChange">
+          <Select
+            v-model="selectedComponentOutput"
+            @update:model-value="onComponentOutputChange"
+          >
             <SelectTrigger class="h-9">
-              <SelectValue :placeholder="$t('placeholder.select_component_output')" />
+              <SelectValue
+                :placeholder="$t('placeholder.select_component_output')"
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -85,7 +93,10 @@
     </div>
 
     <!-- Validation Error -->
-    <div v-if="validationError" class="text-xs text-red-500 flex items-center gap-1">
+    <div
+      v-if="validationError"
+      class="text-xs text-red-500 flex items-center gap-1"
+    >
       <Icon name="lucide:alert-circle" class="w-3 h-3" />
       {{ $t(validationError) }}
     </div>

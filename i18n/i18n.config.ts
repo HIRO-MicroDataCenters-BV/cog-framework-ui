@@ -32,8 +32,10 @@ export default defineI18nConfig(() => ({
           no_file_selected: 'Please select a file',
           invalid_file_type: 'Please select a valid YAML file',
           no_category: 'Please enter a category',
-          cycle_detected: 'The pipeline contains a cycle. Pipelines must be directed acyclic graphs (DAG).',
-          validation_errors: 'Some components have validation errors. Please fix them before saving.',
+          cycle_detected:
+            'The pipeline contains a cycle. Pipelines must be directed acyclic graphs (DAG).',
+          validation_errors:
+            'Some components have validation errors. Please fix them before saving.',
           pipeline_save_failed: 'Failed to save pipeline',
         },
         info: {
@@ -84,7 +86,8 @@ export default defineI18nConfig(() => ({
         empty_selection: 'Select a component to view its properties',
         category: 'Category',
         delete_component_title: 'Delete Component?',
-        delete_component_warning: 'Component "{name}" is used by {count} other component(s):',
+        delete_component_warning:
+          'Component "{name}" is used by {count} other component(s):',
         delete_component_consequence: 'Deleting will break these connections.',
         categories: {
           inputs: 'Inputs',
@@ -430,7 +433,8 @@ export default defineI18nConfig(() => ({
         input: {
           destination_required: 'Input destination is required',
           destination_no_dot: 'Input destination cannot contain "."',
-          component_output_format: 'Component output must be in format "ComponentName.output"',
+          component_output_format:
+            'Component output must be in format "ComponentName.output"',
           component_not_found: 'Referenced component not found',
           param_required: 'Pipeline parameter is required',
           param_not_found: 'Pipeline parameter not found',
