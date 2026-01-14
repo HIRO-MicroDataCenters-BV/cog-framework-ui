@@ -96,7 +96,12 @@ export interface PipelineTemplate {
   dag?: {
     tasks: Array<{
       name: string;
+      template: string;
       dependencies?: string[];
+      arguments?: {
+        parameters?: Array<{ name: string; value: string }>;
+        artifacts?: Array<{ name: string; from: string }>;
+      };
     }>;
   };
 }

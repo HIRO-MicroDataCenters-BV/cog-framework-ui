@@ -6,6 +6,7 @@ import type {
   PipelineTemplate,
   TaskDetail,
   PipelineData,
+  ComponentInput,
 } from '~/types/builder.types';
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
@@ -143,6 +144,68 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   );
 
   const taskDetails = pipelineData.run_details?.task_details || [];
+
+  const resolveInputs = (
+    template: PipelineTemplate,
+
+    task?: {
+      arguments?: { parameters?: Array<{ name: string; value: string }> };
+    },
+  ): ComponentInput[] => {
+    const inputs: ComponentInput[] = [];
+    const argsMap = new Map<string, string>();
+
+    if (task?.arguments?.parameters) {
+      task.arguments.parameters.forEach((p) => argsMap.set(p.name, p.value));
+    }
+
+    // Iterate over template inputs
+    const paramInputs = template.inputs?.parameters || [];
+
+    paramInputs.forEach((param) => {
+      const providedValue = argsMap.get(param.name);
+
+      if (providedValue) {
+        // Check for Pipeline Input Param: {{ inputs.parameters.x }}
+        const pipelineParamMatch = providedValue.match(
+          /\{\{\s*inputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/,
+        );
+
+        if (pipelineParamMatch) {
+          inputs.push({
+            destination: param.name,
+            value_source_type: 'pipeline_inputparam',
+            source: pipelineParamMatch[1],
+          });
+          return;
+        }
+
+        // Check for Component Output: {{ tasks.taskName.outputs.parameters.y }}
+        const componentOutputMatch = providedValue.match(
+          /\{\{\s*tasks\.([a-zA-Z0-9_.-]+)\.outputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/,
+        );
+
+        if (componentOutputMatch) {
+          inputs.push({
+            destination: param.name,
+            value_source_type: 'component_output',
+            source: `${componentOutputMatch[1]}.${componentOutputMatch[2]}`,
+          });
+          return;
+        }
+
+        // Constant
+        inputs.push({
+          destination: param.name,
+          value_source_type: 'constant',
+          source: providedValue,
+        });
+      }
+    });
+
+    return inputs;
+  };
+
   const createNode = (template: PipelineTemplate, index: number): Node => {
     const taskDetail = taskDetails.find(
       (task) => task.display_name === template.name,
@@ -170,6 +233,11 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
           component_file: null,
           category: getComponentCategory(template),
           creator: null,
+          inputs: resolveInputs(
+            template,
+
+            topDag?.dag?.tasks?.find((t) => t.template === template.name),
+          ),
         },
       },
     };
