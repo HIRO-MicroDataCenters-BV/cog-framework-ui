@@ -87,7 +87,7 @@
           variant="destructive"
           size="sm"
           class="w-full mt-8"
-          :disabled="readonly"
+          v-if="!readonly"
           @click="onDelete"
         >
           <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
