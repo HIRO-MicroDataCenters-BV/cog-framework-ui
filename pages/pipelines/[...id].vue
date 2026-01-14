@@ -147,28 +147,30 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
   const resolveInputs = (
     template: PipelineTemplate,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    task?: { arguments?: { parameters?: Array<{ name: string; value: string }> } },
+
+    task?: {
+      arguments?: { parameters?: Array<{ name: string; value: string }> };
+    },
   ): ComponentInput[] => {
     const inputs: ComponentInput[] = [];
     const argsMap = new Map<string, string>();
-    
+
     if (task?.arguments?.parameters) {
       task.arguments.parameters.forEach((p) => argsMap.set(p.name, p.value));
     }
 
     // Iterate over template inputs
     const paramInputs = template.inputs?.parameters || [];
-    
+
     paramInputs.forEach((param) => {
       const providedValue = argsMap.get(param.name);
-      
+
       if (providedValue) {
         // Check for Pipeline Input Param: {{ inputs.parameters.x }}
         const pipelineParamMatch = providedValue.match(
-          /\{\{\s*inputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/
+          /\{\{\s*inputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/,
         );
-        
+
         if (pipelineParamMatch) {
           inputs.push({
             destination: param.name,
@@ -180,16 +182,16 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
         // Check for Component Output: {{ tasks.taskName.outputs.parameters.y }}
         const componentOutputMatch = providedValue.match(
-          /\{\{\s*tasks\.([a-zA-Z0-9_.-]+)\.outputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/
+          /\{\{\s*tasks\.([a-zA-Z0-9_.-]+)\.outputs\.parameters\.([a-zA-Z0-9_]+)\s*\}\}/,
         );
 
         if (componentOutputMatch) {
-           inputs.push({
-             destination: param.name,
-             value_source_type: 'component_output',
-             source: `${componentOutputMatch[1]}.${componentOutputMatch[2]}`,
-           });
-           return;
+          inputs.push({
+            destination: param.name,
+            value_source_type: 'component_output',
+            source: `${componentOutputMatch[1]}.${componentOutputMatch[2]}`,
+          });
+          return;
         }
 
         // Constant
@@ -233,8 +235,8 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
           creator: null,
           inputs: resolveInputs(
             template,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            topDag?.dag?.tasks?.find((t: any) => t.template === template.name) as any
+
+            topDag?.dag?.tasks?.find((t) => t.template === template.name),
           ),
         },
       },
