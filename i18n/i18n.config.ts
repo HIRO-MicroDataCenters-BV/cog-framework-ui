@@ -118,6 +118,7 @@ export default defineI18nConfig(() => ({
         },
       },
       label: {
+        constant: 'Constant',
         component_output: 'Component Output',
         component_input: 'Component Input',
         constant_value: 'Constant Value',

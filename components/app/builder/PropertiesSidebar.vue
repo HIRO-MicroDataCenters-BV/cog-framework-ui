@@ -20,7 +20,10 @@
             />
             <div v-else>{{ selectedNode.data?.label }}</div>
 
-            <div v-if="componentNameError" class="text-red-500 text-sm mt-1">
+            <div
+              v-if="componentNameError && !readonly"
+              class="text-red-500 text-sm mt-1"
+            >
               {{ componentNameError }}
             </div>
           </div>
