@@ -356,7 +356,7 @@ watch(
 watch(
   hasValidationErrors,
   (hasErrors) => {
-    if (!props.selectedNode) return;
+    if (!props.selectedNode || props.readonly) return;
 
     // Update node status based on validation
     emit('updateNode', props.selectedNode.id, {
