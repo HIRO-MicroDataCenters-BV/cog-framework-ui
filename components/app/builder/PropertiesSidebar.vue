@@ -83,6 +83,35 @@
             </div>
           </div>
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger as-child>
+            <Button
+              variant="destructive"
+              size="sm"
+              class="w-full mt-8"
+              :disabled="readonly"
+            >
+              <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
+              {{ $t('action.delete') }}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{{
+                $t('builder.delete_component_title')
+              }}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {{ $t('title.are_you_sure') }}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{{ $t('action.cancel') }}</AlertDialogCancel>
+              <AlertDialogAction @click="onDelete">{{
+                $t('action.delete')
+              }}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   </div>
@@ -93,6 +122,18 @@ import { ref, reactive, watch, computed, nextTick } from 'vue';
 import PathSection from './PathSection.vue';
 import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
+import { SheetTitle } from '~/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog';
 import type {
   ComponentInput,
   ComponentPath,
@@ -271,6 +312,12 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
   });
 }
 
+const onDelete = () => {
+  if (props.selectedNode) {
+    emit('deleteNode', props.selectedNode.id, formData.nodeName);
+  }
+};
+
 const inputPaths = computed(() =>
   renderPathList(props.selectedNode?.data?.component?.input_path || []),
 );
@@ -358,11 +405,17 @@ watch(
   (hasErrors) => {
     if (!props.selectedNode || props.readonly) return;
 
+    // Check if status actually needs update to avoid re-renders interrupting drag
+    const currentStatus = props.selectedNode.data?.status;
+    const newStatus = hasErrors ? 'invalid' : undefined;
+
+    if (currentStatus === newStatus) return;
+
     // Update node status based on validation
     emit('updateNode', props.selectedNode.id, {
       data: {
         ...props.selectedNode.data,
-        status: hasErrors ? 'invalid' : undefined,
+        status: newStatus,
       },
     });
   },
