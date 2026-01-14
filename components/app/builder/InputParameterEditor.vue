@@ -9,15 +9,12 @@
     </div>
 
     <!-- Readonly View -->
-    <div v-if="readonly" class="text-sm p-2 bg-muted/20 border rounded-md">
-      <div class="flex flex-col gap-1">
-        <div class="font-medium break-all">
-          {{ localInput.source || '-' }}
-        </div>
-        <div class="text-xs text-muted-foreground flex items-center gap-1">
-          <Icon name="lucide:info" class="w-3 h-3" />
-          {{ $t(`label.${localInput.value_source_type}`) }}
-        </div>
+    <div v-if="readonly" class="pl-6">
+      <div class="text-xs text-muted-foreground mb-0.5">
+        {{ $t(`label.${localInput.value_source_type}`) }}
+      </div>
+      <div class="text-sm break-all font-medium">
+        {{ localInput.source || '-' }}
       </div>
     </div>
 
@@ -107,7 +104,7 @@
 
     <!-- Validation Error -->
     <div
-      v-if="validationError"
+      v-if="validationError && !readonly"
       class="text-xs text-red-500 flex items-center gap-1"
     >
       <Icon name="lucide:alert-circle" class="w-3 h-3" />
