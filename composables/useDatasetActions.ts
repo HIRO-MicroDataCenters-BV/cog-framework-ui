@@ -109,54 +109,16 @@ export const useDatasetActions = () => {
   };
 
   /**
-   * Handle stream dataset deletion (topic + broker)
+   * Handle stream dataset deletion (message only)
+   * Note: Topic and broker are not deleted as they can be reused by other datasets
    */
   const handleStreamDelete = async (
     datasetId: string,
     onSuccess?: () => void,
   ) => {
-    console.log(
-      'DELETE MESSAGE: Fetching dataset details for UUID:',
-      datasetId,
-    );
-    const detailsResponse = await api.getDatasetById(datasetId);
-
-    console.log('Dataset details response:', detailsResponse);
-
-    if (detailsResponse && 'data' in detailsResponse) {
-      const details = (detailsResponse as Record<string, unknown>)
-        .data as Record<string, unknown>;
-
-      if (
-        details.topic_details &&
-        typeof details.topic_details === 'object' &&
-        'id' in details.topic_details
-      ) {
-        console.log(
-          'Deleting topic with ID:',
-          (details.topic_details as Record<string, unknown>).id,
-        );
-        await api.deleteDatasetTopic(
-          String((details.topic_details as Record<string, unknown>).id),
-        );
-      }
-
-      if (
-        details.broker_details &&
-        typeof details.broker_details === 'object' &&
-        'id' in details.broker_details
-      ) {
-        console.log(
-          'Deleting broker with ID:',
-          (details.broker_details as Record<string, unknown>).id,
-        );
-        await api.deleteDatasetBroker(
-          String((details.broker_details as Record<string, unknown>).id),
-        );
-      }
-
-      onSuccess?.();
-    }
+    console.log('DELETE MESSAGE: Deleting dataset message with ID:', datasetId);
+    await api.deleteDatasetMessage(datasetId);
+    onSuccess?.();
   };
 
   /**
