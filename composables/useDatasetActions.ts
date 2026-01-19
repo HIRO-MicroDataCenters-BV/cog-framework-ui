@@ -51,7 +51,6 @@ export const useDatasetActions = () => {
    * Handle file download with S3 URL support
    */
   const handleFileDownload = async (datasetId: string) => {
-    console.log('DOWNLOAD FILE: dataset UUID:', datasetId);
     const response = await api.downloadDatasetFile(datasetId);
 
     if (response && typeof response === 'object') {
@@ -80,7 +79,6 @@ export const useDatasetActions = () => {
    * Handle file preview with S3 URL support
    */
   const handleFilePreview = async (datasetId: string) => {
-    console.log('PREVIEW FILE: dataset UUID:', datasetId);
     const response = await api.previewDatasetFile(datasetId);
 
     if (response && typeof response === 'object') {
@@ -116,7 +114,6 @@ export const useDatasetActions = () => {
     datasetId: string,
     onSuccess?: () => void,
   ) => {
-    console.log('DELETE MESSAGE: Deleting dataset message with ID:', datasetId);
     await api.deleteDatasetMessage(datasetId);
     onSuccess?.();
   };
@@ -125,7 +122,6 @@ export const useDatasetActions = () => {
    * Handle table dataset preview
    */
   const handleTablePreview = async (datasetId: string) => {
-    console.log('PREVIEW TABLE: dataset UUID:', datasetId);
     const response = await api.getDatasetTableRecords(datasetId, 100);
 
     if (response && 'data' in response) {
@@ -138,10 +134,20 @@ export const useDatasetActions = () => {
   };
 
   /**
+   * Handle table dataset deletion
+   */
+  const handleTableDelete = async (
+    datasetId: string,
+    onSuccess?: () => void,
+  ) => {
+    await api.deleteDatasetTable(datasetId);
+    onSuccess?.();
+  };
+
+  /**
    * Handle Prometheus dataset preview
    */
   const handlePrometheusPreview = async (datasetId: string) => {
-    console.log('PREVIEW PROMETHEUS: dataset UUID:', datasetId);
     const response = await api.getDatasetPrometheus(datasetId);
 
     if (response && 'data' in response) {
@@ -175,11 +181,19 @@ export const useDatasetActions = () => {
     }
     // Database/Table datasets
     else if (dataSourceType === 1) {
-      items.push({
-        key: 'preview_table',
-        label: 'preview_table',
-        action: () => handleTablePreview(datasetId),
-      });
+      items.push(
+        {
+          key: 'preview_table',
+          label: 'preview_table',
+          action: () => handleTablePreview(datasetId),
+        },
+        {
+          key: 'delete_table',
+          label: 'delete_table',
+          hasConfirmation: true,
+          action: () => handleTableDelete(datasetId, onSuccess),
+        },
+      );
     }
     // Time Series/Prometheus datasets
     else if (dataSourceType === 20) {
@@ -221,6 +235,7 @@ export const useDatasetActions = () => {
     handleFileDelete,
     handleStreamDelete,
     handleTablePreview,
+    handleTableDelete,
     handlePrometheusPreview,
     previewState,
     closePreview,

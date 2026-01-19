@@ -1152,6 +1152,25 @@ export const useApi = () => {
     getDatasetTables: async (url: string) => {
       return request(`/datasets/tables?url=${url}`);
     },
+
+    /**
+     * Deletes a dataset table by ID
+     *
+     * Removes a specific dataset table from the system.
+     *
+     * @param {string} id - The UUID of the dataset to delete
+     *
+     * @returns {Promise<void>} No content response on successful deletion
+     *
+     * @example
+     * ```typescript
+     * await api.deleteDatasetTable('842be490-7910-422a-97bb-a56ad10b9dba');
+     * ```
+     */
+    deleteDatasetTable: async (id: string) => {
+      return request(`/datasets/${id}/table`, 'DELETE');
+    },
+
     /**
      * Registers a new dataset broker
      *
@@ -1481,7 +1500,7 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetMessage: async (id: string) => {
-      return request(`/datasets/message/${id}`, 'DELETE');
+      return request(`/datasets/${id}/message`, 'DELETE');
     },
 
     /**
