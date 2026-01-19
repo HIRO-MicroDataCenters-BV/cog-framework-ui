@@ -299,6 +299,7 @@ export default defineI18nConfig(() => ({
         delete_topic: 'Delete Topic',
         delete_broker: 'Delete Broker',
         delete_message: 'Delete Message',
+        delete_table: 'Delete Table',
         delete_file: 'Delete File',
         add_datasets: 'Add Dataset',
         download_file: 'Download File',
