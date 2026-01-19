@@ -197,11 +197,19 @@ export const useDatasetActions = () => {
     }
     // Time Series/Prometheus datasets
     else if (dataSourceType === 20) {
-      items.push({
-        key: 'preview_prometheus',
-        label: 'preview_prometheus',
-        action: () => handlePrometheusPreview(datasetId),
-      });
+      items.push(
+        {
+          key: 'preview_prometheus',
+          label: 'preview_prometheus',
+          action: () => handlePrometheusPreview(datasetId),
+        },
+        {
+          key: 'delete_message',
+          label: 'delete_message',
+          hasConfirmation: true,
+          action: () => handleStreamDelete(datasetId, onSuccess),
+        },
+      );
     }
     // File datasets
     else {
