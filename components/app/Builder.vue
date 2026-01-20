@@ -221,18 +221,20 @@ const onNodeClick = (node: VueFlowNode | null) => {
   // Deselect all nodes first - modify in place to preserve data
   if (page.value.data?.builder?.nodes) {
     page.value.data.builder.nodes.forEach((n) => {
-      (n as any).selected = false;
+      (n as Node & { selected?: boolean }).selected = false;
     });
   }
-  
+
   // Select only the clicked node
   if (node && page.value.data?.builder?.nodes) {
-    const targetNode = page.value.data.builder.nodes.find((n) => n.id === node.id);
+    const targetNode = page.value.data.builder.nodes.find(
+      (n) => n.id === node.id,
+    );
     if (targetNode) {
-      (targetNode as any).selected = true;
+      (targetNode as Node & { selected?: boolean }).selected = true;
     }
   }
-  
+
   selectedNode.value = node;
 };
 

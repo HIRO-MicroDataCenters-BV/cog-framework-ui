@@ -126,7 +126,8 @@ const emit = defineEmits<{
   requestDelete: [elements: (VueFlowNode | VueFlowEdge)[]];
 }>();
 
-const { getSelectedElements, addSelectedNodes, removeSelectedNodes } = useVueFlow();
+const { getSelectedElements, addSelectedNodes, removeSelectedNodes } =
+  useVueFlow();
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (props.readonly) return;

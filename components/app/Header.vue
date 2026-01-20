@@ -47,7 +47,7 @@
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger as-child>
-                <Button @click="runPipeline" :disabled="!canSave">
+                <Button :disabled="!canSave" @click="runPipeline">
                   <Icon name="lucide:save" class="w-4 h-4" />
                   <span>{{ $t('action.save') }}</span>
                 </Button>
@@ -56,7 +56,9 @@
                 <div class="text-sm">
                   <div class="font-semibold mb-1">Cannot save:</div>
                   <ul class="list-disc list-inside space-y-1">
-                    <li v-for="error in validationErrors" :key="error">{{ error }}</li>
+                    <li v-for="error in validationErrors" :key="error">
+                      {{ error }}
+                    </li>
                   </ul>
                 </div>
               </TooltipContent>
@@ -70,9 +72,19 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import type { Edge, Component, Node as BuilderNode, ComponentInput } from '~/types/builder.types';
+import type {
+  Edge,
+  Component,
+  Node as BuilderNode,
+  ComponentInput,
+} from '~/types/builder.types';
 import { Form, FormField, FormItem, FormControl } from '~/components/ui/form';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
@@ -138,37 +150,39 @@ const orderId = computed(() => page.value.data?.orderId as string | undefined);
 const validationErrors = computed(() => {
   const errors: string[] = [];
   const builder = page.value.data?.builder;
-  
+
   if (!builder) return errors;
-  
+
   // Check pipeline name
   if (!builder.name || builder.name.trim() === '') {
     errors.push('Pipeline name is required');
   }
-  
+
   // Check each component's required inputs
   builder.nodes?.forEach((node: BuilderNode) => {
     const component = node.data?.component;
     if (!component) return;
-    
+
     // Get required inputs (those without optional flag or with optional: false)
-    const requiredInputs = component.input_path?.filter(
-      (input: ComponentPath) => !input.optional
-    ) || [];
-    
+    const requiredInputs =
+      component.input_path?.filter((input: ComponentPath) => !input.optional) ||
+      [];
+
     const configuredInputs = component.inputs || [];
-    
+
     requiredInputs.forEach((reqInput: ComponentPath) => {
       const configured = configuredInputs.find(
-        (i: ComponentInput) => i.destination === reqInput.name
+        (i: ComponentInput) => i.destination === reqInput.name,
       );
-      
+
       if (!configured || !configured.source || !configured.value_source_type) {
-        errors.push(`${component.name || node.label}: input "${reqInput.name}" is required`);
+        errors.push(
+          `${component.name || node.label}: input "${reqInput.name}" is required`,
+        );
       }
     });
   });
-  
+
   return errors;
 });
 
