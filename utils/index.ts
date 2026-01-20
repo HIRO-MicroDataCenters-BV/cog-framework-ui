@@ -173,7 +173,9 @@ export function getDataTypeFromValue(value: number): DataTypeName | null {
  * shortenUuid('abc') // returns 'abc'
  * ```
  */
-export function shortenUuid(uuid: string): string {
-  if (!uuid || uuid.length < 12) return uuid;
-  return `${uuid.slice(0, 6)}...${uuid.slice(-6)}`;
+export function shortenUuid(uuid: string | number | unknown): string {
+  if (!uuid) return '';
+  const uuidStr = String(uuid);
+  if (uuidStr.length < 12) return uuidStr;
+  return `${uuidStr.slice(0, 6)}...${uuidStr.slice(-6)}`;
 }

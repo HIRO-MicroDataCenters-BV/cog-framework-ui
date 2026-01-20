@@ -35,11 +35,12 @@ const columns = [
   },
   {
     id: 'run_id',
+    accessorFn: (row) => row.run_id,
     size: 180,
     minSize: 180,
     maxSize: 180,
     cell: ({ row }: { row: TableRowType }) => {
-      const runIdValue = row.getValue<string>('run_id');
+      const runIdValue = String(row.original.run_id);
       const shortenedId = shortenUuid(runIdValue);
       return h(
         CopyPaste,

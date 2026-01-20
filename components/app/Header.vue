@@ -44,11 +44,26 @@
       </div>
       <div class="flex items-center gap-2 ml-auto">
         <div v-if="page.section == 'pipelines_builder'">
-          <Button @click="runPipeline"
-            ><Icon name="lucide:save" class="w-4 h-4" /><span>{{
-              $t('action.save')
-            }}</span></Button
-          >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button :disabled="!canSave" @click="runPipeline">
+                  <Icon name="lucide:save" class="w-4 h-4" />
+                  <span>{{ $t('action.save') }}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent v-if="!canSave" class="max-w-xs">
+                <div class="text-sm">
+                  <div class="font-semibold mb-1">Cannot save:</div>
+                  <ul class="list-disc list-inside space-y-1">
+                    <li v-for="error in validationErrors" :key="error">
+                      {{ error }}
+                    </li>
+                  </ul>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>
@@ -57,8 +72,19 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import type { Edge, Component } from '~/types/builder.types';
+import type {
+  Edge,
+  Component,
+  Node as BuilderNode,
+  ComponentInput,
+} from '~/types/builder.types';
 import { Form, FormField, FormItem, FormControl } from '~/components/ui/form';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
@@ -99,15 +125,15 @@ interface TopLevelOutputPath {
 }
 
 interface RegularPipelineComponent {
-  id: string;
+  uuid: string;
   name: string;
-  inputs: string[];
+  inputs: ComponentInput[];
   input_path: ComponentPath[];
   output_path: ComponentPath[];
 }
 
 interface FederatedPipelineComponent {
-  id: string;
+  uuid: string;
   name: string;
   input_path: ComponentPath[];
   output_path: ComponentPath[];
@@ -119,6 +145,50 @@ interface FederatedPipelineComponent {
 type PipelineComponent = RegularPipelineComponent | FederatedPipelineComponent;
 
 const orderId = computed(() => page.value.data?.orderId as string | undefined);
+
+// Validation logic
+const validationErrors = computed(() => {
+  const errors: string[] = [];
+  const builder = page.value.data?.builder;
+
+  if (!builder) return errors;
+
+  // Check pipeline name
+  if (!builder.name || builder.name.trim() === '') {
+    errors.push('Pipeline name is required');
+  }
+
+  // Check each component's required inputs
+  builder.nodes?.forEach((node: BuilderNode) => {
+    const component = node.data?.component;
+    if (!component) return;
+
+    // Get required inputs (those without optional flag or with optional: false)
+    const requiredInputs =
+      component.input_path?.filter((input: ComponentPath) => !input.optional) ||
+      [];
+
+    const configuredInputs = component.inputs || [];
+
+    requiredInputs.forEach((reqInput: ComponentPath) => {
+      const configured = configuredInputs.find(
+        (i: ComponentInput) => i.destination === reqInput.name,
+      );
+
+      if (!configured || !configured.source || !configured.value_source_type) {
+        errors.push(
+          `${component.name || node.label}: input "${reqInput.name}" is required`,
+        );
+      }
+    });
+  });
+
+  return errors;
+});
+
+const canSave = computed(() => {
+  return validationErrors.value.length === 0;
+});
 
 const runPipeline = () => {
   const builder = page.value.data?.builder;
@@ -142,14 +212,14 @@ const runPipeline = () => {
   const components =
     builder?.nodes?.map((node) => {
       const component = node?.data?.component as Component;
-      const id = String(component?.id || '');
+      const uuid = String(component?.id || '');
       const name = node?.data?.label || component?.name || '';
       const input_path = component?.input_path || [];
       const output_path = component?.output_path || [];
 
       if (orderId.value) {
         return {
-          id,
+          uuid,
           name,
           input_path,
           output_path,
@@ -159,22 +229,15 @@ const runPipeline = () => {
         };
       }
 
-      const inputs: string[] = [];
-      input_path.forEach((path: ComponentPath) => {
-        inputs.push(path.name as string);
-      });
-
-      const nodeId = node?.id;
-      const edges = builder?.edges?.filter(
-        (edge: Edge) => edge.target === nodeId,
-      );
-      edges?.forEach((edge) => {
-        const sourceName = edge?.sourceNode?.data?.label + '';
-        inputs.push(`${sourceName}.output`);
-      });
+      const inputs =
+        component?.inputs?.map((input: ComponentInput) => ({
+          destination: input.destination,
+          value_source_type: input.value_source_type,
+          source: input.source,
+        })) || [];
 
       return {
-        id,
+        uuid,
         name,
         inputs,
         input_path,

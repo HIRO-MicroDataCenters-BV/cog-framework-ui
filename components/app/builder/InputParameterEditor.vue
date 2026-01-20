@@ -269,6 +269,14 @@ watch(
       if (newInput.value_source_type === 'component_output') {
         selectedComponentOutput.value = newInput.source;
       }
+    } else {
+      // Reset local state when input is undefined/null
+      localInput.value = {
+        destination: '',
+        value_source_type: 'constant',
+        source: '',
+      };
+      selectedComponentOutput.value = '';
     }
   },
   { deep: true },
