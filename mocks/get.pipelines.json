@@ -1,0 +1,91 @@
+{
+    "status_code": 200,
+    "message": "pipeline runs details",
+    "data": [
+        {
+            "run_name": "Run of hyperparametertuning (ef34f)",
+            "run_id": "825bd04f-5114-4156-9a09-fa1c4c70b20a",
+            "status": "Failed",
+            "duration": "0:07:42",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T14:59:49+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (0beb9)",
+            "run_id": "5b28de27-de97-493c-881a-63fb4857ecc0",
+            "status": "Failed",
+            "duration": "0:01:26",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T13:31:01+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (b29ba)",
+            "run_id": "f8a0cb73-d560-4986-8ff2-ce3853d16afa",
+            "status": "Failed",
+            "duration": "0:01:23",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:53:35+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (7f20d)",
+            "run_id": "4b201efa-26c8-4c49-ae79-1fb3f4cb7361",
+            "status": "Failed",
+            "duration": "0:03:52",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:44:38+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (6d9cc)",
+            "run_id": "3b9a1b76-c692-4998-8641-20a30ddae8e6",
+            "status": "Failed",
+            "duration": "0:01:22",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:36:54+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (51647)",
+            "run_id": "c8ee1d21-d2f2-4ba0-9603-08961f989390",
+            "status": "Failed",
+            "duration": "0:01:27",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:33:03+00:00"
+        },
+        {
+            "run_name": "Run of hyperparametertuning (618b5)",
+            "run_id": "a53777f3-5913-4a06-91b1-d20757defc0c",
+            "status": "Failed",
+            "duration": "0:01:25",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:25:37+00:00"
+        },
+        {
+            "run_name": "Clone of Run of hyperparametertuning (494a6)",
+            "run_id": "56534bea-ea51-4d80-97b0-9a2b23736e28",
+            "status": "Failed",
+            "duration": "0:02:56",
+            "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+            "start_time": "2026-01-20T12:16:44+00:00"
+        },
+        {
+            "run_name": "simple-two-step-run",
+            "run_id": "51ed2b06-4bc7-4b08-8a65-d5afce123695",
+            "status": "Succeeded",
+            "duration": "0:00:20",
+            "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+            "start_time": "2026-01-20T05:09:16+00:00"
+        },
+        {
+            "run_name": "-run",
+            "run_id": "b614e3fa-f0ff-4b18-bd17-fda11e8a4092",
+            "status": "Failed",
+            "duration": "0:00:51",
+            "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+            "start_time": "2026-01-19T15:27:49+00:00"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total_items": 162
+    }
+}

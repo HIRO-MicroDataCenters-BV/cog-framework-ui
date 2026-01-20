@@ -13,6 +13,7 @@
       :edges-updatable="!props.readonly"
       :elements-selectable="!props.readonly"
       :delete-key-code="null"
+      :multi-selection-key-code="null"
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
@@ -125,7 +126,7 @@ const emit = defineEmits<{
   requestDelete: [elements: (VueFlowNode | VueFlowEdge)[]];
 }>();
 
-const { getSelectedElements } = useVueFlow();
+const { getSelectedElements, addSelectedNodes, removeSelectedNodes } = useVueFlow();
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (props.readonly) return;
@@ -206,8 +207,7 @@ const onDrop = (event: DragEvent) => {
 };
 
 const onNodeClick = (event: { node: VueFlowNode | null }) => {
-  const node = event.node;
-  emit('nodeClick', node);
+  emit('nodeClick', event.node);
 };
 
 const onConnect = (connection: { source: string; target: string }) => {

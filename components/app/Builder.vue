@@ -184,9 +184,9 @@ const menuActions = computed<MenuAction[]>(() => [
 // Watch for changes in page data and update selectedNode
 watch(
   () => page.value.data?.builder?.nodes,
-  (nodes: Node[]) => {
+  (nodes) => {
     if (selectedNode.value && nodes) {
-      const updatedNode = nodes.find(
+      const updatedNode = (nodes as Node[]).find(
         (node: Node) => node.id === selectedNode.value?.id,
       );
       if (updatedNode) {
@@ -218,6 +218,21 @@ const onDragStart = (component: unknown) => {
 };
 
 const onNodeClick = (node: VueFlowNode | null) => {
+  // Deselect all nodes first - modify in place to preserve data
+  if (page.value.data?.builder?.nodes) {
+    page.value.data.builder.nodes.forEach((n) => {
+      (n as any).selected = false;
+    });
+  }
+  
+  // Select only the clicked node
+  if (node && page.value.data?.builder?.nodes) {
+    const targetNode = page.value.data.builder.nodes.find((n) => n.id === node.id);
+    if (targetNode) {
+      (targetNode as any).selected = true;
+    }
+  }
+  
   selectedNode.value = node;
 };
 
