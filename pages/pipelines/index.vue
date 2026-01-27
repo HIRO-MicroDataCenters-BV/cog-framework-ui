@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
 import Badge from '@/components/ui/badge/Badge.vue';
+import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
+import { usePipelineActions } from '@/composables/usePipelineActions';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
 
@@ -20,6 +22,9 @@ setPage({
 const baseUrl = page.value.section;
 const config = useRuntimeConfig();
 const urlOrigin = window.location.origin;
+
+const { getPipelineActions } = usePipelineActions();
+const tableRef = ref();
 
 const columns = [
   {
@@ -88,6 +93,26 @@ const columns = [
     id: 'duration',
     cell: ({ row }: { row: TableRowType }) => row.getValue('duration'),
   },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      const id = row.getValue<string>('run_id');
+      const name = row.getValue<string>('run_name') || row.getValue<string>('run_id');
+
+      const items = getPipelineActions(id, name, () => {
+        if (tableRef.value) {
+          tableRef.value.fetchData();
+        }
+      });
+
+      return h(DropdownAction, {
+        title: name,
+        id,
+        items,
+      });
+    },
+  },
 ];
 
 const tabs = [
@@ -113,6 +138,7 @@ console.log(data);
 
 <template>
   <AppTable
+    ref="tableRef"
     :columns="columns"
     :data-source="getPipelineRunsList"
     :tabs="tabs"

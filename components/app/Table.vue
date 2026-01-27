@@ -712,6 +712,14 @@ watch(
   },
 );
 
+watch(
+  () => props.columns,
+  () => {
+    columns.value = getColumns(props.columns ?? []) as ColumnDef<DataItem>[];
+  },
+  { deep: true },
+);
+
 defineExpose({ fetchData });
 </script>
 

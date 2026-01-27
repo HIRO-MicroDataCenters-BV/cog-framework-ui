@@ -588,17 +588,15 @@ export const useApiWithMock = () => {
   };
 
   return {
-    getDatasets: (params = {}) => {
+    getDatasets: async (params = {}) => {
       if (mock.value.enabled) {
+        // Import data from JSON file
+        const datasetsJson = await import('~/mocks/get.datasets.json');
         return Promise.resolve({
-          status_code: 200,
-          message: 'Mock datasets data',
-          data: mock.value.datasets,
-          pagination: {
-            total_items: mock.value.datasets.length,
-            page: 1,
-            limit: mock.value.datasets.length,
-          },
+          status_code: datasetsJson.status_code,
+          message: datasetsJson.message,
+          data: datasetsJson.data,
+          pagination: datasetsJson.pagination,
         });
       }
       const q = new URLSearchParams(
@@ -607,17 +605,14 @@ export const useApiWithMock = () => {
       return request(`/datasets?${q}`);
     },
 
-    getModels: (params = {}) => {
+    getModels: async (params = {}) => {
       if (mock.value.enabled) {
+        const modelsJson = await import('~/mocks/get.models.json');
         return Promise.resolve({
-          status_code: 200,
-          message: 'Mock models data',
-          data: mock.value.models,
-          pagination: {
-            total_items: mock.value.models.length,
-            page: 1,
-            limit: mock.value.models.length,
-          },
+          status_code: modelsJson.status_code,
+          message: modelsJson.message,
+          data: modelsJson.data,
+          pagination: modelsJson.pagination,
         });
       }
       const q = new URLSearchParams(
@@ -644,12 +639,14 @@ export const useApiWithMock = () => {
       return null;
     },
 
-    getPipelineRunsList: () => {
+    getPipelineRunsList: async () => {
       if (mock.value.enabled) {
+        const pipelinesJson = await import('~/mocks/get.pipelines.json');
         return Promise.resolve({
-          status_code: 200,
-          message: 'Mock pipeline runs data',
-          data: mock.value.pipelineRuns,
+          status_code: pipelinesJson.status_code,
+          message: pipelinesJson.message,
+          data: pipelinesJson.data,
+          pagination: pipelinesJson.pagination,
         });
       }
       return request(`/pipelines/runs`);
@@ -693,6 +690,49 @@ export const useApiWithMock = () => {
         });
       }
       return request(`/datasets/message/${id}`, 'DELETE');
+    },
+
+    getBrokerDetails: () => {
+      if (mock.value.enabled) {
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock broker details',
+          data: [],
+        });
+      }
+      return request(`/broker/details`);
+    },
+
+    getTopicDetails: () => {
+      if (mock.value.enabled) {
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock topic details',
+          data: [],
+        });
+      }
+      return request(`/topic/details`);
+    },
+
+    getPipelineRunFlow: async (id: string) => {
+      if (mock.value.enabled) {
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock pipeline run flow data',
+          data: {
+            run_id: id,
+            run_name: 'Mock Pipeline Run',
+            status: 'Succeeded',
+            nodes: [],
+            edges: [],
+          },
+        });
+      }
+      // This uses external API, not the base URL
+      const config = useRuntimeConfig();
+      const apiRuns = config.public.apiRuns;
+      const url = `${apiRuns}/runs/${id}`;
+      return request(url);
     },
 
     getTrainingBuilderComponents: () => {

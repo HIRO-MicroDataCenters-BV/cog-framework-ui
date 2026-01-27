@@ -7,7 +7,7 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <NuxtLink :to="`/${page.section}`">
+              <NuxtLink :to="`/${page.section == 'pipelines_builder' ? 'pipelines' : page.section}`">
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
@@ -49,12 +49,11 @@
               <TooltipTrigger as-child>
                 <Button :disabled="!canSave" @click="runPipeline">
                   <Icon name="lucide:save" class="w-4 h-4" />
-                  <span>{{ $t('action.save') }}</span>
+                  <span>{{ $t('action.save_and_run') }}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent v-if="!canSave" class="max-w-xs">
                 <div class="text-sm">
-                  <div class="font-semibold mb-1">Cannot save:</div>
                   <ul class="list-disc list-inside space-y-1">
                     <li v-for="error in validationErrors" :key="error">
                       {{ error }}
@@ -88,6 +87,7 @@ import {
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
+const { t } = useI18n();
 const api = useApi();
 const config = useRuntimeConfig();
 const baseUrl = config.app.baseURL;
@@ -155,7 +155,12 @@ const validationErrors = computed(() => {
 
   // Check pipeline name
   if (!builder.name || builder.name.trim() === '') {
-    errors.push('Pipeline name is required');
+    errors.push(t('validation.pipeline.name'));
+  }
+
+  // Check if pipeline has at least one component
+  if (!builder.nodes || builder.nodes.length === 0) {
+    errors.push(t('validation.pipeline.component_required'));
   }
 
   // Check each component's required inputs
@@ -177,7 +182,10 @@ const validationErrors = computed(() => {
 
       if (!configured || !configured.source || !configured.value_source_type) {
         errors.push(
-          `${component.name || node.label}: input "${reqInput.name}" is required`,
+          t('validation.pipeline.input_required', {
+            component: component.name || node.label,
+            input: reqInput.name,
+          }),
         );
       }
     });
