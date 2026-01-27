@@ -240,7 +240,7 @@ function getConstantPlaceholder(): string {
 }
 
 // Handle source type change
-function onSourceTypeChange(newType: any) {
+function onSourceTypeChange(newType: string) {
   if (!newType || typeof newType !== 'string') return;
   // Clear source when changing type
   localInput.value.source = '';
@@ -249,7 +249,7 @@ function onSourceTypeChange(newType: any) {
 }
 
 // Handle component output change
-function onComponentOutputChange(value: any) {
+function onComponentOutputChange(value: string) {
   if (!value || typeof value !== 'string') return;
   localInput.value.source = value;
   emitUpdate();

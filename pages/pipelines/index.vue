@@ -98,7 +98,8 @@ const columns = [
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('run_id');
-      const name = row.getValue<string>('run_name') || row.getValue<string>('run_id');
+      const name =
+        row.getValue<string>('run_name') || row.getValue<string>('run_id');
 
       const items = getPipelineActions(id, name, () => {
         if (tableRef.value) {
