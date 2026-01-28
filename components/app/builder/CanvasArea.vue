@@ -203,11 +203,14 @@ const onDrop = (event: DragEvent) => {
       inputs,
     );
 
-    // Create a copy of component with initialized inputs
-    const componentWithInputs = {
-      ...component,
-      inputs: inputs,
-    };
+    // Create a DEEP copy of component with initialized inputs
+    // IMPORTANT: Use JSON.parse(JSON.stringify()) to prevent data sharing between instances
+    const componentWithInputs = JSON.parse(
+      JSON.stringify({
+        ...component,
+        inputs: inputs,
+      }),
+    );
 
     const newNode: VueFlowNode = {
       id: `component-${component.id}-${Date.now()}`,
