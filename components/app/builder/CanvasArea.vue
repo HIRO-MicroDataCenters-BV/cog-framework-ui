@@ -4,8 +4,8 @@
     :class="{ readonly: props.readonly }"
   >
     <VueFlow
-      v-model:nodes="nodes"
-      v-model:edges="edges"
+      :nodes="props.nodes"
+      :edges="props.edges"
       class="w-full h-full"
       fit-view
       :nodes-draggable="!props.readonly"
@@ -21,6 +21,7 @@
       @edge-update="onEdgeUpdate"
       @edges-change="onEdgesChange"
       @edge-update-end="onEdgesChange"
+      @node-drag-stop="onNodeDragStop"
     >
       <Background
         variant="dots"
@@ -71,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, type CSSProperties } from 'vue';
+import type { CSSProperties } from 'vue';
 import {
   VueFlow,
   Position,
@@ -84,7 +85,12 @@ import {
 import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
 
-import type { Node, Edge, Component } from '~/types/builder.types';
+import type {
+  Node,
+  Edge,
+  Component,
+  ComponentPath,
+} from '~/types/builder.types';
 
 interface Props {
   nodes?: VueFlowNode[];
@@ -98,30 +104,14 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false,
 });
 
-const nodes = ref<VueFlowNode[]>(props.nodes);
-const edges = ref<VueFlowEdge[]>(props.edges);
-
-watch(
-  () => props.nodes,
-  (newNodes) => {
-    nodes.value = [...(newNodes || [])];
-  },
-  { deep: true, immediate: true },
-);
-
-watch(
-  () => props.edges,
-  (newEdges) => {
-    edges.value = newEdges || [];
-  },
-  { deep: true, immediate: true },
-);
-
+// Emits for "Dumb" component - just notifies parent of intents
 const emit = defineEmits<{
   nodeClick: [node: VueFlowNode | null];
   connect: [edge: VueFlowEdge];
   edgeUpdate: [edge: VueFlowEdge];
-  update: [nodes: VueFlowNode[], edges: VueFlowEdge[]];
+  update: [nodes: VueFlowNode[], edges: VueFlowEdge[]]; // Deprecated but kept for compatibility if needed
+  addNode: [node: VueFlowNode];
+  updateNode: [id: string, updates: Partial<Node>];
   error: [errorKey: string, data?: Record<string, unknown>];
   requestDelete: [elements: (VueFlowNode | VueFlowEdge)[]];
 }>();
@@ -173,7 +163,8 @@ const onDrop = (event: DragEvent) => {
     const component = JSON.parse(data);
     const position = { x: event.offsetX - 60, y: event.offsetY - 20 };
 
-    const existingLabels = nodes.value
+    // Use props.nodes as the source of truth for generating labels
+    const existingLabels = (props.nodes || [])
       .map((node) => node.data?.label as string)
       .filter(Boolean);
 
@@ -186,8 +177,40 @@ const onDrop = (event: DragEvent) => {
       counter++;
     }
 
+    // Initialize inputs array with default values from input_path
+    const inputs = (component.input_path || []).map(
+      (inputDef: ComponentPath) => {
+        const defaultValue =
+          inputDef.default !== undefined && inputDef.default !== null
+            ? String(inputDef.default)
+            : '';
+
+        console.log(
+          `[CanvasArea] Initializing input "${inputDef.name}" with default:`,
+          defaultValue,
+        );
+
+        return {
+          destination: inputDef.name,
+          value_source_type: 'constant',
+          source: defaultValue,
+        };
+      },
+    );
+
+    console.log(
+      `[CanvasArea] Created component "${component.name}" with ${inputs.length} inputs:`,
+      inputs,
+    );
+
+    // Create a copy of component with initialized inputs
+    const componentWithInputs = {
+      ...component,
+      inputs: inputs,
+    };
+
     const newNode: VueFlowNode = {
-      id: `compoent-${component.id}-${Date.now()}`,
+      id: `component-${component.id}-${Date.now()}`,
       type: 'default',
       position,
       targetPosition: Position.Top,
@@ -196,12 +219,14 @@ const onDrop = (event: DragEvent) => {
         label: newLabel,
         status: component.status,
         category: component.category,
-        component: component,
+        component: componentWithInputs,
       },
     };
 
-    nodes.value.push(newNode);
-    emit('update', nodes.value, edges.value);
+    // Emit granular event for adding a single node.
+    // We DO NOT update any local state here.
+    // The parent will update props, which will reflect back here.
+    emit('addNode', newNode);
   } catch (error) {
     console.error('Error parsing dropped component:', error);
   }
@@ -232,22 +257,31 @@ const onConnect = (connection: { source: string; target: string }) => {
     },
   };
 
-  edges.value.push(newEdge);
   emit('connect', newEdge);
-  emit('update', nodes.value, edges.value);
 };
 
 const onEdgesChange = () => {
-  setTimeout(() => {
-    emit('update', nodes.value, edges.value);
-  }, 100);
+  // We rely on parent/store to handle edge changes if driven by external events
+  // For internal VueFlow edge changes (like deletion via UI), we might need listeners.
+  // But for now, let's keep it simple.
 };
 
 const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
   if (props.readonly) return;
-
   emit('edgeUpdate', edgeUpdateEvent.edge);
-  emit('update', nodes.value, edges.value);
+};
+
+const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
+  if (props.readonly) return;
+
+  // Emit granular update for the specific node(s) moved
+  const draggedNodes = event.nodes || [event.node];
+
+  draggedNodes.forEach((node) => {
+    emit('updateNode', node.id, {
+      position: node.position,
+    });
+  });
 };
 </script>
 

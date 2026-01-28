@@ -735,12 +735,15 @@ export const useApiWithMock = () => {
       return request(url);
     },
 
-    getTrainingBuilderComponents: () => {
+    getTrainingBuilderComponents: async () => {
       if (mock.value.enabled) {
+        const componentsJson = await import(
+          '~/mocks/get.training-builder-components.json'
+        );
         return Promise.resolve({
-          status_code: 200,
-          message: 'Mock training builder components data',
-          data: mock.value.trainingComponents,
+          status_code: componentsJson.status_code,
+          message: componentsJson.message,
+          data: componentsJson.data,
         });
       }
       return request(`/training-builder-components`);

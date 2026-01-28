@@ -39,8 +39,8 @@
           <h3 class="mb-2">{{ $t('label.input_path') }}</h3>
           <div class="space-y-2">
             <InputParameterEditor
-              v-for="(inputDef, index) in inputDefinitions"
-              :key="`input-${index}`"
+              v-for="inputDef in inputDefinitions"
+              :key="inputDef.name"
               :input-definition="inputDef"
               :input="getInputForDefinition(inputDef)"
               :available-components="availableUpstreamComponents"
@@ -199,9 +199,26 @@ const currentInputs = computed(() => {
 function getInputForDefinition(
   inputDef: ComponentPath,
 ): ComponentInput | undefined {
-  return currentInputs.value.find(
+  const existingInput = currentInputs.value.find(
     (input) => input.destination === inputDef.name,
   );
+
+  // If input exists, return it
+  if (existingInput) {
+    return existingInput;
+  }
+
+  // If no input exists but inputDef has a default, create a default input
+  if (inputDef.default !== undefined && inputDef.default !== null) {
+    return {
+      destination: inputDef.name,
+      value_source_type: 'constant',
+      source: String(inputDef.default),
+    };
+  }
+
+  // No input and no default - return undefined
+  return undefined;
 }
 
 // Available upstream components (all nodes except current)
@@ -255,31 +272,29 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
     inputs.push(updatedInput);
   }
 
-  // Update node status based on validation
-  const hasErrors = inputDefinitions.value.some((def) => {
-    const inp = inputs.find((i) => i.destination === def.name);
-    if (!inp) return false;
-    return (
-      validateComponentInput(
-        inp,
-        def,
-        availableUpstreamComponents.value,
-        pipelineParameters.value,
-      ) !== null
-    );
-  });
-
-  // Emit update to parent
+  // Update node status - only send partial updates for status and component.inputs
   emit('updateNode', props.selectedNode.id, {
     data: {
-      ...props.selectedNode.data,
-      status: hasErrors ? 'invalid' : undefined,
       component: {
-        ...props.selectedNode.data?.component,
         inputs,
       },
-    },
+    } as Partial<Node>,
   });
+}
+
+function updateNode() {
+  if (props.selectedNode) {
+    const updates: Partial<Node> = {
+      data: {
+        label: formData.nodeName,
+        description: formData.nodeDescription,
+        connectionString: formData.connectionString,
+        filterCondition: formData.filterCondition,
+        transformExpression: formData.transformExpression,
+      } as Partial<Node>,
+    };
+    emit('updateNode', props.selectedNode.id, updates);
+  }
 }
 
 const onDelete = () => {
@@ -327,13 +342,16 @@ const isComponentNameValid = computed(() => {
 
 watch(
   () => props.selectedNode,
-  (newNode) => {
-    if (newNode) {
+  (newNode, oldNode) => {
+    // Only update form data if:
+    // 1. We switched to a different node (ID change)
+    // 2. We have a new node and no old node (initial selection)
+
+    if (newNode && newNode.id !== oldNode?.id) {
+      // New node selected - Full Reset
       const label = (newNode.data?.label as string) || '';
-      nextTick(() => {
-        formData.nodeName = label;
-        previousNodeName.value = label; // Track initial name
-      });
+      formData.nodeName = label;
+      previousNodeName.value = label;
 
       formData.nodeDescription = (newNode.data?.description as string) || '';
       formData.connectionString =
@@ -348,15 +366,21 @@ watch(
   { immediate: true },
 );
 
-// Watch for component rename to update all references
+// Watch for specific field changes to update the node
+// We avoid a deep watcher on formData to prevent unnecessary full-object syncs
 watch(
   () => formData.nodeName,
   (newName) => {
-    if (!props.selectedNode || !previousNodeName.value) return;
+    if (!props.selectedNode) return;
+
+    selectedNodeLabel.value = newName;
+
+    if (!previousNodeName.value) {
+      previousNodeName.value = (props.selectedNode.data?.label as string) || '';
+    }
 
     const oldName = previousNodeName.value;
 
-    // Only emit rename if name actually changed and is valid
     if (
       oldName !== newName &&
       newName &&
@@ -364,8 +388,21 @@ watch(
       isComponentNameValid.value
     ) {
       emit('renameComponent', props.selectedNode.id, oldName, newName);
-      previousNodeName.value = newName; // Update tracked name
+      previousNodeName.value = newName;
     }
+  },
+);
+
+// Update description and other fields
+watch(
+  [
+    () => formData.nodeDescription,
+    () => formData.connectionString,
+    () => formData.filterCondition,
+    () => formData.transformExpression,
+  ],
+  () => {
+    updateNode();
   },
 );
 
@@ -375,57 +412,18 @@ watch(
   (hasErrors) => {
     if (!props.selectedNode || props.readonly) return;
 
-    // Check if status actually needs update to avoid re-renders interrupting drag
     const currentStatus = props.selectedNode.data?.status;
     const newStatus = hasErrors ? 'invalid' : undefined;
 
     if (currentStatus === newStatus) return;
 
-    // Update node status based on validation
+    // Partial update for status ONLY
     emit('updateNode', props.selectedNode.id, {
       data: {
-        ...props.selectedNode.data,
         status: newStatus,
-      },
+      } as Partial<Node>,
     });
   },
   { immediate: true },
-);
-
-function updateNode() {
-  if (props.selectedNode) {
-    const updates: Partial<Node> = {
-      data: {
-        ...props.selectedNode.data,
-        label: formData.nodeName,
-        description: formData.nodeDescription,
-        connectionString: formData.connectionString,
-        filterCondition: formData.filterCondition,
-        transformExpression: formData.transformExpression,
-      } as Record<string, unknown>,
-    };
-    emit('updateNode', props.selectedNode.id, updates);
-  }
-}
-
-function deleteNode() {
-  if (props.selectedNode) {
-    const componentName = (props.selectedNode.data?.label as string) || '';
-    emit('deleteNode', props.selectedNode.id, componentName);
-  }
-}
-watch(
-  () => formData.nodeName,
-  (newValue) => {
-    selectedNodeLabel.value = newValue;
-  },
-);
-
-watch(
-  () => formData,
-  () => {
-    updateNode();
-  },
-  { deep: true },
 );
 </script>

@@ -568,6 +568,8 @@ export default defineI18nConfig(() => ({
           constant_integer: 'Value must be an integer',
           constant_float: 'Value must be a number',
           constant_boolean: 'Value must be true or false',
+          type_mismatch: 'Incompatible data types',
+          output_not_found: 'Referenced output not found',
           invalid_source_type: 'Invalid source type',
         },
         pipeline: {

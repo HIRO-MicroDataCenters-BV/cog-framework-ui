@@ -43,13 +43,15 @@
       <div class="flex-1 flex flex-col">
         <div class="flex-1">
           <CanvasArea
-            :nodes="(page.data?.builder?.nodes as any) || []"
-            :edges="(page.data?.builder?.edges as any) || []"
+            :nodes="nodes"
+            :edges="edges"
             :readonly="readonly"
             @node-click="onNodeClick"
             @connect="onConnect"
             @edge-update="onEdgeUpdate"
             @update="onUpdate"
+            @add-node="onAddNode"
+            @update-node="onUpdateNode"
             @error="onError"
             @request-delete="onRequestDelete"
           />
@@ -60,11 +62,11 @@
         <div>
           <PropertiesSidebar
             :readonly="readonly"
-            :selected-node="selectedNode as any"
-            :all-nodes="(page.data?.builder?.nodes as any) || []"
-            @update-node="onUpdateNode as any"
-            @delete-node="onDeleteNode as any"
-            @rename-component="onRenameComponent as any"
+            :selected-node="selectedNode"
+            :all-nodes="nodes"
+            @update-node="onUpdateNode"
+            @delete-node="onDeleteNode"
+            @rename-component="onRenameComponent"
           />
         </div>
       </SheetContent>
@@ -99,6 +101,7 @@ import AppPanel from './Panel.vue';
 import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
 import type { Node, Edge, ComponentInput } from '~/types/builder.types';
+import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
 
 const props = withDefaults(
   defineProps<{
@@ -112,11 +115,25 @@ const props = withDefaults(
 );
 
 const readonly = computed(() => props.readonly);
-const data = computed(() => props.data);
+// data prop is not actually used for initialization in the original code,
+// it seems page.data.builder is the source.
 
 const { setPage, page } = useApp();
 const toaster = useToaster();
 const { t } = useI18n();
+const {
+  nodes,
+  edges,
+  selectedNode,
+  initialize,
+  addNode,
+  updateNodePosition,
+  updateNodeData,
+  removeNode,
+  addEdge,
+  removeEdge,
+  selectNode,
+} = usePipelineBuilder();
 
 const isSidebarOpen = ref({
   library: true,
@@ -124,14 +141,58 @@ const isSidebarOpen = ref({
 });
 
 const openUploadComponentDialog = ref(false);
-
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
   'https://dashboard.cog.hiro-develop.nl/notebook/admin/sai/lab/workspaces/auto-3/tree/register_component.ipynb',
 );
 
-const selectedNode = ref<VueFlowNode | null>(null);
+// Initialize store from page data
+// We watch page.data.builder to handle initial load or external resets
+watch(
+  () => page.value.data?.builder,
+  (builderData) => {
+    // Only initialize if store is empty or we explicitly want to reset (todo: better condition?)
+    // For now, let's initialize if we have data and store is empty
+    if (builderData && nodes.value.length === 0 && edges.value.length === 0) {
+      initialize(
+        (builderData.nodes as Node[]) || [],
+        (builderData.edges as Edge[]) || [],
+      );
+    }
+  },
+  { immediate: true, deep: false },
+);
+
+// Sync store back to Page for persistence/navigation
+// This is ONE-WAY: Store -> Page
+watch(
+  [nodes, edges],
+  () => {
+    // Debounce this if needed, but for now direct sync is okay as long as loops are broken
+    const currentBuilder = page.value.data?.builder || {
+      name: '',
+      nodes: [],
+      edges: [],
+    };
+
+    // Check if actually different to avoid unnecessary setPage?
+    // setPage triggers watchers in App.vue potentially.
+
+    setPage({
+      ...page.value,
+      data: {
+        ...page.value.data,
+        builder: {
+          ...currentBuilder,
+          nodes: JSON.parse(JSON.stringify(nodes.value)), // Deep copy to detach
+          edges: JSON.parse(JSON.stringify(edges.value)),
+        },
+      },
+    });
+  },
+  { deep: true },
+);
 
 // Delete confirmation state
 const deleteConfirmation = ref<{
@@ -181,21 +242,6 @@ const menuActions = computed<MenuAction[]>(() => [
   },
 ]);
 
-// Watch for changes in page data and update selectedNode
-watch(
-  () => page.value.data?.builder?.nodes,
-  (nodes) => {
-    if (selectedNode.value && nodes) {
-      const updatedNode = (nodes as Node[]).find(
-        (node: Node) => node.id === selectedNode.value?.id,
-      );
-      if (updatedNode) {
-        selectedNode.value = updatedNode;
-      }
-    }
-  },
-  { deep: true },
-);
 const toggleSidebar = (sidebar: 'library' | 'properties') => {
   isSidebarOpen.value[sidebar] = !isSidebarOpen.value[sidebar];
 };
@@ -217,121 +263,61 @@ const onDragStart = (component: unknown) => {
   // Drag started
 };
 
+// --- Event Handlers (Using Store Actions) ---
+
 const onNodeClick = (node: VueFlowNode | null) => {
-  // Deselect all nodes first - modify in place to preserve data
-  if (page.value.data?.builder?.nodes) {
-    page.value.data.builder.nodes.forEach((n) => {
-      (n as Node & { selected?: boolean }).selected = false;
-    });
-  }
-
-  // Select only the clicked node
-  if (node && page.value.data?.builder?.nodes) {
-    const targetNode = page.value.data.builder.nodes.find(
-      (n) => n.id === node.id,
-    );
-    if (targetNode) {
-      (targetNode as Node & { selected?: boolean }).selected = true;
-    }
-  }
-
-  selectedNode.value = node;
+  // Store handles selection logic including null
+  selectNode(node?.id || null);
 };
 
 const onConnect = (edge: VueFlowEdge) => {
-  // Connected
+  if (readonly.value) return;
+  addEdge(edge as Edge);
 };
 
 const onEdgeUpdate = (edge: VueFlowEdge) => {
-  // Edge updated
+  // TODO: Implement modifyEdge in store if needed, or just remove/add
 };
 
-const onUpdate = (nodes: VueFlowNode[], edges: VueFlowEdge[]) => {
-  setPage({
-    ...page.value,
-    data: {
-      ...page.value.data,
-      builder: {
-        name: page.value.data?.builder?.name || '',
-        nodes: nodes as Node[],
-        edges: edges as Edge[],
-      },
-    },
-  });
-};
-
-const onError = (errorKey: string, data?: Record<string, unknown>) => {
-  console.error('Builder error:', errorKey, data);
-
-  // Show detailed error message to user
-  const errorMessage = (data?.message as string) || t(`error.${errorKey}`);
-
-  toaster.show('error', errorMessage, {
-    duration: 5000,
-    ...data,
-  });
+const onAddNode = (node: VueFlowNode) => {
+  if (readonly.value) return;
+  addNode(node as Node);
 };
 
 const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
-  const currentBuilder = page.value.data?.builder;
-  if (currentBuilder?.nodes) {
-    const nodeIndex = currentBuilder.nodes.findIndex(
-      (node: Node) => node.id === nodeId,
-    );
-    if (nodeIndex !== -1) {
-      // Deep merge the updates
-      const updatedNode = {
-        ...currentBuilder.nodes[nodeIndex],
-        ...updates,
-        data: {
-          ...currentBuilder.nodes[nodeIndex].data,
-          ...updates.data,
-        },
-      };
+  if (readonly.value) return;
 
-      // Create a completely new nodes array to trigger reactivity
-      const newNodes = [...currentBuilder.nodes];
-      newNodes[nodeIndex] = updatedNode;
-      currentBuilder.nodes = newNodes;
-
-      // Update selectedNode if it's the same node
-      if (selectedNode.value?.id === nodeId) {
-        selectedNode.value = updatedNode;
-      }
-
-      setPage({
-        ...page.value,
-        data: {
-          ...page.value.data,
-          builder: {
-            ...currentBuilder,
-            nodes: newNodes,
-          },
-        },
-      });
-
-      // Trigger CanvasArea update to sync the changes
-      onUpdate(
-        newNodes as VueFlowNode[],
-        currentBuilder.edges as VueFlowEdge[],
-      );
-    }
+  if (updates.position) {
+    updateNodePosition(nodeId, updates.position);
   }
+
+  if (updates.data) {
+    updateNodeData(nodeId, updates.data);
+  }
+};
+
+// Deprecated: onUpdate was the full list sync. We NO LONGER USE IT for nodes/edges.
+// If Canvas emits it, we ignore it or use it only for edges if strictly necessary,
+// but we prefer granular events.
+const onUpdate = (newNodes: VueFlowNode[], newEdges: VueFlowEdge[]) => {
+  // If edges are updated via some internal VueFlow mechanism not caught by other events
+  // we might need to sync them. For now, trust addEdge/connect.
+  // If we need to sync edges deletions from VueFlow (e.g. backspace on edge), we should
+  // listen to edges-change or similar.
+  // For now, let's keep edges in sync if length differs?
+  // Actually, let's rely on atomic events.
 };
 
 const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   if (readonly.value) return;
 
-  // Handle nodes
   const nodesToDelete = elements.filter(
     (el) => !('source' in el),
-  ) as VueFlowNode[]; // Nodes don't have source
+  ) as VueFlowNode[];
   const edgesToDelete = elements.filter(
     (el) => 'source' in el,
-  ) as VueFlowEdge[]; // Edges have source
+  ) as VueFlowEdge[];
 
-  // If selecting multiple nodes or single node, trigger confirmation for the first/primary one
-  // TODO: Handle multiple node deletion better
   if (nodesToDelete.length > 0) {
     const nodeToDelete = nodesToDelete[0];
     const dependencies = getDependencies(nodeToDelete.id);
@@ -343,106 +329,30 @@ const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
     return;
   }
 
-  // If only edges, delete them immediately or confirm?
-  // User asked for "connection ... confirm dialog". So we confirm edges too.
   if (edgesToDelete.length > 0) {
-    // For edges, we don't have dependencies in the same way.
-    // We can show a generic message or just re-use dialog with empty name?
-    // Let's delete edges immediately for now as is standard, unless strict requirement.
-    // User said: "node or connection ... confirm dialog".
-    // I'll show dialog for edges too, treating them as valid entries.
-    // But DeleteConfirmationDialog requires componentName.
-    // I'll update confirmDelete to handle edges too?
-    // For now, let's just delete edges immediately to be safe, or just node logic.
-    // Actually, let's just implement node deletion via key for now as that's the main safety concern.
-    // If edges are deleted, they are usually trivial to restore.
-
-    // Deleting edges logic:
-    const currentBuilder = page.value.data?.builder;
-    if (currentBuilder) {
-      const newEdges = (currentBuilder.edges || []).filter(
-        (e: Edge) => !edgesToDelete.find((del: VueFlowEdge) => del.id === e.id),
-      );
-
-      setPage({
-        ...page.value,
-        data: {
-          ...page.value.data,
-          builder: {
-            ...currentBuilder,
-            edges: newEdges,
-          },
-        },
-      });
-      // Update canvas
-      onUpdate(
-        (currentBuilder.nodes || []) as VueFlowNode[],
-        newEdges as VueFlowEdge[],
-      );
-    }
+    edgesToDelete.forEach((edge) => removeEdge(edge.id));
   }
 };
 
 const getDependencies = (nodeId: string): string[] => {
-  const edges = (page.value.data?.builder?.edges as Edge[]) || [];
-  const nodes = (page.value.data?.builder?.nodes as Node[]) || [];
-
-  // Find edges where this node is the source
-  const outgoingEdges = edges.filter((e) => e.source === nodeId);
-
-  // Find target nodes
+  const outgoingEdges = edges.value.filter((e) => e.source === nodeId);
   const targetNodeIds = outgoingEdges.map((e) => e.target);
-
-  return nodes
+  return nodes.value
     .filter((n) => targetNodeIds.includes(n.id))
     .map((n) => (n.data?.label as string) || n.id);
 };
 
 const confirmDelete = () => {
   if (deleteConfirmation.value) {
-    performDeleteNode(deleteConfirmation.value.nodeId);
+    removeNode(deleteConfirmation.value.nodeId);
     deleteConfirmation.value = null;
   }
 };
 
-const performDeleteNode = (nodeId: string) => {
-  const currentBuilder = page.value.data?.builder;
-  if (currentBuilder?.nodes) {
-    // Remove related edges first
-    const newEdges = (currentBuilder.edges || []).filter(
-      (e: Edge) => e.source !== nodeId && e.target !== nodeId,
-    );
-
-    const newNodes = currentBuilder.nodes.filter(
-      (node: Node) => node.id !== nodeId,
-    );
-
-    if (selectedNode.value?.id === nodeId) {
-      selectedNode.value = null;
-    }
-
-    setPage({
-      ...page.value,
-      data: {
-        ...page.value.data,
-        builder: {
-          ...currentBuilder,
-          nodes: newNodes,
-          edges: newEdges,
-        },
-      },
-    });
-
-    // Update canvas
-    onUpdate(newNodes as VueFlowNode[], newEdges as VueFlowEdge[]);
-  }
-};
-
-// Renamed from onDeleteNode to be the handler from Sidebar (request)
+// Handler for Sidebar Delete button
 const onDeleteNode = (nodeId: string) => {
   if (readonly.value) return;
-  const nodes = (page.value.data?.builder?.nodes as Node[]) || [];
-  const node = nodes.find((n) => n.id === nodeId);
+  const node = nodes.value.find((n) => n.id === nodeId);
   if (node) {
     const dependencies = getDependencies(nodeId);
     deleteConfirmation.value = {
@@ -459,22 +369,25 @@ const onRenameComponent = (
   newName: string,
 ) => {
   if (readonly.value) return;
-
-  const currentNodes = page.value.data?.builder?.nodes as Node[] | undefined;
-  const node = currentNodes?.find((n) => n.id === nodeId);
-
+  const node = nodes.value.find((n) => n.id === nodeId);
   if (node && node.data.component) {
     const updatedComponent = {
       ...node.data.component,
       name: newName,
     };
-
-    onUpdateNode(nodeId, {
-      data: {
-        label: newName,
-        component: updatedComponent,
-      },
+    updateNodeData(nodeId, {
+      label: newName,
+      component: updatedComponent,
     });
   }
+};
+
+const onError = (errorKey: string, data?: Record<string, unknown>) => {
+  console.error('Builder error:', errorKey, data);
+  const errorMessage = (data?.message as string) || t(`error.${errorKey}`);
+  toaster.show('error', errorMessage, {
+    duration: 5000,
+    ...data,
+  });
 };
 </script>
