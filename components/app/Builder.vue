@@ -166,22 +166,30 @@ watch(
 
 // Sync store back to Page for persistence/navigation
 // This is ONE-WAY: Store -> Page
-// IMPORTANT: Skip this in readonly mode to prevent infinite loops
+// IMPORTANT: Prevent infinite loops by checking if data actually changed
 watch(
   [nodes, edges],
   () => {
     // Don't sync back to page in readonly mode (e.g., viewing pipeline details)
     if (readonly.value) return;
 
-    // Debounce this if needed, but for now direct sync is okay as long as loops are broken
     const currentBuilder = page.value.data?.builder || {
       name: '',
       nodes: [],
       edges: [],
     };
 
-    // Check if actually different to avoid unnecessary setPage?
-    // setPage triggers watchers in App.vue potentially.
+    // Check if data actually changed to prevent infinite loops
+    // Compare stringified versions to detect deep changes
+    const currentNodesStr = JSON.stringify(currentBuilder.nodes || []);
+    const newNodesStr = JSON.stringify(nodes.value);
+    const currentEdgesStr = JSON.stringify(currentBuilder.edges || []);
+    const newEdgesStr = JSON.stringify(edges.value);
+
+    // Only call setPage if data actually changed
+    if (currentNodesStr === newNodesStr && currentEdgesStr === newEdgesStr) {
+      return;
+    }
 
     setPage({
       ...page.value,
@@ -195,7 +203,7 @@ watch(
       },
     });
   },
-  { deep: true },
+  { deep: true, flush: 'post' },
 );
 
 // Delete confirmation state
