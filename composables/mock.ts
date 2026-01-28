@@ -737,7 +737,9 @@ export const useApiWithMock = () => {
 
     getTrainingBuilderComponents: async () => {
       if (mock.value.enabled) {
-        const componentsJson = await import('~/mocks/get.training-builder-components.json');
+        const componentsJson = await import(
+          '~/mocks/get.training-builder-components.json'
+        );
         return Promise.resolve({
           status_code: componentsJson.status_code,
           message: componentsJson.message,

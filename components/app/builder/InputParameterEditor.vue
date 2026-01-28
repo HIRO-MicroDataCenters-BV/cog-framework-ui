@@ -274,7 +274,7 @@ watch(
       ) {
         return;
       }
-      
+
       localInput.value = { ...newInput };
       if (newInput.value_source_type === 'component_output') {
         selectedComponentOutput.value = newInput.source;

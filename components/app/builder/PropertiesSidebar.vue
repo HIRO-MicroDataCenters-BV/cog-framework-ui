@@ -202,12 +202,12 @@ function getInputForDefinition(
   const existingInput = currentInputs.value.find(
     (input) => input.destination === inputDef.name,
   );
-  
+
   // If input exists, return it
   if (existingInput) {
     return existingInput;
   }
-  
+
   // If no input exists but inputDef has a default, create a default input
   if (inputDef.default !== undefined && inputDef.default !== null) {
     return {
@@ -216,7 +216,7 @@ function getInputForDefinition(
       source: String(inputDef.default),
     };
   }
-  
+
   // No input and no default - return undefined
   return undefined;
 }
@@ -278,7 +278,7 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
       component: {
         inputs,
       },
-    } as any,
+    } as Partial<Node>,
   });
 }
 
@@ -291,7 +291,7 @@ function updateNode() {
         connectionString: formData.connectionString,
         filterCondition: formData.filterCondition,
         transformExpression: formData.transformExpression,
-      } as any,
+      } as Partial<Node>,
     };
     emit('updateNode', props.selectedNode.id, updates);
   }
@@ -346,17 +346,20 @@ watch(
     // Only update form data if:
     // 1. We switched to a different node (ID change)
     // 2. We have a new node and no old node (initial selection)
-    
+
     if (newNode && newNode.id !== oldNode?.id) {
-       // New node selected - Full Reset
+      // New node selected - Full Reset
       const label = (newNode.data?.label as string) || '';
       formData.nodeName = label;
-      previousNodeName.value = label; 
+      previousNodeName.value = label;
 
       formData.nodeDescription = (newNode.data?.description as string) || '';
-      formData.connectionString = (newNode.data?.connectionString as string) || '';
-      formData.filterCondition = (newNode.data?.filterCondition as string) || '';
-      formData.transformExpression = (newNode.data?.transformExpression as string) || '';
+      formData.connectionString =
+        (newNode.data?.connectionString as string) || '';
+      formData.filterCondition =
+        (newNode.data?.filterCondition as string) || '';
+      formData.transformExpression =
+        (newNode.data?.transformExpression as string) || '';
       selectedNodeLabel.value = label;
     }
   },
@@ -369,11 +372,11 @@ watch(
   () => formData.nodeName,
   (newName) => {
     if (!props.selectedNode) return;
-    
+
     selectedNodeLabel.value = newName;
 
     if (!previousNodeName.value) {
-        previousNodeName.value = props.selectedNode.data?.label as string || '';
+      previousNodeName.value = (props.selectedNode.data?.label as string) || '';
     }
 
     const oldName = previousNodeName.value;
@@ -396,11 +399,11 @@ watch(
     () => formData.nodeDescription,
     () => formData.connectionString,
     () => formData.filterCondition,
-    () => formData.transformExpression
+    () => formData.transformExpression,
   ],
   () => {
     updateNode();
-  }
+  },
 );
 
 // Watch for validation errors and update node status
@@ -418,12 +421,9 @@ watch(
     emit('updateNode', props.selectedNode.id, {
       data: {
         status: newStatus,
-      } as any,
+      } as Partial<Node>,
     });
   },
   { immediate: true },
 );
-
-
-
 </script>

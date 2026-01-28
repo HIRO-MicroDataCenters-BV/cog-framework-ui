@@ -115,24 +115,24 @@ const props = withDefaults(
 );
 
 const readonly = computed(() => props.readonly);
-// data prop is not actually used for initialization in the original code, 
+// data prop is not actually used for initialization in the original code,
 // it seems page.data.builder is the source.
 
 const { setPage, page } = useApp();
 const toaster = useToaster();
 const { t } = useI18n();
-const { 
-  nodes, 
-  edges, 
-  selectedNode, 
-  initialize, 
-  addNode, 
-  updateNodePosition, 
-  updateNodeData, 
-  removeNode, 
-  addEdge, 
+const {
+  nodes,
+  edges,
+  selectedNode,
+  initialize,
+  addNode,
+  updateNodePosition,
+  updateNodeData,
+  removeNode,
+  addEdge,
   removeEdge,
-  selectNode 
+  selectNode,
 } = usePipelineBuilder();
 
 const isSidebarOpen = ref({
@@ -154,14 +154,14 @@ watch(
   (builderData) => {
     // Only initialize if store is empty or we explicitly want to reset (todo: better condition?)
     // For now, let's initialize if we have data and store is empty
-    if (builderData && (nodes.value.length === 0 && edges.value.length === 0)) {
-       initialize(
-         (builderData.nodes as Node[]) || [],
-         (builderData.edges as Edge[]) || []
-       );
+    if (builderData && nodes.value.length === 0 && edges.value.length === 0) {
+      initialize(
+        (builderData.nodes as Node[]) || [],
+        (builderData.edges as Edge[]) || [],
+      );
     }
   },
-  { immediate: true, deep: false } 
+  { immediate: true, deep: false },
 );
 
 // Sync store back to Page for persistence/navigation
@@ -170,11 +170,15 @@ watch(
   [nodes, edges],
   () => {
     // Debounce this if needed, but for now direct sync is okay as long as loops are broken
-    const currentBuilder = page.value.data?.builder || { name: '', nodes: [], edges: [] };
-    
-    // Check if actually different to avoid unnecessary setPage? 
+    const currentBuilder = page.value.data?.builder || {
+      name: '',
+      nodes: [],
+      edges: [],
+    };
+
+    // Check if actually different to avoid unnecessary setPage?
     // setPage triggers watchers in App.vue potentially.
-    
+
     setPage({
       ...page.value,
       data: {
@@ -187,7 +191,7 @@ watch(
       },
     });
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Delete confirmation state
@@ -263,7 +267,7 @@ const onDragStart = (component: unknown) => {
 
 const onNodeClick = (node: VueFlowNode | null) => {
   // Store handles selection logic including null
-   selectNode(node?.id || null);
+  selectNode(node?.id || null);
 };
 
 const onConnect = (edge: VueFlowEdge) => {
@@ -282,13 +286,13 @@ const onAddNode = (node: VueFlowNode) => {
 
 const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
   if (readonly.value) return;
-  
+
   if (updates.position) {
-      updateNodePosition(nodeId, updates.position);
+    updateNodePosition(nodeId, updates.position);
   }
-  
+
   if (updates.data) {
-      updateNodeData(nodeId, updates.data);
+    updateNodeData(nodeId, updates.data);
   }
 };
 
@@ -296,20 +300,23 @@ const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
 // If Canvas emits it, we ignore it or use it only for edges if strictly necessary,
 // but we prefer granular events.
 const onUpdate = (newNodes: VueFlowNode[], newEdges: VueFlowEdge[]) => {
-    // If edges are updated via some internal VueFlow mechanism not caught by other events
-    // we might need to sync them. For now, trust addEdge/connect.
-    // If we need to sync edges deletions from VueFlow (e.g. backspace on edge), we should
-    // listen to edges-change or similar.
-    
-    // For now, let's keep edges in sync if length differs?
-    // Actually, let's rely on atomic events.
+  // If edges are updated via some internal VueFlow mechanism not caught by other events
+  // we might need to sync them. For now, trust addEdge/connect.
+  // If we need to sync edges deletions from VueFlow (e.g. backspace on edge), we should
+  // listen to edges-change or similar.
+  // For now, let's keep edges in sync if length differs?
+  // Actually, let's rely on atomic events.
 };
 
 const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   if (readonly.value) return;
 
-  const nodesToDelete = elements.filter((el) => !('source' in el)) as VueFlowNode[];
-  const edgesToDelete = elements.filter((el) => 'source' in el) as VueFlowEdge[];
+  const nodesToDelete = elements.filter(
+    (el) => !('source' in el),
+  ) as VueFlowNode[];
+  const edgesToDelete = elements.filter(
+    (el) => 'source' in el,
+  ) as VueFlowEdge[];
 
   if (nodesToDelete.length > 0) {
     const nodeToDelete = nodesToDelete[0];
@@ -323,7 +330,7 @@ const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   }
 
   if (edgesToDelete.length > 0) {
-      edgesToDelete.forEach(edge => removeEdge(edge.id));
+    edgesToDelete.forEach((edge) => removeEdge(edge.id));
   }
 };
 
@@ -356,7 +363,11 @@ const onDeleteNode = (nodeId: string) => {
   }
 };
 
-const onRenameComponent = (nodeId: string, oldName: string, newName: string) => {
+const onRenameComponent = (
+  nodeId: string,
+  oldName: string,
+  newName: string,
+) => {
   if (readonly.value) return;
   const node = nodes.value.find((n) => n.id === nodeId);
   if (node && node.data.component) {
@@ -365,8 +376,8 @@ const onRenameComponent = (nodeId: string, oldName: string, newName: string) => 
       name: newName,
     };
     updateNodeData(nodeId, {
-        label: newName,
-        component: updatedComponent
+      label: newName,
+      component: updatedComponent,
     });
   }
 };

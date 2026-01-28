@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { type CSSProperties } from 'vue';
+import type { CSSProperties } from 'vue';
 import {
   VueFlow,
   Position,
@@ -85,7 +85,12 @@ import {
 import { Background } from '@vue-flow/background';
 import '@vue-flow/core/dist/style.css';
 
-import type { Node, Edge, Component } from '~/types/builder.types';
+import type {
+  Node,
+  Edge,
+  Component,
+  ComponentPath,
+} from '~/types/builder.types';
 
 interface Props {
   nodes?: VueFlowNode[];
@@ -173,21 +178,30 @@ const onDrop = (event: DragEvent) => {
     }
 
     // Initialize inputs array with default values from input_path
-    const inputs = (component.input_path || []).map((inputDef: any) => {
-      const defaultValue = inputDef.default !== undefined && inputDef.default !== null 
-        ? String(inputDef.default) 
-        : '';
-      
-      console.log(`[CanvasArea] Initializing input "${inputDef.name}" with default:`, defaultValue);
-      
-      return {
-        destination: inputDef.name,
-        value_source_type: 'constant',
-        source: defaultValue,
-      };
-    });
+    const inputs = (component.input_path || []).map(
+      (inputDef: ComponentPath) => {
+        const defaultValue =
+          inputDef.default !== undefined && inputDef.default !== null
+            ? String(inputDef.default)
+            : '';
 
-    console.log(`[CanvasArea] Created component "${component.name}" with ${inputs.length} inputs:`, inputs);
+        console.log(
+          `[CanvasArea] Initializing input "${inputDef.name}" with default:`,
+          defaultValue,
+        );
+
+        return {
+          destination: inputDef.name,
+          value_source_type: 'constant',
+          source: defaultValue,
+        };
+      },
+    );
+
+    console.log(
+      `[CanvasArea] Created component "${component.name}" with ${inputs.length} inputs:`,
+      inputs,
+    );
 
     // Create a copy of component with initialized inputs
     const componentWithInputs = {
@@ -209,11 +223,10 @@ const onDrop = (event: DragEvent) => {
       },
     };
 
-    // Emit granular event for adding a single node. 
-    // We DO NOT update any local state here. 
+    // Emit granular event for adding a single node.
+    // We DO NOT update any local state here.
     // The parent will update props, which will reflect back here.
     emit('addNode', newNode);
-    
   } catch (error) {
     console.error('Error parsing dropped component:', error);
   }
@@ -248,9 +261,9 @@ const onConnect = (connection: { source: string; target: string }) => {
 };
 
 const onEdgesChange = () => {
-    // We rely on parent/store to handle edge changes if driven by external events
-    // For internal VueFlow edge changes (like deletion via UI), we might need listeners.
-    // But for now, let's keep it simple.
+  // We rely on parent/store to handle edge changes if driven by external events
+  // For internal VueFlow edge changes (like deletion via UI), we might need listeners.
+  // But for now, let's keep it simple.
 };
 
 const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
@@ -258,16 +271,16 @@ const onEdgeUpdate = (edgeUpdateEvent: { edge: VueFlowEdge }) => {
   emit('edgeUpdate', edgeUpdateEvent.edge);
 };
 
-const onNodeDragStop = (event: { node: VueFlowNode, nodes: VueFlowNode[] }) => {
+const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   if (props.readonly) return;
-  
+
   // Emit granular update for the specific node(s) moved
   const draggedNodes = event.nodes || [event.node];
-  
-  draggedNodes.forEach(node => {
-      emit('updateNode', node.id, {
-          position: node.position
-      });
+
+  draggedNodes.forEach((node) => {
+    emit('updateNode', node.id, {
+      position: node.position,
+    });
   });
 };
 </script>
