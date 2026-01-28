@@ -240,16 +240,16 @@ function getConstantPlaceholder(): string {
 }
 
 // Handle source type change
-function onSourceTypeChange(newType: string) {
+function onSourceTypeChange(newType: unknown) {
   if (!newType || typeof newType !== 'string') return;
-  // Clear source when changing type
-  localInput.value.source = '';
-  selectedComponentOutput.value = '';
+  // We no longer clear source when changing type to improve UX
+  // localInput.value.source = '';
+  // selectedComponentOutput.value = '';
   emitUpdate();
 }
 
 // Handle component output change
-function onComponentOutputChange(value: string) {
+function onComponentOutputChange(value: unknown) {
   if (!value || typeof value !== 'string') return;
   localInput.value.source = value;
   emitUpdate();
@@ -261,10 +261,20 @@ function emitUpdate() {
 }
 
 // Watch for external changes
+// Watch for external changes
 watch(
   () => props.input,
   (newInput) => {
     if (newInput) {
+      // Check for equality to avoid unnecessary resets (which break typing/focus)
+      if (
+        newInput.destination === localInput.value.destination &&
+        newInput.value_source_type === localInput.value.value_source_type &&
+        newInput.source === localInput.value.source
+      ) {
+        return;
+      }
+      
       localInput.value = { ...newInput };
       if (newInput.value_source_type === 'component_output') {
         selectedComponentOutput.value = newInput.source;
@@ -279,6 +289,6 @@ watch(
       selectedComponentOutput.value = '';
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 );
 </script>

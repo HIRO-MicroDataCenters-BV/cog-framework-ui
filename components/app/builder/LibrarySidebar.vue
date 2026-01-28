@@ -101,17 +101,26 @@ onMounted(() => {
 });
 
 const fetchComponents = async () => {
-  console.log('fetchComponents');
+  console.log('[LibrarySidebar] Fetching components...');
   try {
     const res = await api.getTrainingBuilderComponents();
-    console.log('res', res);
+    console.log('[LibrarySidebar] API response:', res);
     if (res && 'data' in res) {
       components.value = res.data as unknown as Component[];
-      console.log('components', components.value);
+      console.log('[LibrarySidebar] Loaded', components.value.length, 'components');
+      
+      // Debug: Show first component's input_path to verify defaults
+      if (components.value.length > 0) {
+        const firstComp = components.value[0];
+        console.log('[LibrarySidebar] First component:', firstComp.name);
+        console.log('[LibrarySidebar] First component input_path:', firstComp.input_path);
+      }
+      
       categories.value = getCategories(components.value);
-      console.log('categories', categories.value);
+      console.log('[LibrarySidebar] Created', categories.value.length, 'categories');
     }
   } catch (error) {
+    console.error('[LibrarySidebar] Error fetching components:', error);
     // Toast is shown by API layer, just set empty arrays
     components.value = [];
     categories.value = [];

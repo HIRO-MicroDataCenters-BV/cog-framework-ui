@@ -47,14 +47,37 @@ export function validateInputDestination(destination: string): string | null {
 }
 
 /**
- * Validates component_output source format
- * - Must include exactly one '.'
- * - Both component name and output name must be non-empty
- * - Component name must exist in available components
+ * Checks if two types are compatible
+ * - Same types are always compatible
+ * - Integer is compatible with Float/Number/Double
+ */
+export function areTypesCompatible(
+  provided: string,
+  expected: string,
+): boolean {
+  const p = provided.toLowerCase();
+  const e = expected.toLowerCase();
+
+  if (p === e) return true;
+
+  const numberTypes = ['integer', 'int', 'float', 'double', 'number'];
+  if (numberTypes.includes(p) && numberTypes.includes(e)) {
+    return true;
+  }
+
+  // String can accept anything as a fallback
+  if (e === 'string') return true;
+
+  return false;
+}
+
+/**
+ * Validates component_output source format and type compatibility
  */
 export function validateComponentOutput(
   source: string,
   components: Node[],
+  expectedType?: string,
 ): string | null {
   if (!source || !source.includes('.')) {
     return 'validation.input.component_output_format';
@@ -67,34 +90,56 @@ export function validateComponentOutput(
 
   const [componentName, outputName] = parts;
 
-  // Check if component exists
-  const componentExists = components.some(
+  // Find component and output definition
+  const componentNode = components.find(
     (node) => node.data?.label === componentName,
   );
 
-  if (!componentExists) {
+  if (!componentNode) {
     return 'validation.input.component_not_found';
+  }
+
+  const outputDef = componentNode.data?.component?.output_path?.find(
+    (out) => out.name === outputName,
+  );
+
+  if (!outputDef) {
+    return 'validation.input.output_not_found';
+  }
+
+  // Validate type compatibility
+  if (expectedType && !areTypesCompatible(outputDef.type, expectedType)) {
+    return 'validation.input.type_mismatch';
   }
 
   return null;
 }
 
 /**
- * Validates pipeline_inputparam source
- * - Must match an existing pipeline parameter name
+ * Validates pipeline_inputparam source and type compatibility
  */
 export function validatePipelineParam(
   source: string,
   params: PipelineInputParam[],
+  expectedType?: string,
 ): string | null {
   if (!source || source.trim() === '') {
     return 'validation.input.param_required';
   }
 
-  const paramExists = params.some((param) => param.name === source);
+  const param = params.find((p) => p.name === source);
 
-  if (!paramExists) {
+  if (!param) {
     return 'validation.input.param_not_found';
+  }
+
+  // Validate type compatibility
+  if (
+    expectedType &&
+    param.type &&
+    !areTypesCompatible(param.type, expectedType)
+  ) {
+    return 'validation.input.type_mismatch';
   }
 
   return null;
@@ -102,8 +147,6 @@ export function validatePipelineParam(
 
 /**
  * Validates constant value based on expected type
- * - Must be non-empty
- * - Must match type format (Integer, Float, Boolean, etc.)
  */
 export function validateConstant(source: string, type: string): string | null {
   if (!source || source.trim() === '') {
@@ -115,16 +158,14 @@ export function validateConstant(source: string, type: string): string | null {
   switch (normalizedType) {
     case 'integer':
     case 'int':
-      if (!/^-?\d+$/.test(source)) {
-        return 'validation.input.constant_integer';
-      }
-      break;
-
     case 'float':
     case 'double':
     case 'number':
+      // Allow any number format for these types since we treat them as compatible
       if (!/^-?\d+(\.\d+)?$/.test(source)) {
-        return 'validation.input.constant_float';
+        return normalizedType.includes('int')
+          ? 'validation.input.constant_integer'
+          : 'validation.input.constant_float';
       }
       break;
 
@@ -135,7 +176,6 @@ export function validateConstant(source: string, type: string): string | null {
       }
       break;
 
-    // String and other types - accept any non-empty value
     default:
       break;
   }
@@ -159,10 +199,14 @@ export function validateComponentInput(
   // Validate source based on type
   switch (input.value_source_type) {
     case 'component_output':
-      return validateComponentOutput(input.source, components);
+      return validateComponentOutput(
+        input.source,
+        components,
+        inputDefinition.type,
+      );
 
     case 'pipeline_inputparam':
-      return validatePipelineParam(input.source, params);
+      return validatePipelineParam(input.source, params, inputDefinition.type);
 
     case 'constant':
       return validateConstant(input.source, inputDefinition.type);

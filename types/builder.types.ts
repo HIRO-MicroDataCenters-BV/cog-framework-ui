@@ -52,6 +52,7 @@ export interface ComponentInput {
 
 export interface PipelineInputParam {
   name: string;
+  type?: string;
   default?: string;
   description?: string;
 }
