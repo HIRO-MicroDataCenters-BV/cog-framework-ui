@@ -166,9 +166,13 @@ watch(
 
 // Sync store back to Page for persistence/navigation
 // This is ONE-WAY: Store -> Page
+// IMPORTANT: Skip this in readonly mode to prevent infinite loops
 watch(
   [nodes, edges],
   () => {
+    // Don't sync back to page in readonly mode (e.g., viewing pipeline details)
+    if (readonly.value) return;
+
     // Debounce this if needed, but for now direct sync is okay as long as loops are broken
     const currentBuilder = page.value.data?.builder || {
       name: '',
