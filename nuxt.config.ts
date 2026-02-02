@@ -56,21 +56,17 @@ export default defineNuxtConfig({
     dexSkipTlsVerify: process.env.NUXT_DEX_SKIP_TLS_VERIFY === 'true',
 
     public: {
-      apiBase: URL_PREFIX,
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/cogapi',
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
       apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
     },
   },
   compatibilityDate: '2024-11-01',
   nitro: {
-    preset: 'static',
+    preset: 'node-server',
     output: {
       dir: '.output',
       publicDir: '.output/public',
-    },
-    prerender: {
-      crawlLinks: true,
-      routes: ['/'],
     },
     devProxy: {
       '/cogapi': {
