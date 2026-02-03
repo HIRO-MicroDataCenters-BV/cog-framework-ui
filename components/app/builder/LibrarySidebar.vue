@@ -10,44 +10,75 @@
         >
           <SidebarMenuItem>
             <CollapsibleTrigger as-child>
-              <SidebarMenuButton class="mb-2">
+              <SidebarMenuButton class="mb-2 w-full">
                 <div class="flex items-center justify-between w-full">
-                  <div class="flex items-center">
-                    <span class="text-lg mr-2">
-                      <Icon name="lucide:folder" />
-                    </span>
-                    <span class="capitalize">{{
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="w-3 h-3 rounded-full border border-black/20 shadow-sm"
+                      :style="{
+                        backgroundColor: getCategoryColor(category.name),
+                      }"
+                    ></span>
+                    <span class="capitalize font-semibold text-foreground/80">{{
                       category.name || $t('label.no_category')
                     }}</span>
                   </div>
                   <span
-                    class="icon-chevron transition-transform duration-200 ease-out"
+                    class="icon-chevron transition-transform duration-200 ease-out text-muted-foreground"
                     :class="open ? 'rotate-90' : ''"
                   >
-                    <Icon name="lucide:chevron-right" />
+                    <Icon name="lucide:chevron-right" class="w-4 h-4" />
                   </span>
                 </div>
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SidebarMenuSub class="p-0 m-0 border-l-0">
-                <SidebarMenuSubItem
+              <div class="grid grid-cols-2 gap-2 px-2 py-1">
+                <div
                   v-for="component in category.components"
                   :key="component.id"
+                  class="cursor-grab relative group active:cursor-grabbing"
+                  draggable="true"
+                  @dragstart="onDragStart($event, component)"
                 >
-                  <SidebarMenuSubButton
-                    as-child
-                    class="cursor-grab p-2 py-4 bg-gray-50 mx-2"
-                    draggable="true"
-                    @dragstart="onDragStart($event, component)"
+                  <!-- Inventory Card -->
+                  <div
+                    class="p-2 rounded-md border-2 bg-card flex flex-col items-center justify-center gap-2 text-center h-24 mb-1 transition-all duration-100"
+                    :style="getPanelStyle(getCategoryColor(category.name))"
+                    @mouseover="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(-2px)')
+                    "
+                    @mouseleave="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(0)')
+                    "
+                    @mousedown="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(2px)')
+                    "
+                    @mouseup="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(-2px)')
+                    "
                   >
-                    <div class="flex items-center gap-2">
-                      <Icon name="lucide:grip-vertical" class="w-4 h-4" />
-                      <span>{{ component.name }}</span>
+                    <!-- Icon (using generic one since we don't have per-component icon yet) -->
+                    <div
+                      class="w-8 h-8 rounded bg-background/50 flex items-center justify-center text-foreground/70"
+                    >
+                      <Icon name="lucide:box" class="w-5 h-5" />
                     </div>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              </SidebarMenuSub>
+                    <span
+                      class="text-[10px] font-bold leading-tight line-clamp-2 px-1"
+                      >{{ component.name }}</span
+                    >
+                  </div>
+                </div>
+              </div>
             </CollapsibleContent>
           </SidebarMenuItem>
         </Collapsible>
@@ -58,8 +89,12 @@
 
 <script setup lang="ts">
 import type { Component, Category } from '~/types/builder.types';
+import { useBuilderColors } from '~/composables/useBuilderColors';
+import { useKenneyTheme } from '~/composables/useKenneyTheme';
 
 const api = useApi();
+const { getCategoryColor } = useBuilderColors();
+const { getPanelStyle } = useKenneyTheme();
 
 const components = ref<Component[]>([]);
 

@@ -127,7 +127,7 @@ interface TopLevelOutputPath {
 }
 
 interface RegularPipelineComponent {
-  uuid: string;
+  id: string;
   name: string;
   inputs: ComponentInput[];
   input_path: ComponentPath[];
@@ -135,7 +135,7 @@ interface RegularPipelineComponent {
 }
 
 interface FederatedPipelineComponent {
-  uuid: string;
+  id: string;
   name: string;
   input_path: ComponentPath[];
   output_path: ComponentPath[];
@@ -229,7 +229,7 @@ const runPipeline = () => {
 
       if (orderId.value) {
         return {
-          uuid,
+          id: uuid,
           name,
           input_path,
           output_path,
@@ -247,7 +247,7 @@ const runPipeline = () => {
         })) || [];
 
       return {
-        uuid,
+        id: uuid,
         name,
         inputs,
         input_path,

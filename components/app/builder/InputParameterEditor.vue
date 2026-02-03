@@ -1,42 +1,65 @@
 <template>
-  <div class="space-y-2 p-0">
-    <div class="flex items-center justify-between">
+  <div
+    class="space-y-3 p-3 rounded-lg bg-card/50 border transition-all duration-200 hover:shadow-sm hover:border-primary/20"
+  >
+    <div
+      class="flex items-center justify-between border-b pb-2 mb-2 border-border/10"
+    >
       <div class="flex items-center gap-2">
-        <Icon :name="getTypeIcon()" class="w-4 h-4 text-gray-500" />
-        <span class="text-sm font-medium">{{ inputDefinition.name }}</span>
-        <span class="text-xs text-gray-500">({{ inputDefinition.type }})</span>
+        <div
+          class="w-6 h-6 rounded flex items-center justify-center text-background shadow-sm"
+          :style="{ backgroundColor: getTypeColor(inputDefinition.type) }"
+        >
+          <Icon :name="getTypeIcon(inputDefinition.type)" class="w-3.5 h-3.5" />
+        </div>
+        <span class="text-sm font-bold tracking-tight">{{
+          inputDefinition.name
+        }}</span>
       </div>
+      <span
+        class="text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-70"
+        :style="{
+          borderColor: getTypeColor(inputDefinition.type),
+          color: getTypeColor(inputDefinition.type),
+        }"
+      >
+        {{ inputDefinition.type }}
+      </span>
     </div>
 
     <!-- Readonly View -->
-    <div v-if="readonly" class="pl-6">
-      <div class="text-xs text-muted-foreground mb-0.5">
+    <div v-if="readonly" class="pl-1">
+      <div
+        class="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold"
+      >
         {{ $t(`label.${localInput.value_source_type}`) }}
       </div>
-      <div class="text-sm break-all font-medium">
+      <div
+        class="text-sm break-all font-medium py-1 px-2 bg-muted/30 rounded border border-transparent"
+      >
         {{ localInput.source || '-' }}
       </div>
     </div>
 
     <!-- Edit View -->
-    <div v-else class="grid grid-cols-[40%_60%] gap-3">
+    <div v-else class="grid grid-cols-[130px_1fr] gap-2 items-start">
       <!-- Value Source Type Selector -->
       <div>
         <Select
           v-model="localInput.value_source_type"
           @update:model-value="onSourceTypeChange"
         >
-          <SelectTrigger class="h-9">
+          <SelectTrigger class="h-8 text-xs">
             <SelectValue :placeholder="$t('placeholder.select_source_type')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="component_output">
+            <SelectItem value="component_output" class="text-xs">
               {{ $t('label.component_output') }}
             </SelectItem>
-            <SelectItem value="pipeline_inputparam">
+            <SelectItem value="pipeline_inputparam" class="text-xs">
               {{ $t('label.pipeline_parameter') }}
             </SelectItem>
-            <SelectItem value="constant">
+            <SelectItem value="constant" class="text-xs">
               {{ $t('label.constant_value') }}
             </SelectItem>
           </SelectContent>
@@ -51,7 +74,7 @@
             v-model="selectedComponentOutput"
             @update:model-value="onComponentOutputChange"
           >
-            <SelectTrigger class="h-9">
+            <SelectTrigger class="h-8 text-xs font-mono">
               <SelectValue
                 :placeholder="$t('placeholder.select_component_output')"
               />
@@ -61,6 +84,7 @@
                 v-for="option in componentOutputOptions"
                 :key="option.value"
                 :value="option.value"
+                class="text-xs font-mono"
               >
                 {{ option.label }}
               </SelectItem>
@@ -71,7 +95,7 @@
         <!-- Pipeline Parameter Selector -->
         <div v-if="localInput.value_source_type === 'pipeline_inputparam'">
           <Select v-model="localInput.source" @update:model-value="emitUpdate">
-            <SelectTrigger class="h-9">
+            <SelectTrigger class="h-8 text-xs font-mono">
               <SelectValue :placeholder="$t('placeholder.select_parameter')" />
             </SelectTrigger>
             <SelectContent>
@@ -79,9 +103,13 @@
                 v-for="param in pipelineParams"
                 :key="param.name"
                 :value="param.name"
+                class="text-xs font-mono"
               >
                 {{ param.name }}
-                <span v-if="param.default" class="text-xs text-gray-500">
+                <span
+                  v-if="param.default"
+                  class="text-[10px] text-muted-foreground ml-2"
+                >
                   (default: {{ param.default }})
                 </span>
               </SelectItem>
@@ -95,7 +123,7 @@
             v-model="localInput.source"
             type="text"
             :placeholder="getConstantPlaceholder()"
-            class="h-9"
+            class="h-8 text-xs font-mono"
             @update:model-value="emitUpdate"
           />
         </div>
@@ -105,7 +133,7 @@
     <!-- Validation Error -->
     <div
       v-if="validationError && !readonly"
-      class="text-xs text-red-500 flex items-center gap-1"
+      class="text-[10px] font-bold text-red-500 flex items-center gap-1 mt-1 bg-red-50 p-1 rounded"
     >
       <Icon name="lucide:alert-circle" class="w-3 h-3" />
       {{ $t(validationError) }}
@@ -131,6 +159,11 @@ import type {
   PipelineInputParam,
 } from '~/types/builder.types';
 import { validateComponentInput } from '~/utils/builder-validation';
+import { useBuilderColors } from '~/composables/useBuilderColors';
+import { useBuilderIcons } from '~/composables/useBuilderIcons';
+
+const { getTypeColor } = useBuilderColors();
+const { getTypeIcon } = useBuilderIcons();
 
 interface Props {
   inputDefinition: ComponentPath;
@@ -188,34 +221,6 @@ const validationError = computed(() => {
     props.pipelineParams,
   );
 });
-
-// Get icon for input type
-function getTypeIcon(): string {
-  const type = props.inputDefinition.type.toLowerCase();
-
-  switch (type) {
-    case 'integer':
-    case 'int':
-      return 'lucide:hash';
-    case 'float':
-    case 'double':
-    case 'number':
-      return 'lucide:hash';
-    case 'boolean':
-    case 'bool':
-      return 'lucide:toggle-left';
-    case 'string':
-      return 'lucide:text';
-    case 'jsonobject':
-    case 'json':
-      return 'lucide:braces';
-    case 'array':
-    case 'list':
-      return 'lucide:list';
-    default:
-      return 'lucide:circle-dot';
-  }
-}
 
 // Get placeholder for constant input based on type
 function getConstantPlaceholder(): string {
