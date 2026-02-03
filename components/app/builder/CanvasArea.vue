@@ -191,6 +191,7 @@
           </div>
         </TooltipProvider>
       </template>
+      <Background pattern-color="#aaa" :gap="16" />
     </VueFlow>
   </div>
 </template>
@@ -207,6 +208,7 @@ import {
   type Edge as VueFlowEdge,
   useVueFlow,
 } from '@vue-flow/core';
+import { Background } from '@vue-flow/background';
 
 import '@vue-flow/core/dist/style.css';
 
@@ -561,6 +563,15 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   background-color: currentColor !important;
   border-color: currentColor !important;
   opacity: 1 !important;
+}
+
+/* Selected Node Styling - subtle elevation and shadow */
+.vue-flow__node.selected .kenney-node {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px hsl(var(--primary));
+  transform: scale(1.02);
+  transition: all 0.2s ease-out;
 }
 
 /* Edge Animations */
