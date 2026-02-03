@@ -14,6 +14,9 @@
       :elements-selectable="!props.readonly"
       :delete-key-code="null"
       :multi-selection-key-code="null"
+      :default-edge-options="{
+        markerEnd: { type: MarkerType.ArrowClosed, width: 8, height: 8 },
+      }"
       :is-valid-connection="isValidConnectionWrapper"
       @drop="onDrop"
       @dragover="onDragOver"
@@ -26,62 +29,35 @@
       @connect-start="onConnectStart"
       @connect-end="onConnectEnd"
     >
-      <Background
-        variant="lines"
-        :gap="40"
-        :size="2"
-        color="hsl(var(--border))"
-        style="opacity: 0.5"
-      />
-
-      <MiniMap
-        :node-color="(n: any) => getCategoryColor(n.data?.category)"
-        :node-stroke-width="3"
-        mask-color="hsl(var(--background) / 0.85)"
-        :node-border-radius="6"
-        class="!border-2 !rounded-xl !shadow-lg"
-        :style="getPanelStyle('hsl(var(--primary))')"
-      />
-
-      <template #node-default="{ data }">
+      <template #node-default="{ id, data }">
         <TooltipProvider>
           <div
             class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative"
             :class="[
               props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
-            :style="getPanelStyle(getCategoryColor(data.category))"
+            :style="{
+              border: `2px solid ${getCategoryColor(data.category)}`,
+              borderRadius: '0.75rem',
+            }"
             :data-nodeid="data.id || data.component.id"
           >
-            <!-- Status Indicator -->
-            <div v-if="data.status" class="absolute -top-3 -right-3 z-20">
-              <div
-                class="w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center shadow-sm"
-                :style="{
-                  borderColor: getStatusConfig(data.status).color,
-                  boxShadow: `0 2px 0 0 ${getStatusConfig(data.status).color}`,
-                }"
-              >
-                <Icon
-                  :name="getStatusConfig(data.status).icon"
-                  class="w-3 h-3"
-                  :class="getStatusConfig(data.status).class"
-                />
-              </div>
-            </div>
-
             <!-- Input Handles (Top) -->
             <div
               class="absolute top-0 left-0 right-0 h-0 flex justify-center z-10"
             >
               <div
-                v-for="(input, index) in data.component.input_path || []"
+                v-for="(input, index) in (
+                  data.component.input_path || []
+                ).filter((i: any) => isConnectableType(i.type))"
                 :key="`input-${input.name}`"
                 class="absolute"
                 :style="{
                   left: calculateHandlePosition(
                     Number(index),
-                    data.component.input_path.length,
+                    (data.component.input_path || []).filter((i: any) =>
+                      isConnectableType(i.type),
+                    ).length,
                   ),
                 }"
               >
@@ -89,9 +65,15 @@
                   :id="input.name"
                   type="target"
                   :position="Position.Top"
-                  class="!w-3 !h-3 !border-2 !bg-background transition-all duration-200 hover:scale-125"
+                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
-                  :style="{ borderColor: getTypeColor(input.type) }"
+                  :style="{
+                    borderColor: getTypeColor(input.type),
+                    color: getTypeColor(input.type),
+                    backgroundColor: isHandleConnected(id, input.name, 'target')
+                      ? getTypeColor(input.type)
+                      : 'hsl(var(--background))',
+                  }"
                   :data-handleid="input.name"
                 >
                   <Tooltip v-if="!props.readonly">
@@ -126,6 +108,16 @@
                     class="text-sm flex-auto overflow-hidden font-medium truncate"
                     >{{ data.label }}</span
                   >
+                  <span
+                    v-if="data.status"
+                    class="text-xs px-2 py-0.5 rounded-md uppercase"
+                    :style="{
+                      backgroundColor: getStatusConfig(data.status).color,
+                      color: 'white',
+                    }"
+                  >
+                    {{ data.status }}
+                  </span>
                 </div>
                 <div v-if="data.category" class="px-4 py-3">
                   <p
@@ -143,13 +135,17 @@
               class="absolute bottom-0 left-0 right-0 h-0 flex justify-center z-10"
             >
               <div
-                v-for="(output, index) in data.component.output_path || []"
+                v-for="(output, index) in (
+                  data.component.output_path || []
+                ).filter((o: any) => isConnectableType(o.type))"
                 :key="`output-${output.name}`"
                 class="absolute"
                 :style="{
                   left: calculateHandlePosition(
                     Number(index),
-                    data.component.output_path.length,
+                    (data.component.output_path || []).filter((o: any) =>
+                      isConnectableType(o.type),
+                    ).length,
                   ),
                 }"
               >
@@ -157,9 +153,19 @@
                   :id="output.name"
                   type="source"
                   :position="Position.Bottom"
-                  class="!w-3 !h-3 !border-2 !bg-background transition-all duration-200 hover:scale-125"
+                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
-                  :style="{ borderColor: getTypeColor(output.type) }"
+                  :style="{
+                    borderColor: getTypeColor(output.type),
+                    color: getTypeColor(output.type),
+                    backgroundColor: isHandleConnected(
+                      id,
+                      output.name,
+                      'source',
+                    )
+                      ? getTypeColor(output.type)
+                      : 'hsl(var(--background))',
+                  }"
                   :data-handleid="output.name"
                 >
                   <Tooltip v-if="!props.readonly">
@@ -186,41 +192,11 @@
         </TooltipProvider>
       </template>
     </VueFlow>
-
-    <!-- Custom Kenney Controls -->
-    <div class="absolute bottom-4 left-4 z-50 flex flex-col gap-2">
-      <button
-        class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
-        :style="getPanelStyle('hsl(var(--border))')"
-        title="Zoom In"
-        @click="() => zoomIn()"
-      >
-        <Icon name="lucide:plus" class="w-5 h-5" />
-      </button>
-      <button
-        class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
-        :style="getPanelStyle('hsl(var(--border))')"
-        title="Zoom Out"
-        @click="() => zoomOut()"
-      >
-        <Icon name="lucide:minus" class="w-5 h-5" />
-      </button>
-      <button
-        class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
-        :style="getPanelStyle('hsl(var(--border))')"
-        title="Fit View"
-        @click="() => fitView()"
-      >
-        <Icon name="lucide:maximize" class="w-5 h-5" />
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { CSSProperties } from 'vue';
-import { MiniMap } from '@vue-flow/minimap';
-import '@vue-flow/minimap/dist/style.css';
 import {
   VueFlow,
   Position,
@@ -231,7 +207,7 @@ import {
   type Edge as VueFlowEdge,
   useVueFlow,
 } from '@vue-flow/core';
-import { Background } from '@vue-flow/background';
+
 import '@vue-flow/core/dist/style.css';
 
 import {
@@ -293,7 +269,32 @@ const {
   highlightCompatibleHandles,
   clearCompatibilityMarkers,
 } = useConnectionValidation();
-const { getPanelStyle } = useKenneyTheme();
+
+const isHandleConnected = (
+  nodeId: string,
+  handleId: string,
+  handleType: 'source' | 'target',
+): boolean => {
+  return props.edges.some((edge) => {
+    return handleType === 'source'
+      ? edge.source === nodeId && edge.sourceHandle === handleId
+      : edge.target === nodeId && edge.targetHandle === handleId;
+  });
+};
+
+// Helper to determine if a type should show a handle (connectable types only)
+const isConnectableType = (type: string): boolean => {
+  const connectableTypes = [
+    'Dataset',
+    'Model',
+    'JsonObject',
+    'Array',
+    'Object',
+    'Artifact',
+    'Any',
+  ];
+  return connectableTypes.includes(type);
+};
 
 const isValidConnectionWrapper = (connection: Connection) => {
   // We pass the full component nodes list to the validator
@@ -476,7 +477,7 @@ const onConnect = (connection: Connection) => {
     }
   }
 
-  const size = 23;
+  const size = 11;
 
   const newEdge: VueFlowEdge = {
     id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
@@ -532,26 +533,8 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   cursor: pointer !important;
 }
 
-.readonly .vue-flow__node:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.readonly .vue-flow__edge {
-  pointer-events: none;
-}
-
 .readonly .vue-flow__handle {
   pointer-events: none;
-}
-
-.kenney-node:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-}
-
-.kenney-node:active {
-  transform: translateY(2px) !important;
-  box-shadow: 0 0 0 0 !important; /* Flatten the "3D" shadow */
 }
 
 /* Ensure handles are visible above other elements */
@@ -571,6 +554,13 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 .vue-flow__handle[data-compatible='false'] {
   opacity: 0.2 !important;
   cursor: not-allowed;
+}
+
+/* Connected Handle Styling - fill with type color */
+.vue-flow__handle.connected {
+  background-color: currentColor !important;
+  border-color: currentColor !important;
+  opacity: 1 !important;
 }
 
 /* Edge Animations */

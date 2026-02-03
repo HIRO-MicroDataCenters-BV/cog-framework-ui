@@ -7,32 +7,23 @@
 
     <div v-else class="space-y-4 px-2">
       <!-- HUD Container -->
-      <div
-        class="bg-card rounded-xl overflow-hidden shadow-sm transition-all duration-200"
-        :style="
-          getPanelStyle(
-            getCategoryColor(selectedNode.data?.component?.category),
-          )
-        "
-      >
-        <div
-          class="px-4 py-3 border-b flex justify-between items-center bg-muted/20"
-        >
+      <div class="bg-card overflow-hidden">
+        <div class="px-4 py-3 flex justify-between items-center">
           <div class="flex-1 mr-4">
             <Input
               v-if="!readonly"
               v-model="nodeName"
               type="text"
               :placeholder="$t('placeholder.component_name')"
-              class="h-8 font-semibold bg-transparent border-transparent hover:border-input focus:border-input transition-colors"
-              :class="{ 'border-red-500': !isComponentNameValid }"
+              class="h-8 font-semibold bg-transparent"
+              :class="{ 'text-red-500': !isComponentNameValid }"
             />
             <div v-else class="font-semibold px-3">
               {{ selectedNode.data?.label }}
             </div>
           </div>
           <DialogClose
-            class="h-6 w-6 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer transition-colors"
+            class="h-6 w-6 flex items-center justify-center cursor-pointer"
           >
             <Icon name="lucide:x" class="size-4" />
             <span class="sr-only">Close</span>
@@ -51,7 +42,7 @@
           <!-- Editable Input Parameters -->
           <div class="mb-6">
             <h3
-              class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2"
+              class="mb-2 text-xs uppercase text-muted-foreground flex items-center gap-2"
             >
               <Icon name="lucide:arrow-right-to-line" class="w-3 h-3" />
               {{ $t('label.input_path') }}
@@ -71,7 +62,7 @@
               />
               <div
                 v-if="inputDefinitions.length === 0"
-                class="text-sm text-gray-500 italic px-2 py-4 border-2 border-dashed rounded-lg text-center"
+                class="text-sm text-muted-foreground italic text-center"
               >
                 No inputs configured
               </div>
@@ -82,12 +73,12 @@
 
           <div class="mb-4 mt-6">
             <h3
-              class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2"
+              class="mb-2 text-xs uppercase text-muted-foreground flex items-center gap-2"
             >
               <Icon name="lucide:settings-2" class="w-3 h-3" />
               {{ $t('label.properties') }}
             </h3>
-            <div class="space-y-3 bg-muted/30 p-3 rounded-lg border">
+            <div class="space-y-3">
               <div class="grid grid-cols-2 gap-4 text-sm items-center">
                 <div class="flex items-center gap-2 text-muted-foreground">
                   <Icon name="lucide:folder" class="size-3" />
@@ -106,7 +97,7 @@
                 </div>
                 <div class="text-right">
                   <p
-                    class="truncate font-mono text-xs max-w-[150px] ml-auto bg-background px-2 py-1 rounded border"
+                    class="truncate font-mono text-xs max-w-[150px] ml-auto px-2 py-1"
                   >
                     {{ selectedNode.data?.component?.component_file }}
                   </p>
@@ -145,11 +136,9 @@ import type {
 } from '~/types/builder.types';
 import { validateComponentInput } from '~/utils/builder-validation';
 import { useBuilderColors } from '~/composables/useBuilderColors';
-import { useKenneyTheme } from '~/composables/useKenneyTheme';
 
 const { t } = useI18n();
 const { getCategoryColor } = useBuilderColors();
-const { getPanelStyle } = useKenneyTheme();
 
 interface Props {
   selectedNode?: Node | null;

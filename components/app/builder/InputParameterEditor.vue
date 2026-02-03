@@ -1,28 +1,15 @@
 <template>
-  <div
-    class="space-y-3 p-3 rounded-lg bg-card/50 border transition-all duration-200 hover:shadow-sm hover:border-primary/20"
-  >
-    <div
-      class="flex items-center justify-between border-b pb-2 mb-2 border-border/10"
-    >
+  <div class="space-y-3">
+    <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2">
         <div
-          class="w-6 h-6 rounded flex items-center justify-center text-background shadow-sm"
-          :style="{ backgroundColor: getTypeColor(inputDefinition.type) }"
+          class="w-6 h-6 flex items-center justify-center text-muted-foreground"
         >
           <Icon :name="getTypeIcon(inputDefinition.type)" class="w-3.5 h-3.5" />
         </div>
-        <span class="text-sm font-bold tracking-tight">{{
-          inputDefinition.name
-        }}</span>
+        <span class="text-sm">{{ inputDefinition.name }}</span>
       </div>
-      <span
-        class="text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-70"
-        :style="{
-          borderColor: getTypeColor(inputDefinition.type),
-          color: getTypeColor(inputDefinition.type),
-        }"
-      >
+      <span class="text-[10px] font-mono px-1.5 py-0.5 text-muted-foreground">
         {{ inputDefinition.type }}
       </span>
     </div>
@@ -34,9 +21,7 @@
       >
         {{ $t(`label.${localInput.value_source_type}`) }}
       </div>
-      <div
-        class="text-sm break-all font-medium py-1 px-2 bg-muted/30 rounded border border-transparent"
-      >
+      <div class="text-sm break-all font-medium py-1 px-2">
         {{ localInput.source || '-' }}
       </div>
     </div>
@@ -133,7 +118,7 @@
     <!-- Validation Error -->
     <div
       v-if="validationError && !readonly"
-      class="text-[10px] font-bold text-red-500 flex items-center gap-1 mt-1 bg-red-50 p-1 rounded"
+      class="text-[10px] text-red-500 flex items-center gap-1 mt-1 p-1"
     >
       <Icon name="lucide:alert-circle" class="w-3 h-3" />
       {{ $t(validationError) }}

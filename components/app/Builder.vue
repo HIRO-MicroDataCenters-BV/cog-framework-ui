@@ -43,7 +43,7 @@
       <div class="flex-1 flex flex-col">
         <div class="flex-1">
           <CanvasArea
-            :nodes="nodes"
+            :nodes="enrichedNodes"
             :edges="edges"
             :readonly="readonly"
             @node-click="onNodeClick"
@@ -63,7 +63,7 @@
           <PropertiesSidebar
             :readonly="readonly"
             :selected-node="selectedNode"
-            :all-nodes="nodes"
+            :all-nodes="enrichedNodes"
             @update-node="onUpdateNode"
             @delete-node="onDeleteNode"
             @rename-component="onRenameComponent"
@@ -121,6 +121,7 @@ const readonly = computed(() => props.readonly);
 const { setPage, page } = useApp();
 const toaster = useToaster();
 const { t } = useI18n();
+const { getValidationStatus } = useNodeValidation();
 const {
   nodes,
   edges,
@@ -134,6 +135,19 @@ const {
   removeEdge,
   selectNode,
 } = usePipelineBuilder();
+
+// Enrich nodes with validation status in create mode
+const enrichedNodes = computed(() => {
+  if (readonly.value) return nodes.value;
+
+  return nodes.value.map((node) => ({
+    ...node,
+    data: {
+      ...node.data,
+      status: getValidationStatus(node),
+    },
+  }));
+});
 
 const isSidebarOpen = ref({
   library: true,

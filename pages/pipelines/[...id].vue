@@ -114,7 +114,7 @@ const calculateNodePositions = (
 const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   const pipelineSpec = pipelineData?.pipeline_spec?.spec;
   const color = 'hsl(var(--muted-foreground))';
-  const arrowSize = 18;
+  const arrowSize = 11;
   if (!pipelineSpec?.templates) {
     return { nodes: [], edges: [] };
   }
