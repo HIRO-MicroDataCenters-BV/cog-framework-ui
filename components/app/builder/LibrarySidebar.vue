@@ -13,9 +13,11 @@
               <SidebarMenuButton class="mb-2 w-full">
                 <div class="flex items-center justify-between w-full">
                   <div class="flex items-center gap-2">
-                    <span 
-                        class="w-3 h-3 rounded-full border border-black/20 shadow-sm"
-                        :style="{ backgroundColor: getCategoryColor(category.name) }"
+                    <span
+                      class="w-3 h-3 rounded-full border border-black/20 shadow-sm"
+                      :style="{
+                        backgroundColor: getCategoryColor(category.name),
+                      }"
                     ></span>
                     <span class="capitalize font-semibold text-foreground/80">{{
                       category.name || $t('label.no_category')
@@ -32,29 +34,50 @@
             </CollapsibleTrigger>
             <CollapsibleContent>
               <div class="grid grid-cols-2 gap-2 px-2 py-1">
+                <div
+                  v-for="component in category.components"
+                  :key="component.id"
+                  class="cursor-grab relative group active:cursor-grabbing"
+                  draggable="true"
+                  @dragstart="onDragStart($event, component)"
+                >
+                  <!-- Inventory Card -->
                   <div
-                    v-for="component in category.components"
-                    :key="component.id"
-                    class="cursor-grab relative group active:cursor-grabbing"
-                    draggable="true"
-                    @dragstart="onDragStart($event, component)"
+                    class="p-2 rounded-md border-2 bg-card flex flex-col items-center justify-center gap-2 text-center h-24 mb-1 transition-all duration-100"
+                    :style="getPanelStyle(getCategoryColor(category.name))"
+                    @mouseover="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(-2px)')
+                    "
+                    @mouseleave="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(0)')
+                    "
+                    @mousedown="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(2px)')
+                    "
+                    @mouseup="
+                      (e) =>
+                        ((e.currentTarget as HTMLElement).style.transform =
+                          'translateY(-2px)')
+                    "
                   >
-                    <!-- Inventory Card -->
-                    <div 
-                        class="p-2 rounded-md border-2 bg-card flex flex-col items-center justify-center gap-2 text-center h-24 mb-1 transition-all duration-100"
-                        :style="getPanelStyle(getCategoryColor(category.name))"
-                        @mouseover="(e) => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'"
-                        @mouseleave="(e) => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'"
-                        @mousedown="(e) => (e.currentTarget as HTMLElement).style.transform = 'translateY(2px)'"
-                        @mouseup="(e) => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'"
+                    <!-- Icon (using generic one since we don't have per-component icon yet) -->
+                    <div
+                      class="w-8 h-8 rounded bg-background/50 flex items-center justify-center text-foreground/70"
                     >
-                        <!-- Icon (using generic one since we don't have per-component icon yet) -->
-                        <div class="w-8 h-8 rounded bg-background/50 flex items-center justify-center text-foreground/70">
-                             <Icon name="lucide:box" class="w-5 h-5" />
-                        </div>
-                        <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1">{{ component.name }}</span>
+                      <Icon name="lucide:box" class="w-5 h-5" />
                     </div>
+                    <span
+                      class="text-[10px] font-bold leading-tight line-clamp-2 px-1"
+                      >{{ component.name }}</span
+                    >
                   </div>
+                </div>
               </div>
             </CollapsibleContent>
           </SidebarMenuItem>

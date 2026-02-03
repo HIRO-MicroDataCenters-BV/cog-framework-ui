@@ -14,6 +14,7 @@
       :elements-selectable="!props.readonly"
       :delete-key-code="null"
       :multi-selection-key-code="null"
+      :is-valid-connection="isValidConnectionWrapper"
       @drop="onDrop"
       @dragover="onDragOver"
       @node-click="onNodeClick"
@@ -24,7 +25,6 @@
       @node-drag-stop="onNodeDragStop"
       @connect-start="onConnectStart"
       @connect-end="onConnectEnd"
-      :is-valid-connection="isValidConnectionWrapper"
     >
       <Background
         variant="lines"
@@ -33,8 +33,8 @@
         color="hsl(var(--border))"
         style="opacity: 0.5"
       />
-      
-      <MiniMap 
+
+      <MiniMap
         :node-color="(n: any) => getCategoryColor(n.data?.category)"
         :node-stroke-width="3"
         mask-color="hsl(var(--background) / 0.85)"
@@ -48,32 +48,42 @@
           <div
             class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative"
             :class="[
-              props.readonly ? '' : 'cursor-grab active:cursor-grabbing'
+              props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
             :style="getPanelStyle(getCategoryColor(data.category))"
-            :data-nodeid="data.id || data.component.id" 
+            :data-nodeid="data.id || data.component.id"
           >
             <!-- Status Indicator -->
             <div v-if="data.status" class="absolute -top-3 -right-3 z-20">
-               <div 
-                 class="w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center shadow-sm"
-                 :style="{ borderColor: getStatusConfig(data.status).color, boxShadow: `0 2px 0 0 ${getStatusConfig(data.status).color}` }"
-               >
-                 <Icon 
-                   :name="getStatusConfig(data.status).icon"
-                   class="w-3 h-3"
-                   :class="getStatusConfig(data.status).class"
-                 />
-               </div>
+              <div
+                class="w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center shadow-sm"
+                :style="{
+                  borderColor: getStatusConfig(data.status).color,
+                  boxShadow: `0 2px 0 0 ${getStatusConfig(data.status).color}`,
+                }"
+              >
+                <Icon
+                  :name="getStatusConfig(data.status).icon"
+                  class="w-3 h-3"
+                  :class="getStatusConfig(data.status).class"
+                />
+              </div>
             </div>
 
             <!-- Input Handles (Top) -->
-            <div class="absolute top-0 left-0 right-0 h-0 flex justify-center z-10">
-              <div 
-                v-for="(input, index) in (data.component.input_path || [])" 
+            <div
+              class="absolute top-0 left-0 right-0 h-0 flex justify-center z-10"
+            >
+              <div
+                v-for="(input, index) in data.component.input_path || []"
                 :key="`input-${input.name}`"
                 class="absolute"
-                :style="{ left: calculateHandlePosition(Number(index), data.component.input_path.length) }"
+                :style="{
+                  left: calculateHandlePosition(
+                    Number(index),
+                    data.component.input_path.length,
+                  ),
+                }"
               >
                 <Handle
                   :id="input.name"
@@ -86,15 +96,19 @@
                 >
                   <Tooltip v-if="!props.readonly">
                     <TooltipTrigger as-child>
-                      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                         <!-- Tiny dot icon inside handle if needed, or just color -->
+                      <div
+                        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                      >
+                        <!-- Tiny dot icon inside handle if needed, or just color -->
                       </div>
                     </TooltipTrigger>
                     <TooltipContent class="text-xs">
                       <div class="font-medium">{{ input.name }}</div>
-                      <div class="text-muted-foreground flex items-center gap-1">
+                      <div
+                        class="text-muted-foreground flex items-center gap-1"
+                      >
                         <Icon :name="getTypeIcon(input.type)" class="w-3 h-3" />
-                         {{ input.type }}
+                        {{ input.type }}
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -108,12 +122,15 @@
                 <div
                   class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
                 >
-                  <span class="text-sm flex-auto overflow-hidden font-medium truncate">{{
-                    data.label
-                  }}</span>
+                  <span
+                    class="text-sm flex-auto overflow-hidden font-medium truncate"
+                    >{{ data.label }}</span
+                  >
                 </div>
                 <div v-if="data.category" class="px-4 py-3">
-                  <p class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                  <p
+                    class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
+                  >
                     <Icon name="lucide:folder" class="w-3 h-3" />
                     {{ data.category }}
                   </p>
@@ -122,12 +139,19 @@
             </SheetTrigger>
 
             <!-- Output Handles (Bottom) -->
-            <div class="absolute bottom-0 left-0 right-0 h-0 flex justify-center z-10">
-              <div 
-                 v-for="(output, index) in (data.component.output_path || [])" 
-                 :key="`output-${output.name}`"
-                 class="absolute"
-                 :style="{ left: calculateHandlePosition(Number(index), data.component.output_path.length) }"
+            <div
+              class="absolute bottom-0 left-0 right-0 h-0 flex justify-center z-10"
+            >
+              <div
+                v-for="(output, index) in data.component.output_path || []"
+                :key="`output-${output.name}`"
+                class="absolute"
+                :style="{
+                  left: calculateHandlePosition(
+                    Number(index),
+                    data.component.output_path.length,
+                  ),
+                }"
               >
                 <Handle
                   :id="output.name"
@@ -143,46 +167,49 @@
                       <div class="w-full h-full"></div>
                     </TooltipTrigger>
                     <TooltipContent class="text-xs">
-                       <div class="font-medium">{{ output.name }}</div>
-                       <div class="text-muted-foreground flex items-center gap-1">
-                         <Icon :name="getTypeIcon(output.type)" class="w-3 h-3" />
-                         {{ output.type }}
-                       </div>
+                      <div class="font-medium">{{ output.name }}</div>
+                      <div
+                        class="text-muted-foreground flex items-center gap-1"
+                      >
+                        <Icon
+                          :name="getTypeIcon(output.type)"
+                          class="w-3 h-3"
+                        />
+                        {{ output.type }}
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 </Handle>
               </div>
             </div>
-
           </div>
         </TooltipProvider>
       </template>
-
     </VueFlow>
 
     <!-- Custom Kenney Controls -->
     <div class="absolute bottom-4 left-4 z-50 flex flex-col gap-2">
-      <button 
+      <button
         class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
         :style="getPanelStyle('hsl(var(--border))')"
-        @click="() => zoomIn()"
         title="Zoom In"
+        @click="() => zoomIn()"
       >
         <Icon name="lucide:plus" class="w-5 h-5" />
       </button>
-      <button 
+      <button
         class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
         :style="getPanelStyle('hsl(var(--border))')"
-        @click="() => zoomOut()"
         title="Zoom Out"
+        @click="() => zoomOut()"
       >
         <Icon name="lucide:minus" class="w-5 h-5" />
       </button>
-      <button 
+      <button
         class="w-10 h-10 bg-card rounded-lg flex items-center justify-center transition-all duration-100 hover:brightness-110 active:scale-95 shadow-sm"
         :style="getPanelStyle('hsl(var(--border))')"
-        @click="() => fitView()"
         title="Fit View"
+        @click="() => fitView()"
       >
         <Icon name="lucide:maximize" class="w-5 h-5" />
       </button>
@@ -212,7 +239,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '~/components/ui/tooltip'
+} from '~/components/ui/tooltip';
 
 import { useBuilderColors } from '~/composables/useBuilderColors';
 import { useBuilderIcons } from '~/composables/useBuilderIcons';
@@ -250,38 +277,61 @@ const emit = defineEmits<{
   requestDelete: [elements: (VueFlowNode | VueFlowEdge)[]];
 }>();
 
-const { getSelectedElements, addSelectedNodes, removeSelectedNodes, zoomIn, zoomOut, fitView } =
-  useVueFlow();
+const {
+  getSelectedElements,
+  addSelectedNodes,
+  removeSelectedNodes,
+  zoomIn,
+  zoomOut,
+  fitView,
+} = useVueFlow();
 
 const { getTypeColor, getCategoryColor, getStatusConfig } = useBuilderColors();
 const { getTypeIcon } = useBuilderIcons();
-const { isValidConnection, highlightCompatibleHandles, clearCompatibilityMarkers } = useConnectionValidation();
+const {
+  isValidConnection,
+  highlightCompatibleHandles,
+  clearCompatibilityMarkers,
+} = useConnectionValidation();
 const { getPanelStyle } = useKenneyTheme();
 
 const isValidConnectionWrapper = (connection: Connection) => {
-    // We pass the full component nodes list to the validator
-    // props.nodes contains the data with component structure
-    // We cast to any because AppNode type mismatches slightly with VueFlowNode but data structure is compatible
-    return isValidConnection(connection, props.nodes as any[]);
+  // We pass the full component nodes list to the validator
+  // props.nodes contains the data with component structure
+  // We cast to any because AppNode type mismatches slightly with VueFlowNode but data structure is compatible
+  return isValidConnection(connection, props.nodes as VueFlowNode[]);
 };
 
-const onConnectStart = (params: { nodeId?: string; handleId?: string | null; handleType?: 'source' | 'target' }) => {
-    if (props.readonly || !params.nodeId || !params.handleId || !params.handleType) return;
-    
-    highlightCompatibleHandles({
-        nodeId: params.nodeId,
-        handleId: params.handleId, // Type guard above ensures it's string here
-        handleType: params.handleType
-    }, props.nodes as any[]);
+const onConnectStart = (params: {
+  nodeId?: string;
+  handleId?: string | null;
+  handleType?: 'source' | 'target';
+}) => {
+  if (
+    props.readonly ||
+    !params.nodeId ||
+    !params.handleId ||
+    !params.handleType
+  )
+    return;
+
+  highlightCompatibleHandles(
+    {
+      nodeId: params.nodeId,
+      handleId: params.handleId, // Type guard above ensures it's string here
+      handleType: params.handleType,
+    },
+    props.nodes as VueFlowNode[],
+  );
 };
 
 const onConnectEnd = () => {
-    clearCompatibilityMarkers();
+  clearCompatibilityMarkers();
 };
 
 const calculateHandlePosition = (index: number, total: number) => {
   if (total === 1) return '50%';
-  // Distribute evently: for 2 items -> 33%, 66% ? Or 25%, 75%? 
+  // Distribute evently: for 2 items -> 33%, 66% ? Or 25%, 75%?
   // Standard flex-like spacing usually works best:
   const step = 100 / (total + 1);
   return `${step * (index + 1)}%`;
@@ -414,14 +464,16 @@ const onConnect = (connection: Connection) => {
   const targetHandle = connection.targetHandle || '';
 
   // We need to fetch the Source Node to determine the Edge Color based on type!
-  const sourceNode = props.nodes?.find(n => n.id === connection.source);
+  const sourceNode = props.nodes?.find((n) => n.id === connection.source);
   let edgeColor = 'hsl(var(--muted-foreground))'; // default
-  
+
   if (sourceNode?.data?.component?.output_path && sourceHandle) {
-     const outputDef = sourceNode.data.component.output_path.find((o: any) => o.name === sourceHandle);
-     if (outputDef) {
-         edgeColor = getTypeColor(outputDef.type);
-     }
+    const outputDef = sourceNode.data.component.output_path.find(
+      (o: ComponentPath) => o.name === sourceHandle,
+    );
+    if (outputDef) {
+      edgeColor = getTypeColor(outputDef.type);
+    }
   }
 
   const size = 23;
@@ -443,8 +495,8 @@ const onConnect = (connection: Connection) => {
       color: edgeColor,
     },
     data: {
-       color: edgeColor // Persist color in data if needed
-    }
+      color: edgeColor, // Persist color in data if needed
+    },
   };
 
   emit('connect', newEdge);
@@ -508,7 +560,7 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 }
 
 /* Compatibility Styling */
-.vue-flow__handle[data-compatible="true"] {
+.vue-flow__handle[data-compatible='true'] {
   box-shadow: 0 0 0 3px hsl(142 76% 36% / 0.5) !important;
   border-color: hsl(142 76% 36%) !important;
   transform: scale(1.3) !important;
@@ -516,7 +568,7 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   opacity: 1 !important;
 }
 
-.vue-flow__handle[data-compatible="false"] {
+.vue-flow__handle[data-compatible='false'] {
   opacity: 0.2 !important;
   cursor: not-allowed;
 }
@@ -533,4 +585,3 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   }
 }
 </style>
-

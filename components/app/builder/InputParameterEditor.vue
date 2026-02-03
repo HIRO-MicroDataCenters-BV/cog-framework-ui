@@ -1,31 +1,42 @@
 <template>
-  <div 
+  <div
     class="space-y-3 p-3 rounded-lg bg-card/50 border transition-all duration-200 hover:shadow-sm hover:border-primary/20"
   >
-    <div class="flex items-center justify-between border-b pb-2 mb-2 border-border/10">
+    <div
+      class="flex items-center justify-between border-b pb-2 mb-2 border-border/10"
+    >
       <div class="flex items-center gap-2">
-        <div 
-            class="w-6 h-6 rounded flex items-center justify-center text-background shadow-sm"
-            :style="{ backgroundColor: getTypeColor(inputDefinition.type) }"
+        <div
+          class="w-6 h-6 rounded flex items-center justify-center text-background shadow-sm"
+          :style="{ backgroundColor: getTypeColor(inputDefinition.type) }"
         >
-            <Icon :name="getTypeIcon(inputDefinition.type)" class="w-3.5 h-3.5" />
+          <Icon :name="getTypeIcon(inputDefinition.type)" class="w-3.5 h-3.5" />
         </div>
-        <span class="text-sm font-bold tracking-tight">{{ inputDefinition.name }}</span>
+        <span class="text-sm font-bold tracking-tight">{{
+          inputDefinition.name
+        }}</span>
       </div>
-       <span 
+      <span
         class="text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-70"
-        :style="{ borderColor: getTypeColor(inputDefinition.type), color: getTypeColor(inputDefinition.type) }"
-       >
+        :style="{
+          borderColor: getTypeColor(inputDefinition.type),
+          color: getTypeColor(inputDefinition.type),
+        }"
+      >
         {{ inputDefinition.type }}
-       </span>
+      </span>
     </div>
 
     <!-- Readonly View -->
     <div v-if="readonly" class="pl-1">
-      <div class="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">
+      <div
+        class="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold"
+      >
         {{ $t(`label.${localInput.value_source_type}`) }}
       </div>
-      <div class="text-sm break-all font-medium py-1 px-2 bg-muted/30 rounded border border-transparent">
+      <div
+        class="text-sm break-all font-medium py-1 px-2 bg-muted/30 rounded border border-transparent"
+      >
         {{ localInput.source || '-' }}
       </div>
     </div>
@@ -95,7 +106,10 @@
                 class="text-xs font-mono"
               >
                 {{ param.name }}
-                <span v-if="param.default" class="text-[10px] text-muted-foreground ml-2">
+                <span
+                  v-if="param.default"
+                  class="text-[10px] text-muted-foreground ml-2"
+                >
                   (default: {{ param.default }})
                 </span>
               </SelectItem>
@@ -207,8 +221,6 @@ const validationError = computed(() => {
     props.pipelineParams,
   );
 });
-
-
 
 // Get placeholder for constant input based on type
 function getConstantPlaceholder(): string {

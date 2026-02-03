@@ -7,102 +7,124 @@
 
     <div v-else class="space-y-4 px-2">
       <!-- HUD Container -->
-      <div 
+      <div
         class="bg-card rounded-xl overflow-hidden shadow-sm transition-all duration-200"
-        :style="getPanelStyle(getCategoryColor(selectedNode.data?.component?.category))"
+        :style="
+          getPanelStyle(
+            getCategoryColor(selectedNode.data?.component?.category),
+          )
+        "
       >
-        <div class="px-4 py-3 border-b flex justify-between items-center bg-muted/20">
-            <div class="flex-1 mr-4">
-                 <Input
-                  v-if="!readonly"
-                  v-model="nodeName"
-                  type="text"
-                  :placeholder="$t('placeholder.component_name')"
-                  class="h-8 font-semibold bg-transparent border-transparent hover:border-input focus:border-input transition-colors"
-                  :class="{ 'border-red-500': !isComponentNameValid }"
-                />
-                <div v-else class="font-semibold px-3">{{ selectedNode.data?.label }}</div>
+        <div
+          class="px-4 py-3 border-b flex justify-between items-center bg-muted/20"
+        >
+          <div class="flex-1 mr-4">
+            <Input
+              v-if="!readonly"
+              v-model="nodeName"
+              type="text"
+              :placeholder="$t('placeholder.component_name')"
+              class="h-8 font-semibold bg-transparent border-transparent hover:border-input focus:border-input transition-colors"
+              :class="{ 'border-red-500': !isComponentNameValid }"
+            />
+            <div v-else class="font-semibold px-3">
+              {{ selectedNode.data?.label }}
             </div>
-             <DialogClose class="h-6 w-6 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer transition-colors">
-                <Icon name="lucide:x" class="size-4" />
-                <span class="sr-only">Close</span>
-             </DialogClose>
+          </div>
+          <DialogClose
+            class="h-6 w-6 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer transition-colors"
+          >
+            <Icon name="lucide:x" class="size-4" />
+            <span class="sr-only">Close</span>
+          </DialogClose>
         </div>
 
         <div class="p-4 overflow-y-auto max-h-[calc(100vh-140px)]">
-            <!-- Validation Error -->
-            <div
-              v-if="componentNameError && !readonly"
-              class="text-red-500 text-xs mb-3 px-1 font-medium"
-            >
-              {{ componentNameError }}
-            </div>
+          <!-- Validation Error -->
+          <div
+            v-if="componentNameError && !readonly"
+            class="text-red-500 text-xs mb-3 px-1 font-medium"
+          >
+            {{ componentNameError }}
+          </div>
 
-            <!-- Editable Input Parameters -->
-            <div class="mb-6">
-              <h3 class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
-                 <Icon name="lucide:arrow-right-to-line" class="w-3 h-3" />
-                 {{ $t('label.input_path') }}
-              </h3>
-              <div class="space-y-2">
-                <InputParameterEditor
-                  v-for="inputDef in inputDefinitions"
-                  :key="inputDef.name"
-                  :input-definition="inputDef"
-                  :input="getInputForDefinition(inputDef)"
-                  :available-components="availableUpstreamComponents"
-                  :pipeline-params="pipelineParameters"
-                  :readonly="readonly"
-                  @update="(updatedInput) => onInputUpdate(inputDef, updatedInput)"
-                />
+          <!-- Editable Input Parameters -->
+          <div class="mb-6">
+            <h3
+              class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2"
+            >
+              <Icon name="lucide:arrow-right-to-line" class="w-3 h-3" />
+              {{ $t('label.input_path') }}
+            </h3>
+            <div class="space-y-2">
+              <InputParameterEditor
+                v-for="inputDef in inputDefinitions"
+                :key="inputDef.name"
+                :input-definition="inputDef"
+                :input="getInputForDefinition(inputDef)"
+                :available-components="availableUpstreamComponents"
+                :pipeline-params="pipelineParameters"
+                :readonly="readonly"
+                @update="
+                  (updatedInput) => onInputUpdate(inputDef, updatedInput)
+                "
+              />
+              <div
+                v-if="inputDefinitions.length === 0"
+                class="text-sm text-gray-500 italic px-2 py-4 border-2 border-dashed rounded-lg text-center"
+              >
+                No inputs configured
+              </div>
+            </div>
+          </div>
+
+          <PathSection :title="$t('label.output_path')" :paths="outputPaths" />
+
+          <div class="mb-4 mt-6">
+            <h3
+              class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2"
+            >
+              <Icon name="lucide:settings-2" class="w-3 h-3" />
+              {{ $t('label.properties') }}
+            </h3>
+            <div class="space-y-3 bg-muted/30 p-3 rounded-lg border">
+              <div class="grid grid-cols-2 gap-4 text-sm items-center">
+                <div class="flex items-center gap-2 text-muted-foreground">
+                  <Icon name="lucide:folder" class="size-3" />
+                  Category
+                </div>
                 <div
-                  v-if="inputDefinitions.length === 0"
-                  class="text-sm text-gray-500 italic px-2 py-4 border-2 border-dashed rounded-lg text-center"
+                  class="font-medium text-right lowercase first-letter:uppercase"
                 >
-                  No inputs configured
+                  {{ selectedNode.data?.component?.category }}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-sm items-center">
+                <div class="flex items-center gap-2 text-muted-foreground">
+                  <Icon name="lucide:file-code" class="size-3" />
+                  {{ $t('label.component_file') }}
+                </div>
+                <div class="text-right">
+                  <p
+                    class="truncate font-mono text-xs max-w-[150px] ml-auto bg-background px-2 py-1 rounded border"
+                  >
+                    {{ selectedNode.data?.component?.component_file }}
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <PathSection :title="$t('label.output_path')" :paths="outputPaths" />
-            
-            <div class="mb-4 mt-6">
-              <h3 class="mb-2 text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
-                <Icon name="lucide:settings-2" class="w-3 h-3" />
-                {{ $t('label.properties') }}
-              </h3>
-              <div class="space-y-3 bg-muted/30 p-3 rounded-lg border">
-                <div class="grid grid-cols-2 gap-4 text-sm items-center">
-                  <div class="flex items-center gap-2 text-muted-foreground">
-                    <Icon name="lucide:folder" class="size-3" />
-                    Category
-                  </div>
-                  <div class="font-medium text-right lowercase first-letter:uppercase">{{ selectedNode.data?.component?.category }}</div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm items-center">
-                  <div class="flex items-center gap-2 text-muted-foreground">
-                    <Icon name="lucide:file-code" class="size-3" />
-                    {{ $t('label.component_file') }}
-                  </div>
-                  <div class="text-right">
-                    <p class="truncate font-mono text-xs max-w-[150px] ml-auto bg-background px-2 py-1 rounded border">
-                      {{ selectedNode.data?.component?.component_file }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Button
-              v-if="!readonly"
-              variant="destructive"
-              size="sm"
-              class="w-full mt-4"
-              @click="onDelete"
-            >
-              <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
-              {{ $t('action.delete') }}
-            </Button>
+          <Button
+            v-if="!readonly"
+            variant="destructive"
+            size="sm"
+            class="w-full mt-4"
+            @click="onDelete"
+          >
+            <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
+            {{ $t('action.delete') }}
+          </Button>
         </div>
       </div>
     </div>
@@ -128,7 +150,6 @@ import { useKenneyTheme } from '~/composables/useKenneyTheme';
 const { t } = useI18n();
 const { getCategoryColor } = useBuilderColors();
 const { getPanelStyle } = useKenneyTheme();
-
 
 interface Props {
   selectedNode?: Node | null;
@@ -288,16 +309,15 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
     inputs.push(updatedInput);
   }
 
-    // Update node status - only send partial updates for status and component.inputs
-    emit('updateNode', props.selectedNode.id, {
-      data: {
-        component: {
-          inputs,
-        },
+  // Update node status - only send partial updates for status and component.inputs
+  emit('updateNode', props.selectedNode.id, {
+    data: {
+      component: {
+        inputs,
       },
-    } as any);
-  }
-
+    },
+  } as Partial<Node>);
+}
 
 function updateNode() {
   if (props.selectedNode) {
@@ -310,7 +330,7 @@ function updateNode() {
         transformExpression: formData.transformExpression,
       },
     };
-    emit('updateNode', props.selectedNode.id, updates as any);
+    emit('updateNode', props.selectedNode.id, updates as Partial<Node>);
   }
 }
 
@@ -439,7 +459,7 @@ watch(
       data: {
         status: newStatus,
       },
-    } as any);
+    } as Partial<Node>);
   },
   { immediate: true },
 );
