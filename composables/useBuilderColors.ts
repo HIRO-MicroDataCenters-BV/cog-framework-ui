@@ -42,6 +42,16 @@ export const useBuilderColors = () => {
       icon: 'lucide:clock',
       class: 'text-yellow-600',
     },
+    valid: {
+      color: 'hsl(142 76% 36%)',
+      icon: 'lucide:check',
+      class: 'text-green-600',
+    },
+    invalid: {
+      color: 'hsl(0 84% 60%)',
+      icon: 'lucide:alert-circle',
+      class: 'text-red-600',
+    },
     idle: {
       color: 'hsl(240 3.8% 46.1%)',
       icon: 'lucide:circle',

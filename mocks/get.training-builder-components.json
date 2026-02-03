@@ -1,352 +1,194 @@
 {
   "status_code": 200,
-  "message": "Components retrieved successfully.",
+  "message": "All components retrieved successfully.",
   "data": [
     {
-      "id": 1,
-      "name": "FedSCVI server2",
+      "id": "55455462-0957-4d57-9847-9cc36dd07068",
+      "name": "FedSCVI server",
       "input_path": [
         {
           "name": "number_of_iterations",
           "type": "Integer",
-          "default": "10"
+          "description": "Number of federated learning rounds"
         },
         {
           "name": "server_address",
           "type": "String",
-          "default": "localhost:8080"
+          "description": "Server address (e.g., \"0.0.0.0:8080\")"
         },
         {
           "name": "experiment_name",
           "type": "String",
-          "default": "FedSCVI_Experiment"
+          "description": "Cogflow experiment name",
+          "default": "FedSCVI",
+          "optional": true
         },
         {
           "name": "n_layers",
           "type": "Integer",
-          "default": "2"
+          "description": "Number of layers in scVI model",
+          "default": "2",
+          "optional": true
         },
         {
           "name": "dropout_rate",
           "type": "Float",
-          "default": "0.2"
+          "description": "Dropout rate for scVI model",
+          "default": "0.2",
+          "optional": true
         },
         {
           "name": "min_clients",
           "type": "Integer",
-          "default": "2"
+          "description": "Minimum number of clients to wait for",
+          "default": "2",
+          "optional": true
         },
         {
           "name": "fraction_fit",
           "type": "Float",
-          "default": "1.0"
+          "description": "Fraction of clients to use for training (default: 1.0 = all)",
+          "default": "1.0",
+          "optional": true
         },
         {
           "name": "fraction_evaluate",
           "type": "Float",
-          "default": "1.0"
+          "description": "Fraction of clients to use for evaluation (default: 1.0 = all)",
+          "default": "1.0",
+          "optional": true
         }
       ],
       "output_path": [
         {
-          "name": "model",
-          "type": "Model"
-        },
-        {
-          "name": "metrics",
-          "type": "JSON"
+          "name": "Output",
+          "type": "JsonObject"
         }
       ],
-      "component_file": "/federated/fedscvi_server.yaml",
+      "component_file": "s3://components/FedSCVI_server.yaml",
       "category": "federated server",
       "creator": "admin@hiro.com"
     },
     {
-      "id": 2,
+      "id": "933cd6ed-40ff-4f38-860e-37a532b9a67c",
+      "name": "cogflow_refactor",
+      "input_path": [
+        {
+          "name": "number_of_iterations",
+          "type": "Integer",
+          "description": "Number of federated learning rounds"
+        },
+        {
+          "name": "server_address",
+          "type": "String",
+          "description": "Server address (e.g., \"0.0.0.0:8080\")"
+        },
+        {
+          "name": "experiment_name",
+          "type": "String",
+          "description": "Cogflow experiment name",
+          "default": "FedSCVI",
+          "optional": true
+        },
+        {
+          "name": "n_layers",
+          "type": "Integer",
+          "description": "Number of layers in scVI model",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "name": "dropout_rate",
+          "type": "Float",
+          "description": "Dropout rate for scVI model",
+          "default": "0.2",
+          "optional": true
+        },
+        {
+          "name": "min_clients",
+          "type": "Integer",
+          "description": "Minimum number of clients to wait for",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "name": "fraction_fit",
+          "type": "Float",
+          "description": "Fraction of clients to use for training (default: 1.0 = all)",
+          "default": "1.0",
+          "optional": true
+        },
+        {
+          "name": "fraction_evaluate",
+          "type": "Float",
+          "description": "Fraction of clients to use for evaluation (default: 1.0 = all)",
+          "default": "1.0",
+          "optional": true
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "JsonObject"
+        }
+      ],
+      "component_file": "s3://components/cogflow_refactor.yaml",
+      "category": "cogflow-refactor",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "8fd340c3-960d-4be5-81be-8f4ca40698a1",
       "name": "FedSCVI client",
       "input_path": [
         {
-          "name": "server_address",
-          "type": "String",
-          "default": "localhost:8080"
-        },
-        {
-          "name": "client_id",
-          "type": "String",
-          "default": "client_1"
-        },
-        {
-          "name": "data_path",
-          "type": "String",
-          "default": "/data/client1"
-        },
-        {
-          "name": "batch_size",
-          "type": "Integer",
-          "default": "128"
-        },
-        {
-          "name": "learning_rate",
-          "type": "Float",
-          "default": "0.001"
-        },
-        {
-          "name": "local_epochs",
-          "type": "Integer",
-          "default": "5"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "local_model",
-          "type": "Model"
-        },
-        {
-          "name": "training_log",
-          "type": "JSON"
-        }
-      ],
-      "component_file": "/federated/fedscvi_client.yaml",
-      "category": "federated client",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 3,
-      "name": "FedAvg server",
-      "input_path": [
-        {
-          "name": "rounds",
-          "type": "Integer",
-          "default": "50"
-        },
-        {
-          "name": "server_address",
-          "type": "String",
-          "default": "0.0.0.0:9090"
-        },
-        {
-          "name": "min_fit_clients",
-          "type": "Integer",
-          "default": "3"
-        },
-        {
-          "name": "min_evaluate_clients",
-          "type": "Integer",
-          "default": "3"
-        },
-        {
-          "name": "min_available_clients",
-          "type": "Integer",
-          "default": "3"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "global_model",
-          "type": "Model"
-        },
-        {
-          "name": "aggregation_metrics",
-          "type": "JSON"
-        }
-      ],
-      "component_file": "/federated/fedavg_server.yaml",
-      "category": "federated server",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 4,
-      "name": "FedAvg client",
-      "input_path": [
-        {
-          "name": "server_address",
-          "type": "String",
-          "default": "0.0.0.0:9090"
-        },
-        {
-          "name": "client_name",
-          "type": "String",
-          "default": "fedavg_client"
-        },
-        {
-          "name": "dataset_path",
-          "type": "String",
-          "default": "/datasets/mnist"
-        },
-        {
-          "name": "epochs",
-          "type": "Integer",
-          "default": "3"
-        },
-        {
-          "name": "batch_size",
-          "type": "Integer",
-          "default": "64"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "client_model",
-          "type": "Model"
-        }
-      ],
-      "component_file": "/federated/fedavg_client.yaml",
-      "category": "federated client",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 5,
-      "name": "Data Preprocessor",
-      "input_path": [
-        {
-          "name": "input_file",
-          "type": "CSV",
-          "default": "/data/raw.csv"
-        },
-        {
-          "name": "normalize",
-          "type": "Boolean",
-          "default": "true"
-        },
-        {
-          "name": "remove_outliers",
-          "type": "Boolean",
-          "default": "false"
-        },
-        {
-          "name": "fill_missing",
-          "type": "String",
-          "default": "mean"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "processed_data",
-          "type": "Parquet"
-        }
-      ],
-      "component_file": "/preprocessing/data_preprocessor.yaml",
-      "category": "preprocessing",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 6,
-      "name": "Model Trainer",
-      "input_path": [
-        {
-          "name": "training_data",
-          "type": "Parquet",
-          "default": ""
-        },
-        {
-          "name": "model_type",
-          "type": "String",
-          "default": "neural_network"
-        },
-        {
-          "name": "epochs",
-          "type": "Integer",
-          "default": "100"
-        },
-        {
-          "name": "learning_rate",
-          "type": "Float",
-          "default": "0.01"
-        },
-        {
-          "name": "optimizer",
-          "type": "String",
-          "default": "adam"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "trained_model",
-          "type": "Model"
-        },
-        {
-          "name": "training_history",
-          "type": "JSON"
-        }
-      ],
-      "component_file": "/training/model_trainer.yaml",
-      "category": "training",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 7,
-      "name": "Model Evaluator",
-      "input_path": [
-        {
-          "name": "model",
-          "type": "Model",
-          "default": ""
-        },
-        {
-          "name": "test_data",
-          "type": "Parquet",
-          "default": ""
-        },
-        {
-          "name": "metrics",
-          "type": "String",
-          "default": "accuracy,precision,recall"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "evaluation_results",
-          "type": "JSON"
-        }
-      ],
-      "component_file": "/evaluation/model_evaluator.yaml",
-      "category": "evaluation",
-      "creator": "admin@hiro.com"
-    },
-    {
-      "id": 8,
-      "name": "Model Deployer",
-      "input_path": [
-        {
-          "name": "model",
-          "type": "Model",
-          "default": ""
-        },
-        {
-          "name": "service_name",
-          "type": "String",
-          "default": "ml-service"
-        },
-        {
-          "name": "replicas",
-          "type": "Integer",
-          "default": "2"
-        },
-        {
-          "name": "cpu_limit",
-          "type": "String",
-          "default": "2"
-        },
-        {
-          "name": "memory_limit",
-          "type": "String",
-          "default": "4Gi"
-        }
-      ],
-      "output_path": [
-        {
-          "name": "deployment_url",
+          "name": "local_data_connector",
           "type": "String"
+        },
+        {
+          "name": "server_address",
+          "type": "String",
+          "description": "Server address (e.g., \"localhost:8080\")"
+        },
+        {
+          "name": "server_config",
+          "type": "JsonObject",
+          "description": "Configuration from FedSCVI server"
+        },
+        {
+          "name": "num_local_epochs",
+          "type": "Integer",
+          "description": "Number of local training epochs per round"
+        },
+        {
+          "name": "validation_split",
+          "type": "Float",
+          "description": "Fraction of data to use for validation"
+        },
+        {
+          "name": "n_layers",
+          "type": "Integer",
+          "description": "Number of layers in scVI model"
+        },
+        {
+          "name": "dropout_rate",
+          "type": "Float",
+          "description": "Dropout rate for scVI model"
         }
       ],
-      "component_file": "/deployment/model_deployer.yaml",
-      "category": "deployment",
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "JsonObject"
+        }
+      ],
+      "component_file": "s3://components/FedSCVI_client.yaml",
+      "category": "federated client",
       "creator": "admin@hiro.com"
     }
   ],
   "pagination": {
     "page": 1,
-    "limit": 999,
-    "total_items": 8
+    "limit": 10,
+    "total_items": 3
   }
 }
