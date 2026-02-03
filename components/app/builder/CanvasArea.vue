@@ -567,7 +567,7 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 
 /* Selected Node Styling - subtle elevation and shadow */
 .vue-flow__node.selected .kenney-node {
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     0 0 0 1px hsl(var(--primary));
   transform: scale(1.02);
