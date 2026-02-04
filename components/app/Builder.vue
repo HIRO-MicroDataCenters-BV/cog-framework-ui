@@ -43,6 +43,7 @@
       <div class="flex-1 flex flex-col">
         <div class="flex-1">
           <CanvasArea
+            v-if="nodes.length > 0 || edges.length > 0"
             :nodes="enrichedNodes"
             :edges="edges"
             :readonly="readonly"
@@ -166,16 +167,20 @@ const externalBuilderUrl = ref(
 watch(
   () => page.value.data?.builder,
   (builderData) => {
-    // Only initialize if store is empty or we explicitly want to reset (todo: better condition?)
-    // For now, let's initialize if we have data and store is empty
-    if (builderData && nodes.value.length === 0 && edges.value.length === 0) {
+    // Only initialize if:
+    // 1. We have builderData with actual nodes/edges
+    // 2. Store is currently empty
+    const hasData = builderData?.nodes?.length || builderData?.edges?.length;
+    const storeIsEmpty = nodes.value.length === 0 && edges.value.length === 0;
+    console.log('builderData', builderData);
+    if (hasData && storeIsEmpty) {
       initialize(
         (builderData.nodes as Node[]) || [],
         (builderData.edges as Edge[]) || [],
       );
     }
   },
-  { immediate: true, deep: false },
+  { deep: true },
 );
 
 // Sync store back to Page for persistence/navigation

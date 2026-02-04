@@ -10,8 +10,8 @@ export const usePipelineBuilder = () => {
 
   const initialize = (initialNodes: Node[], initialEdges: Edge[]) => {
     // Deep copy to break references to the page object
-    nodes.value = JSON.parse(JSON.stringify(initialNodes || []));
-    edges.value = JSON.parse(JSON.stringify(initialEdges || []));
+    nodes.value = initialNodes || []; // JSON.parse(JSON.stringify(initialNodes || []));
+    edges.value = initialEdges || []; // JSON.parse(JSON.stringify(initialEdges || []));
     selectedNode.value = null;
   };
 

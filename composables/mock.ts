@@ -715,6 +715,7 @@ export const useApiWithMock = () => {
     },
 
     getPipelineRunFlow: async (id: string) => {
+      console.log('getPipelineRunFlow', id, mock.value.enabled);
       if (mock.value.enabled) {
         // Return LSTM pipeline mock data if ID matches
         if (id === 'af31bfc5-0bb9-4520-86e3-30009ff7f805') {
@@ -723,6 +724,8 @@ export const useApiWithMock = () => {
           );
           return Promise.resolve(lstmPipeline);
         }
+
+        console.log('---->', id);
 
         // Return wine pipeline mock data if ID matches
         if (id === 'c4f73142-5412-4908-ba47-cd5654df9fb5') {

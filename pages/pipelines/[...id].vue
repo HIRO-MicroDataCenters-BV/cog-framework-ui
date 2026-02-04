@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Position } from '@vue-flow/core';
+import { Position, MarkerType } from '@vue-flow/core';
 import type {
   Node,
   Edge,
@@ -52,6 +52,13 @@ const calculateNodePositions = (
   const levels: Record<number, string[]> = {};
   const memo = new Map<string, number>();
 
+  // Layout configuration
+  const NODE_WIDTH = 200;
+  const NODE_SPACING = 50;
+  const LEVEL_HEIGHT = 180; // Vertical spacing between levels
+  const LEVEL_OFFSET = 100;
+  const CENTER_X = 400;
+
   const incoming = new Map<string, Set<string>>();
   nodeIds.forEach((id) => incoming.set(id, new Set()));
   edges.forEach(({ source, target }) => {
@@ -78,29 +85,44 @@ const calculateNodePositions = (
     levels[lvl].push(id);
   });
 
-  const groupNodesByType = (nodeNames: string[]) => ({
-    training: nodeNames.filter((name) => name.startsWith('federated-client')),
-    evaluate: nodeNames.filter((name) => name.startsWith('evaluate-model')),
-    other: nodeNames.filter(
-      (name) =>
-        !name.startsWith('federated-client') &&
-        !name.startsWith('evaluate-model'),
-    ),
-  });
-
   const positionNodesOnLevel = (nodeNames: string[], level: number) => {
-    const y = level * LAYOUT_CONFIG.levelHeight + LAYOUT_CONFIG.levelOffset;
-    const { other, training, evaluate } = groupNodesByType(nodeNames);
-    const allNodes = [...other, ...training, ...evaluate];
-    if (allNodes.length === 1) {
-      positions[allNodes[0]] = { x: LAYOUT_CONFIG.centerX, y };
+    // Vertical layout: level determines Y position (top to bottom)
+    const y = level * LEVEL_HEIGHT + LEVEL_OFFSET;
+
+    // Calculate average X position of parent nodes for each node
+    const getParentAvgX = (nodeName: string): number => {
+      const parents = Array.from(incoming.get(nodeName) || []);
+      if (parents.length === 0) return 0;
+
+      const parentXs = parents
+        .map((p) => positions[p]?.x)
+        .filter((x) => x !== undefined);
+
+      if (parentXs.length === 0) return 0;
+      return parentXs.reduce((sum, x) => sum + x, 0) / parentXs.length;
+    };
+
+    // Sort nodes by average parent X position (left to right)
+    const sorted = [...nodeNames].sort((a, b) => {
+      const avgA = getParentAvgX(a);
+      const avgB = getParentAvgX(b);
+
+      // Sort by parent position
+      if (avgA !== avgB) return avgA - avgB;
+
+      // Fallback to alphabetical
+      return a.localeCompare(b);
+    });
+
+    if (sorted.length === 1) {
+      positions[sorted[0]] = { x: CENTER_X, y };
       return;
     }
-    allNodes.forEach((nodeName, index) => {
+
+    sorted.forEach((nodeName, index) => {
       const offset =
-        (index - (allNodes.length - 1) / 2) *
-        (LAYOUT_CONFIG.nodeWidth + LAYOUT_CONFIG.nodeSpacing);
-      positions[nodeName] = { x: LAYOUT_CONFIG.centerX + offset, y };
+        (index - (sorted.length - 1) / 2) * (NODE_WIDTH + NODE_SPACING);
+      positions[nodeName] = { x: CENTER_X + offset, y };
     });
   };
 
@@ -114,7 +136,7 @@ const calculateNodePositions = (
 const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   const pipelineSpec = pipelineData?.pipeline_spec?.spec;
   const color = 'hsl(var(--muted-foreground))';
-  const arrowSize = 11;
+  const arrowSize = 11; // Match editor arrow size
   if (!pipelineSpec?.templates) {
     return { nodes: [], edges: [] };
   }
@@ -134,15 +156,6 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   };
 
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
-
-  console.log('Debug - entrypoint:', entrypoint);
-  console.log('Debug - topDag:', topDag?.name);
-  console.log('Debug - templates count:', templates.length);
-  console.log(
-    'Debug - container templates:',
-    templates.filter((t) => !t.dag).length,
-  );
-
   const taskDetails = pipelineData.run_details?.task_details || [];
 
   const resolveInputs = (
@@ -247,9 +260,9 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     id: `edge-${source}-${target}`,
     source,
     target,
-    style: { stroke: color, strokeWidth: 1 },
+    style: { stroke: color, strokeWidth: 2 },
     markerEnd: {
-      type: 'arrowclosed',
+      type: MarkerType.ArrowClosed,
       width: arrowSize,
       height: arrowSize,
       color,
@@ -264,11 +277,6 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     params?.forEach((p) => outputNameToProducer.set(p.name, tpl.name));
     arts?.forEach((a) => outputNameToProducer.set(a.name, tpl.name));
   });
-  console.log(
-    '[Edge Debug] outputNameToProducer:',
-    Object.fromEntries(outputNameToProducer),
-  );
-
   // Resolve a task name (from DAG dependencies) to leaf container template names
   const getLeafContainersForTaskName = (
     taskName: string,
@@ -358,17 +366,6 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       ).container?.args || []) as unknown[];
       const argStr = args.join(' ');
       const matches = Array.from(argStr.matchAll(jinjaParamRef));
-      if (matches.length > 0) {
-        console.log(
-          '[Edge Debug] Template:',
-          tpl.name,
-          'matches:',
-          matches.map((m) => ({
-            paramName: m[1],
-            producer: outputNameToProducer.get(m[1]),
-          })),
-        );
-      }
       matches.forEach((m) => {
         const paramName = m[1];
         const producer = outputNameToProducer.get(paramName);
@@ -386,27 +383,22 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     .filter((template) => !template.dag)
     .map((template, index) => createNode(template, index));
 
+  console.log('[EdgePairs]', Array.from(edgePairs));
+
   const edgesArray = Array.from(edgePairs)
     .map((key) => key.split('=>'))
     .filter(
-      ([source, target]) =>
-        nodes.some((n) => n.id === source) &&
-        nodes.some((n) => n.id === target),
+      ([producer, consumer]) =>
+        nodes.some((n) => n.id === producer) &&
+        nodes.some((n) => n.id === consumer),
     )
-    .map(([source, target]) => createEdge(source, target));
-
-  console.log(
-    'Debug - nodes:',
-    nodes.length,
-    nodes.map((n) => n.id),
-  );
-  console.log(
-    'Debug - edges:',
-    edgesArray.length,
-    edgesArray.map((e) => `${e.source}->${e.target}`),
-  );
-  console.log('Debug - edgePairs:', Array.from(edgePairs));
-
+    .map(([producer, consumer]) => {
+      console.log(
+        `[CreateEdge] producer=${producer}, consumer=${consumer} => edge(source=${producer}, target=${consumer})`,
+      );
+      // producer has output (source), consumer has input (target)
+      return createEdge(producer, consumer);
+    });
   const nodePositions = calculateNodePositions(
     nodeIdsForLayout,
     edgesArray.map((e) => ({ source: e.source, target: e.target })),
@@ -452,7 +444,10 @@ const getOutputPaths = (template: PipelineTemplate) => [
 
 const fetchPipelineData = async () => {
   const route = useRoute();
-  const runId = route.params.id as string;
+  // route.params.id is an array because of [...id].vue catch-all route
+  const runId = Array.isArray(route.params.id)
+    ? route.params.id[0]
+    : (route.params.id as string);
   const api = useApi();
 
   const data = await api.getPipelineRunFlow(runId);
@@ -467,11 +462,6 @@ const fetchPipelineData = async () => {
   ) {
     const { pipeline_id, pipeline_version_id } =
       pipelineData.value.pipeline_version_reference;
-    console.log(
-      '[Pipeline Version] Fetching spec for:',
-      pipeline_id,
-      pipeline_version_id,
-    );
 
     const versionData = await api.getPipelineVersion(
       pipeline_id,
@@ -480,13 +470,13 @@ const fetchPipelineData = async () => {
     if (versionData && 'data' in versionData && versionData.data) {
       // Inject the pipeline_spec from version into pipelineData
       pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
-      console.log('[Pipeline Version] Spec loaded successfully');
-    } else {
-      console.error('[Pipeline Version] Failed to load spec');
     }
   }
 
   const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
+
+  console.log('edges', edges);
+
   const title = pipelineData.value.display_name || 'Pipeline';
 
   setPage({
