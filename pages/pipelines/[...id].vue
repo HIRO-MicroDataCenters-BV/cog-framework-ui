@@ -58,6 +58,7 @@ const calculateNodePositions = (
   const LEVEL_HEIGHT = 180; // Vertical spacing between levels
   const LEVEL_OFFSET = 100;
   const CENTER_X = 400;
+  const NODE_HORIZONTAL_SPACING = 300; // Horizontal spacing between nodes on same level
 
   const incoming = new Map<string, Set<string>>();
   nodeIds.forEach((id) => incoming.set(id, new Set()));
@@ -121,7 +122,7 @@ const calculateNodePositions = (
 
     sorted.forEach((nodeName, index) => {
       const offset =
-        (index - (sorted.length - 1) / 2) * (NODE_WIDTH + NODE_SPACING);
+        (index - (sorted.length - 1) / 2) * NODE_HORIZONTAL_SPACING;
       positions[nodeName] = { x: CENTER_X + offset, y };
     });
   };
@@ -256,10 +257,17 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     };
   };
 
-  const createEdge = (source: string, target: string): Edge => ({
+  const createEdge = (
+    source: string,
+    target: string,
+    sourceHandle?: string,
+    targetHandle?: string,
+  ): Edge => ({
     id: `edge-${source}-${target}`,
     source,
     target,
+    sourceHandle,
+    targetHandle,
     style: { stroke: color, strokeWidth: 2 },
     markerEnd: {
       type: MarkerType.ArrowClosed,
@@ -396,8 +404,17 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       console.log(
         `[CreateEdge] producer=${producer}, consumer=${consumer} => edge(source=${producer}, target=${consumer})`,
       );
+      
+      // Find producer and consumer nodes to get their handles
+      const producerNode = nodes.find((n) => n.id === producer);
+      const consumerNode = nodes.find((n) => n.id === consumer);
+      
+      // Get first output handle from producer and first input handle from consumer
+      const sourceHandle = producerNode?.data?.component?.output_path?.[0]?.name;
+      const targetHandle = consumerNode?.data?.component?.input_path?.[0]?.name;
+      
       // producer has output (source), consumer has input (target)
-      return createEdge(producer, consumer);
+      return createEdge(producer, consumer, sourceHandle, targetHandle);
     });
   const nodePositions = calculateNodePositions(
     nodeIdsForLayout,
