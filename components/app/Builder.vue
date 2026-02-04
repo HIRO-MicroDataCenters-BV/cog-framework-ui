@@ -44,6 +44,7 @@
         <div class="flex-1">
           <CanvasArea
             v-if="!readonly || nodes.length > 0 || edges.length > 0"
+            :key="`canvas-${nodes.length}-${edges.length}`"
             :nodes="enrichedNodes"
             :edges="edges"
             :readonly="readonly"
