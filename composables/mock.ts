@@ -718,13 +718,17 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         // Return LSTM pipeline mock data if ID matches
         if (id === 'af31bfc5-0bb9-4520-86e3-30009ff7f805') {
-          const lstmPipeline = await import('~/mocks/get.runs.lstm-pipeline.json');
+          const lstmPipeline = await import(
+            '~/mocks/get.runs.lstm-pipeline.json'
+          );
           return Promise.resolve(lstmPipeline);
         }
 
         // Return wine pipeline mock data if ID matches
         if (id === 'c4f73142-5412-4908-ba47-cd5654df9fb5') {
-          const winePipeline = await import('~/mocks/get.runs.wine-pipeline.json');
+          const winePipeline = await import(
+            '~/mocks/get.runs.wine-pipeline.json'
+          );
           return Promise.resolve(winePipeline);
         }
 
@@ -750,9 +754,13 @@ export const useApiWithMock = () => {
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       if (mock.value.enabled) {
         // Return LSTM pipeline version if IDs match
-        if (pipelineId === 'eaca6329-63d9-4306-a135-d5ba0ddab377' &&
-          versionId === 'af02ec0c-67e2-47d5-a0a3-a416893c6b2d') {
-          const lstmVersion = await import('~/mocks/get.pipeline-version.lstm.json');
+        if (
+          pipelineId === 'eaca6329-63d9-4306-a135-d5ba0ddab377' &&
+          versionId === 'af02ec0c-67e2-47d5-a0a3-a416893c6b2d'
+        ) {
+          const lstmVersion = await import(
+            '~/mocks/get.pipeline-version.lstm.json'
+          );
           return Promise.resolve(lstmVersion);
         }
 

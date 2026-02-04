@@ -295,12 +295,12 @@ const isConnectableType = (type: string, name?: string): boolean => {
     'Artifact',
     'Any',
   ];
-  
+
   if (connectableTypes.includes(type)) return true;
-  
+
   // Special case: local_data_connector in FedSCVI client is a data input
   if (name === 'local_data_connector' && type === 'String') return true;
-  
+
   return false;
 };
 
