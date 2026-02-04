@@ -264,6 +264,10 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     params?.forEach((p) => outputNameToProducer.set(p.name, tpl.name));
     arts?.forEach((a) => outputNameToProducer.set(a.name, tpl.name));
   });
+  console.log(
+    '[Edge Debug] outputNameToProducer:',
+    Object.fromEntries(outputNameToProducer),
+  );
 
   // Resolve a task name (from DAG dependencies) to leaf container template names
   const getLeafContainersForTaskName = (
@@ -302,7 +306,11 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   const edgePairs = new Set<string>();
   if (topDag?.dag?.tasks?.length) {
     topDag.dag.tasks.forEach(
-      (task: { template: string; dependencies?: string[] }) => {
+      (task: {
+        template: string;
+        dependencies?: string[];
+        arguments?: { parameters?: Array<{ name: string; value: string }> };
+      }) => {
         const targets = getLeafContainersForTemplate(task.template);
         const deps: string[] = task.dependencies || [];
         deps.forEach((depName: string) => {
@@ -310,6 +318,26 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
           sources.forEach((s) =>
             targets.forEach((t) => edgePairs.add(`${s}=>${t}`)),
           );
+        });
+
+        // Also parse task arguments for {{tasks.XXX.outputs.parameters.YYY}} references
+        const taskOutputRef =
+          /\{\{\s*tasks\.([a-zA-Z0-9_-]+)\.outputs\.parameters\.([a-zA-Z0-9_.-]+)\s*\}\}/g;
+        const params = task.arguments?.parameters || [];
+        params.forEach((param) => {
+          const matches = Array.from(
+            param.value?.matchAll(taskOutputRef) || [],
+          );
+          matches.forEach((m) => {
+            const sourceTaskName = m[1]; // e.g., "download-data"
+            const sources = getLeafContainersForTaskName(
+              sourceTaskName,
+              topDag,
+            );
+            sources.forEach((s) =>
+              targets.forEach((t) => edgePairs.add(`${s}=>${t}`)),
+            );
+          });
         });
       },
     );
@@ -330,6 +358,17 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       ).container?.args || []) as unknown[];
       const argStr = args.join(' ');
       const matches = Array.from(argStr.matchAll(jinjaParamRef));
+      if (matches.length > 0) {
+        console.log(
+          '[Edge Debug] Template:',
+          tpl.name,
+          'matches:',
+          matches.map((m) => ({
+            paramName: m[1],
+            producer: outputNameToProducer.get(m[1]),
+          })),
+        );
+      }
       matches.forEach((m) => {
         const paramName = m[1];
         const producer = outputNameToProducer.get(paramName);
@@ -420,6 +459,32 @@ const fetchPipelineData = async () => {
   if (!data) return;
 
   pipelineData.value = data as PipelineData;
+
+  // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
+  if (
+    pipelineData.value.pipeline_version_reference &&
+    !pipelineData.value.pipeline_spec
+  ) {
+    const { pipeline_id, pipeline_version_id } =
+      pipelineData.value.pipeline_version_reference;
+    console.log(
+      '[Pipeline Version] Fetching spec for:',
+      pipeline_id,
+      pipeline_version_id,
+    );
+
+    const versionData = await api.getPipelineVersion(
+      pipeline_id,
+      pipeline_version_id,
+    );
+    if (versionData && 'data' in versionData && versionData.data) {
+      // Inject the pipeline_spec from version into pipelineData
+      pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
+      console.log('[Pipeline Version] Spec loaded successfully');
+    } else {
+      console.error('[Pipeline Version] Failed to load spec');
+    }
+  }
 
   const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
   const title = pipelineData.value.display_name || 'Pipeline';

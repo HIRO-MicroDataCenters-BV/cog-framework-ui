@@ -49,7 +49,7 @@
               <div
                 v-for="(input, index) in (
                   data.component.input_path || []
-                ).filter((i: any) => isConnectableType(i.type))"
+                ).filter((i: any) => isConnectableType(i.type, i.name))"
                 :key="`input-${input.name}`"
                 class="absolute"
                 :style="{
@@ -137,7 +137,7 @@
               <div
                 v-for="(output, index) in (
                   data.component.output_path || []
-                ).filter((o: any) => isConnectableType(o.type))"
+                ).filter((o: any) => isConnectableType(o.type, o.name))"
                 :key="`output-${output.name}`"
                 class="absolute"
                 :style="{
@@ -285,7 +285,7 @@ const isHandleConnected = (
 };
 
 // Helper to determine if a type should show a handle (connectable types only)
-const isConnectableType = (type: string): boolean => {
+const isConnectableType = (type: string, name?: string): boolean => {
   const connectableTypes = [
     'Dataset',
     'Model',
@@ -295,7 +295,13 @@ const isConnectableType = (type: string): boolean => {
     'Artifact',
     'Any',
   ];
-  return connectableTypes.includes(type);
+
+  if (connectableTypes.includes(type)) return true;
+
+  // Special case: local_data_connector in FedSCVI client is a data input
+  if (name === 'local_data_connector' && type === 'String') return true;
+
+  return false;
 };
 
 const isValidConnectionWrapper = (connection: Connection) => {
