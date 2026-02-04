@@ -70,11 +70,11 @@ export interface PipelineTemplate {
   container?: Record<string, unknown>;
   inputs?: {
     artifacts?: Array<{ name: string }>;
-    parameters?: Array<{ name: string }>;
+    parameters?: Array<{ name: string; type?: string }>;
   };
   outputs?: {
     artifacts?: Array<{ name: string }>;
-    parameters?: Array<{ name: string }>;
+    parameters?: Array<{ name: string; type?: string }>;
   };
   dag?: {
     tasks: Array<{
@@ -86,6 +86,12 @@ export interface PipelineTemplate {
         artifacts?: Array<{ name: string; from: string }>;
       };
     }>;
+  };
+  metadata?: {
+    annotations?: {
+      'pipelines.kubeflow.org/component_spec'?: string;
+      [key: string]: string | undefined;
+    };
   };
 }
 
