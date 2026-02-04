@@ -56,7 +56,7 @@
                   left: calculateHandlePosition(
                     Number(index),
                     (data.component.input_path || []).filter((i: any) =>
-                      isConnectableType(i.type),
+                      isConnectableType(i.type, i.name),
                     ).length,
                   ),
                 }"
@@ -79,7 +79,7 @@
                   <Tooltip v-if="!props.readonly">
                     <TooltipTrigger as-child>
                       <div
-                        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        class="absolute inset-0 flex items-center justify-center"
                       >
                         <!-- Tiny dot icon inside handle if needed, or just color -->
                       </div>
@@ -144,7 +144,7 @@
                   left: calculateHandlePosition(
                     Number(index),
                     (data.component.output_path || []).filter((o: any) =>
-                      isConnectableType(o.type),
+                      isConnectableType(o.type, o.name),
                     ).length,
                   ),
                 }"

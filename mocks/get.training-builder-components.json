@@ -4,7 +4,7 @@
   "data": [
     {
       "id": "55455462-0957-4d57-9847-9cc36dd07068",
-      "name": "FedSCVI server",
+      "name": "FedSCVI server222",
       "input_path": [
         {
           "name": "number_of_iterations",
@@ -148,11 +148,6 @@
           "name": "server_address",
           "type": "String",
           "description": "Server address (e.g., \"localhost:8080\")"
-        },
-        {
-          "name": "server_config",
-          "type": "JsonObject",
-          "description": "Configuration from FedSCVI server"
         },
         {
           "name": "num_local_epochs",

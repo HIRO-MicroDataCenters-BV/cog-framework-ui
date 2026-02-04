@@ -28,6 +28,15 @@ export const useConnectionValidation = () => {
     // 'Any' type accepts anything and can be connected to anything
     if (outputDef.type === 'Any' || inputDef.type === 'Any') return true;
 
+    // Special case: local_data_connector (String) can accept JsonObject from FedSCVI server
+    if (
+      inputDef.name === 'local_data_connector' &&
+      inputDef.type === 'String' &&
+      outputDef.type === 'JsonObject'
+    ) {
+      return true;
+    }
+
     // Strict matching for other types
     return outputDef.type === inputDef.type;
   };
@@ -79,10 +88,22 @@ export const useConnectionValidation = () => {
           : node.data?.component?.output_path || [];
 
       targetHandles.forEach((handle: ComponentPath) => {
-        const isCompatible =
+        // Check compatibility
+        let isCompatible =
           sourceType === 'Any' ||
           handle.type === 'Any' ||
           sourceType === handle.type;
+
+        // Special case: local_data_connector (String) is compatible with JsonObject
+        if (
+          !isCompatible &&
+          handle.name === 'local_data_connector' &&
+          handle.type === 'String' &&
+          sourceType === 'JsonObject' &&
+          params.handleType === 'source'
+        ) {
+          isCompatible = true;
+        }
 
         // Select the specific handle element
         // ID structure: "nodeId-handleName" is standard, but check CanvasArea implementation
