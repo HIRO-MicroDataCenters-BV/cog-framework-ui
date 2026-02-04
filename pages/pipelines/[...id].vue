@@ -160,7 +160,9 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   const findTaskByTemplateName = (templateName: string) => {
     for (const template of templates) {
       if (template.dag?.tasks) {
-        const task = template.dag.tasks.find((t) => t.template === templateName);
+        const task = template.dag.tasks.find(
+          (t) => t.template === templateName,
+        );
         if (task) {
           return task;
         }
@@ -460,7 +462,9 @@ const getComponentCategory = (template: PipelineTemplate) => {
 const extractPaths = (
   items: Array<{ name: string; type?: string }> | undefined,
   defaultType: string,
-) => items?.map((item) => ({ name: item.name, type: item.type || defaultType })) || [];
+) =>
+  items?.map((item) => ({ name: item.name, type: item.type || defaultType })) ||
+  [];
 
 const getInputPaths = (template: PipelineTemplate) => [
   ...extractPaths(template.inputs?.artifacts, 'Dataset'),
