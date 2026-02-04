@@ -404,15 +404,16 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       console.log(
         `[CreateEdge] producer=${producer}, consumer=${consumer} => edge(source=${producer}, target=${consumer})`,
       );
-      
+
       // Find producer and consumer nodes to get their handles
       const producerNode = nodes.find((n) => n.id === producer);
       const consumerNode = nodes.find((n) => n.id === consumer);
-      
+
       // Get first output handle from producer and first input handle from consumer
-      const sourceHandle = producerNode?.data?.component?.output_path?.[0]?.name;
+      const sourceHandle =
+        producerNode?.data?.component?.output_path?.[0]?.name;
       const targetHandle = consumerNode?.data?.component?.input_path?.[0]?.name;
-      
+
       // producer has output (source), consumer has input (target)
       return createEdge(producer, consumer, sourceHandle, targetHandle);
     });
