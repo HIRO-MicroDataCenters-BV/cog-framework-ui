@@ -1,0 +1,130 @@
+{
+    "status_code": 200,
+    "message": "Pipeline run retrieved successfully",
+    "data": {
+        "experiment_id": "0bee657f-e91b-4ab0-941c-74df960b426d",
+        "run_id": "af31bfc5-0bb9-4520-86e3-30009ff7f805",
+        "display_name": "Run of LSTM_IPTO_UC2_200126_version_at_2026-01-29T13:09:49.041Z (3d9c5)",
+        "storage_state": "AVAILABLE",
+        "pipeline_version_reference": {
+            "pipeline_id": "eaca6329-63d9-4306-a135-d5ba0ddab377",
+            "pipeline_version_id": "af02ec0c-67e2-47d5-a0a3-a416893c6b2d"
+        },
+        "runtime_config": {
+            "parameters": {
+                "dataset_id": ""
+            }
+        },
+        "service_account": "default-editor",
+        "created_at": "2026-02-02T08:59:10Z",
+        "scheduled_at": "2026-02-02T08:59:10Z",
+        "finished_at": "2026-02-02T08:59:45Z",
+        "state": "FAILED",
+        "run_details": {
+            "task_details": [
+                {
+                    "run_id": "af31bfc5-0bb9-4520-86e3-30009ff7f805",
+                    "task_id": "1a62d769-6754-4a3a-9bbf-08b4f78748b9",
+                    "display_name": "evaluate-lstm-model-func",
+                    "create_time": "2026-02-02T09:00:00Z",
+                    "start_time": "2026-02-02T08:59:45Z",
+                    "end_time": "2026-02-02T08:59:45Z",
+                    "state": "SKIPPED",
+                    "state_history": [
+                        {
+                            "update_time": "2026-02-02T08:59:46Z"
+                        }
+                    ]
+                },
+                {
+                    "run_id": "af31bfc5-0bb9-4520-86e3-30009ff7f805",
+                    "task_id": "2d2e1362-5b4a-46f1-81a9-36f5fc09261b",
+                    "display_name": "train-lstm-model-func",
+                    "create_time": "2026-02-02T09:00:00Z",
+                    "start_time": "2026-02-02T08:59:45Z",
+                    "end_time": "2026-02-02T08:59:45Z",
+                    "state": "SKIPPED",
+                    "state_history": [
+                        {
+                            "update_time": "2026-02-02T08:59:46Z"
+                        }
+                    ],
+                    "child_tasks": [
+                        {
+                            "pod_name": "uc2-lstm-pipeline-hkhw8-3399790009"
+                        }
+                    ]
+                },
+                {
+                    "run_id": "af31bfc5-0bb9-4520-86e3-30009ff7f805",
+                    "task_id": "858493b2-3692-4947-9b04-c4c0bf0946d1",
+                    "display_name": "prepare-uc2-data",
+                    "create_time": "2026-02-02T09:00:00Z",
+                    "start_time": "2026-02-02T08:59:10Z",
+                    "end_time": "2026-02-02T08:59:35Z",
+                    "state": "FAILED",
+                    "state_history": [
+                        {
+                            "update_time": "2026-02-02T08:59:11Z",
+                            "state": "PENDING"
+                        },
+                        {
+                            "update_time": "2026-02-02T08:59:21Z",
+                            "state": "RUNNING"
+                        },
+                        {
+                            "update_time": "2026-02-02T08:59:46Z",
+                            "state": "FAILED"
+                        }
+                    ],
+                    "child_tasks": [
+                        {
+                            "pod_name": "uc2-lstm-pipeline-hkhw8-60370168"
+                        },
+                        {
+                            "pod_name": "uc2-lstm-pipeline-hkhw8-3399790009"
+                        }
+                    ]
+                },
+                {
+                    "run_id": "af31bfc5-0bb9-4520-86e3-30009ff7f805",
+                    "task_id": "ce39f9af-e99b-42b2-9475-d8d3c04668a4",
+                    "display_name": "uc2-lstm-pipeline-hkhw8",
+                    "create_time": "2026-02-02T09:00:00Z",
+                    "start_time": "2026-02-02T08:59:10Z",
+                    "end_time": "2026-02-02T08:59:45Z",
+                    "state": "FAILED",
+                    "state_history": [
+                        {
+                            "update_time": "2026-02-02T08:59:11Z",
+                            "state": "RUNNING"
+                        },
+                        {
+                            "update_time": "2026-02-02T08:59:46Z",
+                            "state": "FAILED"
+                        }
+                    ],
+                    "child_tasks": [
+                        {
+                            "pod_name": "uc2-lstm-pipeline-hkhw8-3379167863"
+                        }
+                    ]
+                }
+            ]
+        },
+        "state_history": [
+            {
+                "update_time": "2026-02-02T08:59:10Z",
+                "state": "PENDING"
+            },
+            {
+                "update_time": "2026-02-02T08:59:11Z",
+                "state": "RUNNING"
+            },
+            {
+                "update_time": "2026-02-02T08:59:46Z",
+                "state": "FAILED"
+            }
+        ]
+    }
+}

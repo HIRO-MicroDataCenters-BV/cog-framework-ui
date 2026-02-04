@@ -19,7 +19,7 @@ watch(
     setPage({
       section: 'pipelines_builder',
       data: {
-        builder: page.value.data?.builder || {
+        builder: {
           name: '',
           nodes: [],
           edges: [],

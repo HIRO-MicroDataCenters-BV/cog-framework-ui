@@ -1,0 +1,173 @@
+{
+    "status_code": 200,
+    "message": "Pipeline version retrieved successfully",
+    "data": {
+        "pipeline_id": "eaca6329-63d9-4306-a135-d5ba0ddab377",
+        "pipeline_version_id": "af02ec0c-67e2-47d5-a0a3-a416893c6b2d",
+        "display_name": "LSTM_IPTO_UC2_200126_version",
+        "pipeline_spec": {
+            "apiVersion": "argoproj.io/v1alpha1",
+            "kind": "Workflow",
+            "metadata": {
+                "generateName": "uc2-lstm-pipeline-"
+            },
+            "spec": {
+                "entrypoint": "uc2-lstm-pipeline",
+                "templates": [
+                    {
+                        "name": "prepare-uc2-data",
+                        "container": {
+                            "image": "python:3.9",
+                            "args": [
+                                "--dataset-id",
+                                "{{inputs.parameters.dataset_id}}",
+                                "--output",
+                                "/tmp/outputs/data/data"
+                            ]
+                        },
+                        "inputs": {
+                            "parameters": [
+                                {
+                                    "name": "dataset_id"
+                                }
+                            ]
+                        },
+                        "outputs": {
+                            "parameters": [
+                                {
+                                    "name": "prepare-uc2-data-output",
+                                    "valueFrom": {
+                                        "path": "/tmp/outputs/data/data"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "train-lstm-model-func",
+                        "container": {
+                            "image": "tensorflow/tensorflow:latest",
+                            "args": [
+                                "--data",
+                                "{{inputs.parameters.prepare-uc2-data-output}}",
+                                "--model-output",
+                                "/tmp/outputs/model/data"
+                            ]
+                        },
+                        "inputs": {
+                            "parameters": [
+                                {
+                                    "name": "prepare-uc2-data-output"
+                                }
+                            ]
+                        },
+                        "outputs": {
+                            "parameters": [
+                                {
+                                    "name": "train-lstm-model-func-output",
+                                    "valueFrom": {
+                                        "path": "/tmp/outputs/model/data"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "evaluate-lstm-model-func",
+                        "container": {
+                            "image": "tensorflow/tensorflow:latest",
+                            "args": [
+                                "--model",
+                                "{{inputs.parameters.train-lstm-model-func-output}}",
+                                "--data",
+                                "{{inputs.parameters.prepare-uc2-data-output}}",
+                                "--metrics-output",
+                                "/tmp/outputs/metrics/data"
+                            ]
+                        },
+                        "inputs": {
+                            "parameters": [
+                                {
+                                    "name": "train-lstm-model-func-output"
+                                },
+                                {
+                                    "name": "prepare-uc2-data-output"
+                                }
+                            ]
+                        },
+                        "outputs": {
+                            "parameters": [
+                                {
+                                    "name": "evaluate-lstm-model-func-output",
+                                    "valueFrom": {
+                                        "path": "/tmp/outputs/metrics/data"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "uc2-lstm-pipeline",
+                        "dag": {
+                            "tasks": [
+                                {
+                                    "name": "prepare-uc2-data",
+                                    "template": "prepare-uc2-data",
+                                    "arguments": {
+                                        "parameters": [
+                                            {
+                                                "name": "dataset_id",
+                                                "value": "{{inputs.parameters.dataset_id}}"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "train-lstm-model-func",
+                                    "template": "train-lstm-model-func",
+                                    "dependencies": [
+                                        "prepare-uc2-data"
+                                    ],
+                                    "arguments": {
+                                        "parameters": [
+                                            {
+                                                "name": "prepare-uc2-data-output",
+                                                "value": "{{tasks.prepare-uc2-data.outputs.parameters.prepare-uc2-data-output}}"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "evaluate-lstm-model-func",
+                                    "template": "evaluate-lstm-model-func",
+                                    "dependencies": [
+                                        "train-lstm-model-func"
+                                    ],
+                                    "arguments": {
+                                        "parameters": [
+                                            {
+                                                "name": "train-lstm-model-func-output",
+                                                "value": "{{tasks.train-lstm-model-func.outputs.parameters.train-lstm-model-func-output}}"
+                                            },
+                                            {
+                                                "name": "prepare-uc2-data-output",
+                                                "value": "{{tasks.prepare-uc2-data.outputs.parameters.prepare-uc2-data-output}}"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "inputs": {
+                            "parameters": [
+                                {
+                                    "name": "dataset_id"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -114,10 +114,14 @@ export interface TaskDetail {
 
 export interface PipelineData {
   display_name: string;
-  pipeline_spec: {
+  pipeline_spec?: {
     spec: {
       templates: PipelineTemplate[];
     };
+  };
+  pipeline_version_reference?: {
+    pipeline_id: string;
+    pipeline_version_id: string;
   };
   run_details?: {
     task_details: TaskDetail[];

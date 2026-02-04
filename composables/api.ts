@@ -2628,5 +2628,24 @@ export const useApi = () => {
         throw error;
       }
     },
+
+    /**
+     * Gets pipeline version by pipeline ID and version ID
+     *
+     * Retrieves a specific pipeline version including its pipeline_spec.
+     *
+     * @param {string} pipelineId - The pipeline ID
+     * @param {string} versionId - The version ID
+     *
+     * @returns {Promise<Object>} Standard response containing pipeline version data with pipeline_spec
+     *
+     * @example
+     * ```typescript
+     * const version = await api.getPipelineVersion('pipeline-123', 'version-456');
+     * ```
+     */
+    getPipelineVersion: async (pipelineId: string, versionId: string) => {
+      return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+    },
   };
 };
