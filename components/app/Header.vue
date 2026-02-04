@@ -228,9 +228,18 @@ const runPipeline = () => {
       const output_path = component?.output_path || [];
 
       if (orderId.value) {
+        // For federated pipelines, include both metadata AND inputs
+        const inputs =
+          component?.inputs?.map((input: ComponentInput) => ({
+            destination: input.destination,
+            value_source_type: input.value_source_type,
+            source: input.source,
+          })) || [];
+
         return {
           id: uuid,
           name,
+          inputs, // Include configured input values
           input_path,
           output_path,
           component_file: component?.component_file || null,
