@@ -156,6 +156,19 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     return tpl && (tpl as PipelineTemplate).dag ? tpl : undefined;
   };
 
+  // Find a task by its template name across all DAG templates
+  const findTaskByTemplateName = (templateName: string) => {
+    for (const template of templates) {
+      if (template.dag?.tasks) {
+        const task = template.dag.tasks.find((t) => t.template === templateName);
+        if (task) {
+          return task;
+        }
+      }
+    }
+    return undefined;
+  };
+
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
 
@@ -249,8 +262,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
           creator: null,
           inputs: resolveInputs(
             template,
-
-            topDag?.dag?.tasks?.find((t) => t.template === template.name),
+            findTaskByTemplateName(template.name),
           ),
         },
       },
@@ -446,9 +458,9 @@ const getComponentCategory = (template: PipelineTemplate) => {
 };
 
 const extractPaths = (
-  items: Array<{ name: string }> | undefined,
-  type: string,
-) => items?.map((item) => ({ name: item.name, type })) || [];
+  items: Array<{ name: string; type?: string }> | undefined,
+  defaultType: string,
+) => items?.map((item) => ({ name: item.name, type: item.type || defaultType })) || [];
 
 const getInputPaths = (template: PipelineTemplate) => [
   ...extractPaths(template.inputs?.artifacts, 'Dataset'),

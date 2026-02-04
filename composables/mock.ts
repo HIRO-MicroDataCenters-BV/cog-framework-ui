@@ -743,6 +743,14 @@ export const useApiWithMock = () => {
           return Promise.resolve(federationPipeline);
         }
 
+        // Return detailed federation pipeline data from testdata.fed.json
+        if (id === 'e3450222-f475-4062-953b-230836ca00c8') {
+          console.log('Loading get.runs.fed.json for ID:', id);
+          const testdataFed = await import('~/mocks/get.runs.fed.json');
+          console.log('Loaded data:', testdataFed);
+          return Promise.resolve(testdataFed);
+        }
+
         return Promise.resolve({
           status_code: 200,
           message: 'Mock pipeline run flow data',
