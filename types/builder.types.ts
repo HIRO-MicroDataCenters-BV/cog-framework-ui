@@ -1,4 +1,6 @@
-import type { Position } from '@vue-flow/core';
+import type { Position, MarkerType, Edge } from '@vue-flow/core';
+
+export type { Edge };
 
 export interface Node {
   id: string;
@@ -13,26 +15,6 @@ export interface Node {
     category?: string;
     component?: Component;
     [key: string]: unknown;
-  };
-}
-
-export interface Edge {
-  id: string;
-  source: string;
-  target: string;
-  type?: string;
-  sourceNode?: Node;
-  targetNode?: Node;
-  style?: {
-    stroke?: string;
-    strokeWidth?: number;
-    [key: string]: unknown;
-  };
-  markerEnd?: {
-    type?: string;
-    width?: number;
-    height?: number;
-    color?: string;
   };
 }
 
