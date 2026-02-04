@@ -88,41 +88,40 @@ const calculateNodePositions = (
   const positionNodesOnLevel = (nodeNames: string[], level: number) => {
     // Vertical layout: level determines Y position (top to bottom)
     const y = level * LEVEL_HEIGHT + LEVEL_OFFSET;
-    
+
     // Calculate average X position of parent nodes for each node
     const getParentAvgX = (nodeName: string): number => {
       const parents = Array.from(incoming.get(nodeName) || []);
       if (parents.length === 0) return 0;
-      
+
       const parentXs = parents
-        .map(p => positions[p]?.x)
-        .filter(x => x !== undefined);
-      
+        .map((p) => positions[p]?.x)
+        .filter((x) => x !== undefined);
+
       if (parentXs.length === 0) return 0;
       return parentXs.reduce((sum, x) => sum + x, 0) / parentXs.length;
     };
-    
+
     // Sort nodes by average parent X position (left to right)
     const sorted = [...nodeNames].sort((a, b) => {
       const avgA = getParentAvgX(a);
       const avgB = getParentAvgX(b);
-      
+
       // Sort by parent position
       if (avgA !== avgB) return avgA - avgB;
-      
+
       // Fallback to alphabetical
       return a.localeCompare(b);
     });
-    
+
     if (sorted.length === 1) {
       positions[sorted[0]] = { x: CENTER_X, y };
       return;
     }
-    
+
     sorted.forEach((nodeName, index) => {
       const offset =
-        (index - (sorted.length - 1) / 2) *
-        (NODE_WIDTH + NODE_SPACING);
+        (index - (sorted.length - 1) / 2) * (NODE_WIDTH + NODE_SPACING);
       positions[nodeName] = { x: CENTER_X + offset, y };
     });
   };
@@ -385,7 +384,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     .map((template, index) => createNode(template, index));
 
   console.log('[EdgePairs]', Array.from(edgePairs));
-  
+
   const edgesArray = Array.from(edgePairs)
     .map((key) => key.split('=>'))
     .filter(
@@ -394,7 +393,9 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
         nodes.some((n) => n.id === consumer),
     )
     .map(([producer, consumer]) => {
-      console.log(`[CreateEdge] producer=${producer}, consumer=${consumer} => edge(source=${producer}, target=${consumer})`);
+      console.log(
+        `[CreateEdge] producer=${producer}, consumer=${consumer} => edge(source=${producer}, target=${consumer})`,
+      );
       // producer has output (source), consumer has input (target)
       return createEdge(producer, consumer);
     });
@@ -444,9 +445,9 @@ const getOutputPaths = (template: PipelineTemplate) => [
 const fetchPipelineData = async () => {
   const route = useRoute();
   // route.params.id is an array because of [...id].vue catch-all route
-  const runId = Array.isArray(route.params.id) 
-    ? route.params.id[0] 
-    : route.params.id as string;
+  const runId = Array.isArray(route.params.id)
+    ? route.params.id[0]
+    : (route.params.id as string);
   const api = useApi();
 
   const data = await api.getPipelineRunFlow(runId);
@@ -474,11 +475,9 @@ const fetchPipelineData = async () => {
 
   const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
 
-  console.log('edges', edges)
-  
-  
-  const title = pipelineData.value.display_name || 'Pipeline';
+  console.log('edges', edges);
 
+  const title = pipelineData.value.display_name || 'Pipeline';
 
   setPage({
     section: 'pipelines',
