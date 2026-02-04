@@ -735,6 +735,14 @@ export const useApiWithMock = () => {
           return Promise.resolve(winePipeline);
         }
 
+        // Return federation pipeline mock data if ID matches
+        if (id === '1dd209cc-7952-4b1d-b4dd-90f8d891dc7d') {
+          const federationPipeline = await import(
+            '~/mocks/get.runs.federation.json'
+          );
+          return Promise.resolve(federationPipeline);
+        }
+
         return Promise.resolve({
           status_code: 200,
           message: 'Mock pipeline run flow data',
