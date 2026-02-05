@@ -133,6 +133,7 @@ import type {
   ComponentPath,
   PipelineInputParam,
   Node,
+  NodeUpdate,
 } from '~/types/builder.types';
 import { validateComponentInput } from '~/utils/builder-validation';
 import { useBuilderColors } from '~/composables/useBuilderColors';
@@ -155,7 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
 const readonly = computed(() => props.readonly);
 
 const emit = defineEmits<{
-  updateNode: [nodeId: string, updates: Partial<Node>];
+  updateNode: [nodeId: string, updates: NodeUpdate];
   deleteNode: [nodeId: string, componentName: string];
   renameComponent: [nodeId: string, oldName: string, newName: string];
 }>();
@@ -305,12 +306,12 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
         inputs,
       },
     },
-  } as Partial<Node>);
+  });
 }
 
 function updateNode() {
   if (props.selectedNode) {
-    const updates = {
+    const updates: NodeUpdate = {
       data: {
         label: formData.nodeName,
         description: formData.nodeDescription,
@@ -319,7 +320,7 @@ function updateNode() {
         transformExpression: formData.transformExpression,
       },
     };
-    emit('updateNode', props.selectedNode.id, updates as Partial<Node>);
+    emit('updateNode', props.selectedNode.id, updates);
   }
 }
 
@@ -448,7 +449,7 @@ watch(
       data: {
         status: newStatus,
       },
-    } as Partial<Node>);
+    });
   },
   { immediate: true },
 );

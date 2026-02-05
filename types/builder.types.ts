@@ -115,3 +115,43 @@ export interface PipelineData {
     task_details: TaskDetail[];
   };
 }
+
+// Type for page.data.builder
+export interface PipelineBuilderData {
+  name?: string;
+  nodes: Node[];
+  edges: Edge[];
+  input_path?: PipelineInputParam[];
+  output_path?: PipelineOutput[];
+}
+
+// Type for partial node updates - allows flexible deep partial updates
+export type NodeUpdate = {
+  position?: { x: number; y: number };
+  data?: Partial<{
+    label?: string;
+    icon?: string;
+    status?: string;
+    category?: string;
+    component?: Partial<Component> | Record<string, unknown>;
+    [key: string]: unknown;
+  }>;
+};
+
+// Type guard for checking if component has required fields
+export function isValidComponent(component: unknown): component is Component {
+  return (
+    typeof component === 'object' &&
+    component !== null &&
+    'name' in component &&
+    typeof (component as Component).name === 'string' &&
+    (component as Component).name !== null
+  );
+}
+
+// Type guard for checking if node has valid component data
+export function hasValidComponentData(node: Node): boolean {
+  return (
+    node.data?.component !== undefined && isValidComponent(node.data.component)
+  );
+}

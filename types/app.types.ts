@@ -1,10 +1,17 @@
-import type { Node, Edge } from './builder.types';
+import type {
+  Node,
+  Edge,
+  PipelineInputParam,
+  PipelineOutput,
+} from './builder.types';
 
 export interface PageBuilderData {
   builder: {
     name: string;
     nodes: Node[];
     edges: Edge[];
+    input_path?: PipelineInputParam[];
+    output_path?: PipelineOutput[];
   };
   /** Order ID from dataspace for federated pipeline runs */
   orderId?: string;
