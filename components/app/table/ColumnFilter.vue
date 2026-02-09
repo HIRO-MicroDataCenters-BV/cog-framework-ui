@@ -191,6 +191,7 @@ const isSelected = (value: string | number | (string | number)[]) => {
           <div class="flex items-center gap-2 w-full">
             <Checkbox
               :model-value="isSelected(option.value)"
+              class="cursor-pointer"
               @update:model-value="
                 (checked) => toggleValue(option.value, checked)
               "
@@ -201,7 +202,7 @@ const isSelected = (value: string | number | (string | number)[]) => {
               </template>
             </Checkbox>
             <div
-              class="flex items-center justify-between flex-1"
+              class="flex items-center justify-between flex-1 cursor-pointer"
               @click.stop="() => handleItemClick(option.value)"
             >
               <span>{{ option.label }}</span>

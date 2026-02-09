@@ -41,9 +41,9 @@ const columns = [
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 180,
-    minSize: 180,
-    maxSize: 180,
+    size: 200,
+    minSize: 200,
+    maxSize: 200,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
@@ -61,7 +61,7 @@ const columns = [
   },
   {
     id: 'data_source_type',
-    size: 150,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
       return h(
