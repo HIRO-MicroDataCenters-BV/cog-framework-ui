@@ -54,6 +54,7 @@ const columns = [
   },
   {
     id: 'version',
+    size: 100,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('version').toString();
       return h(
@@ -67,6 +68,7 @@ const columns = [
   },
   {
     id: 'type',
+    size: 150,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('type');
       return h(
@@ -81,10 +83,12 @@ const columns = [
   },
   {
     id: 'register_user_id',
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => row.getValue('register_user_id'),
   },
   {
     id: 'register_date',
+    size: 140,
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'span',
@@ -99,6 +103,7 @@ const columns = [
   },
   {
     id: 'last_modified_time',
+    size: 140,
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'span',
@@ -113,6 +118,7 @@ const columns = [
   },
   {
     id: 'actions',
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('id');
@@ -146,6 +152,6 @@ const tabs = uselistTabs().value.model_management;
     :data-source="getModels"
     :tabs="tabs"
     :sortable-columns="['last_modified_time', 'register_date']"
-    class="flex-grow"
+    class="grow"
   />
 </template>

@@ -798,7 +798,7 @@ defineExpose({ fetchData });
       -->
     </div>
     <div class="overflow-x-auto w-full flex-1">
-      <table class="border-b w-full border-collapse">
+      <table class="border-b w-full border-collapse table-fixed">
         <TableHeader
           class="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b border-t border-gray-200 z-10 shadow-xs"
         >
@@ -809,12 +809,10 @@ defineExpose({ fetchData });
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              :class="[
-                'border-l border-r border-border py-1.5 px-3 text-sm',
-                header.column.id === 'id'
-                  ? 'w-[180px] min-w-[180px] max-w-[180px]'
-                  : '',
-              ]"
+              :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
+              :style="{
+                width: header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+              }"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -834,12 +832,10 @@ defineExpose({ fetchData });
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
-                  :class="[
-                    'border-l border-r border-border py-1 px-3 text-sm',
-                    cell.column.id === 'id'
-                      ? 'w-[180px] min-w-[180px] max-w-[180px]'
-                      : '',
-                  ]"
+                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  :style="{
+                    width: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : 'auto',
+                  }"
                 >
                   <FlexRender
                     :render="cell.column.columnDef.cell"
