@@ -68,13 +68,13 @@ const columns = [
   },
   {
     id: 'type',
-    size: 150,
+    size: 120,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('type');
       return h(
         Badge,
         {
-          type: 'status',
+          type: 'model_type',
           value,
         },
         () => [],

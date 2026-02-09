@@ -15,7 +15,7 @@
     },
     {
       "name": "demo_run_lightweight",
-      "type": "sklearn",
+      "type": "tensorflow",
       "description": "log_model",
       "id": "1cdb659c-f3f2-409d-91ee-00c594760898",
       "version": 0,
@@ -26,7 +26,7 @@
     },
     {
       "name": "demo_run_lightweight",
-      "type": "sklearn",
+      "type": "keras",
       "description": "log_model",
       "id": "dde20336-7160-44fd-a380-aff386dfe242",
       "version": 0,
@@ -37,7 +37,7 @@
     },
     {
       "name": "demo_run_lightweight",
-      "type": "sklearn",
+      "type": "xgboost",
       "description": "log_model",
       "id": "8308a71c-04ec-420e-9ea6-d150b73819ea",
       "version": 0,
@@ -103,7 +103,7 @@
     },
     {
       "name": "model_12",
-      "type": "xcboost",
+      "type": "xgboost",
       "description": "model_12 test",
       "id": "62bdc9a4-7879-4d77-ae8f-a3d3ad43d637",
       "version": 2,
