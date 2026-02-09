@@ -3,6 +3,13 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 
+/**
+ * Mock API network delay in milliseconds
+ * Simulates realistic API response time for testing loading states
+ * Set to 0 to disable delay
+ */
+const MOCK_API_DELAY_MS = 2000;
+
 export const useMock = () => {
   const { t } = useI18n();
   const config = useRuntimeConfig();
@@ -527,8 +534,8 @@ export const useApiWithMock = () => {
   const token = useLocalStorage(accessTokenKey, null);
   const { setPage, page } = useApp();
 
-  // Simulate network delay for mock data (3 seconds)
-  const mockDelay = async (ms: number = 3000) => {
+  // Simulate network delay for mock data
+  const mockDelay = async (ms: number = MOCK_API_DELAY_MS) => {
     // Set loading state to true before delay
     setPage({
       ...page.value,
