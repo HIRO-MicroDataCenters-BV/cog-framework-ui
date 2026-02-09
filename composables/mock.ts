@@ -525,6 +525,24 @@ export const useApiWithMock = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  const { setPage, page } = useApp();
+
+  // Simulate network delay for mock data (3 seconds)
+  const mockDelay = async (ms: number = 3000) => {
+    // Set loading state to true before delay
+    setPage({
+      ...page.value,
+      isLoading: true,
+    });
+    
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    
+    // Set loading state to false after delay
+    setPage({
+      ...page.value,
+      isLoading: false,
+    });
+  };
 
   const getHeaders = (isFormData: boolean = false) => {
     const headers: { 'Content-Type'?: string; Authorization?: string } = {};
@@ -590,6 +608,7 @@ export const useApiWithMock = () => {
   return {
     getDatasets: async (params = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         // Import data from JSON file
         const datasetsJson = await import('~/mocks/get.datasets.json');
         return Promise.resolve({
@@ -607,6 +626,7 @@ export const useApiWithMock = () => {
 
     getModels: async (params = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         const modelsJson = await import('~/mocks/get.models.json');
         return Promise.resolve({
           status_code: modelsJson.status_code,
@@ -621,8 +641,9 @@ export const useApiWithMock = () => {
       return request(`/models?${q}`);
     },
 
-    getModelDetails: (params: { id?: number; name?: string } = {}) => {
+    getModelDetails: async (params: { id?: number; name?: string } = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         const model = mock.value.models.find((m) => m.id === params.id);
         return Promise.resolve({
           status_code: 200,
@@ -641,6 +662,7 @@ export const useApiWithMock = () => {
 
     getPipelineRunsList: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         const pipelinesJson = await import('~/mocks/get.pipelines.json');
         return Promise.resolve({
           status_code: pipelinesJson.status_code,
@@ -652,8 +674,9 @@ export const useApiWithMock = () => {
       return request(`/pipelines/runs`);
     },
 
-    deleteDatasetFile: (id: number | string) => {
+    deleteDatasetFile: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset file deleted successfully',
@@ -662,8 +685,9 @@ export const useApiWithMock = () => {
       return request(`/datasets/file/${id}`, 'DELETE');
     },
 
-    deleteDatasetBroker: (id: number | string) => {
+    deleteDatasetBroker: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset broker deleted successfully',
@@ -672,8 +696,9 @@ export const useApiWithMock = () => {
       return request(`/datasets/broker/${id}`, 'DELETE');
     },
 
-    deleteDatasetTopic: (id: number | string) => {
+    deleteDatasetTopic: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset topic deleted successfully',
@@ -682,8 +707,9 @@ export const useApiWithMock = () => {
       return request(`/datasets/topic/${id}`, 'DELETE');
     },
 
-    deleteDatasetMessage: (id: number | string) => {
+    deleteDatasetMessage: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset message deleted successfully',
@@ -692,8 +718,9 @@ export const useApiWithMock = () => {
       return request(`/datasets/message/${id}`, 'DELETE');
     },
 
-    getBrokerDetails: () => {
+    getBrokerDetails: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           status_code: 200,
           message: 'Mock broker details',
@@ -703,8 +730,9 @@ export const useApiWithMock = () => {
       return request(`/broker/details`);
     },
 
-    getTopicDetails: () => {
+    getTopicDetails: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           status_code: 200,
           message: 'Mock topic details',
@@ -717,6 +745,7 @@ export const useApiWithMock = () => {
     getPipelineRunFlow: async (id: string) => {
       console.log('getPipelineRunFlow', id, mock.value.enabled);
       if (mock.value.enabled) {
+        await mockDelay();
         // Return LSTM pipeline mock data if ID matches
         if (id === 'af31bfc5-0bb9-4520-86e3-30009ff7f805') {
           const lstmPipeline = await import(
@@ -772,6 +801,7 @@ export const useApiWithMock = () => {
 
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         // Return LSTM pipeline version if IDs match
         if (
           pipelineId === 'eaca6329-63d9-4306-a135-d5ba0ddab377' &&
@@ -794,6 +824,7 @@ export const useApiWithMock = () => {
 
     getTrainingBuilderComponents: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         const componentsJson = await import(
           '~/mocks/get.training-builder-components.json'
         );
