@@ -618,11 +618,49 @@ export const useApiWithMock = () => {
         await mockDelay();
         // Import data from JSON file
         const datasetsJson = await import('~/mocks/get.datasets.json');
+        
+        let filteredData = [...datasetsJson.data];
+        
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+        
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter(dataset => 
+            dataset.id.toLowerCase().includes(searchParams.id.toLowerCase())
+          );
+        }
+        
+        // Filter by name or dataset_name
+        if (searchParams.name) {
+          filteredData = filteredData.filter(dataset => 
+            dataset.dataset_name.toLowerCase().includes(searchParams.name.toLowerCase())
+          );
+        }
+        
+        if (searchParams.dataset_name) {
+          filteredData = filteredData.filter(dataset => 
+            dataset.dataset_name.toLowerCase().includes(searchParams.dataset_name.toLowerCase())
+          );
+        }
+        
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+        
         return Promise.resolve({
           status_code: datasetsJson.status_code,
           message: datasetsJson.message,
-          data: datasetsJson.data,
-          pagination: datasetsJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       const q = new URLSearchParams(
@@ -635,11 +673,43 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         await mockDelay();
         const modelsJson = await import('~/mocks/get.models.json');
+        
+        let filteredData = [...modelsJson.data];
+        
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+        
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter(model => 
+            model.id.toLowerCase().includes(searchParams.id.toLowerCase())
+          );
+        }
+        
+        // Filter by name
+        if (searchParams.name) {
+          filteredData = filteredData.filter(model => 
+            model.name.toLowerCase().includes(searchParams.name.toLowerCase())
+          );
+        }
+        
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+        
         return Promise.resolve({
           status_code: modelsJson.status_code,
           message: modelsJson.message,
-          data: modelsJson.data,
-          pagination: modelsJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       const q = new URLSearchParams(
@@ -667,15 +737,47 @@ export const useApiWithMock = () => {
       return null;
     },
 
-    getPipelineRunsList: async () => {
+    getPipelineRunsList: async (params = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
         const pipelinesJson = await import('~/mocks/get.pipelines.json');
+        
+        let filteredData = [...pipelinesJson.data];
+        
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+        
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter(pipeline => 
+            pipeline.run_id.toLowerCase().includes(searchParams.id.toLowerCase())
+          );
+        }
+        
+        // Filter by name
+        if (searchParams.name) {
+          filteredData = filteredData.filter(pipeline => 
+            pipeline.run_name.toLowerCase().includes(searchParams.name.toLowerCase())
+          );
+        }
+        
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+        
         return Promise.resolve({
           status_code: pipelinesJson.status_code,
           message: pipelinesJson.message,
-          data: pipelinesJson.data,
-          pagination: pipelinesJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       return request(`/pipelines/runs`);
