@@ -724,7 +724,7 @@ defineExpose({ fetchData });
 </script>
 
 <template>
-  <div :class="['w-full flex flex-col relative h-[100svh]', props.class]">
+  <div :class="['w-full flex flex-col relative h-svh', props.class]">
     <div class="pl-4 p-4">
       <div>
         <div class="pb-4 flex justify-between gap-2">
@@ -761,10 +761,10 @@ defineExpose({ fetchData });
             </div>
 
             <div class="flex gap-6 items-center">
-              <Button @click="() => add()"
-                ><Icon name="lucide:plus"></Icon
-                >{{ t(`action.add_${page.section}`) }}</Button
-              >
+              <Button class="cursor-pointer" @click="() => add()">
+                <Icon name="lucide:plus"></Icon>
+                {{ t(`action.add_${page.section}`) }}
+              </Button>
             </div>
           </div>
         </div>
@@ -800,7 +800,7 @@ defineExpose({ fetchData });
     <div class="overflow-x-auto w-full flex-1">
       <table class="border-b w-full border-collapse">
         <TableHeader
-          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-t bg-gray-50 dark:bg-gray-900 border-gray-200 z-10 shadow-xs"
+          class="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b border-t border-gray-200 z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
