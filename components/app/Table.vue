@@ -725,11 +725,11 @@ defineExpose({ fetchData });
 
 <template>
   <div :class="['w-full flex flex-col relative h-svh', props.class]">
-    <div class="pl-4 p-4">
+    <div class="pl-4 p-3">
       <div>
-        <div class="pb-4 flex justify-between gap-2">
+        <div class="pb-2 flex justify-between gap-2">
           <div>
-            <h2 class="text-2xl font-medium flex items-center gap-2">
+            <h2 class="text-xl font-medium flex items-center gap-2">
               <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
               {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
               <Button
@@ -810,7 +810,7 @@ defineExpose({ fetchData });
               v-for="header in headerGroup.headers"
               :key="header.id"
               :class="[
-                'border-l border-r border-border',
+                'border-l border-r border-border py-1.5 px-3 text-sm',
                 header.column.id === 'id'
                   ? 'w-[180px] min-w-[180px] max-w-[180px]'
                   : '',
@@ -835,7 +835,7 @@ defineExpose({ fetchData });
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
                   :class="[
-                    'border-l border-r border-border py-2 px-4',
+                    'border-l border-r border-border py-1 px-3 text-sm',
                     cell.column.id === 'id'
                       ? 'w-[180px] min-w-[180px] max-w-[180px]'
                       : '',
@@ -850,7 +850,7 @@ defineExpose({ fetchData });
               <TableRow v-if="row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
-                  class="border-l border-r border-border py-2 px-4"
+                  class="border-l border-r border-border py-1 px-3 text-sm"
                 >
                   {{ JSON.stringify(row.original) }}
                 </TableCell>
@@ -861,7 +861,7 @@ defineExpose({ fetchData });
           <TableRow v-else>
             <TableCell
               :colspan="columns.length"
-              class="h-24 text-center border-l border-r border-border"
+              class="h-16 text-center border-l border-r border-border text-sm"
             >
               {{ t('hint.no_results') }}
             </TableCell>
@@ -871,7 +871,7 @@ defineExpose({ fetchData });
     </div>
 
     <div
-      class="py-4 px-6 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+      class="py-2 px-4 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
