@@ -152,6 +152,7 @@ const tabs = uselistTabs().value.model_management;
     :data-source="getModels"
     :tabs="tabs"
     :sortable-columns="['last_modified_time', 'register_date']"
+    :filterable-columns="['type']"
     class="grow"
   />
 </template>

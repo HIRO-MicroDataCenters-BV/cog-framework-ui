@@ -314,6 +314,9 @@ const getValueLabel = (columnId: string, value: string | number): string => {
       return t(`label.${typeName}`);
     }
   }
+  if (columnId === 'type' && typeof value === 'string') {
+    return value;
+  }
   return String(value);
 };
 
