@@ -71,9 +71,12 @@ const action = ref();
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel>{{ $t('action.cancel') }}</AlertDialogCancel>
+        <AlertDialogCancel class="cursor-pointer">{{
+          $t('action.cancel')
+        }}</AlertDialogCancel>
         <AlertDialogAction
           variant="destructive"
+          class="cursor-pointer"
           @click="
             () => {
               action();
