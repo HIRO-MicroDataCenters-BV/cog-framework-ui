@@ -89,12 +89,12 @@ const columns = [
       h(
         'span',
         {
-          class: 'font-mono',
+          class: 'font-mono text-sm',
           title: dayjs(row.getValue<string>('register_date')).format(
             'DD MMM YYYY HH:mm:ss',
           ),
         },
-        dayjs(row.getValue<string>('register_date')).format('DD.MM.YYYY'),
+        dayjs(row.getValue<string>('register_date')).format('DD-MMM-YYYY'),
       ),
   },
   {
@@ -103,12 +103,12 @@ const columns = [
       h(
         'span',
         {
-          class: 'font-mono',
+          class: 'font-mono text-sm',
           title: dayjs(row.getValue<string>('last_modified_time')).format(
             'DD MMM YYYY HH:mm:ss',
           ),
         },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD.MM.YYYY'),
+        dayjs(row.getValue<string>('last_modified_time')).format('DD-MMM-YYYY'),
       ),
   },
   {
