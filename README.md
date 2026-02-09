@@ -1,207 +1,349 @@
 # Cognitive Framework UI
 
-A Nuxt 3-based machine learning workflow management UI for managing datasets, models, and pipelines with a visual pipeline builder.
+<div align="center">
 
-## Tech Stack
+A modern machine learning workflow management UI built with Nuxt 3, featuring visual pipeline building, dataset management, and model orchestration.
 
-- **Nuxt 3.16.2** (Vue 3.5.13) - SPA mode
-- **TypeScript 5.8.3**
-- **Tailwind CSS 4.1.3**
-- **shadcn-nuxt** - UI component library
-- **Vue Flow** - Visual pipeline builder
-- **Vee-Validate + Zod** - Form validation
-- **pnpm 10.20.0** - Package manager
+[![Nuxt](https://img.shields.io/badge/Nuxt-3.16.2-00DC82?style=flat&logo=nuxt.js)](https://nuxt.com/)
+[![Vue](https://img.shields.io/badge/Vue-3.5.13-4FC08D?style=flat&logo=vue.js)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.3-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 
-## Prerequisites
+</div>
 
-- Node.js (LTS version recommended)
-- pnpm 10.20.0 or higher
+---
 
-Install pnpm globally if you don't have it:
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Local Development](#local-development)
+  - [Quick Start](#quick-start)
+  - [Environment Configuration](#environment-configuration)
+  - [Mock Mode](#mock-mode)
+- [Production Build](#production-build)
+- [Deployment](#deployment)
+  - [Docker Deployment](#docker-deployment)
+  - [Static Hosting](#static-hosting)
+  - [Environment Variables for Production](#environment-variables-for-production)
+- [Code Quality](#code-quality)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## 🎯 Overview
+
+Cognitive Framework UI is a comprehensive web application for managing machine learning workflows. It provides an intuitive interface for:
+
+- Creating and managing datasets from multiple sources (files, databases, streams)
+- Configuring and validating ML models
+- Building complex pipelines using a visual flow editor
+- Monitoring and orchestrating ML workflows
+
+Built with modern web technologies and best practices, this application offers a seamless developer experience and production-ready deployment options.
+
+---
+
+## ✨ Key Features
+
+- **📊 Dataset Management**
+  - Support for multiple data sources: Files, PostgreSQL, MySQL, SQLite, MongoDB
+  - Stream data handling
+  - Data validation and preview
+
+- **🤖 Model Management**
+  - Model configuration and validation
+  - Version control and tracking
+  - Integration with ML frameworks
+
+- **🔀 Visual Pipeline Builder**
+  - Drag-and-drop interface powered by Vue Flow
+  - Real-time pipeline validation
+  - Node-based workflow creation
+
+---
+
+## 🛠 Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Nuxt 3** | 3.16.2 | Vue framework (SPA mode) |
+| **Vue** | 3.5.13 | Progressive JavaScript framework |
+| **TypeScript** | 5.8.3 | Type-safe development |
+| **Tailwind CSS** | 4.1.3 | Utility-first CSS framework |
+| **shadcn-nuxt** | 2.0.0 | UI component library |
+| **Vue Flow** | 1.46.3 | Visual pipeline builder |
+| **Vee-Validate** | 4.15.1 | Form validation |
+| **Zod** | 3.24.2 | Schema validation |
+| **pnpm** | 10.20.0 | Fast, disk space efficient package manager |
+| **Vitest** | 2.1.8 | Unit testing framework |
+
+---
+
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** `>= 20.x` (LTS recommended)
+  ```bash
+  node --version  # Should be >= v20.0.0
+  ```
+
+- **pnpm** `>= 10.20.0`
+  ```bash
+  # Install pnpm globally
+  npm install -g pnpm
+  
+  # Verify installation
+  pnpm --version
+  ```
+
+
+---
+
+## 🚀 Local Development
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd cog-framework-ui
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
+
+5. **Open your browser**
+   
+   Navigate to `http://localhost:3000`
+
+The development server will start with hot-module replacement (HMR) enabled. Any changes you make to the code will be reflected immediately in the browser.
+
+### Environment Configuration
+
+Create a `.env` file in the root directory with the following variables:
 
 ```bash
-npm install -g pnpm
-```
-
-## Setup
-
-Install dependencies:
-
-```bash
-pnpm install
-```
-
-## Environment Configuration
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env
-```
-
-Configure your environment variables in `.env`:
-
-```bash
-# API Base URL (change to your backend API server)
+# ============================================
+# API Configuration
+# ============================================
+# Backend API base URL
 NUXT_PUBLIC_API_BASE=http://localhost:8000
 
-# URL Prefix for deployment (leave empty for development)
+# URL prefix for deployment (leave empty for local dev)
 URL_PREFIX=
 
-# Enable mock data if you don't have a backend
+# ============================================
+# Development Options
+# ============================================
+# Enable mock data mode (use 'true' when backend is unavailable)
 MOCK_ENABLED=false
+
+# ============================================
+# Optional: DEX Authentication (for development)
+# ============================================
+# NUXT_DEX_HOST=https://dex.example.com
+# NUXT_DEX_USERNAME=your-username
+# NUXT_DEX_PASSWORD=your-password
+# NUXT_DEX_AUTH_TYPE=local
+# NUXT_DEX_SKIP_TLS_VERIFY=false
 ```
 
 ### Mock Mode
 
-If you don't have a backend API running, you can enable mock mode to use sample data:
+When you don't have access to a backend API, you can use mock mode for development:
 
-1. Set `MOCK_ENABLED=true` in your `.env` file
-2. The app will use mock data from the `/mocks` directory
+1. **Enable mock mode** in your `.env`:
+   ```bash
+   MOCK_ENABLED=true
+   ```
 
-## Development Server
+2. **Restart the dev server**
+   ```bash
+   pnpm start
+   ```
 
-Start the development server on `http://localhost:3000`:
+3. **Mock data location**
+   
+   Mock data files are located in the `/mocks` directory. You can modify these JSON files to customize the mock data.
+
+**Available mock endpoints:**
+- Datasets
+- Models
+- Pipelines
+- Authentication (bypassed in mock mode)
+
+---
+
+## 🏗️ Production Build
+
+### Build for Production
 
 ```bash
-pnpm start
-```
-
-Or use the standard Nuxt dev command:
-
-```bash
-pnpm dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
+# Build the application
 pnpm build
 ```
 
-Preview the production build locally:
+This will:
+- Compile TypeScript
+- Bundle and minify assets
+- Generate optimized static files in `.output/public/`
+- Tree-shake unused code
+- Optimize images and fonts
 
+
+This creates a fully static site in `.output/public/` that can be deployed to any static hosting service.
+
+---
+
+## 🚢 Deployment
+
+### Docker Deployment
+
+Docker is the recommended deployment method for production environments.
+
+#### 1. Build Docker Image
+
+**Basic build:**
 ```bash
-pnpm preview
+docker build -t cog-framework-ui:latest .
 ```
 
-Generate static site:
-
+**Build with environment variables:**
 ```bash
-pnpm generate
+docker build \
+  --build-arg NUXT_PUBLIC_API_BASE=/api \
+  --build-arg URL_PREFIX=/app/ \
+  --build-arg NUXT_PUBLIC_APP_VERSION=1.0.0 \
+  -t cog-framework-ui:latest .
 ```
 
-## Code Quality
+**Build with DEX authentication secrets:**
+```bash
+docker build \
+  --build-arg NUXT_DEX_HOST=https://dex.example.com \
+  --build-arg NUXT_DEX_AUTH_TYPE=local \
+  --secret id=dex_username,src=./secrets/dex_username.txt \
+  --secret id=dex_password,src=./secrets/dex_password.txt \
+  -t cog-framework-ui:latest .
+```
+
+#### 2. Run Docker Container
+
+**Basic run:**
+```bash
+docker run -p 80:80 cog-framework-ui:latest
+```
+
+**Run with environment variables:**
+```bash
+docker run -p 80:80 \
+  -e NUXT_PUBLIC_API_BASE=http://api.example.com \
+  cog-framework-ui:latest
+```
+
+**Access the application:**
+- Open `http://localhost` in your browser
+- The app will be available at the configured `URL_PREFIX` (default: `/uidev/`)
+
+#### 3. Docker Compose (Recommended for Production)
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  ui:
+    image: cog-framework-ui:latest
+    ports:
+      - "80:80"
+    environment:
+      - NUXT_PUBLIC_API_BASE=/api
+      - URL_PREFIX=/app/
+    restart: unless-stopped
+    
+  # Optional: Add your backend API service
+  # api:
+  #   image: your-backend-api:latest
+  #   ports:
+  #     - "8000:8000"
+```
+
+Run with Docker Compose:
+```bash
+docker-compose up -d
+```
+
+
+### Environment Variables for Production
+
+Configure these environment variables based on your deployment method:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `NUXT_PUBLIC_API_BASE` | Backend API base URL | `/apidev` | Yes |
+| `URL_PREFIX` | Application URL prefix | `/uidev/` | No |
+| `NUXT_PUBLIC_APP_VERSION` | Application version | `1.0.0` | No |
+| `NUXT_DEX_HOST` | DEX authentication host | - | If using DEX |
+| `NUXT_DEX_USERNAME` | DEX username | - | If using DEX |
+| `NUXT_DEX_PASSWORD` | DEX password | - | If using DEX |
+| `NUXT_DEX_AUTH_TYPE` | DEX auth type | `local` | If using DEX |
+| `NUXT_DEX_SKIP_TLS_VERIFY` | Skip TLS verification | `false` | No |
+
+---
+
+## 🔍 Code Quality
 
 ### Linting
 
-Check code for linting errors:
-
+**Check for linting errors:**
 ```bash
 pnpm lint
 ```
 
-Auto-fix linting issues:
-
+**Auto-fix linting issues:**
 ```bash
 pnpm lint:fix
 ```
 
-Start the ESLint config inspector on `http://localhost:7777`:
-
+**Inspect ESLint configuration:**
 ```bash
 pnpm lint:inspector
+# Opens config inspector at http://localhost:7777
 ```
 
 ### Formatting
 
-Format code with Prettier:
-
+**Format code with Prettier:**
 ```bash
 pnpm format
 ```
 
-## Testing
+---
 
-Run tests:
 
-```bash
-pnpm test
-```
+## 📄 License
 
-Run tests in watch mode:
+This project is proprietary and confidential. All rights reserved.
 
-```bash
-pnpm test:watch
-```
-
-Run tests with coverage:
-
-```bash
-pnpm test:coverage
-```
-
-Run tests with UI:
-
-```bash
-pnpm test:ui
-```
-
-## Project Structure
-
-```
-├── components/          # Vue components
-│   ├── app/            # Application components
-│   ├── forms/          # Form components
-│   └── ui/             # shadcn-vue UI components
-├── composables/        # Vue composables (API, auth, state)
-├── pages/              # File-based routing
-│   ├── datasets/       # Dataset management
-│   ├── models/         # Model management
-│   └── pipelines/      # Pipeline builder
-├── server/             # Nuxt server API routes
-│   └── api/            # API endpoints (auth, proxy)
-├── schemas/            # Zod validation schemas
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions
-├── assets/             # Static assets (CSS, icons)
-├── public/             # Public static files
-├── layouts/            # Nuxt layouts
-├── middleware/         # Route middleware
-├── plugins/            # Nuxt plugins
-├── i18n/               # Internationalization
-├── mocks/              # Mock data for development
-└── test/               # Test files
-```
-
-## Key Features
-
-- **Dataset Management** - Support for files, databases (PostgreSQL, MySQL, SQLite, MongoDB), and streams
-- **Model Management** - Model validation and configuration
-- **Pipeline Builder** - Visual flow editor for creating ML pipelines
-- **DEX Authentication** - Integrated authentication system
-- **Mock Mode** - Development mode with mock data
-- **Internationalization** - Multi-language support
-
-## Docker
-
-Build Docker image:
-
-```bash
-docker build -t cog-framework-ui .
-```
-
-Run with Docker:
-
-```bash
-docker run -p 8080:8080 cog-framework-ui
-```
-
-## Contributing
-
-1. Follow the existing code style
-2. Run `pnpm lint:fix` before committing
-3. Ensure all tests pass with `pnpm test`
-4. Format code with `pnpm format`
+---
