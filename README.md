@@ -124,8 +124,14 @@ Before you begin, ensure you have the following installed:
 
 3. **Set up environment variables**
    ```bash
+   # For local development (recommended - never committed)
+   cp .env.local.example .env.local
+   
+   # Or copy base configuration
    cp .env.example .env
    ```
+   
+   📖 **See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) for detailed guide**
 
 4. **Start the development server**
    ```bash
@@ -140,7 +146,16 @@ The development server will start with hot-module replacement (HMR) enabled. Any
 
 ### Environment Configuration
 
-Create a `.env` file in the root directory with the following variables:
+**🔒 Best Practice: Use `.env.local` for your personal settings** (gitignored, never committed)
+
+```bash
+# Copy the local development template
+cp .env.local.example .env.local
+
+# Edit .env.local with your settings
+```
+
+**Common configuration:**
 
 ```bash
 # ============================================
@@ -156,7 +171,7 @@ URL_PREFIX=
 # Development Options
 # ============================================
 # Enable mock data mode (use 'true' when backend is unavailable)
-MOCK_ENABLED=false
+NUXT_PUBLIC_MOCK_ENABLED=false
 
 # ============================================
 # Optional: DEX Authentication (for development)
@@ -168,13 +183,16 @@ MOCK_ENABLED=false
 # NUXT_DEX_SKIP_TLS_VERIFY=false
 ```
 
+📖 **For detailed information, see [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)**
+
 ### Mock Mode
 
 When you don't have access to a backend API, you can use mock mode for development:
 
-1. **Enable mock mode** in your `.env`:
+1. **Enable mock mode** in your `.env.local` (recommended):
    ```bash
-   MOCK_ENABLED=true
+   # .env.local
+   NUXT_PUBLIC_MOCK_ENABLED=true
    ```
 
 2. **Restart the dev server**
@@ -182,15 +200,21 @@ When you don't have access to a backend API, you can use mock mode for developme
    pnpm start
    ```
 
-3. **Mock data location**
+3. **Mock data configuration**
    
-   Mock data files are located in the `/mocks` directory. You can modify these JSON files to customize the mock data.
+   - Mock data files are located in the `/mocks` directory
+   - Network delay is configurable in `composables/mock.ts` (default: 3 seconds)
+   - You can modify JSON files to customize the mock data
 
 **Available mock endpoints:**
-- Datasets
-- Models
-- Pipelines
+- Datasets (list, details, file, table, stream)
+- Models (list, details, associations)
+- Pipelines (list, runs, flow, components)
 - Authentication (bypassed in mock mode)
+
+**Network Delay Simulation:**
+
+Mock mode includes a 3-second network delay by default to simulate real API latency. This helps test loading states and UI feedback. To adjust the delay, edit `MOCK_API_DELAY_MS` in `composables/mock.ts`.
 
 ---
 
