@@ -112,7 +112,7 @@ interface TopicDetail {
   creation_date: string;
 }
 
-onMounted(async () => {
+const fetchBrokerAndTopicDetails = async () => {
   try {
     const brokers = (await getBrokerDetails()) as {
       data?: BrokerDetail[];
@@ -136,7 +136,17 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch broker/topic details:', error);
   }
-});
+};
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) {
+      fetchBrokerAndTopicDetails();
+    }
+  },
+  { immediate: true },
+);
 
 const { submitDatasetForm } = useDatasetForm();
 
