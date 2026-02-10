@@ -22,7 +22,7 @@
         {{ $t(`label.${localInput.value_source_type}`) }}
       </div>
       <div class="text-sm break-all font-medium py-1 px-2">
-        {{ localInput.source || '-' }}
+        {{ resolvedValue || '-' }}
       </div>
     </div>
 
@@ -195,6 +195,18 @@ const componentOutputOptions = computed(() => {
   });
 
   return options;
+});
+
+// Resolve value for display in readonly mode
+const resolvedValue = computed(() => {
+  if (localInput.value.value_source_type === 'pipeline_inputparam') {
+    // Find the parameter in pipelineParams and return its default value
+    const param = props.pipelineParams.find(
+      (p) => p.name === localInput.value.source,
+    );
+    return param?.default || localInput.value.source;
+  }
+  return localInput.value.source;
 });
 
 // Validation

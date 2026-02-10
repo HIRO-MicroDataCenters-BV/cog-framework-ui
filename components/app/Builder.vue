@@ -66,6 +66,7 @@
             :readonly="readonly"
             :selected-node="selectedNode"
             :all-nodes="enrichedNodes"
+            :pipeline-data="pipelineData"
             @update-node="onUpdateNode"
             @delete-node="onDeleteNode"
             @rename-component="onRenameComponent"
@@ -171,6 +172,7 @@ const openUploadComponentDialog = ref(false);
 // Pipeline-level parameters and outputs
 const pipelineParameters = ref<PipelineInputParam[]>([]);
 const pipelineOutputs = ref<PipelineOutput[]>([]);
+const pipelineData = ref<unknown>(null);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
@@ -185,7 +187,23 @@ watch(
     const hasData = builderData?.nodes?.length || builderData?.edges?.length;
     const storeIsEmpty = nodes.value.length === 0 && edges.value.length === 0;
 
-    console.log('builderData', builderData);
+    console.log('[Builder] builderData:', builderData);
+    console.log(
+      '[Builder] builderData.pipelineData:',
+      builderData?.pipelineData,
+    );
+    console.log(
+      '[Builder] builderData.pipelineData.runtime_config:',
+      builderData?.pipelineData?.runtime_config,
+    );
+
+    // Extract pipelineData for readonly mode
+    if (builderData?.pipelineData) {
+      pipelineData.value = builderData.pipelineData;
+      console.log('[Builder] Set pipelineData.value:', pipelineData.value);
+    } else {
+      console.log('[Builder] No pipelineData found in builderData');
+    }
 
     // Case 1: builderData has data and store is empty -> initialize
     if (hasData && storeIsEmpty) {
@@ -263,6 +281,7 @@ watch(
           name: currentBuilder.name || '',
           nodes: JSON.parse(JSON.stringify(nodes.value)), // Deep copy to detach
           edges: JSON.parse(JSON.stringify(edges.value)),
+          pipelineData: currentBuilder.pipelineData, // Preserve pipelineData
         },
       },
     });

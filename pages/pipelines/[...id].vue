@@ -464,30 +464,24 @@ const extractTypesFromComponentSpec = (template: PipelineTemplate) => {
 
   try {
     const componentSpecStr =
-      template.metadata?.annotations?.[
-        'pipelines.kubeflow.org/component_spec'
-      ];
+      template.metadata?.annotations?.['pipelines.kubeflow.org/component_spec'];
     if (!componentSpecStr) return typesMap;
 
     const componentSpec = JSON.parse(componentSpecStr);
 
     // Extract input types
-    componentSpec.inputs?.forEach(
-      (input: { name: string; type: string }) => {
-        if (input.name && input.type) {
-          typesMap.set(`input:${input.name}`, input.type);
-        }
-      },
-    );
+    componentSpec.inputs?.forEach((input: { name: string; type: string }) => {
+      if (input.name && input.type) {
+        typesMap.set(`input:${input.name}`, input.type);
+      }
+    });
 
     // Extract output types
-    componentSpec.outputs?.forEach(
-      (output: { name: string; type: string }) => {
-        if (output.name && output.type) {
-          typesMap.set(`output:${output.name}`, output.type);
-        }
-      },
-    );
+    componentSpec.outputs?.forEach((output: { name: string; type: string }) => {
+      if (output.name && output.type) {
+        typesMap.set(`output:${output.name}`, output.type);
+      }
+    });
   } catch (error) {
     console.warn('Failed to parse component_spec:', error);
   }

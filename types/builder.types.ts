@@ -123,6 +123,7 @@ export interface PipelineBuilderData {
   edges: Edge[];
   input_path?: PipelineInputParam[];
   output_path?: PipelineOutput[];
+  pipelineData?: unknown; // Full pipeline run data for readonly mode
 }
 
 // Type for partial node updates - allows flexible deep partial updates
