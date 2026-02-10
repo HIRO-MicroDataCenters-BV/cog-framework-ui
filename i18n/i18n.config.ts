@@ -362,6 +362,7 @@ export default defineI18nConfig(() => ({
       },
       hint: {
         no_results: 'No results found',
+        no_results_description: 'Try adjusting your search or filters',
         of: 'of',
         rows_selected: 'rows selected',
         rows_per_page: 'Rows per page',

@@ -163,13 +163,14 @@ const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
 };
 
+// always have search query
 const getAutoColumn = (searchValue: string): string => {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRegex.test(searchValue)) {
-    return 'id';
-  }
-  return 'name';
+  // const uuidRegex =
+  //   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // if (uuidRegex.test(searchValue)) {
+  //   return 'id';
+  // }
+  return 'search';
 };
 
 const fetchData = async () => {
@@ -864,9 +865,26 @@ defineExpose({ fetchData });
           <TableRow v-else>
             <TableCell
               :colspan="columns.length"
-              class="h-16 text-center border-l border-r border-border text-sm"
+              class="h-64 border-l border-r border-border"
             >
-              {{ t('hint.no_results') }}
+              <div class="flex flex-col items-center justify-center gap-3 py-8">
+                <div
+                  class="flex items-center justify-center w-16 h-16 rounded-full bg-muted/50"
+                >
+                  <Icon
+                    name="lucide:inbox"
+                    class="w-8 h-8 text-muted-foreground/60"
+                  />
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <p class="text-base font-medium text-foreground">
+                    {{ t('hint.no_results') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ t('hint.no_results_description') }}
+                  </p>
+                </div>
+              </div>
             </TableCell>
           </TableRow>
         </TableBody>
