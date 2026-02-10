@@ -541,9 +541,9 @@ export const useApiWithMock = () => {
       ...page.value,
       isLoading: true,
     });
-    
+
     await new Promise((resolve) => setTimeout(resolve, ms));
-    
+
     // Set loading state to false after delay
     setPage({
       ...page.value,
@@ -618,39 +618,43 @@ export const useApiWithMock = () => {
         await mockDelay();
         // Import data from JSON file
         const datasetsJson = await import('~/mocks/get.datasets.json');
-        
+
         let filteredData = [...datasetsJson.data];
-        
+
         // Apply search filters
         const searchParams = params as Record<string, string>;
-        
+
         // Filter by ID
         if (searchParams.id) {
-          filteredData = filteredData.filter(dataset => 
-            dataset.id.toLowerCase().includes(searchParams.id.toLowerCase())
+          filteredData = filteredData.filter((dataset) =>
+            dataset.id.toLowerCase().includes(searchParams.id.toLowerCase()),
           );
         }
-        
+
         // Filter by name or dataset_name
         if (searchParams.name) {
-          filteredData = filteredData.filter(dataset => 
-            dataset.dataset_name.toLowerCase().includes(searchParams.name.toLowerCase())
+          filteredData = filteredData.filter((dataset) =>
+            dataset.dataset_name
+              .toLowerCase()
+              .includes(searchParams.name.toLowerCase()),
           );
         }
-        
+
         if (searchParams.dataset_name) {
-          filteredData = filteredData.filter(dataset => 
-            dataset.dataset_name.toLowerCase().includes(searchParams.dataset_name.toLowerCase())
+          filteredData = filteredData.filter((dataset) =>
+            dataset.dataset_name
+              .toLowerCase()
+              .includes(searchParams.dataset_name.toLowerCase()),
           );
         }
-        
+
         // Handle pagination
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedData = filteredData.slice(startIndex, endIndex);
-        
+
         return Promise.resolve({
           status_code: datasetsJson.status_code,
           message: datasetsJson.message,
@@ -673,33 +677,33 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         await mockDelay();
         const modelsJson = await import('~/mocks/get.models.json');
-        
+
         let filteredData = [...modelsJson.data];
-        
+
         // Apply search filters
         const searchParams = params as Record<string, string>;
-        
+
         // Filter by ID
         if (searchParams.id) {
-          filteredData = filteredData.filter(model => 
-            model.id.toLowerCase().includes(searchParams.id.toLowerCase())
+          filteredData = filteredData.filter((model) =>
+            model.id.toLowerCase().includes(searchParams.id.toLowerCase()),
           );
         }
-        
+
         // Filter by name
         if (searchParams.name) {
-          filteredData = filteredData.filter(model => 
-            model.name.toLowerCase().includes(searchParams.name.toLowerCase())
+          filteredData = filteredData.filter((model) =>
+            model.name.toLowerCase().includes(searchParams.name.toLowerCase()),
           );
         }
-        
+
         // Handle pagination
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedData = filteredData.slice(startIndex, endIndex);
-        
+
         return Promise.resolve({
           status_code: modelsJson.status_code,
           message: modelsJson.message,
@@ -741,33 +745,37 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         await mockDelay();
         const pipelinesJson = await import('~/mocks/get.pipelines.json');
-        
+
         let filteredData = [...pipelinesJson.data];
-        
+
         // Apply search filters
         const searchParams = params as Record<string, string>;
-        
+
         // Filter by ID
         if (searchParams.id) {
-          filteredData = filteredData.filter(pipeline => 
-            pipeline.run_id.toLowerCase().includes(searchParams.id.toLowerCase())
+          filteredData = filteredData.filter((pipeline) =>
+            pipeline.run_id
+              .toLowerCase()
+              .includes(searchParams.id.toLowerCase()),
           );
         }
-        
+
         // Filter by name
         if (searchParams.name) {
-          filteredData = filteredData.filter(pipeline => 
-            pipeline.run_name.toLowerCase().includes(searchParams.name.toLowerCase())
+          filteredData = filteredData.filter((pipeline) =>
+            pipeline.run_name
+              .toLowerCase()
+              .includes(searchParams.name.toLowerCase()),
           );
         }
-        
+
         // Handle pagination
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedData = filteredData.slice(startIndex, endIndex);
-        
+
         return Promise.resolve({
           status_code: pipelinesJson.status_code,
           message: pipelinesJson.message,
