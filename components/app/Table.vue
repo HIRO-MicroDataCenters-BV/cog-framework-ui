@@ -814,7 +814,8 @@ defineExpose({ fetchData });
               :key="header.id"
               :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
               :style="{
-                width: header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+                width:
+                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
               }"
             >
               <FlexRender
@@ -837,7 +838,10 @@ defineExpose({ fetchData });
                   :key="cell.id"
                   class="border-l border-r border-border py-1 px-3 text-sm"
                   :style="{
-                    width: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : 'auto',
+                    width:
+                      cell.column.getSize() !== 150
+                        ? `${cell.column.getSize()}px`
+                        : 'auto',
                   }"
                 >
                   <FlexRender
