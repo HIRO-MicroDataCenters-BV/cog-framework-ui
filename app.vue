@@ -29,7 +29,7 @@
       </template>
     </Suspense>
   </div>
-  <Toaster position="top-right" expand rich-colors />
+  <Toaster position="bottom-right" expand rich-colors close-button />
 </template>
 
 <script setup lang="ts">
