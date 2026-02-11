@@ -122,7 +122,7 @@ const tableColumns = computed(() => {
         <!-- File Preview with Metadata -->
         <template v-if="isFilePreview && filePreviewData">
           <!-- File Metadata Header -->
-          <div class="mb-3 grid grid-cols-4 gap-2">
+          <div class="mb-3 grid grid-cols-4 gap-2 sticky top-0 z-10 bg-background pb-2">
             <!-- File Name -->
             <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
               <div class="flex items-center gap-1 mb-0.5">
