@@ -159,8 +159,8 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            // Only show 404 toast for modifying requests, not for GET (search/list)
-            if (isModifyingRequest) {
+            // Show 404 toast for all requests with error message
+            if (data.message || data.detail) {
               toaster.show('error', 'not_found');
             }
             return null;
