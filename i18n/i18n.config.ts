@@ -167,6 +167,7 @@ export default defineI18nConfig(() => ({
         file_size: 'File Size',
         content_type: 'Content Type',
         lines: 'Lines',
+        rows_remaining: 'rows remaining',
         register_date: 'Added',
         last_modified_time: 'Modified',
         file: 'File',
@@ -293,6 +294,7 @@ export default defineI18nConfig(() => ({
         save_and_run: 'Save & Run',
         cancel: 'Cancel',
         close: 'Close',
+        load_more: 'Load More',
         confirm: 'Confirm',
         add: 'Add',
         remove: 'Remove',
@@ -383,6 +385,8 @@ export default defineI18nConfig(() => ({
         db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
         db_url_default: 'Enter database connection URL',
         preview_truncated:
+          'Preview is truncated. Download the file to see the full content.',
+        preview_max_limit:
           'Preview is truncated. Download the file to see the full content.',
         no_data: 'No data available',
       },

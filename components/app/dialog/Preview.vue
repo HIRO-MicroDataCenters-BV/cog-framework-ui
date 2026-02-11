@@ -18,11 +18,21 @@ const props = defineProps<{
   title: string;
   data: unknown;
   type: 'file' | 'table' | 'prometheus';
+  loading?: boolean;
+  maxLimitReached?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
+  (e: 'load-more'): void;
 }>();
+
+// Check if more data can be loaded (not at max limit and has more data)
+const canLoadMore = computed(() => {
+  if (!filePreviewData.value) return false;
+  if (props.maxLimitReached) return false;
+  return filePreviewData.value.preview_lines < filePreviewData.value.total_lines;
+});
 
 const { t } = useI18n();
 
@@ -174,14 +184,6 @@ const tableColumns = computed(() => {
             </div>
           </div>
 
-          <!-- Truncation Warning -->
-          <div
-            v-if="filePreviewData.truncated"
-            class="mb-4 flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-sm"
-          >
-            <AlertCircle class="w-4 h-4 flex-shrink-0" />
-            <span>{{ t('hint.preview_truncated') }}</span>
-          </div>
 
           <!-- CSV Table Preview -->
           <div
@@ -232,6 +234,37 @@ const tableColumns = computed(() => {
               filePreviewData.preview.join('\n')
             }}</pre>
           </div>
+
+          <!-- Load More Button -->
+          <div v-if="canLoadMore" class="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              :disabled="props.loading"
+              :class="props.loading ? 'cursor-wait' : 'cursor-pointer'"
+              @click="emit('load-more')"
+            >
+              <Icon
+                v-if="props.loading"
+                name="lucide:loader-2"
+                class="w-4 h-4 mr-2 animate-spin"
+              />
+              <Icon v-else name="lucide:chevrons-down" class="w-4 h-4 mr-2" />
+              {{ t('action.load_more') }}
+              <span class="text-muted-foreground ml-1">
+                ({{ filePreviewData.total_lines - filePreviewData.preview_lines }}
+                {{ t('label.rows_remaining') }})
+              </span>
+            </Button>
+          </div>
+
+          <!-- Max Limit Warning -->
+          <div
+            v-if="props.maxLimitReached"
+            class="mt-4 flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-sm"
+          >
+            <AlertCircle class="w-4 h-4 flex-shrink-0" />
+            <span>{{ t('hint.preview_max_limit') }}</span>
+          </div>
         </template>
 
         <!-- Database Table Preview -->
@@ -265,7 +298,7 @@ const tableColumns = computed(() => {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:open', false)">
+        <Button variant="outline" class="cursor-pointer" @click="emit('update:open', false)">
           {{ $t('action.close') }}
         </Button>
       </DialogFooter>

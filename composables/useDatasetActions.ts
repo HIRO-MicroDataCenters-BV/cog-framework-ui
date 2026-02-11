@@ -5,6 +5,12 @@
  * based on data_source_type according to DATA_TYPE_MAPPING
  */
 
+// Preview configuration
+const PREVIEW_CONFIG = {
+  MAX_LINES: 200,
+  INCREMENT: 10,
+} as const;
+
 interface ActionItem {
   key: string;
   label: string;
@@ -29,6 +35,9 @@ interface PreviewState {
   title: string;
   data: unknown | FilePreviewData;
   type: 'file' | 'table' | 'prometheus';
+  datasetId?: string;
+  loading?: boolean;
+  maxLimitReached?: boolean;
 }
 
 export const useDatasetActions = () => {
@@ -46,17 +55,54 @@ export const useDatasetActions = () => {
     title: string,
     data: unknown,
     type: PreviewState['type'],
+    datasetId?: string,
+    maxLimitReached?: boolean,
   ) => {
     previewState.value = {
       open: true,
       title,
       data,
       type,
+      datasetId,
+      loading: false,
+      maxLimitReached,
     };
   };
 
   const closePreview = () => {
     previewState.value.open = false;
+  };
+
+  /**
+   * Load more preview data for file datasets
+   */
+  const loadMorePreview = async () => {
+    const currentData = previewState.value.data as FilePreviewData | null;
+    const datasetId = previewState.value.datasetId;
+
+    if (!currentData || !datasetId) return;
+
+    // Calculate new limit (current + INCREMENT more rows, max MAX_LINES)
+    const currentLines = currentData.preview_lines;
+    const totalLines = currentData.total_lines;
+    const newLimit = Math.min(currentLines + PREVIEW_CONFIG.INCREMENT, totalLines, PREVIEW_CONFIG.MAX_LINES);
+
+    // Set loading state
+    previewState.value.loading = true;
+
+    try {
+      const response = await api.previewDatasetFile(datasetId, newLimit);
+
+      if (response && 'data' in response && response.data) {
+        const fileData = response.data as FilePreviewData;
+        previewState.value.data = fileData;
+        // Show warning if max limit reached and there's more data
+        previewState.value.maxLimitReached =
+          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES && fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
+      }
+    } finally {
+      previewState.value.loading = false;
+    }
   };
 
   /**
@@ -103,10 +149,18 @@ export const useDatasetActions = () => {
       } else if ('data' in response && response.data) {
         // Show preview data in dialog with file metadata
         const fileData = response.data as FilePreviewData;
-        showPreview(fileData.dataset_name || 'File Preview', fileData, 'file');
+        const maxLimitReached =
+          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES && fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
+        showPreview(
+          fileData.dataset_name || 'File Preview',
+          fileData,
+          'file',
+          datasetId,
+          maxLimitReached,
+        );
       } else {
         // Fallback for raw response
-        showPreview('File Preview', response, 'file');
+        showPreview('File Preview', response, 'file', datasetId);
       }
     }
   };
@@ -263,5 +317,6 @@ export const useDatasetActions = () => {
     handlePrometheusPreview,
     previewState,
     closePreview,
+    loadMorePreview,
   };
 };
