@@ -387,7 +387,7 @@ export default defineI18nConfig(() => ({
         preview_truncated:
           'Preview is truncated. Download the file to see the full content.',
         preview_max_limit:
-          'Preview is truncated. Download the file to see the full content.',
+          'Maximum preview limit reached. Download the file to see the full content.',
         no_data: 'No data available',
       },
       menu: {
