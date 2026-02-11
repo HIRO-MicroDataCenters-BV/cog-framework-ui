@@ -122,65 +122,69 @@ const tableColumns = computed(() => {
         <!-- File Preview with Metadata -->
         <template v-if="isFilePreview && filePreviewData">
           <!-- File Metadata Header -->
-          <div class="mb-4 p-4 bg-muted/50 rounded-lg border">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <!-- File Name -->
-              <div class="flex items-start gap-2">
-                <FileText class="w-4 h-4 mt-0.5 text-muted-foreground" />
-                <div class="min-w-0">
-                  <p class="text-xs text-muted-foreground">
-                    {{ t('label.file_name') }}
-                  </p>
-                  <p
-                    class="text-sm font-medium truncate"
-                    :title="filePreviewData.file_name"
-                  >
-                    {{ filePreviewData.file_name }}
-                  </p>
-                </div>
+          <div class="mb-3 grid grid-cols-4 gap-2">
+            <!-- File Name -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <FileText class="w-3 h-3 text-primary/70" />
+                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                  {{ t('label.file_name') }}
+                </span>
               </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <p class="text-xs font-semibold truncate cursor-default">
+                      {{ filePreviewData.file_name }}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ filePreviewData.file_name }}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
 
-              <!-- File Size -->
-              <div class="flex items-start gap-2">
-                <Hash class="w-4 h-4 mt-0.5 text-muted-foreground" />
-                <div>
-                  <p class="text-xs text-muted-foreground">
-                    {{ t('label.file_size') }}
-                  </p>
-                  <p class="text-sm font-medium">
-                    {{ formatFileSize(filePreviewData.file_size) }}
-                  </p>
-                </div>
+            <!-- File Size -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <Hash class="w-3 h-3 text-primary/70" />
+                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                  {{ t('label.file_size') }}
+                </span>
               </div>
+              <p class="text-xs font-semibold">
+                {{ formatFileSize(filePreviewData.file_size) }}
+              </p>
+            </div>
 
-              <!-- Content Type -->
-              <div class="flex items-start gap-2">
-                <FileType class="w-4 h-4 mt-0.5 text-muted-foreground" />
-                <div>
-                  <p class="text-xs text-muted-foreground">
-                    {{ t('label.content_type') }}
-                  </p>
-                  <p class="text-sm font-medium capitalize">
-                    {{ filePreviewData.content_type }}
-                  </p>
-                </div>
+            <!-- Content Type -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <FileType class="w-3 h-3 text-primary/70" />
+                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                  {{ t('label.content_type') }}
+                </span>
               </div>
+              <p class="text-xs font-semibold capitalize">
+                {{ filePreviewData.content_type }}
+              </p>
+            </div>
 
-              <!-- Lines -->
-              <div class="flex items-start gap-2">
-                <Rows3 class="w-4 h-4 mt-0.5 text-muted-foreground" />
-                <div>
-                  <p class="text-xs text-muted-foreground">
-                    {{ t('label.lines') }}
-                  </p>
-                  <p class="text-sm font-medium">
-                    {{ filePreviewData.preview_lines }}
-                    <span class="text-muted-foreground font-normal">
-                      / {{ filePreviewData.total_lines }}
-                    </span>
-                  </p>
-                </div>
+            <!-- Lines -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <Rows3 class="w-3 h-3 text-primary/70" />
+                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                  {{ t('label.lines') }}
+                </span>
               </div>
+              <p class="text-xs font-semibold">
+                {{ filePreviewData.preview_lines }}
+                <span class="text-muted-foreground font-normal">
+                  / {{ filePreviewData.total_lines }}
+                </span>
+              </p>
             </div>
           </div>
 
