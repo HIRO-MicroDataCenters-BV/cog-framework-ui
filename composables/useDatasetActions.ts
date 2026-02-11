@@ -12,10 +12,22 @@ interface ActionItem {
   hasConfirmation?: boolean;
 }
 
+interface FilePreviewData {
+  dataset_id: string;
+  dataset_name: string;
+  file_name: string;
+  file_size: number;
+  content_type: string;
+  total_lines: number;
+  preview_lines: number;
+  preview: string[];
+  truncated: boolean;
+}
+
 interface PreviewState {
   open: boolean;
   title: string;
-  data: unknown;
+  data: unknown | FilePreviewData;
   type: 'file' | 'table' | 'prometheus';
 }
 
@@ -88,8 +100,12 @@ export const useDatasetActions = () => {
           (response as Record<string, unknown>).url ||
           (response as Record<string, unknown>).preview_url;
         window.open(String(previewUrl), '_blank');
+      } else if ('data' in response && response.data) {
+        // Show preview data in dialog with file metadata
+        const fileData = response.data as FilePreviewData;
+        showPreview(fileData.dataset_name || 'File Preview', fileData, 'file');
       } else {
-        // Show preview data in dialog
+        // Fallback for raw response
         showPreview('File Preview', response, 'file');
       }
     }

@@ -164,6 +164,9 @@ export default defineI18nConfig(() => ({
         dataset_source_type: 'Dataset Source Type',
         file_name: 'File Name',
         file_path: 'File Path',
+        file_size: 'File Size',
+        content_type: 'Content Type',
+        lines: 'Lines',
         register_date: 'Added',
         last_modified_time: 'Modified',
         file: 'File',
@@ -379,6 +382,9 @@ export default defineI18nConfig(() => ({
         db_url_sqlite: 'Format: sqlite:///path/to/database.db',
         db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
         db_url_default: 'Enter database connection URL',
+        preview_truncated:
+          'Preview is truncated. Download the file to see the full content.',
+        no_data: 'No data available',
       },
       menu: {
         upload: 'Upload',
