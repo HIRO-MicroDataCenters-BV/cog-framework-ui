@@ -14,7 +14,13 @@ const { setPage, page } = useApp();
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState, loadMorePreview } = useDatasetActions();
+const { previewState, loadMorePreview, handleFileDownload } = useDatasetActions();
+
+const handleDownloadFromPreview = () => {
+  if (previewState.value.datasetId) {
+    handleFileDownload(previewState.value.datasetId);
+  }
+};
 
 setPage({
   section: 'datasets',
@@ -153,6 +159,7 @@ const columns = [
       :loading="previewState.loading"
       :max-limit-reached="previewState.maxLimitReached"
       @load-more="loadMorePreview"
+      @download="handleDownloadFromPreview"
     />
   </div>
 </template>

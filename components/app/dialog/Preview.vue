@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileText, Hash, FileType, Rows3, AlertCircle } from 'lucide-vue-next';
+import { FileText, Hash, FileType, Rows3, AlertCircle, Download } from 'lucide-vue-next';
 
 interface FilePreviewData {
   dataset_id: string;
@@ -25,6 +25,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
   (e: 'load-more'): void;
+  (e: 'download'): void;
 }>();
 
 // Check if more data can be loaded (not at max limit and has more data)
@@ -301,7 +302,16 @@ const tableColumns = computed(() => {
         </template>
       </div>
 
-      <DialogFooter>
+      <DialogFooter class="gap-2">
+        <Button
+          v-if="isFilePreview"
+          variant="default"
+          class="cursor-pointer"
+          @click="emit('download')"
+        >
+          <Download class="w-4 h-4 mr-2" />
+          {{ $t('action.download_file') }}
+        </Button>
         <Button variant="outline" class="cursor-pointer" @click="emit('update:open', false)">
           {{ $t('action.close') }}
         </Button>
