@@ -106,30 +106,41 @@ export const useDatasetActions = () => {
   };
 
   /**
-   * Handle file download with S3 URL support
+   * Handle file download - fetches file and triggers download
    */
   const handleFileDownload = async (datasetId: string) => {
-    const response = await api.downloadDatasetFile(datasetId);
+    const config = useRuntimeConfig();
+    const downloadUrl = `${config.public.apiBase}/datasets/${datasetId}/file/download`;
 
-    if (response && typeof response === 'object') {
-      // If response contains a URL (pre-signed S3 URL)
-      if ('url' in response || 'download_url' in response) {
-        const downloadUrl =
-          (response as Record<string, unknown>).url ||
-          (response as Record<string, unknown>).download_url;
-        window.open(String(downloadUrl), '_blank');
-      } else {
-        // If response is the file itself, trigger download
-        const blob = new Blob([JSON.stringify(response)]);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `dataset_${datasetId}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+    try {
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        throw new Error('Download failed');
       }
+
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `dataset_${datasetId}.zip`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename=["']?([^"';\n]+)["']?/);
+        if (match) {
+          filename = match[1];
+        }
+      }
+
+      // Convert response to blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
     }
   };
 
