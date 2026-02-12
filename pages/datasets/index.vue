@@ -55,14 +55,26 @@ const columns = [
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
       return h(
-        CopyPaste,
-        {
-          hasCopy: true,
-          copyText: idValue,
-        },
-        {
-          default: () => shortenedId,
-        },
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  CopyPaste,
+                  {
+                    hasCopy: true,
+                    copyText: idValue,
+                  },
+                  {
+                    default: () => shortenedId,
+                  },
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => idValue),
+            ],
+          }),
       );
     },
   },
