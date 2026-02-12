@@ -93,27 +93,11 @@ const columns = [
       h(
         'span',
         {
-          class: 'font-mono text-sm',
           title: dayjs(row.getValue<string>('register_date')).format(
             'DD MMM YYYY HH:mm:ss',
           ),
         },
         dayjs(row.getValue<string>('register_date')).format('DD-MMM-YYYY'),
-      ),
-  },
-  {
-    id: 'last_modified_time',
-    size: 140,
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono text-sm',
-          title: dayjs(row.getValue<string>('last_modified_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD-MMM-YYYY'),
       ),
   },
   {
@@ -151,7 +135,7 @@ const tabs = uselistTabs().value.model_management;
     :columns="columns"
     :data-source="getModels"
     :tabs="tabs"
-    :sortable-columns="['last_modified_time', 'register_date']"
+    :sortable-columns="['register_date']"
     :filterable-columns="['type']"
     class="grow"
   />
