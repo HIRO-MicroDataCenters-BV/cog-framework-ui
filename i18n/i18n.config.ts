@@ -65,8 +65,8 @@ export default defineI18nConfig(() => ({
         },
       },
       general: {
-        main_project_name: 'ACES',
-        project_name: 'Cognitive Engine',
+        main_project_name: 'Cognitive Engine',
+        project_name: '',
       },
       title: {
         datasets: 'Datasets',
