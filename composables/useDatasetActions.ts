@@ -7,7 +7,7 @@
 
 // Preview configuration
 const PREVIEW_CONFIG = {
-  MAX_LINES: 200,
+  MAX_LINES: 100,
   INCREMENT: 10,
 } as const;
 
@@ -85,7 +85,11 @@ export const useDatasetActions = () => {
     // Calculate new limit (current + INCREMENT more rows, max MAX_LINES)
     const currentLines = currentData.preview_lines;
     const totalLines = currentData.total_lines;
-    const newLimit = Math.min(currentLines + PREVIEW_CONFIG.INCREMENT, totalLines, PREVIEW_CONFIG.MAX_LINES);
+    const newLimit = Math.min(
+      currentLines + PREVIEW_CONFIG.INCREMENT,
+      totalLines,
+      PREVIEW_CONFIG.MAX_LINES,
+    );
 
     // Set loading state
     previewState.value.loading = true;

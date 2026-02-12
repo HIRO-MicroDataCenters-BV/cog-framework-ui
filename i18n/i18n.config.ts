@@ -29,6 +29,7 @@ export default defineI18nConfig(() => ({
           not_found: 'Resource not found',
           server_error: 'Server error occurred',
           request_failed: 'Request failed',
+          validation_error: 'Validation error - please check your input',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:
@@ -465,6 +466,10 @@ export default defineI18nConfig(() => ({
         validations: {
           ip: '',
         },
+        types: {
+          array: 'array',
+          object: 'object',
+        },
         errors: {
           invalid_type_received_undefined: 'This field is required',
           invalid_type_received: 'This field is required',
@@ -632,6 +637,7 @@ export default defineI18nConfig(() => ({
         not_found: 'Resource not found',
         server_error: 'Server error occurred',
         request_failed: 'Request failed',
+        validation_error: 'Validation error - please check your input',
         multiple_inputs_not_allowed:
           'Multiple inputs to one output not allowed',
         multiple_outputs_not_allowed:

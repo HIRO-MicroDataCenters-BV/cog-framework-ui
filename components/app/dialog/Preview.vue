@@ -117,6 +117,9 @@ const tableColumns = computed(() => {
     <DialogContent class="!max-w-[1000px] w-[90vw] max-h-[80vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
+        <DialogDescription class="sr-only">
+          Preview content for {{ type }} dataset
+        </DialogDescription>
       </DialogHeader>
 
       <div class="flex-1 overflow-auto">
