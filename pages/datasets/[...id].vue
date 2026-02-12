@@ -1,121 +1,134 @@
 <template>
-  <div v-if="content" class="w-[840px] mx-auto max-w-full px-4">
-    <div class="mb-8">
-      <header class="mb-8">
-        <h1 v-if="page.title != ''" class="text-2xl font-medium">
-          {{ page.title }}
-        </h1>
-      </header>
-      <div class="flex gap-2">
+  <div v-if="content" class="w-[840px] mx-auto max-w-full px-4 pb-12">
+    <!-- Header Section -->
+    <div class="mb-6">
+      <h1 v-if="page.title != ''" class="text-2xl font-semibold mb-3">
+        {{ page.title }}
+      </h1>
+      <div class="flex items-center gap-2 flex-wrap">
         <Badge :value="content.data_source_type" type="type" />
         <Badge value="id" type="type">{{
           $t(
             `label.${trainAndInferenceType[content.train_and_inference_type as keyof typeof trainAndInferenceType]}`,
           )
         }}</Badge>
-        <Badge value="id" type="type">#{{ content.id }}</Badge>
+        <span class="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+          {{ content.id }}
+        </span>
       </div>
     </div>
-    <div v-if="additional">
+
+    <!-- Details Cards -->
+    <div v-if="additional" class="space-y-5">
       <template
         v-for="group in additionalSchema[type as keyof typeof additionalSchema]"
         :key="group.key"
       >
-        <div v-if="group.label" class="mt-4 mb-2 first:mt-0">
-          <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300">
-            {{ $t(`label.${group.key}`) }}
-          </h3>
-        </div>
-        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-4 mb-8">
-          <template v-for="item in group.items" :key="item.key">
-            <div class="flex items-center gap-2 text-gray-500">
-              <Icon :name="item.icon" />
-              <span>{{ $t(`label.${item.key}`) }}</span>
-            </div>
-            <div>
-              <div class="w-fit flex items-center gap-2">
-                <CopyPaste :has-copy="item.hasCopy">
-                  <template v-if="item.type === 'text'">
-                    <span>{{
-                      (group as { prefix?: string | null }).prefix &&
-                      additional[(group as { prefix: string }).prefix]?.[
-                        item.key
-                      ]
-                        ? additional[(group as { prefix: string }).prefix]?.[
-                            item.key
-                          ]
-                        : additional[item.key]
-                          ? additional[item.key]
-                          : content[item.key]
-                    }}</span>
-                  </template>
-                  <template v-if="item.type === 'date'">
-                    <span>{{
-                      dayjs(
-                        (group as { prefix?: string | null }).prefix &&
+        <div class="rounded-lg border border-border overflow-hidden">
+          <!-- Card Header -->
+          <div v-if="group.label" class="px-4 py-2.5 bg-muted/40 border-b border-border">
+            <h3 class="text-sm font-semibold">
+              {{ $t(`label.${group.key}`) }}
+            </h3>
+          </div>
+
+          <!-- Card Body -->
+          <div class="divide-y divide-border">
+            <template v-for="item in group.items" :key="item.key">
+              <div class="flex items-start px-4 py-3 gap-4">
+                <!-- Label -->
+                <div class="flex items-center gap-2 text-muted-foreground min-w-[160px] shrink-0 pt-0.5">
+                  <Icon :name="item.icon" class="size-4" />
+                  <span class="text-sm">{{ $t(`label.${item.key}`) }}</span>
+                </div>
+
+                <!-- Value -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <CopyPaste :has-copy="item.hasCopy">
+                      <template v-if="item.type === 'text'">
+                        <span class="text-sm font-medium break-all">{{
+                          (group as { prefix?: string | null }).prefix &&
                           additional[(group as { prefix: string }).prefix]?.[
                             item.key
                           ]
-                          ? additional[(group as { prefix: string }).prefix]?.[
-                              item.key
-                            ]
-                          : additional[item.key]
-                            ? additional[item.key]
-                            : content[item.key],
-                      ).format('YYYY MMM DD, HH:mm')
-                    }}</span>
-                  </template>
-                  <template v-if="item.type === 'list'">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <Badge
-                        v-for="value in ((group as { prefix?: string | null })
-                          .prefix
-                          ? additional[(group as { prefix: string }).prefix]?.[
-                              item.key
-                            ]
-                          : additional[item.key]
-                        ).split(',')"
-                        :key="value"
-                        >{{ value }}</Badge
-                      >
-                    </div>
-                  </template>
-                </CopyPaste>
-                <span
-                  v-if="
-                    item.key == 'register_date' ||
-                    item.key == 'last_modified_time'
-                  "
-                  class="text-gray-500"
-                >
-                  {{ $t('hint.by') }}
-                  <template v-if="item.key == 'register_date'">
-                    {{ content.user_id }}
-                  </template>
-                  <template v-if="item.key == 'last_modified_time'">
-                    {{ content.last_modified_user_id }}
-                  </template>
-                </span>
+                            ? additional[(group as { prefix: string }).prefix]?.[
+                                item.key
+                              ]
+                            : additional[item.key]
+                              ? additional[item.key]
+                              : content[item.key]
+                        }}</span>
+                      </template>
+                      <template v-if="item.type === 'date'">
+                        <span class="text-sm font-medium">{{
+                          dayjs(
+                            (group as { prefix?: string | null }).prefix &&
+                              additional[(group as { prefix: string }).prefix]?.[
+                                item.key
+                              ]
+                              ? additional[(group as { prefix: string }).prefix]?.[
+                                  item.key
+                                ]
+                              : additional[item.key]
+                                ? additional[item.key]
+                                : content[item.key],
+                          ).format('YYYY MMM DD, HH:mm')
+                        }}</span>
+                      </template>
+                      <template v-if="item.type === 'list'">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <Badge
+                            v-for="value in ((group as { prefix?: string | null })
+                              .prefix
+                              ? additional[(group as { prefix: string }).prefix]?.[
+                                  item.key
+                                ]
+                              : additional[item.key]
+                            ).split(',')"
+                            :key="value"
+                            >{{ value }}</Badge
+                          >
+                        </div>
+                      </template>
+                    </CopyPaste>
+                    <span
+                      v-if="
+                        item.key == 'register_date' ||
+                        item.key == 'last_modified_time'
+                      "
+                      class="text-xs text-muted-foreground"
+                    >
+                      {{ $t('hint.by') }}
+                      <template v-if="item.key == 'register_date'">
+                        {{ content.user_id }}
+                      </template>
+                      <template v-if="item.key == 'last_modified_time'">
+                        {{ content.last_modified_user_id }}
+                      </template>
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
       </template>
-      <div v-if="additional?.topic_details?.topic_schema" class="mt-4 mb-24">
-        <div
-          class="bg-gray-100 border border-gray-200 rounded-md overflow-hidden"
-        >
-          <Label class="px-2 py-2 border-b border-gray-200">{{
-            $t('label.topic_schema')
-          }}</Label>
-          <Textarea
-            readonly
-            class="bg-white border-none rounded-none"
-            :default-value="
-              JSON.stringify(additional?.topic_details?.topic_schema, null, 2)
-            "
-          />
+
+      <!-- Topic Schema -->
+      <div v-if="additional?.topic_details?.topic_schema" class="rounded-lg border border-border overflow-hidden">
+        <div class="px-4 py-2.5 bg-muted/40 border-b border-border">
+          <h3 class="text-sm font-semibold">
+            {{ $t('label.topic_schema') }}
+          </h3>
         </div>
+        <Textarea
+          readonly
+          class="bg-background border-none rounded-none text-sm font-mono"
+          :default-value="
+            JSON.stringify(additional?.topic_details?.topic_schema, null, 2)
+          "
+        />
       </div>
     </div>
   </div>
