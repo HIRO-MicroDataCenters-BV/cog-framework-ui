@@ -5,15 +5,24 @@
       <h1 v-if="page.title != ''" class="text-2xl font-semibold mb-3">
         {{ page.title }}
       </h1>
-      <div class="flex items-center gap-2 flex-wrap">
-        <Badge :value="content.data_source_type" type="type" />
-        <Badge value="id" type="type">{{
-          $t(
-            `label.${trainAndInferenceType[content.train_and_inference_type as keyof typeof trainAndInferenceType]}`,
-          )
-        }}</Badge>
-        <span class="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
-          {{ content.id }}
+      <div class="flex items-center gap-3 flex-wrap text-xs">
+        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+          <span class="font-medium text-foreground/70">Dataset Type:</span>
+          <Badge :value="content.data_source_type" type="type" />
+        </span>
+        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+          <span class="font-medium text-foreground/70">Data Usage:</span>
+          <Badge value="id" type="type">{{
+            $t(
+              `label.${trainAndInferenceType[content.train_and_inference_type as keyof typeof trainAndInferenceType]}`,
+            )
+          }}</Badge>
+        </span>
+        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+          <span class="font-medium text-foreground/70">Dataset ID:</span>
+          <CopyPaste :has-copy="true" :copy-text="content.id">
+            <span class="font-mono">{{ content.id }}</span>
+          </CopyPaste>
         </span>
       </div>
     </div>
