@@ -100,20 +100,6 @@ const columns = [
       ),
   },
   {
-    id: 'last_modified_time',
-    size: 140,
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          title: dayjs(row.getValue<string>('last_modified_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD-MMM-YYYY'),
-      ),
-  },
-  {
     id: 'actions',
     size: 80,
     enableHiding: false,
@@ -145,7 +131,7 @@ const columns = [
       :columns="columns"
       :data-source="getDatasets"
       :tabs="tabs"
-      :sortable-columns="['last_modified_time']"
+      :sortable-columns="['register_date_time']"
       :filterable-columns="['data_source_type']"
       class="grow"
     />
