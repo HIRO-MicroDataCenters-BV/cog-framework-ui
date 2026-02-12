@@ -27,8 +27,22 @@
       </div>
     </div>
 
+    <!-- Details Error -->
+    <div v-if="detailsError" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start gap-3">
+      <Icon name="lucide:alert-circle" class="size-5 text-destructive shrink-0 mt-0.5" />
+      <div>
+        <p class="text-sm font-medium text-destructive">
+          {{ type ? $t(`label.${type}`) : '' }} Details Unavailable
+        </p>
+        <p class="text-xs text-muted-foreground mt-1">{{ detailsError }}</p>
+      </div>
+    </div>
+
     <!-- Details Cards -->
     <div v-if="additional" class="space-y-5">
+      <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+        {{ type ? $t(`label.${type}`) : '' }} Details
+      </h2>
       <template
         v-for="group in additionalSchema[type as keyof typeof additionalSchema]"
         :key="group.key"
@@ -162,6 +176,7 @@ const id = computed(() => route.params.id[0]);
 const content = ref();
 const additional = ref();
 const type = ref();
+const detailsError = ref<string | null>(null);
 
 console.log(DATA_TYPE_MAPPING);
 
@@ -502,6 +517,8 @@ onMounted(async () => {
           const data = resAdditional.data;
           additional.value = data;
           console.log(additional.value);
+        } else {
+          detailsError.value = `Could not load ${type.value} details for this dataset.`;
         }
       }
     }
