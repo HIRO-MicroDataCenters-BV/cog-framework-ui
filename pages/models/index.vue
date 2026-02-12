@@ -22,6 +22,7 @@ const urlOrigin = window.location.origin;
 const columns = [
   {
     id: 'name',
+    size: 250,
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
@@ -89,16 +90,17 @@ const columns = [
   {
     id: 'register_date',
     size: 140,
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          title: dayjs(row.getValue<string>('register_date')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('register_date')).format('DD-MMM-YYYY'),
-      ),
+    cell: ({ row }: { row: TableRowType }) => {
+      const dateTime = row.getValue<string>('register_date');
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(dateTime).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(dateTime).format('HH:mm:ss'),
+        ),
+      ]);
+    },
   },
   {
     id: 'actions',
