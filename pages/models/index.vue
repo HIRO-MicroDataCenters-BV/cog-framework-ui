@@ -151,6 +151,7 @@ const tabs = uselistTabs().value.model_management;
     :tabs="tabs"
     :sortable-columns="['register_date']"
     :filterable-columns="['type']"
+    group-by="name"
     class="grow"
   />
 </template>

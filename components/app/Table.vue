@@ -97,6 +97,10 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => [],
   },
+  groupBy: {
+    type: String as PropType<string | null>,
+    default: null,
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -173,6 +177,33 @@ const getAutoColumn = (searchValue: string): string => {
   return 'search';
 };
 
+const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
+  const groups = new Map<string, DataItem[]>();
+  for (const item of items) {
+    const key = String(item[columnId] ?? '');
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(item);
+  }
+
+  const result: DataItem[] = [];
+  for (const [, groupItems] of groups) {
+    if (groupItems.length === 1) {
+      result.push(groupItems[0]);
+    } else {
+      // First item is the parent (backend usually returns sorted by most recent)
+      const parent = {
+        ...groupItems[0],
+        subRows: groupItems.slice(1),
+        _versionCount: groupItems.length,
+      };
+      result.push(parent as DataItem);
+    }
+  }
+  return result;
+};
+
 const fetchData = async () => {
   const params: Record<string, unknown> = {
     page: currentPage.value,
@@ -207,7 +238,10 @@ const fetchData = async () => {
     if (response && 'data' in response && 'pagination' in response) {
       const tableData = response.data;
       const pagination = response.pagination;
-      data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+      const rawData = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+      data.value = props.groupBy
+        ? groupDataByColumn(rawData, props.groupBy)
+        : rawData;
 
       if (pagination) {
         if (route.query.limit) {
@@ -456,6 +490,9 @@ const table = useVueTable({
   get columns() {
     return columns.value;
   },
+  getSubRows: props.groupBy
+    ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
+    : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -835,7 +872,7 @@ defineExpose({ fetchData });
             >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell
-                  v-for="cell in row.getVisibleCells()"
+                  v-for="(cell, cellIndex) in row.getVisibleCells()"
                   :key="cell.id"
                   class="border-l border-r border-border py-1 px-3 text-sm"
                   :style="{
@@ -845,13 +882,76 @@ defineExpose({ fetchData });
                         : 'auto',
                   }"
                 >
+                  <div
+                    v-if="cellIndex === 0 && groupBy && row.getCanExpand()"
+                    class="flex items-center gap-1.5"
+                  >
+                    <button
+                      class="flex items-center justify-center size-5 rounded hover:bg-muted transition-colors cursor-pointer shrink-0"
+                      @click="row.getToggleExpandedHandler()()"
+                    >
+                      <Icon
+                        name="lucide:chevron-right"
+                        :class="[
+                          'size-3.5 transition-transform duration-200',
+                          row.getIsExpanded() && 'rotate-90',
+                        ]"
+                      />
+                    </button>
+                    <FlexRender
+                      :render="cell.column.columnDef.cell"
+                      :props="cell.getContext()"
+                    />
+                    <span
+                      v-if="(row.original as any)._versionCount > 1"
+                      class="text-xs text-muted-foreground ml-1"
+                    >
+                      ({{ (row.original as any)._versionCount }})
+                    </span>
+                  </div>
                   <FlexRender
+                    v-else
                     :render="cell.column.columnDef.cell"
                     :props="cell.getContext()"
                   />
                 </TableCell>
               </TableRow>
-              <TableRow v-if="row.getIsExpanded()">
+              <!-- Sub-rows when expanded -->
+              <template
+                v-if="groupBy && row.getIsExpanded() && row.subRows?.length"
+              >
+                <TableRow
+                  v-for="subRow in row.subRows"
+                  :key="subRow.id"
+                  class="bg-muted/20"
+                >
+                  <TableCell
+                    v-for="(cell, cellIndex) in subRow.getVisibleCells()"
+                    :key="cell.id"
+                    class="border-l border-r border-border py-1 px-3 text-sm"
+                    :style="{
+                      width:
+                        cell.column.getSize() !== 150
+                          ? `${cell.column.getSize()}px`
+                          : 'auto',
+                    }"
+                  >
+                    <div v-if="cellIndex === 0" class="pl-6">
+                      <FlexRender
+                        :render="cell.column.columnDef.cell"
+                        :props="cell.getContext()"
+                      />
+                    </div>
+                    <FlexRender
+                      v-else
+                      :render="cell.column.columnDef.cell"
+                      :props="cell.getContext()"
+                    />
+                  </TableCell>
+                </TableRow>
+              </template>
+              <!-- Default expanded row (non-grouped) -->
+              <TableRow v-if="!groupBy && row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
                   class="border-l border-r border-border py-1 px-3 text-sm"
