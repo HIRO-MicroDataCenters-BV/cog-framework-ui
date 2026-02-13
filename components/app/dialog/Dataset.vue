@@ -21,6 +21,7 @@
       :step="currentStep"
       :is-submit="isSubmit"
       @on-submit="onSubmit"
+      @on-step-change="handleStepChange"
       @update-actions="(actions) => (stepFormActions = actions)"
       @update-next-enabled="(enabled) => (isNextEnabled = enabled)"
       @on-field-action="handleFieldAction"
@@ -138,14 +139,34 @@ const fetchBrokerAndTopicDetails = async () => {
   }
 };
 
+// Track if broker/topic details have been fetched to avoid duplicate calls
+const hasFetchedBrokerTopicDetails = ref(false);
+
+// Handle step change to fetch broker/topic details when data_stream is selected
+const handleStepChange = (
+  step: number,
+  _actions: string[],
+  values: FormValues,
+) => {
+  // When moving to step 1 or beyond with data_stream selected, fetch broker/topic details
+  if (
+    step >= 1 &&
+    values?.type === 'data_stream' &&
+    !hasFetchedBrokerTopicDetails.value
+  ) {
+    fetchBrokerAndTopicDetails();
+    hasFetchedBrokerTopicDetails.value = true;
+  }
+};
+
+// Reset the fetch flag when modal closes
 watch(
   () => props.open,
   (isOpen) => {
-    if (isOpen) {
-      fetchBrokerAndTopicDetails();
+    if (!isOpen) {
+      hasFetchedBrokerTopicDetails.value = false;
     }
   },
-  { immediate: true },
 );
 
 const { submitDatasetForm } = useDatasetForm();
