@@ -6,11 +6,15 @@
         {{ page.title }}
       </h1>
       <div class="flex items-center gap-3 flex-wrap text-xs">
-        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+        <span
+          class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground"
+        >
           <span class="font-medium text-foreground/70">Dataset Type:</span>
           <Badge :value="content.data_source_type" type="type" />
         </span>
-        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+        <span
+          class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground"
+        >
           <span class="font-medium text-foreground/70">Data Usage:</span>
           <Badge value="id" type="type">{{
             $t(
@@ -18,7 +22,9 @@
             )
           }}</Badge>
         </span>
-        <span class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground">
+        <span
+          class="inline-flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-muted-foreground"
+        >
           <span class="font-medium text-foreground/70">Dataset ID:</span>
           <CopyPaste :has-copy="true" :copy-text="content.id">
             <span class="font-mono">{{ content.id }}</span>
@@ -28,8 +34,14 @@
     </div>
 
     <!-- Details Error -->
-    <div v-if="detailsError" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start gap-3">
-      <Icon name="lucide:alert-circle" class="size-5 text-destructive shrink-0 mt-0.5" />
+    <div
+      v-if="detailsError"
+      class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start gap-3"
+    >
+      <Icon
+        name="lucide:alert-circle"
+        class="size-5 text-destructive shrink-0 mt-0.5"
+      />
       <div>
         <p class="text-sm font-medium text-destructive">
           {{ type ? $t(`label.${type}`) : '' }} Details Unavailable
@@ -40,7 +52,9 @@
 
     <!-- Details Cards -->
     <div v-if="additional" class="space-y-5">
-      <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+      <h2
+        class="text-sm font-semibold text-muted-foreground uppercase tracking-wider"
+      >
         {{ type ? $t(`label.${type}`) : '' }} Details
       </h2>
       <template
@@ -49,7 +63,10 @@
       >
         <div class="rounded-lg border border-border overflow-hidden">
           <!-- Card Header -->
-          <div v-if="group.label" class="px-4 py-2.5 bg-muted/40 border-b border-border">
+          <div
+            v-if="group.label"
+            class="px-4 py-2.5 bg-muted/40 border-b border-border"
+          >
             <h3 class="text-sm font-semibold">
               {{ $t(`label.${group.key}`) }}
             </h3>
@@ -60,7 +77,9 @@
             <template v-for="item in group.items" :key="item.key">
               <div class="flex items-start px-4 py-3 gap-4">
                 <!-- Label -->
-                <div class="flex items-center gap-2 text-muted-foreground min-w-[160px] shrink-0 pt-0.5">
+                <div
+                  class="flex items-center gap-2 text-muted-foreground min-w-[160px] shrink-0 pt-0.5"
+                >
                   <Icon :name="item.icon" class="size-4" />
                   <span class="text-sm">{{ $t(`label.${item.key}`) }}</span>
                 </div>
@@ -75,9 +94,9 @@
                           additional[(group as { prefix: string }).prefix]?.[
                             item.key
                           ]
-                            ? additional[(group as { prefix: string }).prefix]?.[
-                                item.key
-                              ]
+                            ? additional[
+                                (group as { prefix: string }).prefix
+                              ]?.[item.key]
                             : additional[item.key]
                               ? additional[item.key]
                               : content[item.key]
@@ -87,12 +106,12 @@
                         <span class="text-sm font-medium">{{
                           dayjs(
                             (group as { prefix?: string | null }).prefix &&
-                              additional[(group as { prefix: string }).prefix]?.[
-                                item.key
-                              ]
-                              ? additional[(group as { prefix: string }).prefix]?.[
-                                  item.key
-                                ]
+                              additional[
+                                (group as { prefix: string }).prefix
+                              ]?.[item.key]
+                              ? additional[
+                                  (group as { prefix: string }).prefix
+                                ]?.[item.key]
                               : additional[item.key]
                                 ? additional[item.key]
                                 : content[item.key],
@@ -102,11 +121,12 @@
                       <template v-if="item.type === 'list'">
                         <div class="flex items-center gap-1.5 flex-wrap">
                           <Badge
-                            v-for="value in ((group as { prefix?: string | null })
-                              .prefix
-                              ? additional[(group as { prefix: string }).prefix]?.[
-                                  item.key
-                                ]
+                            v-for="value in ((
+                              group as { prefix?: string | null }
+                            ).prefix
+                              ? additional[
+                                  (group as { prefix: string }).prefix
+                                ]?.[item.key]
                               : additional[item.key]
                             ).split(',')"
                             :key="value"
@@ -139,7 +159,10 @@
       </template>
 
       <!-- Topic Schema -->
-      <div v-if="additional?.topic_details?.topic_schema" class="rounded-lg border border-border overflow-hidden">
+      <div
+        v-if="additional?.topic_details?.topic_schema"
+        class="rounded-lg border border-border overflow-hidden"
+      >
         <div class="px-4 py-2.5 bg-muted/40 border-b border-border">
           <h3 class="text-sm font-semibold">
             {{ $t('label.topic_schema') }}

@@ -39,7 +39,9 @@ const emit = defineEmits<{
 const canLoadMore = computed(() => {
   if (!filePreviewData.value) return false;
   if (props.maxLimitReached) return false;
-  return filePreviewData.value.preview_lines < filePreviewData.value.total_lines;
+  return (
+    filePreviewData.value.preview_lines < filePreviewData.value.total_lines
+  );
 });
 
 const { t } = useI18n();
@@ -149,12 +151,16 @@ const tableColumns = computed(() => {
         <!-- File Preview with Metadata -->
         <template v-if="isFilePreview && filePreviewData">
           <!-- File Metadata Header -->
-          <div class="mb-3 grid grid-cols-4 gap-2 sticky top-0 z-10 bg-background pb-2">
+          <div
+            class="mb-3 grid grid-cols-4 gap-2 sticky top-0 z-10 bg-background pb-2"
+          >
             <!-- File Name -->
             <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
               <div class="flex items-center gap-1 mb-0.5">
                 <FileText class="w-3 h-3 text-primary/70" />
-                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
                   {{ t('label.file_name') }}
                 </span>
               </div>
@@ -176,7 +182,9 @@ const tableColumns = computed(() => {
             <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
               <div class="flex items-center gap-1 mb-0.5">
                 <Hash class="w-3 h-3 text-primary/70" />
-                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
                   {{ t('label.file_size') }}
                 </span>
               </div>
@@ -189,7 +197,9 @@ const tableColumns = computed(() => {
             <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
               <div class="flex items-center gap-1 mb-0.5">
                 <FileType class="w-3 h-3 text-primary/70" />
-                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
                   {{ t('label.content_type') }}
                 </span>
               </div>
@@ -202,7 +212,9 @@ const tableColumns = computed(() => {
             <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
               <div class="flex items-center gap-1 mb-0.5">
                 <Rows3 class="w-3 h-3 text-primary/70" />
-                <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
                   {{ t('label.lines') }}
                 </span>
               </div>
@@ -214,7 +226,6 @@ const tableColumns = computed(() => {
               </p>
             </div>
           </div>
-
 
           <!-- CSV Table Preview -->
           <div
@@ -282,7 +293,9 @@ const tableColumns = computed(() => {
               <Icon v-else name="lucide:chevrons-down" class="w-4 h-4 mr-2" />
               {{ t('action.load_more') }}
               <span class="text-muted-foreground ml-1">
-                ({{ filePreviewData.total_lines - filePreviewData.preview_lines }}
+                ({{
+                  filePreviewData.total_lines - filePreviewData.preview_lines
+                }}
                 {{ t('label.rows_remaining') }})
               </span>
             </Button>

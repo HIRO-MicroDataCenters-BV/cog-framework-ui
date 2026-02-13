@@ -387,7 +387,8 @@ export default defineI18nConfig(() => ({
           "Format: postgresql://user:password{'@'}host:port/database",
         db_url_mysql: "Format: mysql://user:password{'@'}host:port/database",
         db_url_sqlite: 'Format: sqlite:///path/to/database.db',
-        db_url_mongodb: "Format: mongodb://user:password{'@'}host:port/database",
+        db_url_mongodb:
+          "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
         preview_truncated:
           'Preview is truncated. Download the file to see the full content.',

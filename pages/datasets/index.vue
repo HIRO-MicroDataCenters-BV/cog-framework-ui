@@ -14,7 +14,8 @@ const { setPage, page } = useApp();
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState, loadMorePreview, handleFileDownload } = useDatasetActions();
+const { previewState, loadMorePreview, handleFileDownload } =
+  useDatasetActions();
 
 const handleDownloadFromPreview = () => {
   if (previewState.value.datasetId) {

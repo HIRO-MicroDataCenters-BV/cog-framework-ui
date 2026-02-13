@@ -120,10 +120,7 @@
               </FormItem>
             </FormField>
 
-            <FormField
-              v-slot="{ componentField }"
-              name="metadata.description"
-            >
+            <FormField v-slot="{ componentField }" name="metadata.description">
               <FormItem>
                 <FormLabel>{{ t('label.description') }}</FormLabel>
                 <FormControl>
@@ -143,9 +140,7 @@
                 <FormLabel>{{ t('label.dataset_type') }}</FormLabel>
                 <Select v-bind="componentField">
                   <SelectTrigger>
-                    <SelectValue
-                      :placeholder="t('placeholder.dataset_type')"
-                    />
+                    <SelectValue :placeholder="t('placeholder.dataset_type')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem :value="0">{{ t('label.train') }}</SelectItem>
@@ -631,21 +626,19 @@
                       {{ t('label.data_source_type') }}
                     </span>
                     <Badge variant="outline">
-                      {{ form.values.data_source_type === 10 ? 'Kafka' : 'NATS' }}
+                      {{
+                        form.values.data_source_type === 10 ? 'Kafka' : 'NATS'
+                      }}
                     </Badge>
                   </div>
                   <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-sm text-muted-foreground">
-                      Broker
-                    </span>
+                    <span class="text-sm text-muted-foreground"> Broker </span>
                     <span class="text-sm font-medium">
                       {{ reviewBrokerDisplay }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-sm text-muted-foreground">
-                      Topic
-                    </span>
+                    <span class="text-sm text-muted-foreground"> Topic </span>
                     <span class="text-sm font-medium">
                       {{ reviewTopicDisplay }}
                     </span>
@@ -775,9 +768,7 @@ const form = useForm<FormValues>({
 });
 
 // ──── Computed Helpers ────
-const selectedType = computed(
-  () => form.values.type as string | undefined,
-);
+const selectedType = computed(() => form.values.type as string | undefined);
 const sourceSettings = computed(
   () => form.values.source_settings as Record<string, unknown> | undefined,
 );
@@ -794,7 +785,9 @@ const displayType = computed(() => {
     table: t('label.table'),
     data_stream: t('label.data_stream'),
   };
-  return selectedType.value ? labels[selectedType.value] || selectedType.value : '—';
+  return selectedType.value
+    ? labels[selectedType.value] || selectedType.value
+    : '—';
 });
 
 const displayDatasetType = computed(() => {
@@ -809,7 +802,11 @@ const displayDatasetType = computed(() => {
 
 const fileDisplayName = computed(() => {
   const file = sourceSettings.value?.dataset_file;
-  if (file && typeof file === 'object' && 'name' in (file as Record<string, unknown>)) {
+  if (
+    file &&
+    typeof file === 'object' &&
+    'name' in (file as Record<string, unknown>)
+  ) {
     return (file as { name: string }).name;
   }
   return '—';
@@ -884,9 +881,7 @@ const canProceed = computed(() => {
 const validateCurrentStep = async (): Promise<boolean> => {
   const fields = stepFieldNames[currentStep.value]?.() || [];
   if (fields.length === 0) return true;
-  const results = await Promise.all(
-    fields.map((f) => form.validateField(f)),
-  );
+  const results = await Promise.all(fields.map((f) => form.validateField(f)));
   return results.every((r) => r.valid);
 };
 
@@ -932,7 +927,7 @@ const prevStep = () => {
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
-  
+
   if (currentStep.value > 0) {
     currentStep.value--;
   }
@@ -971,7 +966,9 @@ const hasFetchedBrokerTopicDetails = ref(false);
 
 const fetchBrokerAndTopicDetails = async () => {
   try {
-    const brokers = (await getBrokerDetails()) as { data?: BrokerDetail[] } | null;
+    const brokers = (await getBrokerDetails()) as {
+      data?: BrokerDetail[];
+    } | null;
     if (brokers?.data) {
       brokerOptions.value = brokers.data.map((b) => ({
         label: `${b.broker_name} (${b.broker_ip}:${b.broker_port})`,
@@ -1068,7 +1065,7 @@ const handleSubmit = async () => {
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
-  
+
   isSubmitting.value = true;
   try {
     const response = await submitDatasetForm(form.values as FormValues);
@@ -1104,7 +1101,7 @@ const handleClose = () => {
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
-  
+
   resetForm();
   emit('on-close');
 };

@@ -102,7 +102,8 @@ export const useDatasetActions = () => {
         previewState.value.data = fileData;
         // Show warning if max limit reached and there's more data
         previewState.value.maxLimitReached =
-          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES && fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
+          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES &&
+          fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
       }
     } finally {
       previewState.value.loading = false;
@@ -127,7 +128,9 @@ export const useDatasetActions = () => {
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = `dataset_${datasetId}.zip`;
       if (contentDisposition) {
-        const match = contentDisposition.match(/filename=["']?([^"';\n]+)["']?/);
+        const match = contentDisposition.match(
+          /filename=["']?([^"';\n]+)["']?/,
+        );
         if (match) {
           filename = match[1];
         }
@@ -165,7 +168,8 @@ export const useDatasetActions = () => {
         // Show preview data in dialog with file metadata
         const fileData = response.data as FilePreviewData;
         const maxLimitReached =
-          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES && fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
+          fileData.preview_lines >= PREVIEW_CONFIG.MAX_LINES &&
+          fileData.total_lines > PREVIEW_CONFIG.MAX_LINES;
         showPreview(
           fileData.dataset_name || 'File Preview',
           fileData,
@@ -214,12 +218,7 @@ export const useDatasetActions = () => {
         table_name: string;
         records: Array<Record<string, unknown>>;
       };
-      showPreview(
-        data.table_name || 'Table Preview',
-        data,
-        'table',
-        datasetId,
-      );
+      showPreview(data.table_name || 'Table Preview', data, 'table', datasetId);
     }
   };
 

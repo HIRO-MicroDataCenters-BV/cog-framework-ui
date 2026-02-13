@@ -72,7 +72,11 @@ setOpen(!isIframe.value);
         <SidebarMenu>
           <template v-for="item in menu.main" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
-              <SidebarMenuButton as-child :is-active="isActive(item.url)" :tooltip="item.title">
+              <SidebarMenuButton
+                as-child
+                :is-active="isActive(item.url)"
+                :tooltip="item.title"
+              >
                 <NuxtLink :to="`/${item.url}`">
                   <span class="text-lg">
                     <Icon :name="item.icon" />
@@ -90,7 +94,10 @@ setOpen(!isIframe.value);
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
-                  <SidebarMenuButton :tooltip="item.title" :is-active="isActive(item.url)">
+                  <SidebarMenuButton
+                    :tooltip="item.title"
+                    :is-active="isActive(item.url)"
+                  >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
                         <span class="text-lg mr-2">
