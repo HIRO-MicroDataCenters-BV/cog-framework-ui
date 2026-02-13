@@ -98,6 +98,10 @@ export default defineI18nConfig(() => ({
         serving: 'Serving',
         pipelines: 'Pipelines',
       },
+      dialog: {
+        add_dataset_description:
+          'Configure and register a new dataset source for your project.',
+      },
       description: {
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
@@ -380,10 +384,10 @@ export default defineI18nConfig(() => ({
         by: 'by',
         filter_by: 'Filter by',
         db_url_postgresql:
-          'Format: postgresql://user:password@host:port/database',
-        db_url_mysql: 'Format: mysql://user:password@host:port/database',
+          "Format: postgresql://user:password{'@'}host:port/database",
+        db_url_mysql: "Format: mysql://user:password{'@'}host:port/database",
         db_url_sqlite: 'Format: sqlite:///path/to/database.db',
-        db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
+        db_url_mongodb: "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
         preview_truncated:
           'Preview is truncated. Download the file to see the full content.',
