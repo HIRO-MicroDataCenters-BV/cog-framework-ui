@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { FileText, Hash, FileType, Rows3, AlertCircle, Download } from 'lucide-vue-next';
+import {
+  FileText,
+  Hash,
+  FileType,
+  Rows3,
+  AlertCircle,
+  Download,
+} from 'lucide-vue-next';
 
 interface FilePreviewData {
   dataset_id: string;
@@ -91,15 +98,31 @@ const formattedData = computed(() => {
   return JSON.stringify(props.data, null, 2);
 });
 
+// Table preview with metadata
+interface TablePreviewData {
+  table_name: string;
+  records: Array<Record<string, unknown>>;
+}
+
 const isTableData = computed(() => {
-  return props.type === 'table' && Array.isArray(props.data);
+  return (
+    props.type === 'table' &&
+    props.data &&
+    typeof props.data === 'object' &&
+    'records' in (props.data as object) &&
+    Array.isArray((props.data as TablePreviewData).records)
+  );
+});
+
+const tablePreviewData = computed(() => {
+  if (isTableData.value) {
+    return props.data as TablePreviewData;
+  }
+  return null;
 });
 
 const tableData = computed(() => {
-  if (Array.isArray(props.data)) {
-    return props.data as Array<Record<string, unknown>>;
-  }
-  return [];
+  return tablePreviewData.value?.records || [];
 });
 
 const tableColumns = computed(() => {
@@ -114,7 +137,7 @@ const tableColumns = computed(() => {
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent class="!max-w-[1000px] w-[90vw] max-h-[80vh] flex flex-col">
+    <DialogContent class="max-w-[1000px]! w-[90vw] max-h-[80vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
         <DialogDescription class="sr-only">
@@ -270,30 +293,104 @@ const tableColumns = computed(() => {
             v-if="props.maxLimitReached"
             class="mt-4 flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-sm"
           >
-            <AlertCircle class="w-4 h-4 flex-shrink-0" />
+            <AlertCircle class="w-4 h-4 shrink-0" />
             <span>{{ t('hint.preview_max_limit') }}</span>
           </div>
         </template>
 
         <!-- Database Table Preview -->
-        <template v-else-if="isTableData && tableData.length > 0">
-          <div class="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead v-for="column in tableColumns" :key="column">
-                    {{ column }}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow v-for="(row, index) in tableData" :key="index">
-                  <TableCell v-for="column in tableColumns" :key="column">
-                    {{ row[column] }}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+        <template v-else-if="isTableData && tablePreviewData">
+          <!-- Table Metadata Header -->
+          <div
+            class="mb-3 grid grid-cols-3 gap-2 sticky top-0 z-10 bg-background pb-2"
+          >
+            <!-- Table Name -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <FileText class="w-3 h-3 text-primary/70" />
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
+                  {{ t('label.table_name') }}
+                </span>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <p class="text-xs font-semibold truncate cursor-default">
+                      {{ tablePreviewData.table_name }}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{{ tablePreviewData.table_name }}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <!-- Record Count -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <Rows3 class="w-3 h-3 text-primary/70" />
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
+                  Records
+                </span>
+              </div>
+              <p class="text-xs font-semibold">
+                {{ tableData.length }}
+              </p>
+            </div>
+
+            <!-- Column Count -->
+            <div class="px-2 py-1.5 bg-muted/30 rounded-md border">
+              <div class="flex items-center gap-1 mb-0.5">
+                <Hash class="w-3 h-3 text-primary/70" />
+                <span
+                  class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide"
+                >
+                  Columns
+                </span>
+              </div>
+              <p class="text-xs font-semibold">
+                {{ tableColumns.length }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Table Data -->
+          <div class="rounded-md border overflow-hidden">
+            <div class="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow class="bg-muted/50">
+                    <TableHead
+                      v-for="column in tableColumns"
+                      :key="column"
+                      class="font-semibold"
+                    >
+                      {{ column }}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="(row, index) in tableData" :key="index">
+                    <TableCell v-for="column in tableColumns" :key="column">
+                      {{ row[column] }}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow v-if="tableData.length === 0">
+                    <TableCell
+                      :colspan="tableColumns.length"
+                      class="text-center text-muted-foreground py-8"
+                    >
+                      {{ t('hint.no_data') }}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </template>
 
@@ -315,7 +412,11 @@ const tableColumns = computed(() => {
           <Download class="w-4 h-4 mr-2" />
           {{ $t('action.download_file') }}
         </Button>
-        <Button variant="outline" class="cursor-pointer" @click="emit('update:open', false)">
+        <Button
+          variant="outline"
+          class="cursor-pointer"
+          @click="emit('update:open', false)"
+        >
           {{ $t('action.close') }}
         </Button>
       </DialogFooter>

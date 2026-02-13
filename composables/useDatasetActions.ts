@@ -210,10 +210,15 @@ export const useDatasetActions = () => {
     const response = await api.getDatasetTableRecords(datasetId, 100);
 
     if (response && 'data' in response) {
+      const data = (response as Record<string, unknown>).data as {
+        table_name: string;
+        records: Array<Record<string, unknown>>;
+      };
       showPreview(
-        'Table Preview',
-        (response as Record<string, unknown>).data,
+        data.table_name || 'Table Preview',
+        data,
         'table',
+        datasetId,
       );
     }
   };
