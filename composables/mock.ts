@@ -953,5 +953,19 @@ export const useApiWithMock = () => {
       }
       return request(`/training-builder-components`);
     },
+
+    getHeaders: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock headers data',
+          data: {
+            'kubeflow-userid': mock.value.user.email,
+          },
+        });
+      }
+      return request(`/headers`);
+    },
   };
 };

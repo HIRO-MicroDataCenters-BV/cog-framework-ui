@@ -2,6 +2,12 @@
 const mock = useMock();
 const menu = uselistMenus();
 const { t } = useI18n();
+const { user: currentUser, fetchCurrentUser } = useCurrentUser();
+
+// Fetch user on mount
+onMounted(() => {
+  fetchCurrentUser();
+});
 
 // Get initials from user name
 const getInitials = (name: string) => {
@@ -13,7 +19,18 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-const user = computed(() => mock.value.user);
+// Use real user data if available, fallback to mock
+const user = computed(() => {
+  if (currentUser.value) {
+    return {
+      full_name: currentUser.value.name,
+      email: currentUser.value.email,
+      avatar_url: currentUser.value.avatarUrl || '',
+      job_title: '',
+    };
+  }
+  return mock.value.user;
+});
 const userInitials = computed(() => getInitials(user.value.full_name));
 const userMenuItems = computed(() => menu.value.user);
 </script>
