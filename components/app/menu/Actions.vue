@@ -25,18 +25,24 @@ const action = ref();
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost" class="h-8 w-8 p-0">
+      <Button variant="ghost" class="h-8 w-8 p-0 cursor-pointer">
         <span class="sr-only">{{ $t('hint.open_menu') }}</span>
         <div class="h-4 w-4">
           <Icon name="lucide:ellipsis" />
         </div>
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>{{ $t('title.actions') }}</DropdownMenuLabel>
+    <DropdownMenuContent align="end" class="min-w-[160px]">
+      <div
+        class="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+      >
+        {{ $t('title.actions') }}
+      </div>
+      <DropdownMenuSeparator />
 
       <template v-for="item in props.items" :key="item.key">
         <DropdownMenuItem
+          class="cursor-pointer"
           @click="
             () => {
               action = item.action;
@@ -65,9 +71,12 @@ const action = ref();
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel>{{ $t('action.cancel') }}</AlertDialogCancel>
+        <AlertDialogCancel class="cursor-pointer">{{
+          $t('action.cancel')
+        }}</AlertDialogCancel>
         <AlertDialogAction
           variant="destructive"
+          class="cursor-pointer"
           @click="
             () => {
               action();

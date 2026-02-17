@@ -14,7 +14,14 @@ const { setPage, page } = useApp();
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState } = useDatasetActions();
+const { previewState, loadMorePreview, handleFileDownload } =
+  useDatasetActions();
+
+const handleDownloadFromPreview = () => {
+  if (previewState.value.datasetId) {
+    handleFileDownload(previewState.value.datasetId);
+  }
+};
 
 setPage({
   section: 'datasets',
@@ -29,6 +36,7 @@ const tabs = uselistTabs().value.dataset_management;
 const columns = [
   {
     id: 'dataset_name',
+    size: 250,
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
@@ -41,26 +49,39 @@ const columns = [
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 180,
-    minSize: 180,
-    maxSize: 180,
+    size: 200,
+    minSize: 200,
+    maxSize: 200,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
       return h(
-        CopyPaste,
-        {
-          hasCopy: true,
-          copyText: idValue,
-        },
-        {
-          default: () => shortenedId,
-        },
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  CopyPaste,
+                  {
+                    hasCopy: true,
+                    copyText: idValue,
+                  },
+                  {
+                    default: () => shortenedId,
+                  },
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => idValue),
+            ],
+          }),
       );
     },
   },
   {
     id: 'data_source_type',
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
       return h(
@@ -75,38 +96,27 @@ const columns = [
   },
   {
     id: 'user_id',
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
     id: 'register_date_time',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('register_date_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('register_date_time')).format('DD MMM YYYY'),
-      ),
-  },
-  {
-    id: 'last_modified_time',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('last_modified_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD MMM YYYY'),
-      ),
+    size: 140,
+    cell: ({ row }: { row: TableRowType }) => {
+      const dateTime = row.getValue<string>('register_date_time');
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(dateTime).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(dateTime).format('HH:mm:ss'),
+        ),
+      ]);
+    },
   },
   {
     id: 'actions',
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();
@@ -136,9 +146,9 @@ const columns = [
       :columns="columns"
       :data-source="getDatasets"
       :tabs="tabs"
-      :sortable-columns="['last_modified_time']"
+      :sortable-columns="['register_date_time']"
       :filterable-columns="['data_source_type']"
-      class="flex-grow"
+      class="grow"
     />
 
     <!-- Preview Dialog -->
@@ -147,6 +157,10 @@ const columns = [
       :title="previewState.title"
       :data="previewState.data"
       :type="previewState.type"
+      :loading="previewState.loading"
+      :max-limit-reached="previewState.maxLimitReached"
+      @load-more="loadMorePreview"
+      @download="handleDownloadFromPreview"
     />
   </div>
 </template>

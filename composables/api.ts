@@ -159,17 +159,34 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            toaster.show('error', 'not_found');
+            // Show 404 toast for all requests with error message
+            if (data.message || data.detail) {
+              toaster.show('error', 'not_found');
+            }
             return null;
+          case 422: {
+            // Handle validation errors - detail might be an array or object
+            const validationMsg =
+              typeof data.detail === 'string'
+                ? data.detail
+                : data.message || 'validation_error';
+            toaster.show('error', validationMsg);
+            return null;
+          }
           case 500:
             toaster.show('error', 'server_error');
             return null;
-          default:
-            toaster.show(
-              'error',
-              data.message || data.detail || 'request_failed',
-            );
+          default: {
+            // Ensure we always pass a string to toaster
+            const errorMsg =
+              typeof data.message === 'string'
+                ? data.message
+                : typeof data.detail === 'string'
+                  ? data.detail
+                  : 'request_failed';
+            toaster.show('error', errorMsg);
             return null;
+          }
         }
       } else {
         // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled

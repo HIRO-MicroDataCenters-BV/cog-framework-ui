@@ -29,6 +29,7 @@ export default defineI18nConfig(() => ({
           not_found: 'Resource not found',
           server_error: 'Server error occurred',
           request_failed: 'Request failed',
+          validation_error: 'Validation error - please check your input',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:
@@ -64,8 +65,8 @@ export default defineI18nConfig(() => ({
         },
       },
       general: {
-        main_project_name: 'ACES',
-        project_name: 'Cognitive Engine',
+        main_project_name: 'Cognitive Engine',
+        project_name: '',
       },
       title: {
         datasets: 'Datasets',
@@ -96,6 +97,10 @@ export default defineI18nConfig(() => ({
         validation: 'Validation',
         serving: 'Serving',
         pipelines: 'Pipelines',
+      },
+      dialog: {
+        add_dataset_description:
+          'Configure and register a new dataset source for your project.',
       },
       description: {
         pipelines:
@@ -164,6 +169,10 @@ export default defineI18nConfig(() => ({
         dataset_source_type: 'Dataset Source Type',
         file_name: 'File Name',
         file_path: 'File Path',
+        file_size: 'File Size',
+        content_type: 'Content Type',
+        lines: 'Lines',
+        rows_remaining: 'rows remaining',
         register_date: 'Added',
         last_modified_time: 'Modified',
         file: 'File',
@@ -290,6 +299,7 @@ export default defineI18nConfig(() => ({
         save_and_run: 'Save & Run',
         cancel: 'Cancel',
         close: 'Close',
+        load_more: 'Load More',
         confirm: 'Confirm',
         add: 'Add',
         remove: 'Remove',
@@ -362,6 +372,7 @@ export default defineI18nConfig(() => ({
       },
       hint: {
         no_results: 'No results found',
+        no_results_description: 'Try adjusting your search or filters',
         of: 'of',
         rows_selected: 'rows selected',
         rows_per_page: 'Rows per page',
@@ -373,11 +384,17 @@ export default defineI18nConfig(() => ({
         by: 'by',
         filter_by: 'Filter by',
         db_url_postgresql:
-          'Format: postgresql://user:password@host:port/database',
-        db_url_mysql: 'Format: mysql://user:password@host:port/database',
+          "Format: postgresql://user:password{'@'}host:port/database",
+        db_url_mysql: "Format: mysql://user:password{'@'}host:port/database",
         db_url_sqlite: 'Format: sqlite:///path/to/database.db',
-        db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
+        db_url_mongodb:
+          "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
+        preview_truncated:
+          'Preview is truncated. Download the file to see the full content.',
+        preview_max_limit:
+          'Maximum preview limit reached. Download the file to see the full content.',
+        no_data: 'No data available',
       },
       menu: {
         upload: 'Upload',
@@ -453,6 +470,10 @@ export default defineI18nConfig(() => ({
       zodI18n: {
         validations: {
           ip: '',
+        },
+        types: {
+          array: 'array',
+          object: 'object',
         },
         errors: {
           invalid_type_received_undefined: 'This field is required',
@@ -621,6 +642,7 @@ export default defineI18nConfig(() => ({
         not_found: 'Resource not found',
         server_error: 'Server error occurred',
         request_failed: 'Request failed',
+        validation_error: 'Validation error - please check your input',
         multiple_inputs_not_allowed:
           'Multiple inputs to one output not allowed',
         multiple_outputs_not_allowed:

@@ -77,6 +77,7 @@ const columns = [
   },
   {
     id: 'status',
+    size: 130,
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
       return h(
@@ -91,10 +92,12 @@ const columns = [
   },
   {
     id: 'duration',
+    size: 120,
     cell: ({ row }: { row: TableRowType }) => row.getValue('duration'),
   },
   {
     id: 'actions',
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('run_id');

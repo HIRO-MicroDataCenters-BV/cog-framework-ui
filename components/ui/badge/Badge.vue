@@ -59,6 +59,10 @@ const getConfigKey = (): string | null => {
     );
   }
 
+  if (props.type === 'model_type' && typeof props.value === 'string') {
+    return props.value.toLowerCase();
+  }
+
   return null;
 };
 
@@ -137,6 +141,9 @@ const displayValue = computed(() => {
   if (props.type === 'type' && configKey) {
     return t(`label.${configKey}`);
   }
+  if (props.type === 'model_type' && configKey) {
+    return configKey;
+  }
   return props.value;
 });
 </script>
@@ -154,7 +161,12 @@ const displayValue = computed(() => {
       stroke-width="1.25"
     />
     <slot>
-      <span v-if="displayValue" class="capitalize"> {{ displayValue }} </span>
+      <span
+        v-if="displayValue"
+        :class="type !== 'model_type' ? 'capitalize' : ''"
+      >
+        {{ displayValue }}
+      </span>
     </slot>
   </Primitive>
 </template>
