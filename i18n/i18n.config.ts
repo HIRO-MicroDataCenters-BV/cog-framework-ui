@@ -240,6 +240,8 @@ export default defineI18nConfig(() => ({
         regression: 'Regression',
         clustering: 'Clustering',
         general: 'General',
+        shared: 'Shared',
+        shared_by: 'Shared by',
         test_request_data: 'Request Data',
         test_report_config: 'Report Config',
         test_connection: 'Test Connection',

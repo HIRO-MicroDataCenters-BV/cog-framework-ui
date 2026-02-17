@@ -12,6 +12,7 @@ import { shortenUuid } from '~/utils';
 const dayjs = useDayjs();
 const { t } = useI18n();
 const { setPage, page } = useApp();
+const { user: currentUser } = useCurrentUser();
 
 const tableRef = ref();
 
@@ -44,14 +45,44 @@ const columns = [
   {
     id: 'dataset_name',
     size: 250,
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
-        },
-        row.getValue('dataset_name'),
-      ),
+    cell: ({ row }: { row: TableRowType }) => {
+      const isShared = row.original.user_id !== currentUser.value?.email;
+      return h('div', { class: 'relative inline-flex items-center' }, [
+        h(
+          'a',
+          {
+            href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          },
+          row.getValue('dataset_name'),
+        ),
+        isShared
+          ? h(
+              resolveComponent('TooltipProvider'),
+              { delayDuration: 200 },
+              () =>
+                h(resolveComponent('Tooltip'), null, {
+                  default: () => [
+                    h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                      h(
+                        'span',
+                        {
+                          class:
+                            'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
+                        },
+                        'S',
+                      ),
+                    ),
+                    h(
+                      resolveComponent('TooltipContent'),
+                      { side: 'right' },
+                      () => `${t('label.shared_by')} ${row.original.user_id}`,
+                    ),
+                  ],
+                }),
+            )
+          : null,
+      ]);
+    },
   },
   {
     id: 'id',
