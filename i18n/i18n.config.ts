@@ -174,7 +174,7 @@ export default defineI18nConfig(() => ({
         connection_parameter: 'Connection Parameter',
         dataset_name: 'Dataset Name',
         dataset_description: 'Dataset Description',
-        dataset_type: 'Dataset Type',
+        dataset_type: 'Data Stream Type',
         dataset_source_type: 'Dataset Source Type',
         file_name: 'File Name',
         file_path: 'File Path',
@@ -250,7 +250,7 @@ export default defineI18nConfig(() => ({
       },
       placeholder: {
         select_parameter: 'Select Parameter',
-        dataset_type: 'Select Dataset Type',
+        dataset_type: 'Select Data Stream Type',
         name: 'Enter a name',
         version: 'Version',
         search: 'Search...',
