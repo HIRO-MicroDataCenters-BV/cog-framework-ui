@@ -47,13 +47,11 @@ export const useCurrentUser = () => {
    */
   const fetchCurrentUser = async (): Promise<void> => {
     if (state.value.loading) return;
-    console.log("loading current user...");
     state.value.loading = true;
     state.value.error = null;
 
     try {
       const response = (await api.getHeaders()) as HeadersResponse;
-      console.log(response);
       if (response?.data?.['kubeflow-userid']) {
         const email = response.data['kubeflow-userid'];
         state.value.user = {
