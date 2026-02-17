@@ -13,6 +13,7 @@ export default defineI18nConfig(() => ({
           model_added: 'Model successfully added',
           component_uploaded: 'Component successfully uploaded',
           operation_completed: 'Operation completed successfully',
+          dataset_created: 'Dataset created successfully',
           dataset_deleted: 'Dataset deleted successfully',
           model_deleted: 'Model deleted successfully',
           pipeline_deleted: 'Pipeline deleted successfully',

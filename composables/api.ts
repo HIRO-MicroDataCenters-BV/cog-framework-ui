@@ -1001,7 +1001,9 @@ export const useApi = () => {
       data.append('name', name);
       data.append('dataset_type', dataset_type.toString());
       if (description) data.append('description', description);
-      return request(`/datasets/file`, 'POST', data);
+      return request(`/datasets/file`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1151,7 +1153,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetTable: async (data: unknown) => {
-      return request(`/datasets/table`, 'POST', data);
+      return request(`/datasets/table`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1391,7 +1395,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetMessage: async (data: unknown) => {
-      return request(`/datasets/message`, 'POST', data);
+      return request(`/datasets/message`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1633,7 +1639,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetPrometheus: async (data: unknown) => {
-      return request(`/datasets/prometheus`, 'POST', data);
+      return request(`/datasets/prometheus`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
