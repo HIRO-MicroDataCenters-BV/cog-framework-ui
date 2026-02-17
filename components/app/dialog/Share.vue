@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="open" @update:open="onOpenChange">
-    <DialogContent class="sm:max-w-[480px] gap-0 p-0 overflow-hidden">
+    <DialogContent class="sm:max-w-[560px] gap-0 p-0 overflow-hidden">
       <!-- Header -->
       <div class="px-6 pt-6 pb-4">
         <DialogHeader>
