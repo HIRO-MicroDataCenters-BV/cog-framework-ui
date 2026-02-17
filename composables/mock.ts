@@ -566,10 +566,11 @@ export const useApiWithMock = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
-    options?: { showToast?: boolean },
+    options?: { showToast?: boolean; successMessage?: string },
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast;
+    const customSuccessMessage = options?.successMessage;
     const toaster = useToaster();
 
     const opts: RequestInit = {
@@ -592,7 +593,8 @@ export const useApiWithMock = () => {
             return null;
         }
       } else {
-        const successMessage = data.message || 'operation_completed';
+        const successMessage =
+          customSuccessMessage || data.message || 'operation_completed';
         if (showToast) toaster.show('success', successMessage);
       }
 
@@ -799,7 +801,9 @@ export const useApiWithMock = () => {
           message: 'Dataset file deleted successfully',
         });
       }
-      return request(`/datasets/file/${id}`, 'DELETE');
+      return request(`/datasets/file/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     deleteDatasetBroker: async (id: number | string) => {
@@ -810,7 +814,9 @@ export const useApiWithMock = () => {
           message: 'Dataset broker deleted successfully',
         });
       }
-      return request(`/datasets/broker/${id}`, 'DELETE');
+      return request(`/datasets/broker/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     deleteDatasetTopic: async (id: number | string) => {
@@ -821,7 +827,9 @@ export const useApiWithMock = () => {
           message: 'Dataset topic deleted successfully',
         });
       }
-      return request(`/datasets/topic/${id}`, 'DELETE');
+      return request(`/datasets/topic/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     deleteDatasetMessage: async (id: number | string) => {
@@ -832,7 +840,9 @@ export const useApiWithMock = () => {
           message: 'Dataset message deleted successfully',
         });
       }
-      return request(`/datasets/message/${id}`, 'DELETE');
+      return request(`/datasets/message/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     getBrokerDetails: async () => {

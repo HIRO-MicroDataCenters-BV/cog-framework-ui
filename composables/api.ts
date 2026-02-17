@@ -107,10 +107,11 @@ export const useApi = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
-    options?: { showToast?: boolean },
+    options?: { showToast?: boolean; successMessage?: string },
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast ?? true;
+    const customSuccessMessage = options?.successMessage;
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
@@ -139,7 +140,7 @@ export const useApi = () => {
 
       if (res.status === 204) {
         if (isModifyingRequest && showToast) {
-          const successMessage = 'operation_completed';
+          const successMessage = customSuccessMessage || 'operation_completed';
           toaster.show('success', successMessage);
         }
         return null;
@@ -191,7 +192,7 @@ export const useApi = () => {
       } else {
         // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
         if (isModifyingRequest && showToast) {
-          const successMessage = 'operation_completed';
+          const successMessage = customSuccessMessage || 'operation_completed';
           toaster.show('success', successMessage);
         }
       }
@@ -328,7 +329,9 @@ export const useApi = () => {
      * ```
      */
     deleteModel: async (id: string) => {
-      return request(`/models/${id}`, 'DELETE');
+      return request(`/models/${id}`, 'DELETE', undefined, {
+        successMessage: 'model_deleted',
+      });
     },
     /**
      * Retrieves model and its associated details by ID
@@ -1019,7 +1022,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetFile: async (id: string) => {
-      return request(`/datasets/${id}/file`, 'DELETE');
+      return request(`/datasets/${id}/file`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**
@@ -1185,7 +1190,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetTable: async (id: string) => {
-      return request(`/datasets/${id}/table`, 'DELETE');
+      return request(`/datasets/${id}/table`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**
@@ -1517,7 +1524,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetMessage: async (id: string) => {
-      return request(`/datasets/${id}/message`, 'DELETE');
+      return request(`/datasets/${id}/message`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**

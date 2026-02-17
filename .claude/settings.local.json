@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run lint:*)",
+      "Bash(npx nuxi typecheck:*)",
+      "Bash(npx nuxi prepare:*)",
+      "Bash(cat:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx nuxi build:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}
