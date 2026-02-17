@@ -40,6 +40,12 @@ interface PreviewState {
   maxLimitReached?: boolean;
 }
 
+interface ShareState {
+  open: boolean;
+  datasetId: string;
+  datasetName: string;
+}
+
 export const useDatasetActions = () => {
   const api = useApi();
   const toaster = useToaster();
@@ -50,6 +56,13 @@ export const useDatasetActions = () => {
     title: '',
     data: null,
     type: 'file',
+  }));
+
+  // Share dialog state
+  const shareState = useState<ShareState>('dataset-share', () => ({
+    open: false,
+    datasetId: '',
+    datasetName: '',
   }));
 
   const showPreview = (
@@ -258,6 +271,28 @@ export const useDatasetActions = () => {
   };
 
   /**
+   * Open share dialog for a dataset
+   */
+  const openShareDialog = (datasetId: string, datasetName: string) => {
+    shareState.value = {
+      open: true,
+      datasetId,
+      datasetName,
+    };
+  };
+
+  /**
+   * Close share dialog
+   */
+  const closeShareDialog = () => {
+    shareState.value = {
+      open: false,
+      datasetId: '',
+      datasetName: '',
+    };
+  };
+
+  /**
    * Get actions for a specific dataset based on its type
    */
   const getDatasetActions = (
@@ -267,6 +302,13 @@ export const useDatasetActions = () => {
     onSuccess?: () => void,
   ): ActionItem[] => {
     const items: ActionItem[] = [];
+
+    // Share action - available for all dataset types
+    items.push({
+      key: 'share',
+      label: 'share',
+      action: () => openShareDialog(datasetId, datasetName),
+    });
 
     // Stream datasets (Kafka: 10, NATS: 11)
     if (dataSourceType === 10 || dataSourceType === 11) {
@@ -346,5 +388,9 @@ export const useDatasetActions = () => {
     previewState,
     closePreview,
     loadMorePreview,
+    // Share
+    shareState,
+    openShareDialog,
+    closeShareDialog,
   };
 };

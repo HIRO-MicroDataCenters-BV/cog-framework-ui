@@ -3,6 +3,7 @@ import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
 import PreviewDialog from '@/components/app/dialog/Preview.vue';
+import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
@@ -15,8 +16,13 @@ const { setPage, page } = useApp();
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState, loadMorePreview, handleFileDownload } =
-  useDatasetActions();
+const {
+  previewState,
+  loadMorePreview,
+  handleFileDownload,
+  shareState,
+  closeShareDialog,
+} = useDatasetActions();
 
 const handleDownloadFromPreview = () => {
   if (previewState.value.datasetId) {
@@ -163,6 +169,14 @@ const columns = [
       :max-limit-reached="previewState.maxLimitReached"
       @load-more="loadMorePreview"
       @download="handleDownloadFromPreview"
+    />
+
+    <!-- Share Dialog -->
+    <ShareDialog
+      :open="shareState.open"
+      :dataset-id="shareState.datasetId"
+      :dataset-name="shareState.datasetName"
+      @close="closeShareDialog"
     />
   </div>
 </template>

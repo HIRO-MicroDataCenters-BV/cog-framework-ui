@@ -4,7 +4,34 @@ interface Item {
   label: string;
   action: () => void;
   hasConfirmation?: boolean;
+  icon?: string;
 }
+
+// Default icons for common actions
+const actionIcons: Record<string, string> = {
+  share: 'lucide:share-2',
+  download: 'lucide:download',
+  preview: 'lucide:eye',
+  delete: 'lucide:trash-2',
+  edit: 'lucide:pencil',
+  copy: 'lucide:copy',
+  view: 'lucide:eye',
+};
+
+const getIcon = (item: Item) => {
+  // Return custom icon if provided
+  if (item.icon) return item.icon;
+
+  // Check exact match first
+  if (actionIcons[item.key]) return actionIcons[item.key];
+
+  // Check partial match (e.g., 'delete_model' matches 'delete')
+  for (const [action, icon] of Object.entries(actionIcons)) {
+    if (item.key.includes(action)) return icon;
+  }
+
+  return '';
+};
 
 const { t } = useI18n();
 const props = defineProps<{
@@ -43,7 +70,11 @@ const action = ref();
 
       <template v-for="item in props.items" :key="item.key">
         <DropdownMenuItem
-          class="cursor-pointer"
+          class="cursor-pointer gap-2"
+          :class="{
+            'text-destructive focus:text-destructive':
+              item.key.includes('delete'),
+          }"
           @click="
             () => {
               action = item.action;
@@ -57,6 +88,7 @@ const action = ref();
             }
           "
         >
+          <Icon v-if="getIcon(item)" :name="getIcon(item)" class="h-4 w-4" />
           {{ t(`action.${item.key}`) }}
         </DropdownMenuItem>
       </template>
