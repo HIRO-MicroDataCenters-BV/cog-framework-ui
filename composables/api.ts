@@ -2678,5 +2678,41 @@ export const useApi = () => {
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       return request(`/pipelines/${pipelineId}/versions/${versionId}`);
     },
+
+    // ============================================================================
+    // ACCESS GRANTS API
+    // ============================================================================
+
+    /**
+     * Creates an access grant to share a dataset with another user
+     *
+     * @param {Object} data - Access grant data
+     * @param {string} data.owner_id - Email of the owner sharing the dataset
+     * @param {string} data.entity_id - UUID of the dataset being shared
+     * @param {string} data.entity_type - Type of entity (e.g., 'dataset')
+     * @param {string} data.shared_user_id - Email of the user receiving access
+     *
+     * @returns {Promise<Object>} Standard response containing access grant information
+     *
+     * @example
+     * ```typescript
+     * const result = await api.postAccessGrant({
+     *   owner_id: 'admin@hiro.com',
+     *   entity_id: 'ca489838-56bd-4e73-a043-6790c072545e',
+     *   entity_type: 'dataset',
+     *   shared_user_id: 'abc@hiro.com'
+     * });
+     * ```
+     */
+    postAccessGrant: async (data: {
+      owner_id: string;
+      entity_id: string;
+      entity_type: string;
+      shared_user_id: string;
+    }) => {
+      return request(`/access-grants`, 'POST', data, {
+        successMessage: 'share_updated',
+      });
+    },
   };
 };

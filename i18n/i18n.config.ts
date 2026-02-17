@@ -22,6 +22,7 @@ export default defineI18nConfig(() => ({
           copied_to_clipboard: 'Copied to clipboard',
           test_connection: 'Connection successful! Table found.',
           test_connection_no_table: 'Connection successful!',
+          share_updated: 'Dataset shared successfully',
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -340,6 +341,7 @@ export default defineI18nConfig(() => ({
         title: 'Share Dataset',
         description: 'Share "{name}" with other users',
         add_people: 'Add people',
+        select_user: 'Select user',
         search_placeholder: 'Search by name or email...',
         permission_view: 'View',
         permission_edit: 'Edit',
