@@ -160,10 +160,7 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            // Show 404 toast for all requests with error message
-            if (data.message || data.detail) {
-              toaster.show('error', 'not_found');
-            }
+            toaster.show('error', 'not_found');
             return null;
           case 422: {
             // Handle validation errors - detail might be an array or object
