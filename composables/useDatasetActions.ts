@@ -262,8 +262,8 @@ export const useDatasetActions = () => {
     // Stream datasets (Kafka: 10, NATS: 11)
     if (dataSourceType === 10 || dataSourceType === 11) {
       items.push({
-        key: 'delete_message',
-        label: 'delete_message',
+        key: 'delete',
+        label: 'delete',
         hasConfirmation: true,
         action: () => handleStreamDelete(datasetId, onSuccess),
       });
@@ -272,13 +272,13 @@ export const useDatasetActions = () => {
     else if (dataSourceType === 1) {
       items.push(
         {
-          key: 'preview_table',
-          label: 'preview_table',
+          key: 'preview',
+          label: 'preview',
           action: () => handleTablePreview(datasetId),
         },
         {
-          key: 'delete_table',
-          label: 'delete_table',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleTableDelete(datasetId, onSuccess),
         },
@@ -288,13 +288,13 @@ export const useDatasetActions = () => {
     else if (dataSourceType === 20) {
       items.push(
         {
-          key: 'preview_prometheus',
-          label: 'preview_prometheus',
+          key: 'preview',
+          label: 'preview',
           action: () => handlePrometheusPreview(datasetId),
         },
         {
-          key: 'delete_message',
-          label: 'delete_message',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleStreamDelete(datasetId, onSuccess),
         },
@@ -304,18 +304,18 @@ export const useDatasetActions = () => {
     else {
       items.push(
         {
-          key: 'download_file',
-          label: 'download_file',
+          key: 'download',
+          label: 'download',
           action: () => handleFileDownload(datasetId),
         },
         {
-          key: 'preview_file',
-          label: 'preview_file',
+          key: 'preview',
+          label: 'preview',
           action: () => handleFilePreview(datasetId),
         },
         {
-          key: 'delete_file',
-          label: 'delete_file',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleFileDelete(datasetId, onSuccess),
         },

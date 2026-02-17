@@ -9,6 +9,7 @@ import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
+const { t } = useI18n();
 const { setPage, page } = useApp();
 
 const tableRef = ref();
@@ -133,6 +134,7 @@ const columns = [
         title: datasetName,
         id,
         items,
+        menuTitle: t('title.dataset_actions'),
       });
     },
   },

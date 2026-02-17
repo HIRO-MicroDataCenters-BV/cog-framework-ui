@@ -11,6 +11,7 @@ const props = defineProps<{
   items: Item[];
   id: string | number;
   title: string;
+  menuTitle?: string;
 }>();
 
 defineEmits<{
@@ -36,7 +37,7 @@ const action = ref();
       <div
         class="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
       >
-        {{ $t('title.actions') }}
+        {{ props.menuTitle || $t('title.actions') }}
       </div>
       <DropdownMenuSeparator />
 

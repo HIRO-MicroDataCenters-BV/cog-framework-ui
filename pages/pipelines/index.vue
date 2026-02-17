@@ -114,6 +114,7 @@ const columns = [
         title: name,
         id,
         items,
+        menuTitle: t('title.pipeline_actions'),
       });
     },
   },
