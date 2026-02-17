@@ -42,6 +42,7 @@ interface PreviewState {
 
 export const useDatasetActions = () => {
   const api = useApi();
+  const toaster = useToaster();
 
   // Preview dialog state
   const previewState = useState<PreviewState>('dataset-preview', () => ({
@@ -121,7 +122,12 @@ export const useDatasetActions = () => {
       const response = await fetch(downloadUrl);
 
       if (!response.ok) {
-        throw new Error('Download failed');
+        if (response.status === 404) {
+          toaster.show('error', 'not_found');
+        } else {
+          toaster.show('error', 'download_failed');
+        }
+        return;
       }
 
       // Get filename from Content-Disposition header or use default
@@ -146,8 +152,11 @@ export const useDatasetActions = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      toaster.show('success', 'download_completed');
     } catch (error) {
       console.error('Download failed:', error);
+      toaster.show('error', 'download_failed');
     }
   };
 
