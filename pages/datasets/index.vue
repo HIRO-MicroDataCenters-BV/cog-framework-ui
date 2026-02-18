@@ -162,9 +162,14 @@ const columns = [
       const id = row.getValue<string>('id');
       const datasetName = row.getValue<string>('dataset_name');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
+      const isShared = row.original.user_id !== currentUser.value?.email;
 
-      const items = getDatasetActions(id, datasetName, dataSourceType, () =>
-        tableRef.value.fetchData(),
+      const items = getDatasetActions(
+        id,
+        datasetName,
+        dataSourceType,
+        () => tableRef.value.fetchData(),
+        isShared,
       );
 
       return h(DropdownAction, {

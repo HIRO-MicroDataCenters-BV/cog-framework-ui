@@ -245,7 +245,7 @@ interface SharedUser extends User {
 
 const { t } = useI18n();
 const toaster = useToaster();
-const { postAccessGrant } = useApi();
+const { postAccessGrant, getUsers } = useApi();
 const { user: currentUser } = useCurrentUser();
 
 const props = defineProps<{
@@ -265,15 +265,7 @@ const isDropdownOpen = ref(false);
 const isSaving = ref(false);
 const sharedUsers = ref<SharedUser[]>([]);
 const availableUsers = ref<User[]>([]);
-
-// Mock users for demo - in production, fetch from API
-const mockUsers: User[] = [
-  { email: 'john.doe@company.com', name: 'John Doe' },
-  { email: 'jane.smith@company.com', name: 'Jane Smith' },
-  { email: 'bob.wilson@company.com', name: 'Bob Wilson' },
-  { email: 'alice.johnson@company.com', name: 'Alice Johnson' },
-  { email: 'charlie.brown@company.com', name: 'Charlie Brown' },
-];
+const isLoadingUsers = ref(false);
 
 // Computed
 const filteredUsers = computed(() => {
@@ -369,14 +361,28 @@ watch(
   () => props.open,
   async (isOpen) => {
     if (isOpen) {
-      // In production, fetch from API:
-      // const response = await api.getUsers();
-      // availableUsers.value = response.data;
-      availableUsers.value = mockUsers;
+      isLoadingUsers.value = true;
+      try {
+        const response = await getUsers();
+        if (response?.data?.passwords) {
+          // Transform API response to User interface
+          availableUsers.value = response.data.passwords
+            .filter(
+              (u: { email: string }) => u.email !== currentUser.value?.email,
+            )
+            .map((u: { email: string; username: string }) => ({
+              email: u.email,
+              name: u.username || u.email.split('@')[0],
+            }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        availableUsers.value = [];
+      } finally {
+        isLoadingUsers.value = false;
+      }
 
-      // Also fetch existing shares for this dataset
-      // const shares = await api.getDatasetShares(props.datasetId);
-      // sharedUsers.value = shares.data;
+      // Reset shared users when dialog opens
       sharedUsers.value = [];
     }
   },

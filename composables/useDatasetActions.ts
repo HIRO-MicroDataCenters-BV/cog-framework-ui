@@ -16,6 +16,7 @@ interface ActionItem {
   label: string;
   action: () => void | Promise<void>;
   hasConfirmation?: boolean;
+  disabled?: boolean;
 }
 
 interface FilePreviewData {
@@ -294,20 +295,23 @@ export const useDatasetActions = () => {
 
   /**
    * Get actions for a specific dataset based on its type
+   * @param isShared - If true, delete action will be disabled (shared datasets cannot be deleted)
    */
   const getDatasetActions = (
     datasetId: string,
     datasetName: string,
     dataSourceType: number,
     onSuccess?: () => void,
+    isShared: boolean = false,
   ): ActionItem[] => {
     const items: ActionItem[] = [];
 
-    // Share action - available for all dataset types
+    // Share action - available for all dataset types but disabled for shared datasets
     items.push({
       key: 'share',
       label: 'share',
       action: () => openShareDialog(datasetId, datasetName),
+      disabled: isShared,
     });
 
     // Stream datasets (Kafka: 10, NATS: 11)
@@ -317,6 +321,7 @@ export const useDatasetActions = () => {
         label: 'delete',
         hasConfirmation: true,
         action: () => handleStreamDelete(datasetId, onSuccess),
+        disabled: isShared,
       });
     }
     // Database/Table datasets
@@ -332,6 +337,7 @@ export const useDatasetActions = () => {
           label: 'delete',
           hasConfirmation: true,
           action: () => handleTableDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }
@@ -348,6 +354,7 @@ export const useDatasetActions = () => {
           label: 'delete',
           hasConfirmation: true,
           action: () => handleStreamDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }
@@ -369,6 +376,7 @@ export const useDatasetActions = () => {
           label: 'delete',
           hasConfirmation: true,
           action: () => handleFileDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }

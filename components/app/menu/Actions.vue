@@ -5,6 +5,7 @@ interface Item {
   action: () => void;
   hasConfirmation?: boolean;
   icon?: string;
+  disabled?: boolean;
 }
 
 // Default icons for common actions
@@ -70,13 +71,17 @@ const action = ref();
 
       <template v-for="item in props.items" :key="item.key">
         <DropdownMenuItem
-          class="cursor-pointer gap-2"
-          :class="{
-            'text-destructive focus:text-destructive':
-              item.key.includes('delete'),
-          }"
+          :disabled="item.disabled"
+          :class="[
+            'gap-2',
+            item.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+            item.key.includes('delete') && !item.disabled
+              ? 'text-destructive focus:text-destructive'
+              : '',
+          ]"
           @click="
             () => {
+              if (item.disabled) return;
               action = item.action;
               if (item.hasConfirmation) {
                 if (item.key.includes('delete')) {
