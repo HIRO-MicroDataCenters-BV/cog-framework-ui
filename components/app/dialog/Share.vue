@@ -94,7 +94,9 @@
                       </AvatarFallback>
                     </Avatar>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium truncate">{{ user.name }}</p>
+                      <p class="text-sm font-medium truncate">
+                        {{ user.name }}
+                      </p>
                       <p class="text-xs text-muted-foreground truncate">
                         {{ user.email }}
                       </p>
@@ -208,7 +210,6 @@
             </p>
           </div>
         </div>
-
       </div>
 
       <Separator />

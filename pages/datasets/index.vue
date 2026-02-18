@@ -56,29 +56,26 @@ const columns = [
           row.getValue('dataset_name'),
         ),
         isShared
-          ? h(
-              resolveComponent('TooltipProvider'),
-              { delayDuration: 200 },
-              () =>
-                h(resolveComponent('Tooltip'), null, {
-                  default: () => [
-                    h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
-                      h(
-                        'span',
-                        {
-                          class:
-                            'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
-                        },
-                        'S',
-                      ),
-                    ),
+          ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+              h(resolveComponent('Tooltip'), null, {
+                default: () => [
+                  h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
                     h(
-                      resolveComponent('TooltipContent'),
-                      { side: 'right' },
-                      () => `${t('label.shared_by')} ${row.original.user_id}`,
+                      'span',
+                      {
+                        class:
+                          'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
+                      },
+                      'S',
                     ),
-                  ],
-                }),
+                  ),
+                  h(
+                    resolveComponent('TooltipContent'),
+                    { side: 'right' },
+                    () => `${t('label.shared_by')} ${row.original.user_id}`,
+                  ),
+                ],
+              }),
             )
           : null,
       ]);
