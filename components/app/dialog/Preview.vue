@@ -423,7 +423,7 @@ const tableColumns = computed(() => {
           @click="emit('download')"
         >
           <Download class="w-4 h-4 mr-2" />
-          {{ $t('action.download_file') }}
+          {{ $t('action.download') }}
         </Button>
         <Button
           variant="outline"
