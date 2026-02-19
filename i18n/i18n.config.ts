@@ -194,6 +194,7 @@ export default defineI18nConfig(() => ({
         filters: 'Filters',
         type: 'Type',
         name: 'Name',
+        new: 'New',
         description: 'Description',
         connection_string: 'Connection String',
         filter_condition: 'Filter Condition',

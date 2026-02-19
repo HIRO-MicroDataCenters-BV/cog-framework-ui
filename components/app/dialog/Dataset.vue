@@ -77,8 +77,8 @@
                   class="flex h-11 w-11 items-center justify-center rounded-lg transition-colors"
                   :class="
                     selectedType === dtype.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                      ? typeIconColors[dtype.color].selected
+                      : typeIconColors[dtype.color].default
                   "
                 >
                   <Icon :name="dtype.icon" class="h-5 w-5" />
@@ -119,8 +119,8 @@
                     class="flex h-11 w-11 items-center justify-center rounded-lg transition-colors"
                     :class="
                       selectedType === dtype.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                        ? typeIconColors[dtype.color].selected
+                        : typeIconColors[dtype.color].default
                     "
                   >
                     <Icon :name="dtype.icon" class="h-5 w-5" />
@@ -922,24 +922,48 @@ const stepsMeta = computed(() => [
 ]);
 
 // ──── Dataset Type Options (Row 1: File, Table, Data Stream | Row 2: Time Series in between) ────
+const typeIconColors: Record<
+  string,
+  { default: string; selected: string }
+> = {
+  file: {
+    default: 'bg-blue-100 text-blue-600 group-hover:bg-blue-200/80',
+    selected: 'bg-blue-500 text-white',
+  },
+  table: {
+    default: 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200/80',
+    selected: 'bg-emerald-500 text-white',
+  },
+  data_stream: {
+    default: 'bg-amber-100 text-amber-600 group-hover:bg-amber-200/80',
+    selected: 'bg-amber-500 text-white',
+  },
+  time_series: {
+    default: 'bg-violet-100 text-violet-600 group-hover:bg-violet-200/80',
+    selected: 'bg-violet-500 text-white',
+  },
+};
 const datasetTypesRow1 = computed(() => [
   {
     value: 'file' as const,
     label: t('label.file'),
     description: t('label_subtitle.file'),
     icon: 'lucide:file-up',
+    color: 'file',
   },
   {
     value: 'table' as const,
     label: t('label.table'),
     description: t('label_subtitle.table'),
     icon: 'lucide:database',
+    color: 'table',
   },
   {
     value: 'data_stream' as const,
     label: t('label.data_stream'),
     description: t('label_subtitle.data_stream'),
     icon: 'lucide:radio',
+    color: 'data_stream',
   },
 ]);
 const datasetTypesRow2 = computed(() => [
@@ -948,6 +972,7 @@ const datasetTypesRow2 = computed(() => [
     label: t('label.time_series'),
     description: t('label_subtitle.time_series'),
     icon: 'lucide:chart-line',
+    color: 'time_series',
   },
 ]);
 
