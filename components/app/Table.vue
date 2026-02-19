@@ -801,7 +801,24 @@ defineExpose({ fetchData });
               />
             </div>
 
-            <div class="flex gap-6 items-center">
+            <div class="flex gap-2 items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="cursor-pointer"
+                      @click="fetchData"
+                    >
+                      <Icon name="lucide:refresh-cw" class="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('action.refresh') }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button class="cursor-pointer" @click="() => add()">
                 <Icon name="lucide:plus"></Icon>
                 {{ t(`action.add_${page.section}`) }}
