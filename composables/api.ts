@@ -107,10 +107,11 @@ export const useApi = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
-    options?: { showToast?: boolean },
+    options?: { showToast?: boolean; successMessage?: string },
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast ?? true;
+    const customSuccessMessage = options?.successMessage;
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
@@ -139,7 +140,7 @@ export const useApi = () => {
 
       if (res.status === 204) {
         if (isModifyingRequest && showToast) {
-          const successMessage = 'operation_completed';
+          const successMessage = customSuccessMessage || 'operation_completed';
           toaster.show('success', successMessage);
         }
         return null;
@@ -159,10 +160,7 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            // Show 404 toast for all requests with error message
-            if (data.message || data.detail) {
-              toaster.show('error', 'not_found');
-            }
+            toaster.show('error', 'not_found');
             return null;
           case 422: {
             // Handle validation errors - detail might be an array or object
@@ -191,7 +189,7 @@ export const useApi = () => {
       } else {
         // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
         if (isModifyingRequest && showToast) {
-          const successMessage = 'operation_completed';
+          const successMessage = customSuccessMessage || 'operation_completed';
           toaster.show('success', successMessage);
         }
       }
@@ -328,7 +326,9 @@ export const useApi = () => {
      * ```
      */
     deleteModel: async (id: string) => {
-      return request(`/models/${id}`, 'DELETE');
+      return request(`/models/${id}`, 'DELETE', undefined, {
+        successMessage: 'model_deleted',
+      });
     },
     /**
      * Retrieves model and its associated details by ID
@@ -1001,7 +1001,9 @@ export const useApi = () => {
       data.append('name', name);
       data.append('dataset_type', dataset_type.toString());
       if (description) data.append('description', description);
-      return request(`/datasets/file`, 'POST', data);
+      return request(`/datasets/file`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1019,7 +1021,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetFile: async (id: string) => {
-      return request(`/datasets/${id}/file`, 'DELETE');
+      return request(`/datasets/${id}/file`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**
@@ -1149,7 +1153,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetTable: async (data: unknown) => {
-      return request(`/datasets/table`, 'POST', data);
+      return request(`/datasets/table`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1185,7 +1191,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetTable: async (id: string) => {
-      return request(`/datasets/${id}/table`, 'DELETE');
+      return request(`/datasets/${id}/table`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**
@@ -1387,7 +1395,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetMessage: async (data: unknown) => {
-      return request(`/datasets/message`, 'POST', data);
+      return request(`/datasets/message`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -1517,7 +1527,9 @@ export const useApi = () => {
      * ```
      */
     deleteDatasetMessage: async (id: string) => {
-      return request(`/datasets/${id}/message`, 'DELETE');
+      return request(`/datasets/${id}/message`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
     /**
@@ -1627,7 +1639,9 @@ export const useApi = () => {
      * ```
      */
     postDatasetPrometheus: async (data: unknown) => {
-      return request(`/datasets/prometheus`, 'POST', data);
+      return request(`/datasets/prometheus`, 'POST', data, {
+        successMessage: 'dataset_created',
+      });
     },
 
     /**
@@ -2663,6 +2677,42 @@ export const useApi = () => {
      */
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+    },
+
+    // ============================================================================
+    // ACCESS GRANTS API
+    // ============================================================================
+
+    /**
+     * Creates access grants to share a dataset with multiple users
+     *
+     * @param {Object} data - Access grant data
+     * @param {string} data.owner_id - Email of the owner sharing the dataset
+     * @param {string} data.entity_id - UUID of the dataset being shared
+     * @param {string} data.entity_type - Type of entity (e.g., 'dataset')
+     * @param {string[]} data.shared_user_ids - Array of emails of users receiving access
+     *
+     * @returns {Promise<Object>} Standard response containing access grant information
+     *
+     * @example
+     * ```typescript
+     * const result = await api.postAccessGrant({
+     *   owner_id: 'admin@hiro.com',
+     *   entity_id: 'ca489838-56bd-4e73-a043-6790c072545e',
+     *   entity_type: 'dataset',
+     *   shared_user_ids: ['user1@hiro.com', 'user2@hiro.com']
+     * });
+     * ```
+     */
+    postAccessGrant: async (data: {
+      owner_id: string;
+      entity_id: string;
+      entity_type: string;
+      shared_user_ids: string[];
+    }) => {
+      return request(`/access-grants`, 'POST', data, {
+        successMessage: 'share_updated',
+      });
     },
   };
 };

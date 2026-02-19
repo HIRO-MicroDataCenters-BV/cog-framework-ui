@@ -3,19 +3,27 @@ import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
 import PreviewDialog from '@/components/app/dialog/Preview.vue';
+import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
+const { t } = useI18n();
 const { setPage, page } = useApp();
+const { user: currentUser } = useCurrentUser();
 
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState, loadMorePreview, handleFileDownload } =
-  useDatasetActions();
+const {
+  previewState,
+  loadMorePreview,
+  handleFileDownload,
+  shareState,
+  closeShareDialog,
+} = useDatasetActions();
 
 const handleDownloadFromPreview = () => {
   if (previewState.value.datasetId) {
@@ -37,14 +45,41 @@ const columns = [
   {
     id: 'dataset_name',
     size: 250,
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
-        },
-        row.getValue('dataset_name'),
-      ),
+    cell: ({ row }: { row: TableRowType }) => {
+      const isShared = row.original.user_id !== currentUser.value?.email;
+      return h('div', { class: 'relative inline-flex items-center' }, [
+        h(
+          'a',
+          {
+            href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          },
+          row.getValue('dataset_name'),
+        ),
+        isShared
+          ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+              h(resolveComponent('Tooltip'), null, {
+                default: () => [
+                  h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                    h(
+                      'span',
+                      {
+                        class:
+                          'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
+                      },
+                      'S',
+                    ),
+                  ),
+                  h(
+                    resolveComponent('TooltipContent'),
+                    { side: 'right' },
+                    () => `${t('label.shared_by')} ${row.original.user_id}`,
+                  ),
+                ],
+              }),
+            )
+          : null,
+      ]);
+    },
   },
   {
     id: 'id',
@@ -124,15 +159,21 @@ const columns = [
       const id = row.getValue<string>('id');
       const datasetName = row.getValue<string>('dataset_name');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
+      const isShared = row.original.user_id !== currentUser.value?.email;
 
-      const items = getDatasetActions(id, datasetName, dataSourceType, () =>
-        tableRef.value.fetchData(),
+      const items = getDatasetActions(
+        id,
+        datasetName,
+        dataSourceType,
+        () => tableRef.value.fetchData(),
+        isShared,
       );
 
       return h(DropdownAction, {
         title: datasetName,
         id,
         items,
+        menuTitle: t('title.dataset_actions'),
       });
     },
   },
@@ -161,6 +202,14 @@ const columns = [
       :max-limit-reached="previewState.maxLimitReached"
       @load-more="loadMorePreview"
       @download="handleDownloadFromPreview"
+    />
+
+    <!-- Share Dialog -->
+    <ShareDialog
+      :open="shareState.open"
+      :dataset-id="shareState.datasetId"
+      :dataset-name="shareState.datasetName"
+      @close="closeShareDialog"
     />
   </div>
 </template>

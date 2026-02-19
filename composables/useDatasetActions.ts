@@ -16,6 +16,7 @@ interface ActionItem {
   label: string;
   action: () => void | Promise<void>;
   hasConfirmation?: boolean;
+  disabled?: boolean;
 }
 
 interface FilePreviewData {
@@ -40,8 +41,15 @@ interface PreviewState {
   maxLimitReached?: boolean;
 }
 
+interface ShareState {
+  open: boolean;
+  datasetId: string;
+  datasetName: string;
+}
+
 export const useDatasetActions = () => {
   const api = useApi();
+  const toaster = useToaster();
 
   // Preview dialog state
   const previewState = useState<PreviewState>('dataset-preview', () => ({
@@ -49,6 +57,13 @@ export const useDatasetActions = () => {
     title: '',
     data: null,
     type: 'file',
+  }));
+
+  // Share dialog state
+  const shareState = useState<ShareState>('dataset-share', () => ({
+    open: false,
+    datasetId: '',
+    datasetName: '',
   }));
 
   const showPreview = (
@@ -121,7 +136,12 @@ export const useDatasetActions = () => {
       const response = await fetch(downloadUrl);
 
       if (!response.ok) {
-        throw new Error('Download failed');
+        if (response.status === 404) {
+          toaster.show('error', 'not_found');
+        } else {
+          toaster.show('error', 'download_failed');
+        }
+        return;
       }
 
       // Get filename from Content-Disposition header or use default
@@ -146,8 +166,11 @@ export const useDatasetActions = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      toaster.show('success', 'download_completed');
     } catch (error) {
       console.error('Download failed:', error);
+      toaster.show('error', 'download_failed');
     }
   };
 
@@ -249,38 +272,72 @@ export const useDatasetActions = () => {
   };
 
   /**
+   * Open share dialog for a dataset
+   */
+  const openShareDialog = (datasetId: string, datasetName: string) => {
+    shareState.value = {
+      open: true,
+      datasetId,
+      datasetName,
+    };
+  };
+
+  /**
+   * Close share dialog
+   */
+  const closeShareDialog = () => {
+    shareState.value = {
+      open: false,
+      datasetId: '',
+      datasetName: '',
+    };
+  };
+
+  /**
    * Get actions for a specific dataset based on its type
+   * @param isShared - If true, delete action will be disabled (shared datasets cannot be deleted)
    */
   const getDatasetActions = (
     datasetId: string,
     datasetName: string,
     dataSourceType: number,
     onSuccess?: () => void,
+    isShared: boolean = false,
   ): ActionItem[] => {
     const items: ActionItem[] = [];
+
+    // Share action - available for all dataset types but disabled for shared datasets
+    items.push({
+      key: 'share',
+      label: 'share',
+      action: () => openShareDialog(datasetId, datasetName),
+      disabled: isShared,
+    });
 
     // Stream datasets (Kafka: 10, NATS: 11)
     if (dataSourceType === 10 || dataSourceType === 11) {
       items.push({
-        key: 'delete_message',
-        label: 'delete_message',
+        key: 'delete',
+        label: 'delete',
         hasConfirmation: true,
         action: () => handleStreamDelete(datasetId, onSuccess),
+        disabled: isShared,
       });
     }
     // Database/Table datasets
     else if (dataSourceType === 1) {
       items.push(
         {
-          key: 'preview_table',
-          label: 'preview_table',
+          key: 'preview',
+          label: 'preview',
           action: () => handleTablePreview(datasetId),
         },
         {
-          key: 'delete_table',
-          label: 'delete_table',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleTableDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }
@@ -288,15 +345,16 @@ export const useDatasetActions = () => {
     else if (dataSourceType === 20) {
       items.push(
         {
-          key: 'preview_prometheus',
-          label: 'preview_prometheus',
+          key: 'preview',
+          label: 'preview',
           action: () => handlePrometheusPreview(datasetId),
         },
         {
-          key: 'delete_message',
-          label: 'delete_message',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleStreamDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }
@@ -304,20 +362,21 @@ export const useDatasetActions = () => {
     else {
       items.push(
         {
-          key: 'download_file',
-          label: 'download_file',
+          key: 'download',
+          label: 'download',
           action: () => handleFileDownload(datasetId),
         },
         {
-          key: 'preview_file',
-          label: 'preview_file',
+          key: 'preview',
+          label: 'preview',
           action: () => handleFilePreview(datasetId),
         },
         {
-          key: 'delete_file',
-          label: 'delete_file',
+          key: 'delete',
+          label: 'delete',
           hasConfirmation: true,
           action: () => handleFileDelete(datasetId, onSuccess),
+          disabled: isShared,
         },
       );
     }
@@ -337,5 +396,9 @@ export const useDatasetActions = () => {
     previewState,
     closePreview,
     loadMorePreview,
+    // Share
+    shareState,
+    openShareDialog,
+    closeShareDialog,
   };
 };

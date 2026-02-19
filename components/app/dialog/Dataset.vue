@@ -187,7 +187,7 @@
                   <input
                     ref="fileInputRef"
                     type="file"
-                    accept=".csv,.json"
+                    accept=".csv,.json,.xlsx,.xls"
                     class="hidden"
                     @change="handleFileChange"
                   />
@@ -416,9 +416,25 @@
                         v-bind="componentField"
                         orientation="horizontal"
                       >
-                        <div class="flex items-center space-x-2">
-                          <RadioGroupItem value="existing" />
-                          <FormLabel class="font-normal cursor-pointer">
+                        <div
+                          class="flex items-center space-x-2"
+                          :class="{
+                            'opacity-50 cursor-not-allowed':
+                              brokerSelection === 'new',
+                          }"
+                        >
+                          <RadioGroupItem
+                            value="existing"
+                            :disabled="brokerSelection === 'new'"
+                          />
+                          <FormLabel
+                            class="font-normal"
+                            :class="
+                              brokerSelection === 'new'
+                                ? 'cursor-not-allowed'
+                                : 'cursor-pointer'
+                            "
+                          >
                             Existing Topic
                           </FormLabel>
                         </div>
@@ -430,6 +446,12 @@
                         </div>
                       </RadioGroup>
                     </FormControl>
+                    <p
+                      v-if="brokerSelection === 'new'"
+                      class="text-xs text-muted-foreground"
+                    >
+                      New broker requires a new topic
+                    </p>
                   </FormItem>
                 </FormField>
 
@@ -1126,6 +1148,16 @@ watch(
   (isOpen) => {
     if (!isOpen) {
       resetForm();
+    }
+  },
+);
+
+// When "New Broker" is selected, force "New Topic" selection
+watch(
+  () => sourceSettings.value?.broker_selection,
+  (newValue) => {
+    if (newValue === 'new') {
+      form.setFieldValue('source_settings.topic_selection', 'new');
     }
   },
 );

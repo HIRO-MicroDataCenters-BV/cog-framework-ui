@@ -7,6 +7,7 @@ import { Badge } from '~/components/ui/badge';
 import DropdownAction from '@/components/app/menu/Actions.vue';
 
 const dayjs = useDayjs();
+const { t } = useI18n();
 const { getModels, deleteModel } = useApi();
 const { setPage, page } = useApp();
 const tableRef = ref();
@@ -135,6 +136,7 @@ const columns = [
             },
           },
         ],
+        menuTitle: t('title.model_actions'),
       });
     },
   },
