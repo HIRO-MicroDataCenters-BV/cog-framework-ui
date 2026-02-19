@@ -13,10 +13,16 @@ export default defineI18nConfig(() => ({
           model_added: 'Model successfully added',
           component_uploaded: 'Component successfully uploaded',
           operation_completed: 'Operation completed successfully',
+          dataset_created: 'Dataset created successfully',
+          dataset_deleted: 'Dataset deleted successfully',
+          model_deleted: 'Model deleted successfully',
+          pipeline_deleted: 'Pipeline deleted successfully',
+          download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
           test_connection: 'Connection successful! Table found.',
           test_connection_no_table: 'Connection successful!',
+          share_updated: 'Dataset shared successfully',
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -24,11 +30,13 @@ export default defineI18nConfig(() => ({
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
           connection_error: 'Unable to connect to server',
+          download_failed: 'Download failed',
           unauthorized: 'Unauthorized - please log in',
           forbidden: 'Access denied',
           not_found: 'Resource not found',
           server_error: 'Server error occurred',
           request_failed: 'Request failed',
+          validation_error: 'Validation error - please check your input',
           multiple_inputs_not_allowed:
             'Multiple inputs to one output not allowed',
           multiple_outputs_not_allowed:
@@ -64,8 +72,8 @@ export default defineI18nConfig(() => ({
         },
       },
       general: {
-        main_project_name: 'ACES',
-        project_name: 'Cognitive Engine',
+        main_project_name: 'Cognitive Engine',
+        project_name: '',
       },
       title: {
         datasets: 'Datasets',
@@ -73,6 +81,9 @@ export default defineI18nConfig(() => ({
         pipelines: 'Pipelines',
         platform: 'Platform',
         actions: 'Actions',
+        dataset_actions: 'Dataset Actions',
+        model_actions: 'Model Actions',
+        pipeline_actions: 'Pipeline Actions',
         select_filter: 'Select Filter',
         add_dataset: 'Add Dataset',
         add_model: 'Add Model',
@@ -96,6 +107,10 @@ export default defineI18nConfig(() => ({
         validation: 'Validation',
         serving: 'Serving',
         pipelines: 'Pipelines',
+      },
+      dialog: {
+        add_dataset_description:
+          'Configure and register a new dataset source for your project.',
       },
       description: {
         pipelines:
@@ -160,10 +175,14 @@ export default defineI18nConfig(() => ({
         connection_parameter: 'Connection Parameter',
         dataset_name: 'Dataset Name',
         dataset_description: 'Dataset Description',
-        dataset_type: 'Dataset Type',
+        dataset_type: 'Data Stream Type',
         dataset_source_type: 'Dataset Source Type',
         file_name: 'File Name',
         file_path: 'File Path',
+        file_size: 'File Size',
+        content_type: 'Content Type',
+        lines: 'Lines',
+        rows_remaining: 'rows remaining',
         register_date: 'Added',
         last_modified_time: 'Modified',
         file: 'File',
@@ -221,6 +240,8 @@ export default defineI18nConfig(() => ({
         regression: 'Regression',
         clustering: 'Clustering',
         general: 'General',
+        shared: 'Shared',
+        shared_by: 'Shared by',
         test_request_data: 'Request Data',
         test_report_config: 'Report Config',
         test_connection: 'Test Connection',
@@ -232,7 +253,7 @@ export default defineI18nConfig(() => ({
       },
       placeholder: {
         select_parameter: 'Select Parameter',
-        dataset_type: 'Select Dataset Type',
+        dataset_type: 'Select Data Stream Type',
         name: 'Enter a name',
         version: 'Version',
         search: 'Search...',
@@ -290,6 +311,7 @@ export default defineI18nConfig(() => ({
         save_and_run: 'Save & Run',
         cancel: 'Cancel',
         close: 'Close',
+        load_more: 'Load More',
         confirm: 'Confirm',
         add: 'Add',
         remove: 'Remove',
@@ -300,14 +322,9 @@ export default defineI18nConfig(() => ({
         delete_pipeline: 'Delete Pipeline',
         delete_topic: 'Delete Topic',
         delete_broker: 'Delete Broker',
-        delete_message: 'Delete Message',
-        delete_table: 'Delete Table',
-        delete_file: 'Delete File',
         add_datasets: 'Add Dataset',
-        download_file: 'Download File',
-        preview_file: 'Preview File',
-        preview_table: 'Preview Table',
-        preview_prometheus: 'Preview Metrics',
+        download: 'Download',
+        preview: 'Preview',
         delete_model: 'Delete Model',
         add_models: 'Add Model',
         add_training_builder: 'Add Training Builder',
@@ -320,6 +337,22 @@ export default defineI18nConfig(() => ({
         logout: 'Log out',
         clear_all: 'Clear all',
         clear_filters: 'Clear filters',
+        share: 'Share',
+      },
+      share: {
+        title: 'Share Dataset',
+        description: 'Share "{name}" with other users',
+        add_people: 'Add people',
+        select_user: 'Select user',
+        search_placeholder: 'Search by name or email...',
+        permission_view: 'View',
+        permission_edit: 'Edit',
+        shared_with: 'Shared with',
+        people: 'people',
+        no_users_found: 'No users found',
+        no_shared_users: 'Not shared with anyone yet',
+        copy_link: 'Copy link to dataset',
+        save_changes: 'Save',
       },
       stat: {
         total: 'Total',
@@ -332,6 +365,10 @@ export default defineI18nConfig(() => ({
           dataset_added: 'Dataset {name} successfully added',
           model_added: 'Model successfully added',
           operation_completed: 'Operation completed successfully',
+          dataset_deleted: 'Dataset deleted successfully',
+          model_deleted: 'Model deleted successfully',
+          pipeline_deleted: 'Pipeline deleted successfully',
+          share_updated: 'Sharing settings updated',
           data_saved: 'Data saved successfully',
           test_connection: 'Connection successful! Table found.',
           test_connection_no_table: 'Connection successful!',
@@ -341,6 +378,7 @@ export default defineI18nConfig(() => ({
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           operation_failed: 'Operation failed',
+          share_failed: 'Failed to update sharing settings',
           connection_error: 'Connection error',
           connection_failed: 'Connection failed: {error}',
           multiple_inputs_not_allowed:
@@ -362,6 +400,7 @@ export default defineI18nConfig(() => ({
       },
       hint: {
         no_results: 'No results found',
+        no_results_description: 'Try adjusting your search or filters',
         of: 'of',
         rows_selected: 'rows selected',
         rows_per_page: 'Rows per page',
@@ -373,11 +412,17 @@ export default defineI18nConfig(() => ({
         by: 'by',
         filter_by: 'Filter by',
         db_url_postgresql:
-          'Format: postgresql://user:password@host:port/database',
-        db_url_mysql: 'Format: mysql://user:password@host:port/database',
+          "Format: postgresql://user:password{'@'}host:port/database",
+        db_url_mysql: "Format: mysql://user:password{'@'}host:port/database",
         db_url_sqlite: 'Format: sqlite:///path/to/database.db',
-        db_url_mongodb: 'Format: mongodb://user:password@host:port/database',
+        db_url_mongodb:
+          "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
+        preview_truncated:
+          'Preview is truncated. Download the file to see the full content.',
+        preview_max_limit:
+          'Maximum preview limit reached. Download the file to see the full content.',
+        no_data: 'No data available',
       },
       menu: {
         upload: 'Upload',
@@ -453,6 +498,10 @@ export default defineI18nConfig(() => ({
       zodI18n: {
         validations: {
           ip: '',
+        },
+        types: {
+          array: 'array',
+          object: 'object',
         },
         errors: {
           invalid_type_received_undefined: 'This field is required',
@@ -621,6 +670,7 @@ export default defineI18nConfig(() => ({
         not_found: 'Resource not found',
         server_error: 'Server error occurred',
         request_failed: 'Request failed',
+        validation_error: 'Validation error - please check your input',
         multiple_inputs_not_allowed:
           'Multiple inputs to one output not allowed',
         multiple_outputs_not_allowed:

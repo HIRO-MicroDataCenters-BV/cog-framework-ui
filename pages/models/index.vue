@@ -7,6 +7,7 @@ import { Badge } from '~/components/ui/badge';
 import DropdownAction from '@/components/app/menu/Actions.vue';
 
 const dayjs = useDayjs();
+const { t } = useI18n();
 const { getModels, deleteModel } = useApi();
 const { setPage, page } = useApp();
 const tableRef = ref();
@@ -22,6 +23,7 @@ const urlOrigin = window.location.origin;
 const columns = [
   {
     id: 'name',
+    size: 250,
     cell: ({ row }: { row: TableRowType }) =>
       h(
         'a',
@@ -41,19 +43,32 @@ const columns = [
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
       return h(
-        CopyPaste,
-        {
-          hasCopy: true,
-          copyText: idValue,
-        },
-        {
-          default: () => shortenedId,
-        },
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  CopyPaste,
+                  {
+                    hasCopy: true,
+                    copyText: idValue,
+                  },
+                  {
+                    default: () => shortenedId,
+                  },
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => idValue),
+            ],
+          }),
       );
     },
   },
   {
     id: 'version',
+    size: 100,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('version').toString();
       return h(
@@ -67,12 +82,13 @@ const columns = [
   },
   {
     id: 'type',
+    size: 120,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('type');
       return h(
         Badge,
         {
-          type: 'status',
+          type: 'model_type',
           value,
         },
         () => [],
@@ -81,38 +97,27 @@ const columns = [
   },
   {
     id: 'register_user_id',
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => row.getValue('register_user_id'),
   },
   {
     id: 'register_date',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('register_date')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('register_date')).format('DD.MM.YYYY'),
-      ),
-  },
-  {
-    id: 'last_modified_time',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('last_modified_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD.MM.YYYY'),
-      ),
+    size: 140,
+    cell: ({ row }: { row: TableRowType }) => {
+      const dateTime = row.getValue<string>('register_date');
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(dateTime).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(dateTime).format('HH:mm:ss'),
+        ),
+      ]);
+    },
   },
   {
     id: 'actions',
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('id');
@@ -131,6 +136,7 @@ const columns = [
             },
           },
         ],
+        menuTitle: t('title.model_actions'),
       });
     },
   },
@@ -145,7 +151,9 @@ const tabs = uselistTabs().value.model_management;
     :columns="columns"
     :data-source="getModels"
     :tabs="tabs"
-    :sortable-columns="['last_modified_time', 'register_date']"
-    class="flex-grow"
+    :sortable-columns="['register_date']"
+    :filterable-columns="['type']"
+    group-by="name"
+    class="grow"
   />
 </template>

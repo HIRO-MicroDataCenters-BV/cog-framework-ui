@@ -93,7 +93,7 @@ export const getDatasetFormSteps = (
               name: 'source_settings.dataset_file',
               label: t('label.dataset_file'),
               placeholder: t('placeholder.browse'),
-              accept: '.csv,.json',
+              accept: '.csv,.json,.xlsx,.xls',
               condition: {
                 field: 'type',
                 operator: 'eq',

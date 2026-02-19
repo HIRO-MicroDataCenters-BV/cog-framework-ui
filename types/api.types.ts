@@ -215,3 +215,20 @@ export interface InferenceServiceParams {
   /** Container name (optional) */
   container_name?: string;
 }
+
+/**
+ * Headers API response data
+ */
+export interface HeadersData {
+  'kubeflow-userid': string;
+  [key: string]: string;
+}
+
+/**
+ * Headers API response
+ */
+export interface HeadersResponse {
+  status_code: number;
+  message: string;
+  data: HeadersData;
+}

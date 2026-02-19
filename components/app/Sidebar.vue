@@ -13,6 +13,10 @@ const baseUrl = config.app.baseURL;
 const route = useRoute();
 const query = computed(() => route.query);
 
+const isActive = (url: string) => {
+  return route.path.startsWith(`/${url}`);
+};
+
 const isIframe = useStorage(
   'is_iframe',
   query.value.is_iframe === '1',
@@ -61,13 +65,18 @@ setOpen(!isIframe.value);
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
+    <div class="mx-0 border-t border-border" />
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel>{{ t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
           <template v-for="item in menu.main" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
-              <SidebarMenuButton as-child>
+              <SidebarMenuButton
+                as-child
+                :is-active="isActive(item.url)"
+                :tooltip="item.title"
+              >
                 <NuxtLink :to="`/${item.url}`">
                   <span class="text-lg">
                     <Icon :name="item.icon" />
@@ -80,12 +89,15 @@ setOpen(!isIframe.value);
             <Collapsible
               v-else
               as-child
-              :default-open="item.isActive"
+              :default-open="isActive(item.url)"
               class="group/collapsible"
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
-                  <SidebarMenuButton :tooltip="item.title">
+                  <SidebarMenuButton
+                    :tooltip="item.title"
+                    :is-active="isActive(item.url)"
+                  >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
                         <span class="text-lg mr-2">
@@ -117,6 +129,7 @@ setOpen(!isIframe.value);
         </SidebarMenu>
       </SidebarGroup>
     </SidebarContent>
+    <div class="mx-0 border-t border-border" />
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem v-for="item in menu.footer" :key="item.key">

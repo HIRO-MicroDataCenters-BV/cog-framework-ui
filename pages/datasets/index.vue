@@ -3,18 +3,33 @@ import type { TableRowType } from '@/types/row.types';
 
 import DropdownAction from '@/components/app/menu/Actions.vue';
 import PreviewDialog from '@/components/app/dialog/Preview.vue';
+import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
+const { t } = useI18n();
 const { setPage, page } = useApp();
+const { user: currentUser } = useCurrentUser();
 
 const tableRef = ref();
 
 const { getDatasets } = useApi();
-const { previewState } = useDatasetActions();
+const {
+  previewState,
+  loadMorePreview,
+  handleFileDownload,
+  shareState,
+  closeShareDialog,
+} = useDatasetActions();
+
+const handleDownloadFromPreview = () => {
+  if (previewState.value.datasetId) {
+    handleFileDownload(previewState.value.datasetId);
+  }
+};
 
 setPage({
   section: 'datasets',
@@ -29,38 +44,79 @@ const tabs = uselistTabs().value.dataset_management;
 const columns = [
   {
     id: 'dataset_name',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'a',
-        {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
-        },
-        row.getValue('dataset_name'),
-      ),
+    size: 250,
+    cell: ({ row }: { row: TableRowType }) => {
+      const isShared = row.original.user_id !== currentUser.value?.email;
+      return h('div', { class: 'relative inline-flex items-center' }, [
+        h(
+          'a',
+          {
+            href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          },
+          row.getValue('dataset_name'),
+        ),
+        isShared
+          ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+              h(resolveComponent('Tooltip'), null, {
+                default: () => [
+                  h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                    h(
+                      'span',
+                      {
+                        class:
+                          'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
+                      },
+                      'S',
+                    ),
+                  ),
+                  h(
+                    resolveComponent('TooltipContent'),
+                    { side: 'right' },
+                    () => `${t('label.shared_by')} ${row.original.user_id}`,
+                  ),
+                ],
+              }),
+            )
+          : null,
+      ]);
+    },
   },
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 180,
-    minSize: 180,
-    maxSize: 180,
+    size: 200,
+    minSize: 200,
+    maxSize: 200,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
       return h(
-        CopyPaste,
-        {
-          hasCopy: true,
-          copyText: idValue,
-        },
-        {
-          default: () => shortenedId,
-        },
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  CopyPaste,
+                  {
+                    hasCopy: true,
+                    copyText: idValue,
+                  },
+                  {
+                    default: () => shortenedId,
+                  },
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => idValue),
+            ],
+          }),
       );
     },
   },
   {
     id: 'data_source_type',
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
       return h(
@@ -75,38 +131,27 @@ const columns = [
   },
   {
     id: 'user_id',
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
     id: 'register_date_time',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('register_date_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('register_date_time')).format('DD MMM YYYY'),
-      ),
-  },
-  {
-    id: 'last_modified_time',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
-        'span',
-        {
-          class: 'font-mono',
-          title: dayjs(row.getValue<string>('last_modified_time')).format(
-            'DD MMM YYYY HH:mm:ss',
-          ),
-        },
-        dayjs(row.getValue<string>('last_modified_time')).format('DD MMM YYYY'),
-      ),
+    size: 140,
+    cell: ({ row }: { row: TableRowType }) => {
+      const dateTime = row.getValue<string>('register_date_time');
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(dateTime).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(dateTime).format('HH:mm:ss'),
+        ),
+      ]);
+    },
   },
   {
     id: 'actions',
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();
@@ -114,15 +159,21 @@ const columns = [
       const id = row.getValue<string>('id');
       const datasetName = row.getValue<string>('dataset_name');
       const dataSourceType = parseInt(row.getValue<string>('data_source_type'));
+      const isShared = row.original.user_id !== currentUser.value?.email;
 
-      const items = getDatasetActions(id, datasetName, dataSourceType, () =>
-        tableRef.value.fetchData(),
+      const items = getDatasetActions(
+        id,
+        datasetName,
+        dataSourceType,
+        () => tableRef.value.fetchData(),
+        isShared,
       );
 
       return h(DropdownAction, {
         title: datasetName,
         id,
         items,
+        menuTitle: t('title.dataset_actions'),
       });
     },
   },
@@ -136,9 +187,9 @@ const columns = [
       :columns="columns"
       :data-source="getDatasets"
       :tabs="tabs"
-      :sortable-columns="['last_modified_time']"
+      :sortable-columns="['register_date_time']"
       :filterable-columns="['data_source_type']"
-      class="flex-grow"
+      class="grow"
     />
 
     <!-- Preview Dialog -->
@@ -147,6 +198,18 @@ const columns = [
       :title="previewState.title"
       :data="previewState.data"
       :type="previewState.type"
+      :loading="previewState.loading"
+      :max-limit-reached="previewState.maxLimitReached"
+      @load-more="loadMorePreview"
+      @download="handleDownloadFromPreview"
+    />
+
+    <!-- Share Dialog -->
+    <ShareDialog
+      :open="shareState.open"
+      :dataset-id="shareState.datasetId"
+      :dataset-name="shareState.datasetName"
+      @close="closeShareDialog"
     />
   </div>
 </template>

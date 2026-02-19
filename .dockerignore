@@ -33,5 +33,6 @@
 **/values.dev.yaml
 **/build
 **/dist
+.claude
 LICENSE
 README.md

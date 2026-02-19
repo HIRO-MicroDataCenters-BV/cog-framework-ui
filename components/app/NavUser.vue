@@ -2,6 +2,25 @@
 const mock = useMock();
 const menu = uselistMenus();
 const { t } = useI18n();
+const { user: currentUser, fetchCurrentUser } = useCurrentUser();
+
+// Track avatar image load failure so we show initials fallback instead of broken icon
+const avatarError = ref(false);
+watch(
+  () => currentUser.value?.avatarUrl ?? mock.value.user?.avatar_url,
+  () => {
+    avatarError.value = false;
+  },
+);
+
+const onAvatarStatus = (status: 'idle' | 'loading' | 'loaded' | 'error') => {
+  if (status === 'error') avatarError.value = true;
+};
+
+// Fetch user on mount
+onMounted(() => {
+  fetchCurrentUser();
+});
 
 // Get initials from user name
 const getInitials = (name: string) => {
@@ -13,9 +32,25 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-const user = computed(() => mock.value.user);
+// Use real user data if available, fallback to mock
+const user = computed(() => {
+  if (currentUser.value) {
+    return {
+      full_name: currentUser.value.name,
+      email: currentUser.value.email,
+      avatar_url: currentUser.value.avatarUrl || '',
+      job_title: '',
+    };
+  }
+  return mock.value.user;
+});
 const userInitials = computed(() => getInitials(user.value.full_name));
 const userMenuItems = computed(() => menu.value.user);
+
+// Only show avatar image when we have a URL and it hasn't failed to load
+const showAvatarImage = computed(() =>
+  Boolean(user.value.avatar_url && !avatarError.value),
+);
 </script>
 
 <template>
@@ -28,7 +63,12 @@ const userMenuItems = computed(() => menu.value.user);
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <Avatar class="h-8 w-8 rounded-lg">
-              <AvatarImage :src="user.avatar_url" :alt="user.full_name" />
+              <AvatarImage
+                v-if="showAvatarImage"
+                :src="user.avatar_url"
+                :alt="user.full_name"
+                @loading-status-change="onAvatarStatus"
+              />
               <AvatarFallback
                 class="rounded-lg bg-primary text-primary-foreground"
               >
@@ -53,7 +93,12 @@ const userMenuItems = computed(() => menu.value.user);
           <DropdownMenuLabel class="p-0 font-normal">
             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <Avatar class="h-8 w-8 rounded-lg">
-                <AvatarImage :src="user.avatar_url" :alt="user.full_name" />
+                <AvatarImage
+                  v-if="showAvatarImage"
+                  :src="user.avatar_url"
+                  :alt="user.full_name"
+                  @loading-status-change="onAvatarStatus"
+                />
                 <AvatarFallback
                   class="rounded-lg bg-primary text-primary-foreground"
                 >

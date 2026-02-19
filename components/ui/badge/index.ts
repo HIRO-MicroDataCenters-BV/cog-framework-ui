@@ -27,6 +27,16 @@ export const badgeVariants = cva(
         database: 'border-transparent bg-purple-100 text-purple-600',
         stream: 'border-transparent bg-orange-100 text-orange-600',
         time_series: 'border-transparent bg-green-100 text-green-600',
+        sklearn:
+          'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300',
+        pytorch:
+          'border-transparent bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300',
+        tensorflow:
+          'border-transparent bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-300',
+        xgboost:
+          'border-transparent bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
+        keras:
+          'border-transparent bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300',
       },
     },
     defaultVariants: {
@@ -89,6 +99,38 @@ export const badgeConfig = {
     id: {
       variant: 'outline' as const,
       icon: null,
+      animate: false,
+    },
+  },
+  model_type: {
+    sklearn: {
+      variant: 'sklearn' as const,
+      icon: 'File',
+      animate: false,
+    },
+    pytorch: {
+      variant: 'pytorch' as const,
+      icon: 'File',
+      animate: false,
+    },
+    tensorflow: {
+      variant: 'tensorflow' as const,
+      icon: 'File',
+      animate: false,
+    },
+    xgboost: {
+      variant: 'xgboost' as const,
+      icon: 'File',
+      animate: false,
+    },
+    xcboost: {
+      variant: 'xgboost' as const,
+      icon: 'File',
+      animate: false,
+    },
+    keras: {
+      variant: 'keras' as const,
+      icon: 'File',
       animate: false,
     },
   },

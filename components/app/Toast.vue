@@ -1,5 +1,5 @@
 <template>
-  <Toaster position="top-right" expand rich-colors />
+  <Toaster position="bottom-right" expand rich-colors close-button />
 </template>
 
 <script lang="ts" setup>

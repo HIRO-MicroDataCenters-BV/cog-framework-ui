@@ -97,6 +97,10 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => [],
   },
+  groupBy: {
+    type: String as PropType<string | null>,
+    default: null,
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -163,13 +167,41 @@ const getFilterColumnName = (columnId: string) => {
   return columnId.includes('_') ? columnId.split('_')[1] : columnId;
 };
 
+// always have search query
 const getAutoColumn = (searchValue: string): string => {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRegex.test(searchValue)) {
-    return 'id';
+  // const uuidRegex =
+  //   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // if (uuidRegex.test(searchValue)) {
+  //   return 'id';
+  // }
+  return 'search';
+};
+
+const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
+  const groups = new Map<string, DataItem[]>();
+  for (const item of items) {
+    const key = String(item[columnId] ?? '');
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(item);
   }
-  return 'name';
+
+  const result: DataItem[] = [];
+  for (const [, groupItems] of groups) {
+    if (groupItems.length === 1) {
+      result.push(groupItems[0]);
+    } else {
+      // First item is the parent (backend usually returns sorted by most recent)
+      const parent = {
+        ...groupItems[0],
+        subRows: groupItems.slice(1),
+        _versionCount: groupItems.length,
+      };
+      result.push(parent as DataItem);
+    }
+  }
+  return result;
 };
 
 const fetchData = async () => {
@@ -206,7 +238,10 @@ const fetchData = async () => {
     if (response && 'data' in response && 'pagination' in response) {
       const tableData = response.data;
       const pagination = response.pagination;
-      data.value = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+      const rawData = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+      data.value = props.groupBy
+        ? groupDataByColumn(rawData, props.groupBy)
+        : rawData;
 
       if (pagination) {
         if (route.query.limit) {
@@ -313,6 +348,9 @@ const getValueLabel = (columnId: string, value: string | number): string => {
     if (typeName) {
       return t(`label.${typeName}`);
     }
+  }
+  if (columnId === 'type' && typeof value === 'string') {
+    return value;
   }
   return String(value);
 };
@@ -452,6 +490,9 @@ const table = useVueTable({
   get columns() {
     return columns.value;
   },
+  getSubRows: props.groupBy
+    ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
+    : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -724,12 +765,12 @@ defineExpose({ fetchData });
 </script>
 
 <template>
-  <div :class="['w-full flex flex-col relative h-[100svh]', props.class]">
-    <div class="pl-4 p-4">
+  <div :class="['w-full flex flex-col relative h-svh', props.class]">
+    <div class="pl-4 p-3">
       <div>
-        <div class="pb-4 flex justify-between gap-2">
+        <div class="pb-2 flex justify-between gap-2">
           <div>
-            <h2 class="text-2xl font-medium flex items-center gap-2">
+            <h2 class="text-xl font-medium flex items-center gap-2">
               <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
               {{ t(`title.${page.section}`) }} ({{ totalItems || 0 }})
               <Button
@@ -761,10 +802,10 @@ defineExpose({ fetchData });
             </div>
 
             <div class="flex gap-6 items-center">
-              <Button @click="() => add()"
-                ><Icon name="lucide:plus"></Icon
-                >{{ t(`action.add_${page.section}`) }}</Button
-              >
+              <Button class="cursor-pointer" @click="() => add()">
+                <Icon name="lucide:plus"></Icon>
+                {{ t(`action.add_${page.section}`) }}
+              </Button>
             </div>
           </div>
         </div>
@@ -798,9 +839,9 @@ defineExpose({ fetchData });
       -->
     </div>
     <div class="overflow-x-auto w-full flex-1">
-      <table class="border-b w-full border-collapse">
+      <table class="border-b w-full border-collapse table-fixed">
         <TableHeader
-          class="sticky top-0 bg-white dark:bg-gray-800 border-b border-t bg-gray-50 dark:bg-gray-900 border-gray-200 z-10 shadow-xs"
+          class="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b border-t border-gray-200 z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
@@ -809,12 +850,11 @@ defineExpose({ fetchData });
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              :class="[
-                'border-l border-r border-border',
-                header.column.id === 'id'
-                  ? 'w-[180px] min-w-[180px] max-w-[180px]'
-                  : '',
-              ]"
+              :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
+              :style="{
+                width:
+                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+              }"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -832,25 +872,89 @@ defineExpose({ fetchData });
             >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell
-                  v-for="cell in row.getVisibleCells()"
+                  v-for="(cell, cellIndex) in row.getVisibleCells()"
                   :key="cell.id"
-                  :class="[
-                    'border-l border-r border-border py-2 px-4',
-                    cell.column.id === 'id'
-                      ? 'w-[180px] min-w-[180px] max-w-[180px]'
-                      : '',
-                  ]"
+                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  :style="{
+                    width:
+                      cell.column.getSize() !== 150
+                        ? `${cell.column.getSize()}px`
+                        : 'auto',
+                  }"
                 >
+                  <div
+                    v-if="cellIndex === 0 && groupBy && row.getCanExpand()"
+                    class="flex items-center gap-1.5"
+                  >
+                    <button
+                      class="flex items-center justify-center size-5 rounded hover:bg-muted transition-colors cursor-pointer shrink-0"
+                      @click="row.getToggleExpandedHandler()()"
+                    >
+                      <Icon
+                        name="lucide:chevron-right"
+                        :class="[
+                          'size-3.5 transition-transform duration-200',
+                          row.getIsExpanded() && 'rotate-90',
+                        ]"
+                      />
+                    </button>
+                    <FlexRender
+                      :render="cell.column.columnDef.cell"
+                      :props="cell.getContext()"
+                    />
+                    <span
+                      v-if="(row.original as any)._versionCount > 1"
+                      class="text-xs text-muted-foreground ml-1"
+                    >
+                      ({{ (row.original as any)._versionCount }})
+                    </span>
+                  </div>
                   <FlexRender
+                    v-else
                     :render="cell.column.columnDef.cell"
                     :props="cell.getContext()"
                   />
                 </TableCell>
               </TableRow>
-              <TableRow v-if="row.getIsExpanded()">
+              <!-- Sub-rows when expanded -->
+              <template
+                v-if="groupBy && row.getIsExpanded() && row.subRows?.length"
+              >
+                <TableRow
+                  v-for="subRow in row.subRows"
+                  :key="subRow.id"
+                  class="bg-muted/20"
+                >
+                  <TableCell
+                    v-for="(cell, cellIndex) in subRow.getVisibleCells()"
+                    :key="cell.id"
+                    class="border-l border-r border-border py-1 px-3 text-sm"
+                    :style="{
+                      width:
+                        cell.column.getSize() !== 150
+                          ? `${cell.column.getSize()}px`
+                          : 'auto',
+                    }"
+                  >
+                    <div v-if="cellIndex === 0" class="pl-6">
+                      <FlexRender
+                        :render="cell.column.columnDef.cell"
+                        :props="cell.getContext()"
+                      />
+                    </div>
+                    <FlexRender
+                      v-else
+                      :render="cell.column.columnDef.cell"
+                      :props="cell.getContext()"
+                    />
+                  </TableCell>
+                </TableRow>
+              </template>
+              <!-- Default expanded row (non-grouped) -->
+              <TableRow v-if="!groupBy && row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
-                  class="border-l border-r border-border py-2 px-4"
+                  class="border-l border-r border-border py-1 px-3 text-sm"
                 >
                   {{ JSON.stringify(row.original) }}
                 </TableCell>
@@ -861,9 +965,26 @@ defineExpose({ fetchData });
           <TableRow v-else>
             <TableCell
               :colspan="columns.length"
-              class="h-24 text-center border-l border-r border-border"
+              class="h-64 border-l border-r border-border"
             >
-              {{ t('hint.no_results') }}
+              <div class="flex flex-col items-center justify-center gap-3 py-8">
+                <div
+                  class="flex items-center justify-center w-16 h-16 rounded-full bg-muted/50"
+                >
+                  <Icon
+                    name="lucide:inbox"
+                    class="w-8 h-8 text-muted-foreground/60"
+                  />
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <p class="text-base font-medium text-foreground">
+                    {{ t('hint.no_results') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ t('hint.no_results_description') }}
+                  </p>
+                </div>
+              </div>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -871,7 +992,7 @@ defineExpose({ fetchData });
     </div>
 
     <div
-      class="py-4 px-6 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+      class="py-2 px-4 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">

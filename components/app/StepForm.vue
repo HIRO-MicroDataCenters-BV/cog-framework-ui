@@ -145,7 +145,7 @@
                           <FormControl>
                             <Input
                               type="file"
-                              :accept="field.accept || '.csv,.json'"
+                              :accept="field.accept || '.csv,.json,.xlsx,.xls'"
                               :placeholder="field.placeholder || ''"
                               @change="
                                 (e: Event) => handleFileChange(e, field.name)
@@ -304,7 +304,7 @@ const props = withDefaults(defineProps<StepFormProps>(), {
 const emit = defineEmits<{
   'on-action': [action: ActionType, values: FormValues];
   'on-submit': [values: FormValues];
-  'on-step-change': [step: number, actions: ActionType[]];
+  'on-step-change': [step: number, actions: ActionType[], values: FormValues];
   'update-actions': [actions: ActionType[]];
   'update-step-validity': [isValid: boolean];
   'update-next-enabled': [enabled: boolean];
@@ -502,10 +502,20 @@ const handleAction = async (action: ActionType) => {
       return;
     }
     currentStep.value++;
-    emit('on-step-change', currentStep.value, currentActions.value);
+    emit(
+      'on-step-change',
+      currentStep.value,
+      currentActions.value,
+      form.values,
+    );
   } else if (action === 'back' && currentStep.value > 0) {
     currentStep.value--;
-    emit('on-step-change', currentStep.value, currentActions.value);
+    emit(
+      'on-step-change',
+      currentStep.value,
+      currentActions.value,
+      form.values,
+    );
   }
   if (action === 'submit') {
     onSubmit();
@@ -556,7 +566,7 @@ watch(
     nextTick(() => {
       checkStepValidity();
     });
-    emit('on-step-change', value, currentActions.value);
+    emit('on-step-change', value, currentActions.value, form.values);
   },
   { immediate: true },
 );

@@ -3,6 +3,13 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 
+/**
+ * Mock API network delay in milliseconds
+ * Simulates realistic API response time for testing loading states
+ * Set to 0 to disable delay
+ */
+const MOCK_API_DELAY_MS = 2000;
+
 export const useMock = () => {
   const { t } = useI18n();
   const config = useRuntimeConfig();
@@ -525,6 +532,24 @@ export const useApiWithMock = () => {
   const baseUrl = config.public.apiBase;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
+  const { setPage, page } = useApp();
+
+  // Simulate network delay for mock data
+  const mockDelay = async (ms: number = MOCK_API_DELAY_MS) => {
+    // Set loading state to true before delay
+    setPage({
+      ...page.value,
+      isLoading: true,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, ms));
+
+    // Set loading state to false after delay
+    setPage({
+      ...page.value,
+      isLoading: false,
+    });
+  };
 
   const getHeaders = (isFormData: boolean = false) => {
     const headers: { 'Content-Type'?: string; Authorization?: string } = {};
@@ -541,10 +566,11 @@ export const useApiWithMock = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
-    options?: { showToast?: boolean },
+    options?: { showToast?: boolean; successMessage?: string },
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast;
+    const customSuccessMessage = options?.successMessage;
     const toaster = useToaster();
 
     const opts: RequestInit = {
@@ -567,7 +593,8 @@ export const useApiWithMock = () => {
             return null;
         }
       } else {
-        const successMessage = data.message || 'operation_completed';
+        const successMessage =
+          customSuccessMessage || data.message || 'operation_completed';
         if (showToast) toaster.show('success', successMessage);
       }
 
@@ -590,13 +617,56 @@ export const useApiWithMock = () => {
   return {
     getDatasets: async (params = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         // Import data from JSON file
         const datasetsJson = await import('~/mocks/get.datasets.json');
+
+        let filteredData = [...datasetsJson.data];
+
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter((dataset) =>
+            dataset.id.toLowerCase().includes(searchParams.id.toLowerCase()),
+          );
+        }
+
+        // Filter by name or dataset_name
+        if (searchParams.name) {
+          filteredData = filteredData.filter((dataset) =>
+            dataset.dataset_name
+              .toLowerCase()
+              .includes(searchParams.name.toLowerCase()),
+          );
+        }
+
+        if (searchParams.dataset_name) {
+          filteredData = filteredData.filter((dataset) =>
+            dataset.dataset_name
+              .toLowerCase()
+              .includes(searchParams.dataset_name.toLowerCase()),
+          );
+        }
+
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
         return Promise.resolve({
           status_code: datasetsJson.status_code,
           message: datasetsJson.message,
-          data: datasetsJson.data,
-          pagination: datasetsJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       const q = new URLSearchParams(
@@ -607,12 +677,45 @@ export const useApiWithMock = () => {
 
     getModels: async (params = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         const modelsJson = await import('~/mocks/get.models.json');
+
+        let filteredData = [...modelsJson.data];
+
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter((model) =>
+            model.id.toLowerCase().includes(searchParams.id.toLowerCase()),
+          );
+        }
+
+        // Filter by name
+        if (searchParams.name) {
+          filteredData = filteredData.filter((model) =>
+            model.name.toLowerCase().includes(searchParams.name.toLowerCase()),
+          );
+        }
+
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
         return Promise.resolve({
           status_code: modelsJson.status_code,
           message: modelsJson.message,
-          data: modelsJson.data,
-          pagination: modelsJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       const q = new URLSearchParams(
@@ -621,8 +724,9 @@ export const useApiWithMock = () => {
       return request(`/models?${q}`);
     },
 
-    getModelDetails: (params: { id?: number; name?: string } = {}) => {
+    getModelDetails: async (params: { id?: number; name?: string } = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         const model = mock.value.models.find((m) => m.id === params.id);
         return Promise.resolve({
           status_code: 200,
@@ -639,61 +743,111 @@ export const useApiWithMock = () => {
       return null;
     },
 
-    getPipelineRunsList: async () => {
+    getPipelineRunsList: async (params = {}) => {
       if (mock.value.enabled) {
+        await mockDelay();
         const pipelinesJson = await import('~/mocks/get.pipelines.json');
+
+        let filteredData = [...pipelinesJson.data];
+
+        // Apply search filters
+        const searchParams = params as Record<string, string>;
+
+        // Filter by ID
+        if (searchParams.id) {
+          filteredData = filteredData.filter((pipeline) =>
+            pipeline.run_id
+              .toLowerCase()
+              .includes(searchParams.id.toLowerCase()),
+          );
+        }
+
+        // Filter by name
+        if (searchParams.name) {
+          filteredData = filteredData.filter((pipeline) =>
+            pipeline.run_name
+              .toLowerCase()
+              .includes(searchParams.name.toLowerCase()),
+          );
+        }
+
+        // Handle pagination
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
         return Promise.resolve({
           status_code: pipelinesJson.status_code,
           message: pipelinesJson.message,
-          data: pipelinesJson.data,
-          pagination: pipelinesJson.pagination,
+          data: paginatedData,
+          pagination: {
+            total: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
         });
       }
       return request(`/pipelines/runs`);
     },
 
-    deleteDatasetFile: (id: number | string) => {
+    deleteDatasetFile: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset file deleted successfully',
         });
       }
-      return request(`/datasets/file/${id}`, 'DELETE');
+      return request(`/datasets/file/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
-    deleteDatasetBroker: (id: number | string) => {
+    deleteDatasetBroker: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset broker deleted successfully',
         });
       }
-      return request(`/datasets/broker/${id}`, 'DELETE');
+      return request(`/datasets/broker/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
-    deleteDatasetTopic: (id: number | string) => {
+    deleteDatasetTopic: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset topic deleted successfully',
         });
       }
-      return request(`/datasets/topic/${id}`, 'DELETE');
+      return request(`/datasets/topic/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
-    deleteDatasetMessage: (id: number | string) => {
+    deleteDatasetMessage: async (id: number | string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           success: true,
           message: 'Dataset message deleted successfully',
         });
       }
-      return request(`/datasets/message/${id}`, 'DELETE');
+      return request(`/datasets/message/${id}`, 'DELETE', undefined, {
+        successMessage: 'dataset_deleted',
+      });
     },
 
-    getBrokerDetails: () => {
+    getBrokerDetails: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           status_code: 200,
           message: 'Mock broker details',
@@ -703,8 +857,9 @@ export const useApiWithMock = () => {
       return request(`/broker/details`);
     },
 
-    getTopicDetails: () => {
+    getTopicDetails: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         return Promise.resolve({
           status_code: 200,
           message: 'Mock topic details',
@@ -717,6 +872,7 @@ export const useApiWithMock = () => {
     getPipelineRunFlow: async (id: string) => {
       console.log('getPipelineRunFlow', id, mock.value.enabled);
       if (mock.value.enabled) {
+        await mockDelay();
         // Return LSTM pipeline mock data if ID matches
         if (id === 'af31bfc5-0bb9-4520-86e3-30009ff7f805') {
           const lstmPipeline = await import(
@@ -772,6 +928,7 @@ export const useApiWithMock = () => {
 
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       if (mock.value.enabled) {
+        await mockDelay();
         // Return LSTM pipeline version if IDs match
         if (
           pipelineId === 'eaca6329-63d9-4306-a135-d5ba0ddab377' &&
@@ -794,6 +951,7 @@ export const useApiWithMock = () => {
 
     getTrainingBuilderComponents: async () => {
       if (mock.value.enabled) {
+        await mockDelay();
         const componentsJson = await import(
           '~/mocks/get.training-builder-components.json'
         );
@@ -804,6 +962,20 @@ export const useApiWithMock = () => {
         });
       }
       return request(`/training-builder-components`);
+    },
+
+    getHeaders: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Mock headers data',
+          data: {
+            'kubeflow-userid': mock.value.user.email,
+          },
+        });
+      }
+      return request(`/headers`);
     },
   };
 };

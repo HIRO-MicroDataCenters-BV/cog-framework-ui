@@ -15,7 +15,7 @@ import { Badge } from '~/components/ui/badge';
 import { Checkbox } from '~/components/ui/checkbox';
 
 interface FilterOption {
-  value: string | number;
+  value: string | number | (string | number)[];
   label: string;
   count: number;
 }
@@ -41,7 +41,10 @@ const normalizeValue = (value: string | number): string | number => {
 
 const filterOptions = computed<FilterOption[]>(() => {
   const allRows = props.table.getCoreRowModel().rows;
-  const valueCounts = new Map<string | number, number>();
+  const labelGroups = new Map<
+    string,
+    { values: Set<string | number>; count: number }
+  >();
 
   allRows.forEach((row) => {
     const value = (row.original as Record<string, unknown>)[props.columnId];
@@ -49,18 +52,27 @@ const filterOptions = computed<FilterOption[]>(() => {
       const normalizedValue = normalizeValue(
         typeof value === 'number' ? value : String(value),
       );
-      valueCounts.set(
-        normalizedValue,
-        (valueCounts.get(normalizedValue) || 0) + 1,
-      );
+      const label = props.getValueLabel
+        ? props.getValueLabel(normalizedValue)
+        : String(normalizedValue);
+
+      if (!labelGroups.has(label)) {
+        labelGroups.set(label, { values: new Set(), count: 0 });
+      }
+      const group = labelGroups.get(label)!;
+      group.values.add(normalizedValue);
+      group.count += 1;
     }
   });
 
-  return Array.from(valueCounts.entries())
-    .map(([value, count]) => ({
-      value,
-      label: props.getValueLabel ? props.getValueLabel(value) : String(value),
-      count,
+  return Array.from(labelGroups.entries())
+    .map(([label, group]) => ({
+      value:
+        group.values.size === 1
+          ? Array.from(group.values)[0]
+          : Array.from(group.values),
+      label,
+      count: group.count,
     }))
     .sort((a, b) => b.count - a.count);
 });
@@ -99,20 +111,28 @@ watch(
 
 const selectedCount = computed(() => selectedValues.value.size);
 
-const toggleValue = (value: string | number, checked: boolean) => {
-  const normalizedValue = normalizeValue(value);
-  if (checked) {
-    selectedValues.value.add(normalizedValue);
-  } else {
-    selectedValues.value.delete(normalizedValue);
-  }
+const toggleValue = (
+  value: string | number | (string | number)[],
+  checked: boolean,
+) => {
+  const values = Array.isArray(value) ? value : [value];
+  values.forEach((v) => {
+    const normalizedValue = normalizeValue(v);
+    if (checked) {
+      selectedValues.value.add(normalizedValue);
+    } else {
+      selectedValues.value.delete(normalizedValue);
+    }
+  });
   applyFilter();
 };
 
-const handleItemClick = (value: string | number) => {
-  const normalizedValue = normalizeValue(value);
-  const isCurrentlySelected = selectedValues.value.has(normalizedValue);
-  toggleValue(normalizedValue, !isCurrentlySelected);
+const handleItemClick = (value: string | number | (string | number)[]) => {
+  const values = Array.isArray(value) ? value : [value];
+  const allSelected = values.every((v) =>
+    selectedValues.value.has(normalizeValue(v)),
+  );
+  toggleValue(value, !allSelected);
 };
 
 const clearAll = () => {
@@ -125,9 +145,9 @@ const applyFilter = () => {
   emit('filter-change', props.columnId, values);
 };
 
-const isSelected = (value: string | number) => {
-  const normalizedValue = normalizeValue(value);
-  return selectedValues.value.has(normalizedValue);
+const isSelected = (value: string | number | (string | number)[]) => {
+  const values = Array.isArray(value) ? value : [value];
+  return values.every((v) => selectedValues.value.has(normalizeValue(v)));
 };
 </script>
 
@@ -137,7 +157,7 @@ const isSelected = (value: string | number) => {
       <Button
         variant="ghost"
         size="sm"
-        class="h-6 w-6 p-0 hover:bg-muted"
+        class="h-6 w-6 p-0 hover:bg-muted cursor-pointer"
         @click.stop
       >
         <Icon
@@ -161,12 +181,17 @@ const isSelected = (value: string | number) => {
       <div class="max-h-[200px] overflow-y-auto">
         <DropdownMenuItem
           v-for="option in filterOptions"
-          :key="String(option.value)"
+          :key="
+            Array.isArray(option.value)
+              ? option.value.join('_')
+              : String(option.value)
+          "
           class="cursor-pointer"
         >
           <div class="flex items-center gap-2 w-full">
             <Checkbox
               :model-value="isSelected(option.value)"
+              class="cursor-pointer"
               @update:model-value="
                 (checked) => toggleValue(option.value, checked)
               "
@@ -177,7 +202,7 @@ const isSelected = (value: string | number) => {
               </template>
             </Checkbox>
             <div
-              class="flex items-center justify-between flex-1"
+              class="flex items-center justify-between flex-1 cursor-pointer"
               @click.stop="() => handleItemClick(option.value)"
             >
               <span>{{ option.label }}</span>
