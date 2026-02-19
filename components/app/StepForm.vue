@@ -145,7 +145,7 @@
                           <FormControl>
                             <Input
                               type="file"
-                              :accept="field.accept || '.csv,.json'"
+                              :accept="field.accept || '.csv,.json,.xlsx,.xls'"
                               :placeholder="field.placeholder || ''"
                               @change="
                                 (e: Event) => handleFileChange(e, field.name)

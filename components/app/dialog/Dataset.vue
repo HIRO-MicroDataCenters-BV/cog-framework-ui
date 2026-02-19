@@ -187,7 +187,7 @@
                   <input
                     ref="fileInputRef"
                     type="file"
-                    accept=".csv,.json"
+                    accept=".csv,.json,.xlsx,.xls"
                     class="hidden"
                     @change="handleFileChange"
                   />
