@@ -47,7 +47,8 @@ const columns = [
     size: 250,
     cell: ({ row }: { row: TableRowType }) => {
       const isShared = row.original.user_id !== currentUser.value?.email;
-      return h('div', { class: 'relative inline-flex items-center' }, [
+
+      return h('div', { class: 'relative inline-block' }, [
         h(
           'a',
           {
@@ -60,14 +61,10 @@ const columns = [
               h(resolveComponent('Tooltip'), null, {
                 default: () => [
                   h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
-                    h(
-                      'span',
-                      {
-                        class:
-                          'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
-                      },
-                      'S',
-                    ),
+                    h(resolveComponent('Icon'), {
+                      name: 'lucide:share-2',
+                      class: 'absolute -top-1 -right-4 w-3 h-3 text-blue-500',
+                    }),
                   ),
                   h(
                     resolveComponent('TooltipContent'),
