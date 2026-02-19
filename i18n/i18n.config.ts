@@ -552,6 +552,7 @@ export default defineI18nConfig(() => ({
         invalid_port: 'Port must be between 1 and 65535',
         invalid_ip_address: 'Please enter a valid IP address',
         invalid_url: 'Please enter a valid URL',
+        invalid_json: 'Please enter valid JSON',
         invalid_dataset_type: 'Invalid dataset type',
         invalid_data_source_type: 'Invalid data source type',
         model: {

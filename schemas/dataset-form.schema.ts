@@ -57,6 +57,10 @@ export const datasetFormSchema = toTypedSchema(
           db_url: z.string().optional(),
           table_name: z.string().optional(),
           selected_fields: z.string().optional(),
+          connection_type: z.string().optional(),
+          connection_parameter: z.string().optional(),
+          metric_list: z.string().optional(),
+          feature_list: z.string().optional(),
         })
         .optional(),
     })
@@ -277,6 +281,30 @@ export const datasetFormSchema = toTypedSchema(
               message: 'validation.required',
               path: ['source_settings', 'topic_name'],
             });
+          }
+        }
+      }
+
+      // Time series: validate JSON fields when present
+      if (data.type === 'time_series' && data.source_settings) {
+        const jsonFields = [
+          'connection_type',
+          'connection_parameter',
+          'metric_list',
+          'feature_list',
+        ] as const;
+        for (const field of jsonFields) {
+          const value = data.source_settings[field];
+          if (typeof value === 'string' && value.trim() !== '') {
+            try {
+              JSON.parse(value.trim());
+            } catch {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'validation.invalid_json',
+                path: ['source_settings', field],
+              });
+            }
           }
         }
       }
