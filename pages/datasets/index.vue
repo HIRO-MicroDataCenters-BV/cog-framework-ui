@@ -143,7 +143,7 @@ const columns = [
   },
   {
     id: 'user_id',
-    size: 200,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
