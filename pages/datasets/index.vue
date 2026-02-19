@@ -48,33 +48,48 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => {
       const isShared = row.original.user_id !== currentUser.value?.email;
 
-      return h('div', { class: 'relative inline-block' }, [
-        h(
-          'a',
-          {
-            href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
-          },
-          row.getValue('dataset_name'),
-        ),
-        isShared
-          ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
-              h(resolveComponent('Tooltip'), null, {
-                default: () => [
-                  h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
-                    h(resolveComponent('Icon'), {
-                      name: 'lucide:share-2',
-                      class: 'absolute -top-1 -right-4 w-3 h-3 text-blue-500',
-                    }),
-                  ),
+      const nameLink = h(
+        'a',
+        {
+          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          class: 'font-medium truncate block pr-16',
+        },
+        row.getValue('dataset_name'),
+      );
+
+      const sharedBadge = isShared
+        ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+            h(resolveComponent('Tooltip'), null, {
+              default: () => [
+                h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
                   h(
-                    resolveComponent('TooltipContent'),
-                    { side: 'right' },
-                    () => `${t('label.shared_by')} ${row.original.user_id}`,
+                    'span',
+                    {
+                      class:
+                        'absolute top-0 right-0 inline-flex items-center gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 shrink-0 dark:bg-blue-900/30 dark:text-blue-300',
+                    },
+                    [
+                      h(resolveComponent('Icon'), {
+                        name: 'lucide:users',
+                        class: 'size-3 shrink-0',
+                      }),
+                      t('label.shared'),
+                    ],
                   ),
-                ],
-              }),
-            )
-          : null,
+                ),
+                h(
+                  resolveComponent('TooltipContent'),
+                  { side: 'right' },
+                  () => `${t('label.shared_by')} ${row.original.user_id}`,
+                ),
+              ],
+            }),
+          )
+        : null;
+
+      return h('div', { class: 'relative flex flex-col justify-center min-h-[2.25rem]' }, [
+        nameLink,
+        sharedBadge,
       ]);
     },
   },
