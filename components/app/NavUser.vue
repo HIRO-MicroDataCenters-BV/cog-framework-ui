@@ -48,8 +48,8 @@ const userInitials = computed(() => getInitials(user.value.full_name));
 const userMenuItems = computed(() => menu.value.user);
 
 // Only show avatar image when we have a URL and it hasn't failed to load
-const showAvatarImage = computed(
-  () => Boolean(user.value.avatar_url && !avatarError.value),
+const showAvatarImage = computed(() =>
+  Boolean(user.value.avatar_url && !avatarError.value),
 );
 </script>
 
