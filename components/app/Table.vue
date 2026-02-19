@@ -204,7 +204,10 @@ const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
   return result;
 };
 
+const isRefreshing = ref(false);
+
 const fetchData = async () => {
+  isRefreshing.value = true;
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
@@ -272,6 +275,8 @@ const fetchData = async () => {
     data.value = [];
     pageSize.value = props.pageSize;
     totalItems.value = 0;
+  } finally {
+    isRefreshing.value = false;
   }
 };
 
@@ -801,9 +806,22 @@ defineExpose({ fetchData });
               />
             </div>
 
-            <div class="flex gap-6 items-center">
+            <div class="flex gap-2 items-center">
+              <Button
+                variant="outline"
+                size="icon"
+                class="cursor-pointer shrink-0"
+                :title="t('action.refresh')"
+                :disabled="isRefreshing"
+                @click="fetchData()"
+              >
+                <Icon
+                  name="lucide:refresh-cw"
+                  :class="['h-4 w-4 transition-transform duration-300', isRefreshing && 'animate-spin']"
+                />
+              </Button>
               <Button class="cursor-pointer" @click="() => add()">
-                <Icon name="lucide:plus"></Icon>
+                <Icon name="lucide:plus" />
                 {{ t(`action.add_${page.section}`) }}
               </Button>
             </div>
