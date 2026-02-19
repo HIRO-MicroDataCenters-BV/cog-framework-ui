@@ -16,7 +16,9 @@ const dbUrlPattern = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/?\/?[^\s]+$/i;
 export const datasetFormSchema = toTypedSchema(
   z
     .object({
-      type: z.enum(['file', 'table', 'data_stream']).optional(),
+      type: z
+        .enum(['file', 'table', 'data_stream', 'time_series'])
+        .optional(),
       metadata: z
         .object({
           name: z.string().min(1),

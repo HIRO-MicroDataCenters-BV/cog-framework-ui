@@ -44,8 +44,22 @@ export interface StreamDatasetValues extends FormValues {
   };
 }
 
+export interface TimeSeriesDatasetValues extends FormValues {
+  dataset_type?: number;
+  metadata?: {
+    name?: string;
+    description?: string;
+  };
+  source_settings?: {
+    connection_type?: string;
+    connection_parameter?: string;
+    metric_list?: string;
+    feature_list?: string;
+  };
+}
+
 export interface DatasetFormValues extends FormValues {
-  type?: 'file' | 'table' | 'data_stream';
+  type?: 'file' | 'table' | 'data_stream' | 'time_series';
   metadata?: {
     name?: string;
     description?: string;
@@ -98,6 +112,16 @@ export interface StreamDatasetRegisterParams {
   broker_port: number;
   topic_name: string;
   topic_schema: string;
+}
+
+export interface TimeSeriesDatasetRegisterParams {
+  dataset_name: string;
+  description: string;
+  dataset_type: number;
+  connection_type: Record<string, unknown>;
+  connection_parameter: Record<string, unknown>;
+  metric_list: Record<string, unknown>;
+  feature_list: Record<string, unknown>;
 }
 
 /**

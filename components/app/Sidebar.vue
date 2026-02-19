@@ -6,7 +6,7 @@ import NavUser from './NavUser.vue';
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
-// const version = config.public.appVersion;
+const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
 // const urlOrigin = window.location.origin;
 
@@ -55,9 +55,9 @@ setOpen(!isIframe.value);
                   <span class="truncate font-semibold">{{
                     t('general.main_project_name')
                   }}</span>
-                  <span class="truncate text-xs">{{
-                    t('general.project_name')
-                  }}</span>
+                  <span class="truncate text-xs text-muted-foreground"
+                    >V {{ appVersion }}</span
+                  >
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>

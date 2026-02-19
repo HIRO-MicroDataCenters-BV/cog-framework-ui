@@ -251,6 +251,7 @@ export default defineI18nConfig(() => ({
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
         table: 'Connect to a relational database table.',
         data_stream: 'Ingest real-time data from a streaming source.',
+        time_series: 'Connect to a time series data source (e.g., Prometheus).',
       },
       placeholder: {
         select_parameter: 'Select Parameter',
@@ -289,6 +290,10 @@ export default defineI18nConfig(() => ({
         model_type: 'Select Model Type',
         test_request_data: 'Enter request data (JSON)',
         test_report_config: 'Enter report config',
+        connection_type: 'Enter connection type (JSON)',
+        connection_parameter: 'Enter connection parameters (JSON)',
+        metric_list: 'Enter metric list (JSON)',
+        feature_list: 'Enter feature list (JSON)',
       },
       action: {
         upload: 'Upload',
@@ -419,6 +424,7 @@ export default defineI18nConfig(() => ({
         db_url_mongodb:
           "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
+        json_format: 'Enter valid JSON format',
         preview_truncated:
           'Preview is truncated. Download the file to see the full content.',
         preview_max_limit:

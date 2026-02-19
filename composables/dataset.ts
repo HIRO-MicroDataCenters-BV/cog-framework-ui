@@ -4,12 +4,14 @@ import type {
   FileDatasetValues,
   TableDatasetValues,
   StreamDatasetValues,
+  TimeSeriesDatasetValues,
   DatasetFormValues,
   FileDatasetRegisterParams,
   TableDatasetRegisterParams,
   BrokerRegisterParams,
   TopicRegisterParams,
   DatasetMessageRegisterParams,
+  TimeSeriesDatasetRegisterParams,
 } from '~/types/api.types';
 
 type DatasetRegisterResponse = ApiResponse | ApiErrorResponse | null;
@@ -62,6 +64,46 @@ export const useRegisterTableDataset = () => {
 
   return {
     registerTableDataset,
+  };
+};
+
+export const useRegisterTimeSeriesDataset = () => {
+  const { postDatasetPrometheus } = useApi();
+
+  const parseJsonField = (
+    value: string | undefined,
+  ): Record<string, unknown> => {
+    if (!value) return {};
+    const trimmed = value.trim();
+    if (trimmed === '' || trimmed === '{}') return {};
+    try {
+      const parsed = JSON.parse(trimmed);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const registerTimeSeriesDataset = async (
+    values: TimeSeriesDatasetValues,
+  ): Promise<DatasetRegisterResponse> => {
+    const data: TimeSeriesDatasetRegisterParams = {
+      dataset_name: values.metadata?.name || '',
+      description: values.metadata?.description || '',
+      dataset_type: values.dataset_type || 0,
+      connection_type: parseJsonField(values.source_settings?.connection_type),
+      connection_parameter: parseJsonField(
+        values.source_settings?.connection_parameter,
+      ),
+      metric_list: parseJsonField(values.source_settings?.metric_list),
+      feature_list: parseJsonField(values.source_settings?.feature_list),
+    };
+
+    return await postDatasetPrometheus(data);
+  };
+
+  return {
+    registerTimeSeriesDataset,
   };
 };
 
@@ -214,6 +256,7 @@ export const useDatasetForm = () => {
   const { registerFileDataset } = useRegisterFileDataset();
   const { registerTableDataset } = useRegisterTableDataset();
   const { registerStreamDataset } = useRegisterStreamDataset();
+  const { registerTimeSeriesDataset } = useRegisterTimeSeriesDataset();
 
   const submitDatasetForm = async (
     values: DatasetFormValues,
@@ -233,6 +276,9 @@ export const useDatasetForm = () => {
         break;
       case 'data_stream':
         res = await registerStreamDataset(values as StreamDatasetValues);
+        break;
+      case 'time_series':
+        res = await registerTimeSeriesDataset(values as TimeSeriesDatasetValues);
         break;
       default:
         throw new Error(`error.unknown_dataset_type: ${values.type}`);
