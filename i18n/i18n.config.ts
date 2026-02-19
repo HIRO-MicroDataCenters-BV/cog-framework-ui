@@ -242,6 +242,7 @@ export default defineI18nConfig(() => ({
         general: 'General',
         shared: 'Shared',
         shared_by: 'Shared by',
+        own: 'My Datasets',
         test_request_data: 'Request Data',
         test_report_config: 'Report Config',
         test_connection: 'Test Connection',
@@ -486,6 +487,7 @@ export default defineI18nConfig(() => ({
         created_by: 'Created By',
         user_id: 'Owner',
         register_user_id: 'Author',
+        ownership: 'Ownership',
       },
       status: {
         completed: 'Completed',

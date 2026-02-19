@@ -18,7 +18,7 @@ const { state: sidebarState } = useSidebar();
 
 const tableRef = ref();
 
-const { getDatasets } = useApi();
+const { getDatasets: fetchDatasets } = useApi();
 const {
   previewState,
   loadMorePreview,
@@ -26,6 +26,18 @@ const {
   shareState,
   closeShareDialog,
 } = useDatasetActions();
+
+// Wrapper to add ownership field to datasets
+const getDatasets = async (params?: Record<string, unknown>) => {
+  const response = await fetchDatasets(params);
+  if (response?.data && Array.isArray(response.data)) {
+    response.data = response.data.map((item: Record<string, unknown>) => ({
+      ...item,
+      ownership: item.user_id === currentUser.value?.email ? 'own' : 'shared',
+    }));
+  }
+  return response;
+};
 
 const handleDownloadFromPreview = () => {
   if (previewState.value.datasetId) {
@@ -166,6 +178,15 @@ const columns = [
     },
   },
   {
+    id: 'ownership',
+    size: 0,
+    minSize: 0,
+    maxSize: 0,
+    enableHiding: false,
+    meta: { hidden: true },
+    cell: () => null,
+  },
+  {
     id: 'actions',
     size: 56,
     enableHiding: false,
@@ -204,7 +225,7 @@ const columns = [
       :data-source="getDatasets"
       :tabs="tabs"
       :sortable-columns="['register_date_time']"
-      :filterable-columns="['data_source_type']"
+      :filterable-columns="['data_source_type', { id: 'ownership', headerColumn: 'dataset_name' }]"
       class="grow"
     />
 
