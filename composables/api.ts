@@ -2684,13 +2684,13 @@ export const useApi = () => {
     // ============================================================================
 
     /**
-     * Creates an access grant to share a dataset with another user
+     * Creates access grants to share a dataset with multiple users
      *
      * @param {Object} data - Access grant data
      * @param {string} data.owner_id - Email of the owner sharing the dataset
      * @param {string} data.entity_id - UUID of the dataset being shared
      * @param {string} data.entity_type - Type of entity (e.g., 'dataset')
-     * @param {string} data.shared_user_id - Email of the user receiving access
+     * @param {string[]} data.shared_user_ids - Array of emails of users receiving access
      *
      * @returns {Promise<Object>} Standard response containing access grant information
      *
@@ -2700,7 +2700,7 @@ export const useApi = () => {
      *   owner_id: 'admin@hiro.com',
      *   entity_id: 'ca489838-56bd-4e73-a043-6790c072545e',
      *   entity_type: 'dataset',
-     *   shared_user_id: 'abc@hiro.com'
+     *   shared_user_ids: ['user1@hiro.com', 'user2@hiro.com']
      * });
      * ```
      */
@@ -2708,7 +2708,7 @@ export const useApi = () => {
       owner_id: string;
       entity_id: string;
       entity_type: string;
-      shared_user_id: string;
+      shared_user_ids: string[];
     }) => {
       return request(`/access-grants`, 'POST', data, {
         successMessage: 'share_updated',

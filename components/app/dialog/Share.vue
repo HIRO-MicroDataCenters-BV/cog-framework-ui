@@ -44,7 +44,6 @@
               <button
                 type="button"
                 class="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="sharedUsers.length > 0"
                 @click="isDropdownOpen = !isDropdownOpen"
               >
                 <span class="text-muted-foreground">
@@ -334,12 +333,12 @@ const handleSave = async () => {
   isSaving.value = true;
 
   try {
-    const sharedUser = sharedUsers.value[0];
+    const sharedUserIds = sharedUsers.value.map((user) => user.email);
     await postAccessGrant({
       owner_id: currentUser.value?.email || '',
       entity_id: props.datasetId,
       entity_type: 'dataset',
-      shared_user_id: sharedUser.email,
+      shared_user_ids: sharedUserIds,
     });
 
     handleClose();
