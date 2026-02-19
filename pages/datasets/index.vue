@@ -7,12 +7,14 @@ import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import { useSidebar } from '~/components/ui/sidebar';
 import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
 const { setPage, page } = useApp();
 const { user: currentUser } = useCurrentUser();
+const { state: sidebarState } = useSidebar();
 
 const tableRef = ref();
 
@@ -96,12 +98,14 @@ const columns = [
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 200,
-    minSize: 200,
-    maxSize: 200,
+    size: 250,
+    minSize: 250,
+    maxSize: 250,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
+      const displayId =
+        sidebarState.value === 'collapsed' ? idValue : shortenedId;
       return h(
         resolveComponent('TooltipProvider'),
         { delayDuration: 300 },
@@ -116,7 +120,7 @@ const columns = [
                     copyText: idValue,
                   },
                   {
-                    default: () => shortenedId,
+                    default: () => displayId,
                   },
                 ),
               ),
@@ -148,7 +152,7 @@ const columns = [
   },
   {
     id: 'register_date_time',
-    size: 140,
+    size: 115,
     cell: ({ row }: { row: TableRowType }) => {
       const dateTime = row.getValue<string>('register_date_time');
       return h('div', { class: 'flex flex-col' }, [
@@ -163,7 +167,7 @@ const columns = [
   },
   {
     id: 'actions',
-    size: 80,
+    size: 56,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();

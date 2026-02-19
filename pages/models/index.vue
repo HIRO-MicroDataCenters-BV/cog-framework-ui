@@ -2,6 +2,7 @@
 import type { TableRowType } from '@/types/row.types';
 import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import { useSidebar } from '~/components/ui/sidebar';
 import { shortenUuid } from '~/utils';
 import { Badge } from '~/components/ui/badge';
 import DropdownAction from '@/components/app/menu/Actions.vue';
@@ -10,6 +11,7 @@ const dayjs = useDayjs();
 const { t } = useI18n();
 const { getModels, deleteModel } = useApi();
 const { setPage, page } = useApp();
+const { state: sidebarState } = useSidebar();
 const tableRef = ref();
 
 setPage({
@@ -36,12 +38,14 @@ const columns = [
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 180,
+    size: 220,
     minSize: 180,
-    maxSize: 180,
+    maxSize: 400,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
+      const displayId =
+        sidebarState.value === 'collapsed' ? idValue : shortenedId;
       return h(
         resolveComponent('TooltipProvider'),
         { delayDuration: 300 },
@@ -56,7 +60,7 @@ const columns = [
                     copyText: idValue,
                   },
                   {
-                    default: () => shortenedId,
+                    default: () => displayId,
                   },
                 ),
               ),
@@ -68,7 +72,7 @@ const columns = [
   },
   {
     id: 'version',
-    size: 100,
+    size: 72,
     cell: ({ row }: { row: TableRowType }) => {
       const value = row.getValue<string>('version').toString();
       return h(
@@ -97,12 +101,12 @@ const columns = [
   },
   {
     id: 'register_user_id',
-    size: 200,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => row.getValue('register_user_id'),
   },
   {
     id: 'register_date',
-    size: 140,
+    size: 115,
     cell: ({ row }: { row: TableRowType }) => {
       const dateTime = row.getValue<string>('register_date');
       return h('div', { class: 'flex flex-col' }, [
@@ -117,7 +121,7 @@ const columns = [
   },
   {
     id: 'actions',
-    size: 80,
+    size: 56,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const id = row.getValue<string>('id');
