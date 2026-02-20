@@ -489,7 +489,7 @@ const getColumns = (list: TableColumn[]) => {
       size: item.size,
       minSize: item.minSize,
       maxSize: item.maxSize,
-      meta: (item as any).meta,
+      meta: item.meta,
       filterFn: (row: unknown, columnId: string) => {
         const columnFilter = columnFilters.value.find((f) => f.id === columnId);
         if (
