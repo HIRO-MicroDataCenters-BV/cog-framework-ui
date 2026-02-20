@@ -61,7 +61,10 @@
         v-for="group in additionalSchema[type as keyof typeof additionalSchema]"
         :key="group.key"
       >
-        <div class="rounded-lg border border-border overflow-hidden">
+        <div
+          v-if="shouldShowGroup(group)"
+          class="rounded-lg border border-border overflow-hidden"
+        >
           <!-- Card Header -->
           <div
             v-if="group.label"
@@ -75,7 +78,10 @@
           <!-- Card Body -->
           <div class="divide-y divide-border">
             <template v-for="item in group.items" :key="item.key">
-              <div class="flex items-start px-4 py-3 gap-4">
+              <div
+                v-if="hasItemValue(group, item)"
+                class="flex items-start px-4 py-3 gap-4"
+              >
                 <!-- Label -->
                 <div
                   class="flex items-center gap-2 text-muted-foreground min-w-[160px] shrink-0 pt-0.5"
@@ -121,14 +127,7 @@
                       <template v-if="item.type === 'list'">
                         <div class="flex items-center gap-1.5 flex-wrap">
                           <Badge
-                            v-for="value in ((
-                              group as { prefix?: string | null }
-                            ).prefix
-                              ? additional[
-                                  (group as { prefix: string }).prefix
-                                ]?.[item.key]
-                              : additional[item.key]
-                            ).split(',')"
+                            v-for="value in listValues(group, item.key)"
                             :key="value"
                             >{{ value }}</Badge
                           >
@@ -151,6 +150,25 @@
                       </template>
                     </span>
                   </div>
+                </div>
+              </div>
+            </template>
+            <!-- Dynamic keys from API not in schema -->
+            <template
+              v-for="entry in getDynamicGroupEntries(group)"
+              :key="entry.key"
+            >
+              <div class="flex items-start px-4 py-3 gap-4">
+                <div
+                  class="flex items-center gap-2 text-muted-foreground min-w-[160px] shrink-0 pt-0.5"
+                >
+                  <Icon name="lucide:braces" class="size-4" />
+                  <span class="text-sm">{{ entry.key }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="text-sm font-medium break-all">{{
+                    entry.value
+                  }}</span>
                 </div>
               </div>
             </template>
@@ -503,6 +521,75 @@ const additionalSchema = {
     },
   ],
 };
+
+function listValues(
+  group: { prefix?: string | null; key: string },
+  itemKey: string,
+): string[] {
+  const val = getItemValue(group, itemKey);
+  if (val == null) return [];
+  return String(val).split(',');
+}
+
+function getItemValue(
+  group: { prefix?: string | null; key: string },
+  itemKey: string,
+): unknown {
+  const add = additional.value;
+  if (!add) return undefined;
+  if (group.prefix) {
+    const nested = add[group.prefix];
+    if (nested && typeof nested === 'object' && itemKey in nested) {
+      return (nested as Record<string, unknown>)[itemKey];
+    }
+    return undefined;
+  }
+  return add[itemKey] ?? content.value?.[itemKey];
+}
+
+function hasItemValue(
+  group: {
+    prefix?: string | null;
+    key: string;
+    items: { key: string; type: string }[];
+  },
+  item: { key: string; type: string },
+): boolean {
+  const val = getItemValue(group, item.key);
+  if (val == null) return false;
+  if (item.type === 'list') return listValues(group, item.key).length > 0;
+  if (item.type === 'date') return true;
+  if (item.type === 'text') return String(val).trim() !== '';
+  return true;
+}
+
+function shouldShowGroup(group: {
+  prefix?: string | null;
+  key: string;
+}): boolean {
+  if (!additional.value) return false;
+  if (!group.prefix) return true;
+  const val = additional.value[group.prefix];
+  return val !== undefined && val !== null;
+}
+
+function getDynamicGroupEntries(group: {
+  prefix?: string | null;
+  key: string;
+  items: { key: string }[];
+}): { key: string; value: string }[] {
+  if (!group.prefix || !additional.value) return [];
+  const data = additional.value[group.prefix];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
+  const schemaKeys = new Set(group.items.map((i) => i.key));
+  return Object.entries(data)
+    .filter(([key]) => !schemaKeys.has(key))
+    .filter(([, val]) => val != null && String(val).trim() !== '')
+    .map(([key, val]) => ({
+      key,
+      value: typeof val === 'object' ? JSON.stringify(val) : String(val),
+    }));
+}
 
 const additionalDataSource = {
   file: getDatasetFileDetails,

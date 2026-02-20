@@ -175,7 +175,7 @@ export default defineI18nConfig(() => ({
         connection_parameter: 'Connection Parameter',
         dataset_name: 'Dataset Name',
         dataset_description: 'Dataset Description',
-        dataset_type: 'Data Stream Type',
+        dataset_type: 'Dataset Type',
         dataset_source_type: 'Dataset Source Type',
         file_name: 'File Name',
         file_path: 'File Path',
@@ -194,6 +194,7 @@ export default defineI18nConfig(() => ({
         filters: 'Filters',
         type: 'Type',
         name: 'Name',
+        new: 'New',
         description: 'Description',
         connection_string: 'Connection String',
         filter_condition: 'Filter Condition',
@@ -216,7 +217,7 @@ export default defineI18nConfig(() => ({
         register_date_time: 'Register Date Time',
         train_and_inference_type: 'Train and Inference Type',
         user_id: 'User ID',
-        data_source_type: 'Data Source Type',
+        data_source_type: 'Data Stream Type',
         uri: 'URI',
         model_name: 'Model Name',
         model_description: 'Model Description',
@@ -242,6 +243,7 @@ export default defineI18nConfig(() => ({
         general: 'General',
         shared: 'Shared',
         shared_by: 'Shared by',
+        own: 'My Datasets',
         test_request_data: 'Request Data',
         test_report_config: 'Report Config',
         test_connection: 'Test Connection',
@@ -250,10 +252,11 @@ export default defineI18nConfig(() => ({
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
         table: 'Connect to a relational database table.',
         data_stream: 'Ingest real-time data from a streaming source.',
+        time_series: 'Connect to a time series data source (e.g., Prometheus).',
       },
       placeholder: {
         select_parameter: 'Select Parameter',
-        dataset_type: 'Select Data Stream Type',
+        dataset_type: 'Select Dataset Type',
         name: 'Enter a name',
         version: 'Version',
         search: 'Search...',
@@ -284,10 +287,14 @@ export default defineI18nConfig(() => ({
         file_type: 'Select File Type',
         select_broker: 'Select Broker',
         select_topic: 'Select Topic',
-        data_source_type: 'Select Data Source Type',
+        data_source_type: 'Select Data Stream Type',
         model_type: 'Select Model Type',
         test_request_data: 'Enter request data (JSON)',
         test_report_config: 'Enter report config',
+        connection_type: 'Enter connection type (JSON)',
+        connection_parameter: 'Enter connection parameters (JSON)',
+        metric_list: 'Enter metric list (JSON)',
+        feature_list: 'Enter feature list (JSON)',
       },
       action: {
         upload: 'Upload',
@@ -418,6 +425,7 @@ export default defineI18nConfig(() => ({
         db_url_mongodb:
           "Format: mongodb://user:password{'@'}host:port/database",
         db_url_default: 'Enter database connection URL',
+        json_format: 'Enter valid JSON format',
         preview_truncated:
           'Preview is truncated. Download the file to see the full content.',
         preview_max_limit:
@@ -486,6 +494,7 @@ export default defineI18nConfig(() => ({
         created_by: 'Created By',
         user_id: 'Owner',
         register_user_id: 'Author',
+        ownership: 'Ownership',
       },
       status: {
         completed: 'Completed',
@@ -502,6 +511,8 @@ export default defineI18nConfig(() => ({
         types: {
           array: 'array',
           object: 'object',
+          string: 'string',
+          number: 'number',
         },
         errors: {
           invalid_type_received_undefined: 'This field is required',
@@ -513,7 +524,14 @@ export default defineI18nConfig(() => ({
               inclusive: 'This field must be at least {min} characters',
             },
           },
-          too_big: 'This field must be at most {max} characters',
+          too_big: {
+            string: {
+              inclusive: 'This field must be at most {maximum} characters',
+            },
+            number: {
+              inclusive: 'Value must be {maximum} or less',
+            },
+          },
           invalid_date: 'Please enter a valid date',
           invalid_number: 'Please enter a valid number',
           invalid_boolean: 'Please select a valid option',
@@ -544,6 +562,7 @@ export default defineI18nConfig(() => ({
         invalid_port: 'Port must be between 1 and 65535',
         invalid_ip_address: 'Please enter a valid IP address',
         invalid_url: 'Please enter a valid URL',
+        invalid_json: 'Please enter valid JSON',
         invalid_dataset_type: 'Invalid dataset type',
         invalid_data_source_type: 'Invalid data source type',
         model: {

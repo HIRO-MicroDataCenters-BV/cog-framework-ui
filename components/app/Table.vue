@@ -94,7 +94,7 @@ const props = defineProps({
     default: () => [],
   },
   filterableColumns: {
-    type: Array as PropType<string[]>,
+    type: Array as PropType<(string | { id: string; headerColumn: string })[]>,
     default: () => [],
   },
   groupBy: {
@@ -204,7 +204,10 @@ const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
   return result;
 };
 
+const isRefreshing = ref(false);
+
 const fetchData = async () => {
+  isRefreshing.value = true;
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
@@ -272,6 +275,8 @@ const fetchData = async () => {
     data.value = [];
     pageSize.value = props.pageSize;
     totalItems.value = 0;
+  } finally {
+    isRefreshing.value = false;
   }
 };
 
@@ -352,6 +357,9 @@ const getValueLabel = (columnId: string, value: string | number): string => {
   if (columnId === 'type' && typeof value === 'string') {
     return value;
   }
+  if (columnId === 'ownership' && typeof value === 'string') {
+    return t(`label.${value}`);
+  }
   return String(value);
 };
 
@@ -361,9 +369,27 @@ const getSectionIcon = (section: string | undefined) => {
 };
 
 const getColumns = (list: TableColumn[]) => {
+  // Helper to check if a column has its own filter
+  const isFilterable = (columnId: string) => {
+    return props.filterableColumns.some((f) =>
+      typeof f === 'string'
+        ? f === columnId
+        : f.id === columnId && !f.headerColumn,
+    );
+  };
+
+  // Helper to get filters that should appear in a specific column's header
+  const getFiltersForHeader = (headerColumnId: string) => {
+    return props.filterableColumns.filter(
+      (f) => typeof f === 'object' && f.headerColumn === headerColumnId,
+    ) as { id: string; headerColumn: string }[];
+  };
+
   return list.map((item) => {
     const isSortable = props.sortableColumns.includes(item.id);
-    const isFilterable = props.filterableColumns.includes(item.id);
+    const columnIsFilterable = isFilterable(item.id);
+    const additionalFilters = getFiltersForHeader(item.id);
+    const hasFilters = columnIsFilterable || additionalFilters.length > 0;
 
     const headerContent = () => {
       const headerElements: VNode[] = [];
@@ -415,7 +441,8 @@ const getColumns = (list: TableColumn[]) => {
         headerElements.push(h('span', t(`column.${item.id}`)));
       }
 
-      if (isFilterable && table) {
+      // Add filter for this column's own data
+      if (columnIsFilterable && table) {
         headerElements.push(
           h(ColumnFilter, {
             columnId: item.id,
@@ -427,6 +454,22 @@ const getColumns = (list: TableColumn[]) => {
           }),
         );
       }
+
+      // Add filters from other columns that should appear in this header
+      additionalFilters.forEach((filterConfig) => {
+        if (table) {
+          headerElements.push(
+            h(ColumnFilter, {
+              columnId: filterConfig.id,
+              table: table,
+              getValueLabel: (value: string | number) =>
+                getValueLabel(filterConfig.id, value),
+              onFilterChange: (colId: string, values: (string | number)[]) =>
+                handleColumnFilter(colId, values),
+            }),
+          );
+        }
+      });
 
       return h(
         'div',
@@ -440,13 +483,13 @@ const getColumns = (list: TableColumn[]) => {
     return {
       id: item.id,
       accessorKey: item.id,
-      header:
-        isSortable || isFilterable ? headerContent : t(`column.${item.id}`),
+      header: isSortable || hasFilters ? headerContent : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
       size: item.size,
       minSize: item.minSize,
       maxSize: item.maxSize,
+      meta: item.meta,
       filterFn: (row: unknown, columnId: string) => {
         const columnFilter = columnFilters.value.find((f) => f.id === columnId);
         if (
@@ -801,9 +844,25 @@ defineExpose({ fetchData });
               />
             </div>
 
-            <div class="flex gap-6 items-center">
+            <div class="flex gap-2 items-center">
+              <Button
+                variant="outline"
+                size="icon"
+                class="cursor-pointer shrink-0"
+                :title="t('action.refresh')"
+                :disabled="isRefreshing"
+                @click="fetchData()"
+              >
+                <Icon
+                  name="lucide:refresh-cw"
+                  :class="[
+                    'h-4 w-4 transition-transform duration-300',
+                    isRefreshing && 'animate-spin',
+                  ]"
+                />
+              </Button>
               <Button class="cursor-pointer" @click="() => add()">
-                <Icon name="lucide:plus"></Icon>
+                <Icon name="lucide:plus" />
                 {{ t(`action.add_${page.section}`) }}
               </Button>
             </div>
@@ -848,7 +907,9 @@ defineExpose({ fetchData });
             :key="headerGroup.id"
           >
             <TableHead
-              v-for="header in headerGroup.headers"
+              v-for="header in headerGroup.headers.filter(
+                (h) => !(h.column.columnDef as any).meta?.hidden,
+              )"
               :key="header.id"
               :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
               :style="{
@@ -872,7 +933,9 @@ defineExpose({ fetchData });
             >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell
-                  v-for="(cell, cellIndex) in row.getVisibleCells()"
+                  v-for="(cell, cellIndex) in row
+                    .getVisibleCells()
+                    .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                   :key="cell.id"
                   class="border-l border-r border-border py-1 px-3 text-sm"
                   :style="{
@@ -926,7 +989,9 @@ defineExpose({ fetchData });
                   class="bg-muted/20"
                 >
                   <TableCell
-                    v-for="(cell, cellIndex) in subRow.getVisibleCells()"
+                    v-for="(cell, cellIndex) in subRow
+                      .getVisibleCells()
+                      .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                     :key="cell.id"
                     class="border-l border-r border-border py-1 px-3 text-sm"
                     :style="{

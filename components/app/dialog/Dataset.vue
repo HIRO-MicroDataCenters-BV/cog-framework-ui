@@ -1,7 +1,7 @@
 <template>
   <Dialog :open="open" @update:open="onOpenChange">
     <DialogContent
-      class="sm:max-w-[680px] gap-0 p-0 overflow-hidden"
+      class="sm:max-w-[780px] gap-0 p-0 overflow-hidden"
       @interact-outside.prevent
     >
       <!-- Header -->
@@ -59,10 +59,10 @@
       <div class="px-6 py-6 min-h-[340px] max-h-[420px] overflow-y-auto">
         <form @submit.prevent>
           <!-- Step 0: Type Selection -->
-          <div v-show="currentStep === 0">
-            <div class="grid grid-cols-3 gap-3">
+          <div v-show="currentStep === 0" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
-                v-for="dtype in datasetTypes"
+                v-for="dtype in datasetTypesRow1"
                 :key="dtype.value"
                 type="button"
                 class="group relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 text-center transition-all duration-200 hover:border-primary/50 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -77,8 +77,8 @@
                   class="flex h-11 w-11 items-center justify-center rounded-lg transition-colors"
                   :class="
                     selectedType === dtype.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                      ? typeIconColors[dtype.color].selected
+                      : typeIconColors[dtype.color].default
                   "
                 >
                   <Icon :name="dtype.icon" class="h-5 w-5" />
@@ -89,7 +89,6 @@
                     {{ dtype.description }}
                   </p>
                 </div>
-                <!-- Selected indicator -->
                 <div
                   v-if="selectedType === dtype.value"
                   class="absolute top-2.5 right-2.5"
@@ -101,6 +100,51 @@
                   </div>
                 </div>
               </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-start-2 flex justify-center">
+                <button
+                  v-for="dtype in datasetTypesRow2"
+                  :key="dtype.value"
+                  type="button"
+                  class="group relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 text-center transition-all duration-200 hover:border-primary/50 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto sm:min-w-[200px]"
+                  :class="
+                    selectedType === dtype.value
+                      ? 'border-primary bg-primary/5 shadow-sm'
+                      : 'border-border'
+                  "
+                  @click="selectType(dtype.value)"
+                >
+                  <div
+                    class="flex h-11 w-11 items-center justify-center rounded-lg transition-colors"
+                    :class="
+                      selectedType === dtype.value
+                        ? typeIconColors[dtype.color].selected
+                        : typeIconColors[dtype.color].default
+                    "
+                  >
+                    <Icon :name="dtype.icon" class="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium">{{ dtype.label }}</p>
+                    <p
+                      class="mt-1 text-xs text-muted-foreground leading-relaxed"
+                    >
+                      {{ dtype.description }}
+                    </p>
+                  </div>
+                  <div
+                    v-if="selectedType === dtype.value"
+                    class="absolute top-2.5 right-2.5"
+                  >
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                    >
+                      <Icon name="lucide:check" class="h-3 w-3" />
+                    </div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -265,6 +309,93 @@
               </Button>
             </div>
 
+            <!-- Time Series Source -->
+            <div v-if="selectedType === 'time_series'" class="space-y-5">
+              <FormField
+                v-slot="{ componentField }"
+                name="source_settings.connection_type"
+              >
+                <FormItem>
+                  <FormLabel>{{ t('label.connection_type') }}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.connection_type')"
+                      class="font-mono text-xs resize-none"
+                      :rows="3"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {{ t('hint.json_format') }}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+
+              <FormField
+                v-slot="{ componentField }"
+                name="source_settings.connection_parameter"
+              >
+                <FormItem>
+                  <FormLabel>{{ t('label.connection_parameter') }}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.connection_parameter')"
+                      class="font-mono text-xs resize-none"
+                      :rows="3"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {{ t('hint.json_format') }}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+
+              <FormField
+                v-slot="{ componentField }"
+                name="source_settings.metric_list"
+              >
+                <FormItem>
+                  <FormLabel>{{ t('label.metric_list') }}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.metric_list')"
+                      class="font-mono text-xs resize-none"
+                      :rows="3"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {{ t('hint.json_format') }}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+
+              <FormField
+                v-slot="{ componentField }"
+                name="source_settings.feature_list"
+              >
+                <FormItem>
+                  <FormLabel>{{ t('label.feature_list') }}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      v-bind="componentField"
+                      :placeholder="t('placeholder.feature_list')"
+                      class="font-mono text-xs resize-none"
+                      :rows="3"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {{ t('hint.json_format') }}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+            </div>
+
             <!-- Data Stream Source -->
             <div v-if="selectedType === 'data_stream'" class="space-y-5">
               <!-- Broker Section -->
@@ -353,7 +484,7 @@
                     </FormItem>
                   </FormField>
 
-                  <div class="grid grid-cols-2 gap-4">
+                  <div class="grid grid-cols-2 gap-4 items-start">
                     <FormField
                       v-slot="{ componentField }"
                       name="source_settings.broker_ip_address"
@@ -384,6 +515,9 @@
                             type="number"
                             v-bind="componentField"
                             :placeholder="t('placeholder.broker_port')"
+                            class="broker-port-input"
+                            min="0"
+                            max="65535"
                           />
                         </FormControl>
                         <FormMessage />
@@ -666,6 +800,54 @@
                     </span>
                   </div>
                 </template>
+
+                <!-- Time Series review -->
+                <template v-if="selectedType === 'time_series'">
+                  <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-sm text-muted-foreground">
+                      {{ t('label.connection_type') }}
+                    </span>
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
+                      {{ sourceSettings?.connection_type ? 'Configured' : '—' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-sm text-muted-foreground">
+                      {{ t('label.connection_parameter') }}
+                    </span>
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
+                      {{
+                        sourceSettings?.connection_parameter
+                          ? 'Configured'
+                          : '—'
+                      }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-sm text-muted-foreground">
+                      {{ t('label.metric_list') }}
+                    </span>
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
+                      {{ sourceSettings?.metric_list ? 'Configured' : '—' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-sm text-muted-foreground">
+                      {{ t('label.feature_list') }}
+                    </span>
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
+                      {{ sourceSettings?.feature_list ? 'Configured' : '—' }}
+                    </span>
+                  </div>
+                </template>
               </div>
             </div>
           </div>
@@ -756,25 +938,55 @@ const stepsMeta = computed(() => [
   { id: 'review', label: t('step.review') },
 ]);
 
-// ──── Dataset Type Options ────
-const datasetTypes = computed(() => [
+// ──── Dataset Type Options (Row 1: File, Table, Data Stream | Row 2: Time Series in between) ────
+const typeIconColors: Record<string, { default: string; selected: string }> = {
+  file: {
+    default: 'bg-blue-100 text-blue-600 group-hover:bg-blue-200/80',
+    selected: 'bg-blue-500 text-white',
+  },
+  table: {
+    default: 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200/80',
+    selected: 'bg-emerald-500 text-white',
+  },
+  data_stream: {
+    default: 'bg-amber-100 text-amber-600 group-hover:bg-amber-200/80',
+    selected: 'bg-amber-500 text-white',
+  },
+  time_series: {
+    default: 'bg-violet-100 text-violet-600 group-hover:bg-violet-200/80',
+    selected: 'bg-violet-500 text-white',
+  },
+};
+const datasetTypesRow1 = computed(() => [
   {
     value: 'file' as const,
     label: t('label.file'),
     description: t('label_subtitle.file'),
     icon: 'lucide:file-up',
+    color: 'file',
   },
   {
     value: 'table' as const,
     label: t('label.table'),
     description: t('label_subtitle.table'),
     icon: 'lucide:database',
+    color: 'table',
   },
   {
     value: 'data_stream' as const,
     label: t('label.data_stream'),
     description: t('label_subtitle.data_stream'),
     icon: 'lucide:radio',
+    color: 'data_stream',
+  },
+]);
+const datasetTypesRow2 = computed(() => [
+  {
+    value: 'time_series' as const,
+    label: t('label.time_series'),
+    description: t('label_subtitle.time_series'),
+    icon: 'lucide:chart-line',
+    color: 'time_series',
   },
 ]);
 
@@ -806,6 +1018,7 @@ const displayType = computed(() => {
     file: t('label.file'),
     table: t('label.table'),
     data_stream: t('label.data_stream'),
+    time_series: t('label.time_series'),
   };
   return selectedType.value
     ? labels[selectedType.value] || selectedType.value
@@ -887,6 +1100,14 @@ const stepFieldNames: Record<number, () => string[]> = {
         fields.push('source_settings.topic_name');
       }
       return fields;
+    }
+    if (selectedType.value === 'time_series') {
+      return [
+        'source_settings.connection_type',
+        'source_settings.connection_parameter',
+        'source_settings.metric_list',
+        'source_settings.feature_list',
+      ];
     }
     return [];
   },
@@ -1162,3 +1383,14 @@ watch(
   },
 );
 </script>
+
+<style scoped>
+:deep(.broker-port-input)::-webkit-inner-spin-button,
+:deep(.broker-port-input)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+:deep(.broker-port-input) {
+  -moz-appearance: textfield;
+}
+</style>

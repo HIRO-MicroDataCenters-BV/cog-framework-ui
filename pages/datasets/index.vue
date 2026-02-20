@@ -7,16 +7,18 @@ import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
 import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import { useSidebar } from '~/components/ui/sidebar';
 import { shortenUuid } from '~/utils';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
 const { setPage, page } = useApp();
 const { user: currentUser } = useCurrentUser();
+const { state: sidebarState } = useSidebar();
 
 const tableRef = ref();
 
-const { getDatasets } = useApi();
+const { getDatasets: fetchDatasets } = useApi();
 const {
   previewState,
   loadMorePreview,
@@ -24,6 +26,18 @@ const {
   shareState,
   closeShareDialog,
 } = useDatasetActions();
+
+// Wrapper to add ownership field to datasets
+const getDatasets = async (params?: Record<string, unknown>) => {
+  const response = await fetchDatasets(params);
+  if (response?.data && Array.isArray(response.data)) {
+    response.data = response.data.map((item: Record<string, unknown>) => ({
+      ...item,
+      ownership: item.user_id === currentUser.value?.email ? 'own' : 'shared',
+    }));
+  }
+  return response;
+};
 
 const handleDownloadFromPreview = () => {
   if (previewState.value.datasetId) {
@@ -47,49 +61,64 @@ const columns = [
     size: 250,
     cell: ({ row }: { row: TableRowType }) => {
       const isShared = row.original.user_id !== currentUser.value?.email;
-      return h('div', { class: 'relative inline-flex items-center' }, [
-        h(
-          'a',
-          {
-            href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
-          },
-          row.getValue('dataset_name'),
-        ),
-        isShared
-          ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
-              h(resolveComponent('Tooltip'), null, {
-                default: () => [
-                  h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
-                    h(
-                      'span',
-                      {
-                        class:
-                          'absolute -top-1 -right-3 inline-flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white text-[7px] font-bold cursor-default',
-                      },
-                      'S',
-                    ),
-                  ),
+
+      const nameLink = h(
+        'a',
+        {
+          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          class: 'font-medium truncate block pr-16',
+        },
+        row.getValue('dataset_name'),
+      );
+
+      const sharedBadge = isShared
+        ? h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+            h(resolveComponent('Tooltip'), null, {
+              default: () => [
+                h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
                   h(
-                    resolveComponent('TooltipContent'),
-                    { side: 'right' },
-                    () => `${t('label.shared_by')} ${row.original.user_id}`,
+                    'span',
+                    {
+                      class:
+                        'absolute top-0 right-0 inline-flex items-center gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 shrink-0 dark:bg-blue-900/30 dark:text-blue-300',
+                    },
+                    [
+                      h(resolveComponent('Icon'), {
+                        name: 'lucide:users',
+                        class: 'size-3 shrink-0',
+                      }),
+                      t('label.shared'),
+                    ],
                   ),
-                ],
-              }),
-            )
-          : null,
-      ]);
+                ),
+                h(
+                  resolveComponent('TooltipContent'),
+                  { side: 'right' },
+                  () => `${t('label.shared_by')} ${row.original.user_id}`,
+                ),
+              ],
+            }),
+          )
+        : null;
+
+      return h(
+        'div',
+        { class: 'relative flex flex-col justify-center min-h-[2.25rem]' },
+        [nameLink, sharedBadge],
+      );
     },
   },
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 200,
-    minSize: 200,
-    maxSize: 200,
+    size: 250,
+    minSize: 250,
+    maxSize: 250,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
+      const displayId =
+        sidebarState.value === 'collapsed' ? idValue : shortenedId;
       return h(
         resolveComponent('TooltipProvider'),
         { delayDuration: 300 },
@@ -104,7 +133,7 @@ const columns = [
                     copyText: idValue,
                   },
                   {
-                    default: () => shortenedId,
+                    default: () => displayId,
                   },
                 ),
               ),
@@ -131,12 +160,12 @@ const columns = [
   },
   {
     id: 'user_id',
-    size: 200,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => row.getValue('user_id'),
   },
   {
     id: 'register_date_time',
-    size: 140,
+    size: 115,
     cell: ({ row }: { row: TableRowType }) => {
       const dateTime = row.getValue<string>('register_date_time');
       return h('div', { class: 'flex flex-col' }, [
@@ -150,8 +179,17 @@ const columns = [
     },
   },
   {
+    id: 'ownership',
+    size: 0,
+    minSize: 0,
+    maxSize: 0,
+    enableHiding: false,
+    meta: { hidden: true },
+    cell: () => null,
+  },
+  {
     id: 'actions',
-    size: 80,
+    size: 56,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();
@@ -188,7 +226,10 @@ const columns = [
       :data-source="getDatasets"
       :tabs="tabs"
       :sortable-columns="['register_date_time']"
-      :filterable-columns="['data_source_type']"
+      :filterable-columns="[
+        'data_source_type',
+        { id: 'ownership', headerColumn: 'dataset_name' },
+      ]"
       class="grow"
     />
 

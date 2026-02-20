@@ -40,7 +40,7 @@
           <label class="text-sm font-medium">{{ t('share.add_people') }}</label>
           <div class="flex gap-2">
             <!-- User Dropdown -->
-            <div class="relative flex-1">
+            <div ref="dropdownRef" class="relative flex-1">
               <button
                 type="button"
                 class="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -232,6 +232,7 @@
 </template>
 
 <script lang="ts" setup>
+import { onClickOutside } from '@vueuse/core';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface User {
@@ -261,8 +262,13 @@ const emit = defineEmits<{
 // State
 const searchQuery = ref('');
 const selectedPermission = ref<'view' | 'edit'>('view');
+const dropdownRef = ref<HTMLElement | null>(null);
 const isDropdownOpen = ref(false);
 const isSaving = ref(false);
+
+onClickOutside(dropdownRef, () => {
+  isDropdownOpen.value = false;
+});
 const sharedUsers = ref<SharedUser[]>([]);
 const availableUsers = ref<User[]>([]);
 const isLoadingUsers = ref(false);

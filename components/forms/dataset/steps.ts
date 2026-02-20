@@ -27,6 +27,11 @@ export const getDatasetFormSteps = (
                   label: t('label.data_stream'),
                   subtitle: t('label_subtitle.data_stream'),
                 },
+                {
+                  value: 'time_series',
+                  label: t('label.time_series'),
+                  subtitle: t('label_subtitle.time_series'),
+                },
               ],
             },
           ],
@@ -377,6 +382,71 @@ export const getDatasetFormSteps = (
                   },
                 ],
               },
+            },
+          ],
+        },
+        // Time Series fields
+        {
+          fields: [
+            {
+              type: 'textarea',
+              name: 'source_settings.connection_type',
+              label: t('label.connection_type'),
+              placeholder: t('placeholder.connection_type'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'time_series',
+              },
+              required: true,
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'textarea',
+              name: 'source_settings.connection_parameter',
+              label: t('label.connection_parameter'),
+              placeholder: t('placeholder.connection_parameter'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'time_series',
+              },
+              required: true,
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'textarea',
+              name: 'source_settings.metric_list',
+              label: t('label.metric_list'),
+              placeholder: t('placeholder.metric_list'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'time_series',
+              },
+              required: true,
+            },
+          ],
+        },
+        {
+          fields: [
+            {
+              type: 'textarea',
+              name: 'source_settings.feature_list',
+              label: t('label.feature_list'),
+              placeholder: t('placeholder.feature_list'),
+              condition: {
+                field: 'type',
+                operator: 'eq',
+                value: 'time_series',
+              },
+              required: true,
             },
           ],
         },

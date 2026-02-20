@@ -1,13 +1,16 @@
 <script setup lang="ts">
-const mock = useMock();
 const menu = uselistMenus();
 const { t } = useI18n();
-const { user: currentUser, fetchCurrentUser } = useCurrentUser();
+const {
+  user: currentUser,
+  loading: userLoading,
+  fetchCurrentUser,
+} = useCurrentUser();
 
 // Track avatar image load failure so we show initials fallback instead of broken icon
 const avatarError = ref(false);
 watch(
-  () => currentUser.value?.avatarUrl ?? mock.value.user?.avatar_url,
+  () => currentUser.value?.avatarUrl,
   () => {
     avatarError.value = false;
   },
@@ -24,6 +27,7 @@ onMounted(() => {
 
 // Get initials from user name
 const getInitials = (name: string) => {
+  if (!name) return '?';
   return name
     .split(' ')
     .map((word) => word.charAt(0))
@@ -32,18 +36,23 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-// Use real user data if available, fallback to mock
+// Use real user data only - no mock fallback
 const user = computed(() => {
   if (currentUser.value) {
     return {
       full_name: currentUser.value.name,
       email: currentUser.value.email,
       avatar_url: currentUser.value.avatarUrl || '',
-      job_title: '',
     };
   }
-  return mock.value.user;
+  return {
+    full_name: '',
+    email: '',
+    avatar_url: '',
+  };
 });
+
+const hasUser = computed(() => Boolean(currentUser.value));
 const userInitials = computed(() => getInitials(user.value.full_name));
 const userMenuItems = computed(() => menu.value.user);
 
@@ -54,7 +63,7 @@ const showAvatarImage = computed(() =>
 </script>
 
 <template>
-  <SidebarMenu>
+  <SidebarMenu v-if="hasUser">
     <SidebarMenuItem>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
@@ -78,7 +87,7 @@ const showAvatarImage = computed(() =>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-semibold">{{ user.full_name }}</span>
               <span class="truncate text-xs text-muted-foreground">{{
-                user.job_title
+                user.email
               }}</span>
             </div>
             <Icon name="lucide:chevrons-up-down" class="ml-auto size-4" />
@@ -140,6 +149,19 @@ const showAvatarImage = computed(() =>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+    </SidebarMenuItem>
+  </SidebarMenu>
+
+  <!-- Loading state -->
+  <SidebarMenu v-else-if="userLoading">
+    <SidebarMenuItem>
+      <SidebarMenuButton size="lg" disabled>
+        <div class="h-8 w-8 rounded-lg bg-muted animate-pulse" />
+        <div class="grid flex-1 gap-1">
+          <div class="h-4 w-24 bg-muted rounded animate-pulse" />
+          <div class="h-3 w-32 bg-muted rounded animate-pulse" />
+        </div>
+      </SidebarMenuButton>
     </SidebarMenuItem>
   </SidebarMenu>
 </template>
