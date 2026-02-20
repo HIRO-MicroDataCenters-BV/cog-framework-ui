@@ -34,7 +34,7 @@ const props = defineProps({
   },
   pageSizeOptions: {
     type: Array,
-    default: () => [10, 20, 50, 100],
+    default: () => [5, 10, 15, 20, 50, 100],
   },
 });
 
