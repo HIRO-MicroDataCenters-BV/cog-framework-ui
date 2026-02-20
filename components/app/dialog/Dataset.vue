@@ -482,7 +482,7 @@
                     </FormItem>
                   </FormField>
 
-                  <div class="grid grid-cols-2 gap-4">
+                  <div class="grid grid-cols-2 gap-4 items-start">
                     <FormField
                       v-slot="{ componentField }"
                       name="source_settings.broker_ip_address"
