@@ -278,7 +278,9 @@ export const useDatasetForm = () => {
         res = await registerStreamDataset(values as StreamDatasetValues);
         break;
       case 'time_series':
-        res = await registerTimeSeriesDataset(values as TimeSeriesDatasetValues);
+        res = await registerTimeSeriesDataset(
+          values as TimeSeriesDatasetValues,
+        );
         break;
       default:
         throw new Error(`error.unknown_dataset_type: ${values.type}`);

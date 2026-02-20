@@ -372,7 +372,9 @@ const getColumns = (list: TableColumn[]) => {
   // Helper to check if a column has its own filter
   const isFilterable = (columnId: string) => {
     return props.filterableColumns.some((f) =>
-      typeof f === 'string' ? f === columnId : f.id === columnId && !f.headerColumn,
+      typeof f === 'string'
+        ? f === columnId
+        : f.id === columnId && !f.headerColumn,
     );
   };
 
@@ -481,8 +483,7 @@ const getColumns = (list: TableColumn[]) => {
     return {
       id: item.id,
       accessorKey: item.id,
-      header:
-        isSortable || hasFilters ? headerContent : t(`column.${item.id}`),
+      header: isSortable || hasFilters ? headerContent : t(`column.${item.id}`),
       cell: item.cell,
       enableHiding: item.enableHiding,
       size: item.size,
@@ -854,7 +855,10 @@ defineExpose({ fetchData });
               >
                 <Icon
                   name="lucide:refresh-cw"
-                  :class="['h-4 w-4 transition-transform duration-300', isRefreshing && 'animate-spin']"
+                  :class="[
+                    'h-4 w-4 transition-transform duration-300',
+                    isRefreshing && 'animate-spin',
+                  ]"
                 />
               </Button>
               <Button class="cursor-pointer" @click="() => add()">
@@ -903,7 +907,9 @@ defineExpose({ fetchData });
             :key="headerGroup.id"
           >
             <TableHead
-              v-for="header in headerGroup.headers.filter(h => !(h.column.columnDef as any).meta?.hidden)"
+              v-for="header in headerGroup.headers.filter(
+                (h) => !(h.column.columnDef as any).meta?.hidden,
+              )"
               :key="header.id"
               :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
               :style="{
@@ -927,7 +933,9 @@ defineExpose({ fetchData });
             >
               <TableRow :data-state="row.getIsSelected() && 'selected'">
                 <TableCell
-                  v-for="(cell, cellIndex) in row.getVisibleCells().filter(c => !(c.column.columnDef as any).meta?.hidden)"
+                  v-for="(cell, cellIndex) in row
+                    .getVisibleCells()
+                    .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                   :key="cell.id"
                   class="border-l border-r border-border py-1 px-3 text-sm"
                   :style="{
@@ -981,7 +989,9 @@ defineExpose({ fetchData });
                   class="bg-muted/20"
                 >
                   <TableCell
-                    v-for="(cell, cellIndex) in subRow.getVisibleCells().filter(c => !(c.column.columnDef as any).meta?.hidden)"
+                    v-for="(cell, cellIndex) in subRow
+                      .getVisibleCells()
+                      .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                     :key="cell.id"
                     class="border-l border-r border-border py-1 px-3 text-sm"
                     :style="{

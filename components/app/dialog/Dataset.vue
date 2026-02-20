@@ -127,7 +127,9 @@
                   </div>
                   <div>
                     <p class="text-sm font-medium">{{ dtype.label }}</p>
-                    <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
+                    <p
+                      class="mt-1 text-xs text-muted-foreground leading-relaxed"
+                    >
                       {{ dtype.description }}
                     </p>
                   </div>
@@ -805,7 +807,9 @@
                     <span class="text-sm text-muted-foreground">
                       {{ t('label.connection_type') }}
                     </span>
-                    <span class="text-sm font-medium font-mono max-w-[280px] truncate">
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
                       {{ sourceSettings?.connection_type ? 'Configured' : '—' }}
                     </span>
                   </div>
@@ -813,15 +817,23 @@
                     <span class="text-sm text-muted-foreground">
                       {{ t('label.connection_parameter') }}
                     </span>
-                    <span class="text-sm font-medium font-mono max-w-[280px] truncate">
-                      {{ sourceSettings?.connection_parameter ? 'Configured' : '—' }}
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
+                      {{
+                        sourceSettings?.connection_parameter
+                          ? 'Configured'
+                          : '—'
+                      }}
                     </span>
                   </div>
                   <div class="flex items-center justify-between px-4 py-3">
                     <span class="text-sm text-muted-foreground">
                       {{ t('label.metric_list') }}
                     </span>
-                    <span class="text-sm font-medium font-mono max-w-[280px] truncate">
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
                       {{ sourceSettings?.metric_list ? 'Configured' : '—' }}
                     </span>
                   </div>
@@ -829,7 +841,9 @@
                     <span class="text-sm text-muted-foreground">
                       {{ t('label.feature_list') }}
                     </span>
-                    <span class="text-sm font-medium font-mono max-w-[280px] truncate">
+                    <span
+                      class="text-sm font-medium font-mono max-w-[280px] truncate"
+                    >
                       {{ sourceSettings?.feature_list ? 'Configured' : '—' }}
                     </span>
                   </div>
@@ -925,10 +939,7 @@ const stepsMeta = computed(() => [
 ]);
 
 // ──── Dataset Type Options (Row 1: File, Table, Data Stream | Row 2: Time Series in between) ────
-const typeIconColors: Record<
-  string,
-  { default: string; selected: string }
-> = {
+const typeIconColors: Record<string, { default: string; selected: string }> = {
   file: {
     default: 'bg-blue-100 text-blue-600 group-hover:bg-blue-200/80',
     selected: 'bg-blue-500 text-white',

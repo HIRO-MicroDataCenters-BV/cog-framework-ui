@@ -101,10 +101,11 @@ const columns = [
           )
         : null;
 
-      return h('div', { class: 'relative flex flex-col justify-center min-h-[2.25rem]' }, [
-        nameLink,
-        sharedBadge,
-      ]);
+      return h(
+        'div',
+        { class: 'relative flex flex-col justify-center min-h-[2.25rem]' },
+        [nameLink, sharedBadge],
+      );
     },
   },
   {
@@ -225,7 +226,10 @@ const columns = [
       :data-source="getDatasets"
       :tabs="tabs"
       :sortable-columns="['register_date_time']"
-      :filterable-columns="['data_source_type', { id: 'ownership', headerColumn: 'dataset_name' }]"
+      :filterable-columns="[
+        'data_source_type',
+        { id: 'ownership', headerColumn: 'dataset_name' },
+      ]"
       class="grow"
     />
 
