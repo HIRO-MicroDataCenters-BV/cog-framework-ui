@@ -55,7 +55,7 @@ const props = defineProps({
   columns: Array as PropType<TableColumn[]>,
   pageSize: {
     type: Number,
-    default: 10,
+    default: 15,
   },
   tabs: {
     type: Array as PropType<
@@ -251,7 +251,8 @@ const fetchData = async () => {
           pageSize.value =
             parseInt(route.query.limit as string) || props.pageSize;
         } else {
-          pageSize.value = pagination.limit ?? props.pageSize;
+          // Keep client default; don't overwrite with API's pagination.limit
+          pageSize.value = props.pageSize;
         }
         totalItems.value = pagination.total_items ?? 0;
 
@@ -1074,7 +1075,7 @@ defineExpose({ fetchData });
           :can-next-page="canNextPage"
           :sibling-count="2"
           :show-edges="true"
-          :page-size-options="[10, 20, 50, 100]"
+          :page-size-options="[5, 10, 15, 20, 50, 100]"
           @on-set-page="
             (page: number) => {
               const query = { ...route.query };
