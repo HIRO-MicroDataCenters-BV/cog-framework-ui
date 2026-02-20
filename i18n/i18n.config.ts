@@ -511,6 +511,8 @@ export default defineI18nConfig(() => ({
         types: {
           array: 'array',
           object: 'object',
+          string: 'string',
+          number: 'number',
         },
         errors: {
           invalid_type_received_undefined: 'This field is required',
@@ -522,7 +524,14 @@ export default defineI18nConfig(() => ({
               inclusive: 'This field must be at least {min} characters',
             },
           },
-          too_big: 'This field must be at most {max} characters',
+          too_big: {
+            string: {
+              inclusive: 'This field must be at most {maximum} characters',
+            },
+            number: {
+              inclusive: 'Value must be {maximum} or less',
+            },
+          },
           invalid_date: 'Please enter a valid date',
           invalid_number: 'Please enter a valid number',
           invalid_boolean: 'Please select a valid option',

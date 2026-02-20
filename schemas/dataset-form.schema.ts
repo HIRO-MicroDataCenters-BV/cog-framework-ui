@@ -5,9 +5,9 @@ import * as z from 'zod';
 const ipAddressRegex =
   /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
-// Port validation: 1-65535
+// Port validation: 0-65535
 const portRegex =
-  /^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/;
+  /^(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/;
 
 // Database URL validation pattern (supports any protocol scheme)
 // Examples: postgresql://, mysql://, mongodb://, redis://, mssql://, oracle://, jdbc:, etc.
@@ -46,7 +46,7 @@ export const datasetFormSchema = toTypedSchema(
           broker_ip_address: z.string().optional(),
           broker_port: z
             .union([
-              z.number().int().min(1).max(65535),
+              z.number().int().min(0).max(65535),
               z.string().regex(portRegex, 'validation.invalid_port'),
             ])
             .optional(),
@@ -217,12 +217,12 @@ export const datasetFormSchema = toTypedSchema(
             });
           }
 
-          // Broker port is required and must be valid
+          // Broker port is required and must be in range 0-65535
           if (
             !data.source_settings ||
             data.source_settings.broker_port === undefined ||
             data.source_settings.broker_port === null ||
-            data.source_settings.broker_port === 0
+            data.source_settings.broker_port === ''
           ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
@@ -232,10 +232,16 @@ export const datasetFormSchema = toTypedSchema(
           } else {
             let port: number;
             if (typeof data.source_settings.broker_port === 'string') {
-              const parsed = parseInt(
-                data.source_settings.broker_port.trim(),
-                10,
-              );
+              const trimmed = data.source_settings.broker_port.trim();
+              if (trimmed === '') {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: 'validation.required',
+                  path: ['source_settings', 'broker_port'],
+                });
+                return;
+              }
+              const parsed = parseInt(trimmed, 10);
               if (isNaN(parsed)) {
                 ctx.addIssue({
                   code: z.ZodIssueCode.custom,
@@ -249,7 +255,7 @@ export const datasetFormSchema = toTypedSchema(
               port = data.source_settings.broker_port;
             }
 
-            if (port < 1 || port > 65535) {
+            if (port < 0 || port > 65535) {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: 'validation.invalid_port',

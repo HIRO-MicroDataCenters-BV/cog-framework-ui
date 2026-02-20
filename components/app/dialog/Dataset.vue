@@ -513,6 +513,9 @@
                             type="number"
                             v-bind="componentField"
                             :placeholder="t('placeholder.broker_port')"
+                            class="broker-port-input"
+                            min="0"
+                            max="65535"
                           />
                         </FormControl>
                         <FormMessage />
@@ -1369,3 +1372,14 @@ watch(
   },
 );
 </script>
+
+<style scoped>
+:deep(.broker-port-input)::-webkit-inner-spin-button,
+:deep(.broker-port-input)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+:deep(.broker-port-input) {
+  -moz-appearance: textfield;
+}
+</style>
