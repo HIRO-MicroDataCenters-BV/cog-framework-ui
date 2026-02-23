@@ -43,7 +43,7 @@ setOpen(!isIframe.value);
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground ring-0 outline-none focus-visible:ring-0 focus-visible:outline-none data-[state=open]:ring-0"
                 size="lg"
               >
                 <div

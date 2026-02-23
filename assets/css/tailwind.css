@@ -38,7 +38,7 @@
   --sidebar-ring: 217.2 91.2% 59.8%;
 }
 
-/* Softer dark theme (Radix Slate Dark–inspired) – less harsh than pure black */
+/* Softer dark theme – different palette from light (no blue sidebar) */
 .dark {
   --background: 220 13% 12%;
   --foreground: 210 40% 98%;
@@ -66,12 +66,14 @@
   --chart-5: 340 75% 55%;
   --sidebar-background: 220 13% 10%;
   --sidebar-foreground: 210 40% 95%;
-  --sidebar-primary: 217 91% 60%;
-  --sidebar-primary-foreground: 0 0% 100%;
+  /* Dark theme: neutral slate for logo/primary (no blue) */
+  --sidebar-primary: 220 13% 22%;
+  --sidebar-primary-foreground: 210 40% 95%;
   --sidebar-accent: 220 12% 18%;
   --sidebar-accent-foreground: 210 40% 95%;
   --sidebar-border: 220 10% 22%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+  /* Dark theme: focus ring matches border (no blue) */
+  --sidebar-ring: 220 14% 55%;
 }
 
 @theme inline {

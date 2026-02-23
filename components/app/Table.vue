@@ -903,7 +903,7 @@ defineExpose({ fetchData });
     <div class="overflow-x-auto w-full flex-1">
       <table class="border-b w-full border-collapse table-fixed">
         <TableHeader
-          class="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b border-t border-gray-200 z-10 shadow-xs"
+          class="sticky top-0 bg-muted/40 dark:bg-muted border-b border-t border-border z-10 shadow-xs"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"

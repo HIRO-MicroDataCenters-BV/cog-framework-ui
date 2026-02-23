@@ -80,7 +80,7 @@ const columns = [
                     'span',
                     {
                       class:
-                        'absolute top-0 right-0 inline-flex items-center gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 shrink-0 dark:bg-blue-900/30 dark:text-blue-300',
+                        'absolute top-0 right-0 inline-flex items-center gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 shrink-0 dark:bg-blue-800 dark:text-blue-100',
                     },
                     [
                       h(resolveComponent('Icon'), {
