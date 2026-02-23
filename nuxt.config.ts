@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-zod-i18n',
     'dayjs-nuxt',
-    // '@nuxtjs/color-mode',
+    '@nuxtjs/color-mode',
   ],
   // Enable SSR to get Nitro server for API endpoints
   // But use client-side rendering for pages (SPA mode)
@@ -42,11 +42,11 @@ export default defineNuxtConfig({
     buildAssetsDir: '/_nuxt/',
   },
   css: ['~/assets/css/tailwind.css'],
-  /*
   colorMode: {
     classSuffix: '',
+    preference: 'system',
+    fallback: 'light',
   },
-  */
   runtimeConfig: {
     // Server-side only configuration (never exposed to client)
     dexHost: process.env.NUXT_DEX_HOST || '',

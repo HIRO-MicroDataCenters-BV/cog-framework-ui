@@ -1,14 +1,16 @@
 <template>
-  <div>
-    <Switch :model-value="isDark" @update:model-value="toggleTheme">
-      <template #thumb>
-        <div class="flex content-center justify-center items-center">
-          <Icon v-if="isDark" name="lucide:moon" />
-          <Icon v-else name="lucide:sun" />
-        </div>
-      </template>
-    </Switch>
-  </div>
+  <Button
+    variant="outline"
+    size="icon"
+    class="cursor-pointer shrink-0 rounded-md"
+    :title="isDark ? 'Light mode' : 'Dark mode'"
+    @click="toggleTheme"
+  >
+    <Icon
+      :name="isDark ? 'lucide:sun' : 'lucide:moon'"
+      class="h-4 w-4"
+    />
+  </Button>
 </template>
 
 <script lang="ts" setup>
@@ -21,5 +23,3 @@ const toggleTheme = () => {
   colorMode.preference = value;
 };
 </script>
-
-<style></style>
