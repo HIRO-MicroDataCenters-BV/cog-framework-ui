@@ -5,10 +5,9 @@ import DropdownAction from '@/components/app/menu/Actions.vue';
 import PreviewDialog from '@/components/app/dialog/Preview.vue';
 import ShareDialog from '@/components/app/dialog/Share.vue';
 import { useApi } from '@/composables/api';
-import { Badge } from '~/components/ui/badge';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { useSidebar } from '~/components/ui/sidebar';
-import { shortenUuid } from '~/utils';
+import { shortenUuid, getDataTypeFromValue } from '~/utils';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
@@ -148,14 +147,32 @@ const columns = [
     size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
-      return h(
-        Badge,
-        {
-          value,
-          type: 'type',
-        },
-        () => [],
-      );
+      const typeName = getDataTypeFromValue(value);
+      if (!typeName) return null;
+      const typeBadgeClasses: Record<string, string> = {
+        file: 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
+        database:
+          'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-100',
+        stream:
+          'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-100',
+        time_series:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+      };
+      const typeIcons: Record<string, string> = {
+        file: 'lucide:file-text',
+        database: 'lucide:database',
+        stream: 'lucide:radio',
+        time_series: 'lucide:calendar',
+      };
+      const baseClass =
+        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
+      return h('span', { class: `${baseClass} ${typeBadgeClasses[typeName]}` }, [
+        h(resolveComponent('Icon'), {
+          name: typeIcons[typeName],
+          class: 'size-3 shrink-0',
+        }),
+        t(`label.${typeName}`),
+      ]);
     },
   },
   {
