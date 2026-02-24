@@ -1,22 +1,10 @@
 <template>
-  <div v-if="content" class="w-[840px] mx-auto max-w-full px-4">
-    <div class="mb-8">
-      <header class="mb-8">
-        <h1 v-if="page.title != ''" class="text-2xl font-medium">
-          {{ page.title }}
-        </h1>
-        <p class="text-gray-500 mt-2">
-          {{ content.description }}
-        </p>
-      </header>
-      <div class="flex gap-2">
-        <Badge v-if="content?.type"
-          ><Icon name="lucide:bot" />{{ content.type }}</Badge
-        >
-      </div>
-    </div>
-    <div>
-      <template v-for="group in schema" :key="group.key">
+  <div v-if="content" class="w-full">
+    <SimpleTabs v-model="activeTab" :tabs="tabs" class="mb-8" />
+
+    <div class="px-4">
+      <div v-if="activeTab === 'overview'">
+        <template v-for="group in schema" :key="group.key">
         <div v-if="group.label" class="mt-4 mb-2 first:mt-0">
           <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300">
             {{ $t(`label.${group.key}`) }}
@@ -101,12 +89,20 @@
           </template>
         </div>
       </template>
+      </div>
+
+      <div v-if="activeTab === 'artifacts'">
+        <div class="text-gray-500 dark:text-gray-400">
+          No artifacts available.
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
@@ -116,6 +112,12 @@ const { setPage, page } = useApp();
 const id = computed(() => route.params.id[0] as string);
 const content = ref();
 const additional = ref();
+
+const activeTab = ref('overview');
+const tabs = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'artifacts', label: 'Artifacts' },
+];
 
 const schema = [
   {
