@@ -11,7 +11,9 @@
           <Card>
             <CardHeader>
               <CardTitle class="flex items-center gap-2">
-                <Icon name="lucide:info" class="w-5 h-5 text-muted-foreground" />
+                <div class="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/50">
+                  <Icon name="lucide:info" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
                 Model Details
               </CardTitle>
             </CardHeader>
@@ -27,7 +29,7 @@
                 </div>
                 <div class="flex items-start justify-between">
                   <span class="text-muted-foreground text-sm">Type</span>
-                  <Badge class="text-sm">
+                  <Badge :variant="content.type" class="text-sm">
                     <Icon name="lucide:bot" class="mr-1" />
                     {{ content.type }}
                   </Badge>
@@ -68,7 +70,9 @@
           <Card>
             <CardHeader>
               <CardTitle class="flex items-center gap-2">
-                <Icon name="lucide:settings" class="w-5 h-5 text-muted-foreground" />
+                <div class="p-1.5 rounded-md bg-purple-100 dark:bg-purple-900/50">
+                  <Icon name="lucide:settings" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                </div>
                 Training Parameters
               </CardTitle>
             </CardHeader>
@@ -96,21 +100,22 @@
         <Card v-if="content.run?.metrics?.length">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Icon name="lucide:bar-chart-3" class="w-5 h-5 text-muted-foreground" />
+              <div class="p-1.5 rounded-md bg-green-100 dark:bg-green-900/50">
+                <Icon name="lucide:bar-chart-3" class="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
               Performance Metrics
             </CardTitle>
           </CardHeader>
           <CardContent>
             <!-- Summary Metrics -->
             <div class="mb-6">
-              <h4 class="text-sm font-medium mb-3">Summary</h4>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-muted/50 rounded-lg p-3 flex items-center justify-between">
-                  <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div v-for="metric in summaryMetrics" :key="metric.key" :class="[metric.bgClass, 'rounded-lg p-3 flex items-center justify-between']">
+                  <div :class="['flex items-center gap-1.5 text-xs', metric.textClass]">
                     <Icon :name="metric.icon" class="w-3.5 h-3.5" />
                     {{ metric.label }}
                   </div>
-                  <div class="text-lg font-semibold">
+                  <div :class="['text-lg font-semibold', metric.valueClass]">
                     {{ formatMetricValue(metric.value) }}
                   </div>
                 </div>
@@ -154,7 +159,9 @@
         <Card v-if="content.run?.tags?.length">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Icon name="lucide:tags" class="w-5 h-5 text-muted-foreground" />
+              <div class="p-1.5 rounded-md bg-amber-100 dark:bg-amber-900/50">
+                <Icon name="lucide:tags" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
               Tags
             </CardTitle>
           </CardHeader>
@@ -238,10 +245,38 @@ const formatParamKey = (key: string): string => {
 const summaryMetrics = computed(() => {
   const metrics = content.value?.run?.metrics || [];
   const summaryKeys = [
-    { key: 'test_accuracy', label: 'Accuracy', icon: 'lucide:target' },
-    { key: 'test_f1_macro', label: 'F1 Macro', icon: 'lucide:gauge' },
-    { key: 'test_f1_weighted', label: 'F1 Weighted', icon: 'lucide:activity' },
-    { key: 'cv_f1_macro', label: 'CV F1 Macro', icon: 'lucide:git-branch' },
+    {
+      key: 'test_accuracy',
+      label: 'Accuracy',
+      icon: 'lucide:target',
+      bgClass: 'bg-green-50 dark:bg-green-900/30',
+      textClass: 'text-green-700 dark:text-green-400',
+      valueClass: 'text-green-800 dark:text-green-300'
+    },
+    {
+      key: 'test_f1_macro',
+      label: 'F1 Macro',
+      icon: 'lucide:gauge',
+      bgClass: 'bg-blue-50 dark:bg-blue-900/30',
+      textClass: 'text-blue-700 dark:text-blue-400',
+      valueClass: 'text-blue-800 dark:text-blue-300'
+    },
+    {
+      key: 'test_f1_weighted',
+      label: 'F1 Weighted',
+      icon: 'lucide:activity',
+      bgClass: 'bg-purple-50 dark:bg-purple-900/30',
+      textClass: 'text-purple-700 dark:text-purple-400',
+      valueClass: 'text-purple-800 dark:text-purple-300'
+    },
+    {
+      key: 'cv_f1_macro',
+      label: 'CV F1 Macro',
+      icon: 'lucide:git-branch',
+      bgClass: 'bg-orange-50 dark:bg-orange-900/30',
+      textClass: 'text-orange-700 dark:text-orange-400',
+      valueClass: 'text-orange-800 dark:text-orange-300'
+    },
   ];
 
   return summaryKeys
