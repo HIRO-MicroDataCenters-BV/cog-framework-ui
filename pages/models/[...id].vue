@@ -2,64 +2,62 @@
   <div v-if="content" class="w-full h-full flex flex-col overflow-hidden">
     <SimpleTabs v-model="activeTab" :tabs="tabs" class="flex-shrink-0" />
 
-    <div class="flex-1 overflow-y-auto px-4 py-6">
+    <div class="flex-1 overflow-y-auto px-4 py-4">
       <!-- Overview Tab -->
-      <div v-if="activeTab === 'overview'" class="space-y-6">
+      <div v-if="activeTab === 'overview'" class="space-y-4">
         <!-- Two Column Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Model Details -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="flex items-center gap-2">
-                <div class="p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/50">
-                  <Icon name="lucide:info" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <Card class="transition-all duration-200 hover:shadow-md">
+            <CardHeader class="py-3 px-4">
+              <CardTitle class="flex items-center gap-2 text-sm">
+                <div class="p-1 rounded bg-blue-100 dark:bg-blue-900/50">
+                  <Icon name="lucide:info" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 </div>
                 Model Details
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div class="space-y-4">
-                <div class="flex items-start justify-between">
-                  <span class="text-muted-foreground text-sm">Model ID</span>
+            <CardContent class="px-4 pb-4 pt-0">
+              <div class="space-y-0.5">
+                <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors">
+                  <span class="text-muted-foreground text-xs">Model ID</span>
                   <CopyPaste :has-copy="true" icon-left>
-                    <code class="text-sm bg-muted px-2 py-1 rounded font-mono">
+                    <code class="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
                       {{ content.id }}
                     </code>
                   </CopyPaste>
                 </div>
-                <div class="flex items-start justify-between">
-                  <span class="text-muted-foreground text-sm">Type</span>
-                  <Badge :variant="content.type" class="text-sm">
-                    <Icon name="lucide:bot" class="mr-1" />
+                <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors">
+                  <span class="text-muted-foreground text-xs">Type</span>
+                  <Badge :variant="content.type" class="text-xs">
+                    <Icon name="lucide:bot" class="mr-0.5 w-3 h-3" />
                     {{ content.type }}
                   </Badge>
                 </div>
-                <div class="flex items-start justify-between">
-                  <span class="text-muted-foreground text-sm">Version</span>
-                  <Badge variant="outline" class="text-sm">
+                <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors">
+                  <span class="text-muted-foreground text-xs">Version</span>
+                  <Badge variant="outline" class="text-xs">
                     v{{ content.version }}
                   </Badge>
                 </div>
-                <div class="flex items-start justify-between">
-                  <span class="text-muted-foreground text-sm">Created</span>
+                <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors">
+                  <span class="text-muted-foreground text-xs flex items-center gap-1">
+                    <Icon name="lucide:calendar-plus" class="w-3 h-3" />
+                    Created
+                  </span>
                   <div class="text-right">
-                    <div class="text-sm">
-                      {{ dayjs(content.register_date).format('MMM DD, YYYY') }}
-                    </div>
-                    <div class="text-xs text-muted-foreground">
-                      by {{ content.register_user_id }}
-                    </div>
+                    <span class="text-xs">{{ dayjs(content.register_date).format('MMM DD, YYYY') }}</span>
+                    <span class="text-xs text-muted-foreground ml-1">by {{ content.register_user_id }}</span>
                   </div>
                 </div>
-                <div class="flex items-start justify-between">
-                  <span class="text-muted-foreground text-sm">Last Modified</span>
+                <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors">
+                  <span class="text-muted-foreground text-xs flex items-center gap-1">
+                    <Icon name="lucide:calendar-check" class="w-3 h-3" />
+                    Modified
+                  </span>
                   <div class="text-right">
-                    <div class="text-sm">
-                      {{ dayjs(content.last_modified_time).format('MMM DD, YYYY') }}
-                    </div>
-                    <div class="text-xs text-muted-foreground">
-                      by {{ content.last_modified_user_id }}
-                    </div>
+                    <span class="text-xs">{{ dayjs(content.last_modified_time).format('MMM DD, YYYY') }}</span>
+                    <span class="text-xs text-muted-foreground ml-1">by {{ content.last_modified_user_id }}</span>
                   </div>
                 </div>
               </div>
@@ -67,29 +65,30 @@
           </Card>
 
           <!-- Training Parameters -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="flex items-center gap-2">
-                <div class="p-1.5 rounded-md bg-purple-100 dark:bg-purple-900/50">
-                  <Icon name="lucide:settings" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <Card class="transition-all duration-200 hover:shadow-md">
+            <CardHeader class="py-3 px-4">
+              <CardTitle class="flex items-center gap-2 text-sm">
+                <div class="p-1 rounded bg-purple-100 dark:bg-purple-900/50">
+                  <Icon name="lucide:settings" class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                 </div>
                 Training Parameters
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div v-if="content.run?.params?.length" class="space-y-3">
+            <CardContent class="px-4 pb-4 pt-0">
+              <div v-if="content.run?.params?.length" class="space-y-0.5">
                 <div
                   v-for="param in content.run.params"
                   :key="param.key"
-                  class="flex items-start justify-between"
+                  class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
                 >
-                  <span class="text-muted-foreground text-sm">{{ formatParamKey(param.key) }}</span>
-                  <span class="text-sm font-medium text-right max-w-[60%]">
+                  <span class="text-muted-foreground text-xs">{{ formatParamKey(param.key) }}</span>
+                  <span class="text-xs font-medium text-right max-w-[60%] bg-muted px-1.5 py-0.5 rounded">
                     {{ param.value }}
                   </span>
                 </div>
               </div>
-              <div v-else class="text-muted-foreground text-sm">
+              <div v-else class="text-muted-foreground text-xs text-center py-4">
+                <Icon name="lucide:inbox" class="w-6 h-6 mx-auto mb-1 opacity-50" />
                 No parameters available
               </div>
             </CardContent>
@@ -97,77 +96,68 @@
         </div>
 
         <!-- Performance Metrics -->
-        <Card v-if="content.run?.metrics?.length">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <div class="p-1.5 rounded-md bg-green-100 dark:bg-green-900/50">
-                <Icon name="lucide:bar-chart-3" class="w-4 h-4 text-green-600 dark:text-green-400" />
+        <Card v-if="content.run?.metrics?.length" class="transition-all duration-200 hover:shadow-md">
+          <CardHeader class="py-3 px-4">
+            <CardTitle class="flex items-center gap-2 text-sm">
+              <div class="p-1 rounded bg-green-100 dark:bg-green-900/50">
+                <Icon name="lucide:bar-chart-3" class="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
               </div>
               Performance Metrics
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent class="px-4 pb-4 pt-0">
             <!-- Summary Metrics -->
-            <div class="mb-6">
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div v-for="metric in summaryMetrics" :key="metric.key" :class="[metric.bgClass, 'rounded-lg p-3 flex items-center justify-between']">
-                  <div :class="['flex items-center gap-1.5 text-xs', metric.textClass]">
-                    <Icon :name="metric.icon" class="w-3.5 h-3.5" />
-                    {{ metric.label }}
-                  </div>
-                  <div :class="['text-lg font-semibold', metric.valueClass]">
-                    {{ formatMetricValue(metric.value) }}
-                  </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+              <div
+                v-for="metric in summaryMetrics"
+                :key="metric.key"
+                :class="[metric.bgClass, 'rounded-lg p-2.5 flex items-center justify-between border transition-all duration-200 hover:scale-[1.01]', metric.borderClass]"
+              >
+                <div :class="['flex items-center gap-1 text-xs', metric.textClass]">
+                  <Icon :name="metric.icon" class="w-3 h-3" />
+                  {{ metric.label }}
+                </div>
+                <div :class="['text-sm font-bold', metric.valueClass]">
+                  {{ formatMetricDisplay(metric.value) }}
                 </div>
               </div>
             </div>
 
-            <!-- Class-wise Metrics -->
-            <div v-if="classMetrics.length">
-              <h4 class="text-sm font-medium mb-3">Per-Class Performance</h4>
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="border-b">
-                      <th class="text-left py-2 pr-4 font-medium text-muted-foreground">Class</th>
-                      <th class="text-right py-2 px-4 font-medium text-muted-foreground">Precision</th>
-                      <th class="text-right py-2 px-4 font-medium text-muted-foreground">Recall</th>
-                      <th class="text-right py-2 px-4 font-medium text-muted-foreground">F1-Score</th>
-                      <th class="text-right py-2 pl-4 font-medium text-muted-foreground">Support</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="cls in classMetrics"
-                      :key="cls.name"
-                      class="border-b border-border/50"
-                    >
-                      <td class="py-3 pr-4 font-medium">{{ cls.name }}</td>
-                      <td class="py-3 px-4 text-right text-muted-foreground">{{ formatPercent(cls.precision) }}</td>
-                      <td class="py-3 px-4 text-right text-muted-foreground">{{ formatPercent(cls.recall) }}</td>
-                      <td class="py-3 px-4 text-right text-muted-foreground">{{ formatPercent(cls.f1Score) }}</td>
-                      <td class="py-3 pl-4 text-right text-muted-foreground">{{ formatNumber(cls.support) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <!-- All Metrics -->
+            <div class="space-y-0.5">
+              <div
+                v-for="metric in content.run.metrics"
+                :key="metric.key"
+                class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
+              >
+                <span class="text-muted-foreground text-xs">{{ formatMetricKey(metric.key) }}</span>
+                <span :class="['text-xs font-medium', getMetricColor(metric.value)]">
+                  {{ formatMetricDisplay(metric.value) }}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <!-- Tags -->
-        <Card v-if="content.run?.tags?.length">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <div class="p-1.5 rounded-md bg-amber-100 dark:bg-amber-900/50">
-                <Icon name="lucide:tags" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        <Card v-if="content.run?.tags?.length" class="transition-all duration-200 hover:shadow-md">
+          <CardHeader class="py-3 px-4">
+            <CardTitle class="flex items-center gap-2 text-sm">
+              <div class="p-1 rounded bg-amber-100 dark:bg-amber-900/50">
+                <Icon name="lucide:tags" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               </div>
               Tags
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div class="flex flex-wrap gap-2">
-              <Badge v-for="tag in content.run.tags" :key="tag" variant="secondary">
+          <CardContent class="px-4 pb-4 pt-0">
+            <div class="flex flex-wrap gap-1.5">
+              <Badge
+                v-for="tag in content.run.tags"
+                :key="tag"
+                variant="secondary"
+                class="text-xs px-2 py-0.5 transition-all hover:scale-105"
+              >
+                <Icon name="lucide:hash" class="w-2.5 h-2.5 mr-0.5" />
                 {{ tag }}
               </Badge>
             </div>
@@ -241,7 +231,33 @@ const formatParamKey = (key: string): string => {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
-// Computed for summary metrics
+const formatMetricKey = (key: string): string => {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const formatMetricDisplay = (value: string | number): string => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return String(value);
+  if (num <= 1 && num >= 0) return `${(num * 100).toFixed(1)}%`;
+  return num.toLocaleString();
+};
+
+// Get color class based on metric value
+const getMetricColor = (value: string | number): string => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return '';
+  if (num <= 1 && num >= 0) {
+    if (num >= 0.9) return 'text-green-600 dark:text-green-400';
+    if (num >= 0.7) return 'text-blue-600 dark:text-blue-400';
+    if (num >= 0.5) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
+  }
+  return '';
+};
+
+// Summary metrics for quick view
 const summaryMetrics = computed(() => {
   const metrics = content.value?.run?.metrics || [];
   const summaryKeys = [
@@ -249,7 +265,8 @@ const summaryMetrics = computed(() => {
       key: 'test_accuracy',
       label: 'Accuracy',
       icon: 'lucide:target',
-      bgClass: 'bg-green-50 dark:bg-green-900/30',
+      bgClass: 'bg-green-50 dark:bg-green-900/20',
+      borderClass: 'border-green-200 dark:border-green-800',
       textClass: 'text-green-700 dark:text-green-400',
       valueClass: 'text-green-800 dark:text-green-300'
     },
@@ -257,7 +274,8 @@ const summaryMetrics = computed(() => {
       key: 'test_f1_macro',
       label: 'F1 Macro',
       icon: 'lucide:gauge',
-      bgClass: 'bg-blue-50 dark:bg-blue-900/30',
+      bgClass: 'bg-blue-50 dark:bg-blue-900/20',
+      borderClass: 'border-blue-200 dark:border-blue-800',
       textClass: 'text-blue-700 dark:text-blue-400',
       valueClass: 'text-blue-800 dark:text-blue-300'
     },
@@ -265,7 +283,8 @@ const summaryMetrics = computed(() => {
       key: 'test_f1_weighted',
       label: 'F1 Weighted',
       icon: 'lucide:activity',
-      bgClass: 'bg-purple-50 dark:bg-purple-900/30',
+      bgClass: 'bg-purple-50 dark:bg-purple-900/20',
+      borderClass: 'border-purple-200 dark:border-purple-800',
       textClass: 'text-purple-700 dark:text-purple-400',
       valueClass: 'text-purple-800 dark:text-purple-300'
     },
@@ -273,7 +292,8 @@ const summaryMetrics = computed(() => {
       key: 'cv_f1_macro',
       label: 'CV F1 Macro',
       icon: 'lucide:git-branch',
-      bgClass: 'bg-orange-50 dark:bg-orange-900/30',
+      bgClass: 'bg-orange-50 dark:bg-orange-900/20',
+      borderClass: 'border-orange-200 dark:border-orange-800',
       textClass: 'text-orange-700 dark:text-orange-400',
       valueClass: 'text-orange-800 dark:text-orange-300'
     },
@@ -285,35 +305,6 @@ const summaryMetrics = computed(() => {
       return metric ? { ...s, value: metric.value } : null;
     })
     .filter(Boolean);
-});
-
-// Computed for class-wise metrics
-const classMetrics = computed(() => {
-  const metrics = content.value?.run?.metrics || [];
-  const classNames = new Set<string>();
-
-  // Extract class names from metric keys like "test_CPU HOG_f1-score"
-  metrics.forEach((m: any) => {
-    const match = m.key.match(/^test_(.+)_(f1-score|precision|recall|support)$/);
-    if (match && !['macro avg', 'weighted avg'].includes(match[1])) {
-      classNames.add(match[1]);
-    }
-  });
-
-  return Array.from(classNames).map((name) => {
-    const getVal = (suffix: string) => {
-      const metric = metrics.find((m: any) => m.key === `test_${name}_${suffix}`);
-      return metric?.value || '0';
-    };
-
-    return {
-      name,
-      precision: getVal('precision'),
-      recall: getVal('recall'),
-      f1Score: getVal('f1-score'),
-      support: getVal('support'),
-    };
-  });
 });
 
 onMounted(async () => {
@@ -362,5 +353,23 @@ onMounted(async () => {
 <style scoped>
 .overflow-y-auto {
   scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
 }
 </style>
