@@ -728,7 +728,13 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         await mockDelay();
         const detailsJson = await import('~/mocks/get.models.details.json');
-        return Promise.resolve(detailsJson as { status_code: number; message: string; data: unknown });
+        return Promise.resolve(
+          detailsJson as {
+            status_code: number;
+            message: string;
+            data: unknown;
+          },
+        );
       }
       return request(`/models/${id}`);
     },
@@ -736,8 +742,16 @@ export const useApiWithMock = () => {
     getModelAssociationsById: async (id: string) => {
       if (mock.value.enabled) {
         await mockDelay();
-        const associationsJson = await import('~/mocks/get.models.details.associations.json');
-        return Promise.resolve(associationsJson as { status_code: number; message: string; data: unknown });
+        const associationsJson = await import(
+          '~/mocks/get.models.details.associations.json'
+        );
+        return Promise.resolve(
+          associationsJson as {
+            status_code: number;
+            message: string;
+            data: unknown;
+          },
+        );
       }
       return request(`/models/${id}/associations`);
     },
