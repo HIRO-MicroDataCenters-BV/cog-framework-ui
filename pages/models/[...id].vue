@@ -19,7 +19,7 @@
               <div class="space-y-4">
                 <div class="flex items-start justify-between">
                   <span class="text-muted-foreground text-sm">Model ID</span>
-                  <CopyPaste :has-copy="true">
+                  <CopyPaste :has-copy="true" icon-left>
                     <code class="text-sm bg-muted px-2 py-1 rounded font-mono">
                       {{ content.id }}
                     </code>
