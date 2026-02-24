@@ -105,8 +105,8 @@
             <div class="mb-6">
               <h4 class="text-sm font-medium mb-3">Summary</h4>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-muted/50 rounded-lg p-3">
-                  <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-muted/50 rounded-lg p-3 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Icon :name="metric.icon" class="w-3.5 h-3.5" />
                     {{ metric.label }}
                   </div>
