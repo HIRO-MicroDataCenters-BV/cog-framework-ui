@@ -1,15 +1,16 @@
 <template>
   <SidebarProvider class="sidebar-wrapper">
     <AppSidebar />
-    <SidebarInset class="overflow-hidden overflow-y-auto">
+    <SidebarInset class="overflow-hidden flex flex-col">
       <AppHeader
         v-if="page.title !== '' || page.section === 'pipelines_builder'"
         :page="page"
+        class="flex-shrink-0"
       />
-      <AppContent>
-        <div class="flex flex-1 flex-col gap-4 h-full">
-          <div class="h-full flex flex-col grow">
-            <div class="px-4">
+      <AppContent class="flex-1 overflow-hidden">
+        <div class="flex flex-col h-full">
+          <div class="h-full flex flex-col">
+            <div class="px-4 flex-shrink-0">
               <h1 v-if="page.title != ''" class="text-lg font-semibold mb-4">
                 <template v-if="page.title == ''">{{
                   t(`subtitle.${page.section}`)
@@ -17,7 +18,9 @@
                 <!-- <template v-else>{{ page.title }}</template> -->
               </h1>
             </div>
-            <slot />
+            <div class="flex-1 overflow-hidden">
+              <slot />
+            </div>
           </div>
         </div>
       </AppContent>

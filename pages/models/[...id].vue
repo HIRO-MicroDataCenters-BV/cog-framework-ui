@@ -1,76 +1,10 @@
 <template>
-  <div v-if="content" class="w-full">
-    <SimpleTabs v-model="activeTab" :tabs="tabs" class="mb-8" />
+  <div v-if="content" class="w-full h-full flex flex-col overflow-hidden">
+    <SimpleTabs v-model="activeTab" :tabs="tabs" class="flex-shrink-0" />
 
-    <div class="px-4">
+    <div class="flex-1 overflow-y-auto px-4 py-6">
       <!-- Overview Tab -->
       <div v-if="activeTab === 'overview'" class="space-y-6">
-        <!-- Hero Section -->
-        <div class="flex items-start justify-between">
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <Badge class="text-sm">
-                <Icon name="lucide:bot" class="mr-1" />
-                {{ content.type }}
-              </Badge>
-              <Badge variant="outline" class="text-sm">
-                v{{ content.version }}
-              </Badge>
-            </div>
-            <p class="text-muted-foreground max-w-2xl">
-              {{ content.description || 'No description provided' }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div v-if="content.run?.metrics?.length" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Icon name="lucide:target" class="w-4 h-4" />
-                Accuracy
-              </div>
-              <div class="text-2xl font-semibold">
-                {{ formatPercent(getMetricValue('test_accuracy')) }}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Icon name="lucide:gauge" class="w-4 h-4" />
-                F1 Score
-              </div>
-              <div class="text-2xl font-semibold">
-                {{ formatPercent(getMetricValue('test_f1_macro')) }}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Icon name="lucide:database" class="w-4 h-4" />
-                Training Samples
-              </div>
-              <div class="text-2xl font-semibold">
-                {{ formatNumber(getParamValue('n_samples_train')) }}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
-              <div class="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Icon name="lucide:flask-conical" class="w-4 h-4" />
-                Test Samples
-              </div>
-              <div class="text-2xl font-semibold">
-                {{ formatNumber(getParamValue('n_samples_test')) }}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <!-- Two Column Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Model Details -->
@@ -85,14 +19,24 @@
               <div class="space-y-4">
                 <div class="flex items-start justify-between">
                   <span class="text-muted-foreground text-sm">Model ID</span>
-                  <div class="flex items-center gap-2">
+                  <CopyPaste :has-copy="true">
                     <code class="text-sm bg-muted px-2 py-1 rounded font-mono">
-                      {{ content.id?.slice(0, 8) }}...
+                      {{ content.id }}
                     </code>
-                    <CopyPaste :has-copy="true" class="inline-flex">
-                      <span class="hidden">{{ content.id }}</span>
-                    </CopyPaste>
-                  </div>
+                  </CopyPaste>
+                </div>
+                <div class="flex items-start justify-between">
+                  <span class="text-muted-foreground text-sm">Type</span>
+                  <Badge class="text-sm">
+                    <Icon name="lucide:bot" class="mr-1" />
+                    {{ content.type }}
+                  </Badge>
+                </div>
+                <div class="flex items-start justify-between">
+                  <span class="text-muted-foreground text-sm">Version</span>
+                  <Badge variant="outline" class="text-sm">
+                    v{{ content.version }}
+                  </Badge>
                 </div>
                 <div class="flex items-start justify-between">
                   <span class="text-muted-foreground text-sm">Created</span>
@@ -162,7 +106,10 @@
               <h4 class="text-sm font-medium mb-3">Summary</h4>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-muted/50 rounded-lg p-3">
-                  <div class="text-xs text-muted-foreground mb-1">{{ metric.label }}</div>
+                  <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <Icon :name="metric.icon" class="w-3.5 h-3.5" />
+                    {{ metric.label }}
+                  </div>
                   <div class="text-lg font-semibold">
                     {{ formatMetricValue(metric.value) }}
                   </div>
@@ -291,10 +238,10 @@ const formatParamKey = (key: string): string => {
 const summaryMetrics = computed(() => {
   const metrics = content.value?.run?.metrics || [];
   const summaryKeys = [
-    { key: 'test_accuracy', label: 'Accuracy' },
-    { key: 'test_f1_macro', label: 'F1 Macro' },
-    { key: 'test_f1_weighted', label: 'F1 Weighted' },
-    { key: 'cv_f1_macro', label: 'CV F1 Macro' },
+    { key: 'test_accuracy', label: 'Accuracy', icon: 'lucide:target' },
+    { key: 'test_f1_macro', label: 'F1 Macro', icon: 'lucide:gauge' },
+    { key: 'test_f1_weighted', label: 'F1 Weighted', icon: 'lucide:activity' },
+    { key: 'cv_f1_macro', label: 'CV F1 Macro', icon: 'lucide:git-branch' },
   ];
 
   return summaryKeys
@@ -377,4 +324,8 @@ onMounted(async () => {
 });
 </script>
 
-<style></style>
+<style scoped>
+.overflow-y-auto {
+  scrollbar-width: thin;
+}
+</style>
