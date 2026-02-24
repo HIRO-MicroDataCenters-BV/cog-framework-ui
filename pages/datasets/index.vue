@@ -166,13 +166,17 @@ const columns = [
       };
       const baseClass =
         'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
-      return h('span', { class: `${baseClass} ${typeBadgeClasses[typeName]}` }, [
-        h(resolveComponent('Icon'), {
-          name: typeIcons[typeName],
-          class: 'size-3 shrink-0',
-        }),
-        t(`label.${typeName}`),
-      ]);
+      return h(
+        'span',
+        { class: `${baseClass} ${typeBadgeClasses[typeName]}` },
+        [
+          h(resolveComponent('Icon'), {
+            name: typeIcons[typeName],
+            class: 'size-3 shrink-0',
+          }),
+          t(`label.${typeName}`),
+        ],
+      );
     },
   },
   {

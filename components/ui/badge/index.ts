@@ -23,8 +23,7 @@ export const badgeVariants = cva(
           'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
         pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
         succeeded: 'border-transparent bg-green-700 text-white',
-        file:
-          'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-100',
+        file: 'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-100',
         database:
           'border-transparent bg-purple-100 text-purple-600 dark:bg-purple-900/60 dark:text-purple-100',
         stream:

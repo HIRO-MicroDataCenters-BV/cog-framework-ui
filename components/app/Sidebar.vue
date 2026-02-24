@@ -49,7 +49,11 @@ setOpen(!isIframe.value);
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
                 >
-                  <img src="/images/logo.svg" class="size-10 dark:invert" alt="cog-logo" />
+                  <img
+                    src="/images/logo.svg"
+                    class="size-10 dark:invert"
+                    alt="cog-logo"
+                  />
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-semibold">{{

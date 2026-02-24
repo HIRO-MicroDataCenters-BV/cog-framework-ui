@@ -6,10 +6,7 @@
     :title="isDark ? 'Light mode' : 'Dark mode'"
     @click="toggleTheme"
   >
-    <Icon
-      :name="isDark ? 'lucide:sun' : 'lucide:moon'"
-      class="h-4 w-4"
-    />
+    <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" class="h-4 w-4" />
   </Button>
 </template>
 
