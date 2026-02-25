@@ -24,13 +24,13 @@ const selectTab = (key: string) => {
       <button
         v-for="tab in tabs"
         :key="tab.key"
-        @click="selectTab(tab.key)"
         :class="[
           'py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
           modelValue === tab.key
             ? 'border-primary text-primary'
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
         ]"
+        @click="selectTab(tab.key)"
       >
         {{ tab.label }}
       </button>

@@ -10,15 +10,13 @@ const props = defineProps<{
 
 // Format metric key for display
 const formatMetricKey = (key: string): string => {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
 // Chart data - filter for percentage metrics (0-1 range)
 const chartData = computed(() => {
   return props.metrics
-    .filter(m => {
+    .filter((m) => {
       const num = parseFloat(String(m.value));
       return !isNaN(num) && num >= 0 && num <= 1;
     })
@@ -62,11 +60,17 @@ const xTickFormat = (i: number) => {
 </script>
 
 <template>
-  <Card v-if="chartData.length" class="transition-all duration-200 hover:shadow-md">
+  <Card
+    v-if="chartData.length"
+    class="transition-all duration-200 hover:shadow-md"
+  >
     <CardHeader class="py-3 px-4">
       <CardTitle class="flex items-center gap-2 text-sm">
         <div class="p-1 rounded bg-indigo-100 dark:bg-indigo-900/50">
-          <Icon name="lucide:bar-chart-3" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          <Icon
+            name="lucide:bar-chart-3"
+            class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"
+          />
         </div>
         Metrics Overview
       </CardTitle>
@@ -81,22 +85,22 @@ const xTickFormat = (i: number) => {
             :x="xAccessor"
             :y="yAccessor"
             :color="colorAccessor"
-            :roundedCorners="4"
-            :barPadding="0.2"
+            :rounded-corners="4"
+            :bar-padding="0.2"
           />
           <VisAxis
             type="x"
-            :tickFormat="xTickFormat"
-            :numTicks="chartData.length"
-            :tickTextAngle="-45"
-            :tickTextWidth="100"
+            :tick-format="xTickFormat"
+            :num-ticks="chartData.length"
+            :tick-text-angle="-45"
+            :tick-text-width="100"
           />
           <VisAxis
             type="y"
-            :tickFormat="(v: number) => `${Math.round(v * 100)}%`"
-            :numTicks="5"
-            :gridLine="true"
-            :domainLine="false"
+            :tick-format="(v: number) => `${Math.round(v * 100)}%`"
+            :num-ticks="5"
+            :grid-line="true"
+            :domain-line="false"
           />
         </VisXYContainer>
       </ChartContainer>
