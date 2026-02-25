@@ -125,31 +125,78 @@
             <CardContent class="px-4 pb-4 pt-0">
               <!-- Chart view -->
               <TabsContent value="chart" class="mt-0">
-                <p class="text-xs text-muted-foreground mb-3">Showing all {{ content.run.metrics.length }} metrics</p>
-                <div class="space-y-2.5">
-                  <div
-                    v-for="metric in metricsChartData"
-                    :key="metric.key"
-                    class="flex items-center gap-3"
-                  >
-                    <span
-                      class="text-xs text-muted-foreground flex-shrink-0 text-right truncate"
-                      style="width: 160px"
-                      :title="metric.label"
-                    >{{ metric.label }}</span>
-                    <div class="flex-1 flex items-center gap-2">
-                      <div class="flex-1 h-7 rounded overflow-hidden bg-muted/20">
-                        <div
-                          class="h-full rounded bg-blue-400/80 dark:bg-blue-400/70 transition-all duration-500"
-                          :style="{ width: metric.barPct + '%' }"
-                        />
-                      </div>
-                      <span class="text-xs text-muted-foreground flex-shrink-0 w-10 text-right tabular-nums">
-                        {{ metric.display }}
-                      </span>
+                <!-- Normalized metrics (0-1 scale) -->
+                <div v-if="normalizedMetricsChartData.length" class="mb-6">
+                  <p class="text-xs text-muted-foreground mb-3">
+                    <span class="font-medium">Normalized Metrics</span> (scale: 0-1) - {{ normalizedMetricsChartData.length }} metrics
+                  </p>
+                  <TooltipProvider>
+                    <div class="space-y-2.5">
+                      <Tooltip v-for="metric in normalizedMetricsChartData" :key="metric.key">
+                        <TooltipTrigger as-child>
+                          <div class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default">
+                            <span
+                              class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
+                              style="width: 160px"
+                            >{{ metric.label }}</span>
+                            <div class="flex-1 flex items-center gap-2">
+                              <div class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors">
+                                <div
+                                  class="h-full rounded bg-blue-400/80 dark:bg-blue-400/70 group-hover:bg-blue-500 dark:group-hover:bg-blue-400 transition-all duration-300"
+                                  :style="{ width: metric.barPct + '%' }"
+                                />
+                              </div>
+                              <span class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all">
+                                {{ metric.display }}
+                              </span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          <p class="font-medium">{{ metric.label }}</p>
+                          <p class="text-muted-foreground">Value: {{ metric.display }}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                  </div>
+                  </TooltipProvider>
                 </div>
+
+                <!-- Other metrics (different scales) -->
+                <div v-if="otherMetricsChartData.length">
+                  <p class="text-xs text-muted-foreground mb-3">
+                    <span class="font-medium">Other Metrics</span> - {{ otherMetricsChartData.length }} metrics
+                  </p>
+                  <TooltipProvider>
+                    <div class="space-y-2.5">
+                      <Tooltip v-for="metric in otherMetricsChartData" :key="metric.key">
+                        <TooltipTrigger as-child>
+                          <div class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default">
+                            <span
+                              class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
+                              style="width: 160px"
+                            >{{ metric.label }}</span>
+                            <div class="flex-1 flex items-center gap-2">
+                              <div class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors">
+                                <div
+                                  class="h-full rounded bg-green-400/80 dark:bg-green-400/70 group-hover:bg-green-500 dark:group-hover:bg-green-400 transition-all duration-300"
+                                  :style="{ width: metric.barPct + '%' }"
+                                />
+                              </div>
+                              <span class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all">
+                                {{ metric.display }}
+                              </span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          <p class="font-medium">{{ metric.label }}</p>
+                          <p class="text-muted-foreground">Value: {{ metric.display }}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
+
                 <div class="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/50">
                   <Icon name="lucide:activity" class="w-3 h-3 text-muted-foreground/60" />
                   <span class="text-xs text-muted-foreground">{{ content.name }}</span>
@@ -233,6 +280,7 @@ import CopyPaste from '~/components/app/CopyPaste.vue';
 import SimpleTabs from '~/components/app/SimpleTabs.vue';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '~/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
@@ -359,20 +407,35 @@ const summaryMetrics = computed(() => {
     .filter(Boolean);
 });
 
-const metricsChartData = computed(() => {
+// Metrics with 0-1 scale (ratios, percentages)
+const normalizedMetricsChartData = computed(() => {
   const metrics = content.value?.run?.metrics || [];
   const parsed = metrics
     .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
-    .filter((m: any) => !isNaN(m.raw));
+    .filter((m: any) => !isNaN(m.raw) && m.raw >= 0 && m.raw <= 1);
+  if (parsed.length === 0) return [];
+  return parsed.map((m: any) => ({
+    key: m.key,
+    label: formatMetricKey(m.key),
+    barPct: m.raw * 100,
+    display: m.raw.toFixed(2),
+  }));
+});
+
+// Metrics with other scales (counts, larger values)
+const otherMetricsChartData = computed(() => {
+  const metrics = content.value?.run?.metrics || [];
+  const parsed = metrics
+    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m: any) => !isNaN(m.raw) && (m.raw < 0 || m.raw > 1));
+  if (parsed.length === 0) return [];
   const max = Math.max(...parsed.map((m: any) => m.raw));
   if (max <= 0) return [];
   return parsed.map((m: any) => ({
     key: m.key,
     label: formatMetricKey(m.key),
     barPct: (m.raw / max) * 100,
-    display: m.raw >= 0 && m.raw <= 1
-      ? m.raw.toFixed(2)
-      : Number.isInteger(m.raw) ? String(m.raw) : m.raw.toFixed(1),
+    display: Number.isInteger(m.raw) ? String(m.raw) : m.raw.toFixed(2),
   }));
 });
 
