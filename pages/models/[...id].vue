@@ -95,49 +95,102 @@
           </Card>
         </div>
 
-        <!-- Performance Metrics -->
-        <Card v-if="content.run?.metrics?.length" class="transition-all duration-200 hover:shadow-md">
-          <CardHeader class="py-3 px-4">
-            <CardTitle class="flex items-center gap-2 text-sm">
-              <div class="p-1 rounded bg-green-100 dark:bg-green-900/50">
-                <Icon name="lucide:bar-chart-3" class="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        <!-- Metrics Section with Chart / Table toggle -->
+        <Tabs v-if="content.run?.metrics?.length" v-model="metricsView">
+          <Card class="transition-all duration-200 hover:shadow-md">
+            <CardHeader class="py-3 px-4">
+              <div class="flex items-center justify-between">
+                <CardTitle class="flex items-center gap-2 text-sm">
+                  <div :class="metricsView === 'chart' ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-green-100 dark:bg-green-900/50'" class="p-1 rounded">
+                    <Icon
+                      :name="metricsView === 'chart' ? 'lucide:bar-chart-horizontal' : 'lucide:bar-chart-3'"
+                      :class="metricsView === 'chart' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'"
+                      class="w-3.5 h-3.5"
+                    />
+                  </div>
+                  {{ metricsView === 'chart' ? 'Metrics Chart' : 'Performance Metrics' }}
+                </CardTitle>
+                <TabsList class="h-7">
+                  <TabsTrigger value="table" class="h-6 px-2.5 text-xs gap-1">
+                    <Icon name="lucide:table-2" class="w-3 h-3" />
+                    Table
+                  </TabsTrigger>
+                  <TabsTrigger value="chart" class="h-6 px-2.5 text-xs gap-1">
+                    <Icon name="lucide:bar-chart-horizontal" class="w-3 h-3" />
+                    Chart
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              Performance Metrics
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="px-4 pb-4 pt-0">
-            <!-- Summary Metrics -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-              <div
-                v-for="metric in summaryMetrics"
-                :key="metric.key"
-                :class="[metric.bgClass, 'rounded-lg p-2.5 flex items-center justify-between border transition-all duration-200 hover:scale-[1.01]', metric.borderClass]"
-              >
-                <div :class="['flex items-center gap-1 text-xs', metric.textClass]">
-                  <Icon :name="metric.icon" class="w-3 h-3" />
-                  {{ metric.label }}
+            </CardHeader>
+            <CardContent class="px-4 pb-4 pt-0">
+              <!-- Chart view -->
+              <TabsContent value="chart" class="mt-0">
+                <p class="text-xs text-muted-foreground mb-3">Showing all {{ content.run.metrics.length }} metrics</p>
+                <div class="space-y-2.5">
+                  <div
+                    v-for="metric in metricsChartData"
+                    :key="metric.key"
+                    class="flex items-center gap-3"
+                  >
+                    <span
+                      class="text-xs text-muted-foreground flex-shrink-0 text-right truncate"
+                      style="width: 160px"
+                      :title="metric.label"
+                    >{{ metric.label }}</span>
+                    <div class="flex-1 flex items-center gap-2">
+                      <div class="flex-1 h-7 rounded overflow-hidden bg-muted/20">
+                        <div
+                          class="h-full rounded bg-blue-400/80 dark:bg-blue-400/70 transition-all duration-500"
+                          :style="{ width: metric.barPct + '%' }"
+                        />
+                      </div>
+                      <span class="text-xs text-muted-foreground flex-shrink-0 w-10 text-right tabular-nums">
+                        {{ metric.display }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div :class="['text-sm font-bold', metric.valueClass]">
-                  {{ formatMetricDisplay(metric.value) }}
+                <div class="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/50">
+                  <Icon name="lucide:activity" class="w-3 h-3 text-muted-foreground/60" />
+                  <span class="text-xs text-muted-foreground">{{ content.name }}</span>
                 </div>
-              </div>
-            </div>
+              </TabsContent>
 
-            <!-- All Metrics -->
-            <div class="space-y-0.5">
-              <div
-                v-for="metric in content.run.metrics"
-                :key="metric.key"
-                class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
-              >
-                <span class="text-muted-foreground text-xs">{{ formatMetricKey(metric.key) }}</span>
-                <span :class="['text-xs font-medium', getMetricColor(metric.value)]">
-                  {{ formatMetricDisplay(metric.value) }}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              <!-- Table view -->
+              <TabsContent value="table" class="mt-0">
+                <!-- Summary Metrics -->
+                <div v-if="summaryMetrics.length" class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                  <div
+                    v-for="metric in summaryMetrics"
+                    :key="metric.key"
+                    :class="[metric.bgClass, 'rounded-lg p-2.5 flex items-center justify-between border transition-all duration-200 hover:scale-[1.01]', metric.borderClass]"
+                  >
+                    <div :class="['flex items-center gap-1 text-xs', metric.textClass]">
+                      <Icon :name="metric.icon" class="w-3 h-3" />
+                      {{ metric.label }}
+                    </div>
+                    <div :class="['text-sm font-bold', metric.valueClass]">
+                      {{ formatMetricDisplay(metric.value) }}
+                    </div>
+                  </div>
+                </div>
+                <!-- All Metrics -->
+                <div class="space-y-0.5">
+                  <div
+                    v-for="metric in content.run.metrics"
+                    :key="metric.key"
+                    class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
+                  >
+                    <span class="text-muted-foreground text-xs">{{ formatMetricKey(metric.key) }}</span>
+                    <span :class="['text-xs font-medium', getMetricColor(metric.value)]">
+                      {{ formatMetricDisplay(metric.value) }}
+                    </span>
+                  </div>
+                </div>
+              </TabsContent>
+            </CardContent>
+          </Card>
+        </Tabs>
 
         <!-- Tags -->
         <Card v-if="content.run?.tags?.length" class="transition-all duration-200 hover:shadow-md">
@@ -179,6 +232,7 @@
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import SimpleTabs from '~/components/app/SimpleTabs.vue';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '~/components/ui/tabs';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
@@ -190,6 +244,7 @@ const content = ref<any>();
 const additional = ref<any>();
 
 const activeTab = ref('overview');
+const metricsView = ref<'chart' | 'table'>('table');
 const tabs = [
   { key: 'overview', label: 'Overview' },
   { key: 'artifacts', label: 'Artifacts' },
@@ -232,16 +287,13 @@ const formatParamKey = (key: string): string => {
 };
 
 const formatMetricKey = (key: string): string => {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+  return key;
 };
 
 const formatMetricDisplay = (value: string | number): string => {
   const num = typeof value === 'string' ? parseFloat(value) : value;
   if (isNaN(num)) return String(value);
-  if (num <= 1 && num >= 0) return `${(num * 100).toFixed(1)}%`;
-  return num.toLocaleString();
+  return num.toFixed(2);
 };
 
 // Get color class based on metric value
@@ -305,6 +357,23 @@ const summaryMetrics = computed(() => {
       return metric ? { ...s, value: metric.value } : null;
     })
     .filter(Boolean);
+});
+
+const metricsChartData = computed(() => {
+  const metrics = content.value?.run?.metrics || [];
+  const parsed = metrics
+    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m: any) => !isNaN(m.raw));
+  const max = Math.max(...parsed.map((m: any) => m.raw));
+  if (max <= 0) return [];
+  return parsed.map((m: any) => ({
+    key: m.key,
+    label: formatMetricKey(m.key),
+    barPct: (m.raw / max) * 100,
+    display: m.raw >= 0 && m.raw <= 1
+      ? m.raw.toFixed(2)
+      : Number.isInteger(m.raw) ? String(m.raw) : m.raw.toFixed(1),
+  }));
 });
 
 onMounted(async () => {
