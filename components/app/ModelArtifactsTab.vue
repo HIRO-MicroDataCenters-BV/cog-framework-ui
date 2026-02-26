@@ -544,8 +544,9 @@ const loadPreview = async () => {
   previewData.value = null;
 
   try {
-    const fileName = selectedFile.value.name;
-    const res = await getArtifactPreview(fileName);
+    // Construct full artifact URL: artifact_uri + artifact_path
+    const artifactUrl = `${props.artifacts.artifact_uri}/${selectedFile.value.path}`;
+    const res = await getArtifactPreview(artifactUrl);
 
     if (res && 'data' in res && res.data) {
       const { type, content, headers, rows, url } = res.data as any;
@@ -566,15 +567,29 @@ const loadPreview = async () => {
 };
 
 // Download file
-const downloadFile = () => {
+const downloadFile = async () => {
   if (!selectedFile.value || !props.artifacts?.artifact_uri) return;
 
-  const fileUrl = `${props.artifacts.artifact_uri}/${selectedFile.value.path}`;
-  // TODO: Replace with actual download API call
-  console.log('Download file:', fileUrl);
+  const config = useRuntimeConfig();
+  const artifactUrl = `${props.artifacts.artifact_uri}/${selectedFile.value.path}`;
+  const downloadUrl = `${config.public.apiBase}/models/artifact/download?url=${encodeURIComponent(artifactUrl)}`;
 
-  // Mock download - open in new tab or trigger download
-  // window.open(`/api/artifacts/download?url=${encodeURIComponent(fileUrl)}`, '_blank');
+  try {
+    const response = await fetch(downloadUrl);
+    if (!response.ok) throw new Error('Download failed');
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = selectedFile.value.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to download file:', error);
+  }
 };
 </script>
 

@@ -370,6 +370,96 @@ export const useApi = () => {
     getModelAssociationsByName: async (name: string) => {
       return request(`/models/associations?name=${name}`);
     },
+
+    /**
+     * Retrieves artifact preview content
+     *
+     * Fetches the preview content of an artifact file from storage (e.g., S3).
+     * Backend returns raw file content with binary/octet-stream content type.
+     *
+     * @param {string} artifactUrl - The full URL of the artifact (e.g., s3://bucket/path/file.yaml)
+     *
+     * @returns {Promise<Object>} Standard response containing the preview data
+     *
+     * @example
+     * ```typescript
+     * const preview = await api.getArtifactPreview('s3://mlflow/0/artifacts/model/conda.yaml');
+     * ```
+     */
+    getArtifactPreview: async (artifactUrl: string) => {
+      const url = `${baseUrl}/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`;
+
+      try {
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: getHeaders(),
+        });
+
+        if (!res.ok) {
+          return { status_code: res.status, message: 'Failed to load preview', data: null };
+        }
+
+        // Get filename from URL or content-disposition header
+        const fileName = artifactUrl.split('/').pop() || '';
+        const ext = fileName.split('.').pop()?.toLowerCase() || '';
+
+        // Check if it's an image
+        if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+          const blob = await res.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          return {
+            status_code: 200,
+            message: 'Artifact preview loaded',
+            data: { type: 'image', url: imageUrl },
+          };
+        }
+
+        // For text-based files, read as text
+        const content = await res.text();
+
+        // For CSV, parse into headers and rows
+        if (ext === 'csv') {
+          const lines = content.trim().split('\n');
+          const headers = lines[0].split(',');
+          const rows = lines.slice(1).map((line: string) => line.split(','));
+          return {
+            status_code: 200,
+            message: 'Artifact preview loaded',
+            data: { type: 'csv', headers, rows },
+          };
+        }
+
+        // For JSON, format it nicely
+        if (ext === 'json') {
+          try {
+            const parsed = JSON.parse(content);
+            return {
+              status_code: 200,
+              message: 'Artifact preview loaded',
+              data: { type: 'json', content: JSON.stringify(parsed, null, 2) },
+            };
+          } catch {
+            // If JSON parsing fails, return as text
+            return {
+              status_code: 200,
+              message: 'Artifact preview loaded',
+              data: { type: 'text', content },
+            };
+          }
+        }
+
+        // For other text files (yaml, txt, etc.)
+        return {
+          status_code: 200,
+          message: 'Artifact preview loaded',
+          data: { type: 'text', content },
+        };
+      } catch (error) {
+        console.error('Error fetching artifact preview:', error);
+        return { status_code: 500, message: 'Failed to load preview', data: null };
+      }
+    },
+
     /**
      * Uploads a file to a specific model
      *

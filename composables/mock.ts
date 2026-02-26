@@ -1010,9 +1010,12 @@ export const useApiWithMock = () => {
       return request(`/headers`);
     },
 
-    getArtifactPreview: async (fileName: string) => {
+    getArtifactPreview: async (artifactUrl: string) => {
       if (mock.value.enabled) {
         await mockDelay(300);
+
+        // Extract filename from the full URL for mock lookup
+        const fileName = artifactUrl.split('/').pop() || '';
 
         // Map file names to mock data
         const mockFiles: Record<string, () => Promise<any>> = {
@@ -1086,7 +1089,8 @@ export const useApiWithMock = () => {
           data: null,
         });
       }
-      return request(`/artifacts/preview?file=${encodeURIComponent(fileName)}`);
+      // Real API: /models/artifact/preview?url=<encoded_s3_url>
+      return request(`/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`);
     },
   };
 };
