@@ -115,25 +115,35 @@
       </CardContent>
     </Card>
 
-    <!-- Artifact URI Card -->
+    <!-- Artifact Path Card -->
     <Card v-if="associations?.artifacts?.artifact_uri" class="transition-all duration-200 hover:shadow-md">
       <CardHeader class="py-3 px-4">
         <CardTitle class="flex items-center gap-2 text-sm">
           <div class="p-1 rounded bg-purple-100 dark:bg-purple-900/50">
             <Icon
-              name="lucide:hard-drive"
+              name="lucide:folder-symlink"
               class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400"
             />
           </div>
-          Storage Location
+          Path
         </CardTitle>
       </CardHeader>
       <CardContent class="px-4 pb-4 pt-0">
-        <div class="flex items-center gap-2 p-3 rounded-lg border bg-muted/20">
-          <Icon name="lucide:cloud" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <code class="text-xs font-mono text-muted-foreground break-all">
-            {{ associations.artifacts.artifact_uri }}
-          </code>
+        <div class="flex items-center justify-between gap-2 p-3 rounded-lg border bg-muted/20">
+          <div class="flex items-center gap-2 min-w-0">
+            <Icon name="lucide:cloud" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <code class="text-xs font-mono text-muted-foreground break-all">
+              {{ associations.artifacts.artifact_uri }}
+            </code>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="h-7 px-2 flex-shrink-0"
+            @click="copyPath"
+          >
+            <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="w-3.5 h-3.5" />
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -149,9 +159,24 @@ const props = defineProps<{
 }>();
 
 const dayjs = useDayjs();
+const copied = ref(false);
 
 const formatDate = (date: string) => {
   if (!date) return '-';
   return dayjs(date).format('MMM DD, YYYY HH:mm');
+};
+
+const copyPath = async () => {
+  if (!props.associations?.artifacts?.artifact_uri) return;
+
+  try {
+    await navigator.clipboard.writeText(props.associations.artifacts.artifact_uri);
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
 };
 </script>

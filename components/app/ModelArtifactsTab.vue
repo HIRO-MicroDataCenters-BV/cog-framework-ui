@@ -132,7 +132,21 @@
         v-if="artifacts?.artifact_uri"
         class="border-t px-3 py-2 flex-shrink-0"
       >
-        <p class="text-[10px] text-muted-foreground mb-1">Storage Location</p>
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-[10px] text-muted-foreground">Path</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="h-5 w-5 p-0"
+            @click="copyPath"
+          >
+            <Icon
+              :name="pathCopied ? 'lucide:check' : 'lucide:copy'"
+              class="w-3 h-3"
+              :class="pathCopied ? 'text-green-500' : 'text-muted-foreground'"
+            />
+          </Button>
+        </div>
         <code
           class="text-[10px] text-muted-foreground break-all line-clamp-2"
           :title="artifacts.artifact_uri"
@@ -341,6 +355,7 @@ const selectedFile = ref<FileItem | null>(null);
 const previewData = ref<PreviewData | null>(null);
 const isLoading = ref(false);
 const hasInitializedExpand = ref(false);
+const pathCopied = ref(false);
 
 // Sort function: folders first, then files, alphabetically
 const sortItems = (items: FileItem[]): FileItem[] => {
@@ -589,6 +604,21 @@ const downloadFile = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Failed to download file:', error);
+  }
+};
+
+// Copy artifact path to clipboard
+const copyPath = async () => {
+  if (!props.artifacts?.artifact_uri) return;
+
+  try {
+    await navigator.clipboard.writeText(props.artifacts.artifact_uri);
+    pathCopied.value = true;
+    setTimeout(() => {
+      pathCopied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy:', err);
   }
 };
 </script>

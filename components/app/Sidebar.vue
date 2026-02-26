@@ -2,6 +2,7 @@
 import { useStorage } from '@vueuse/core';
 import { useSidebar } from '../ui/sidebar';
 import NavUser from './NavUser.vue';
+import ColorModeSwitch from './ColorModeSwitch.vue';
 
 const { t } = useI18n();
 const config = useRuntimeConfig();
@@ -33,6 +34,16 @@ watch(
 );
 
 setOpen(!isIframe.value);
+
+// Theme toggle
+const colorMode = useColorMode();
+const isDark = computed(() => colorMode.value === 'dark');
+
+const toggleTheme = () => {
+  const value = isDark.value ? 'light' : 'dark';
+  colorMode.value = value;
+  colorMode.preference = value;
+};
 </script>
 
 <template>
@@ -144,7 +155,18 @@ setOpen(!isIframe.value);
             <span>{{ item.title }}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton :tooltip="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
+            <span class="text-lg">
+              <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" />
+            </span>
+            <span>{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
       </SidebarMenu>
+    </SidebarFooter>
+    <div class="mx-0 border-t border-border" />
+    <SidebarFooter>
       <NavUser />
     </SidebarFooter>
     <SidebarRail />
