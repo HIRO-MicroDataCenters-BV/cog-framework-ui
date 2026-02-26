@@ -1017,13 +1017,19 @@ export const useApiWithMock = () => {
         // Map file names to mock data
         const mockFiles: Record<string, () => Promise<any>> = {
           'conda.yaml': () => import('~/mocks/artifacts/conda.yaml?raw'),
-          'python_env.yaml': () => import('~/mocks/artifacts/python_env.yaml?raw'),
-          'requirements.txt': () => import('~/mocks/artifacts/requirements.txt?raw'),
-          'MLmodel': () => import('~/mocks/artifacts/MLmodel?raw'),
-          'confusion_matrix.json': () => import('~/mocks/artifacts/confusion_matrix.json'),
-          'input_example.json': () => import('~/mocks/artifacts/input_example.json'),
-          'serving_input_example.json': () => import('~/mocks/artifacts/serving_input_example.json'),
-          'cv_results.csv': () => import('~/mocks/artifacts/cv_results.csv?raw'),
+          'python_env.yaml': () =>
+            import('~/mocks/artifacts/python_env.yaml?raw'),
+          'requirements.txt': () =>
+            import('~/mocks/artifacts/requirements.txt?raw'),
+          MLmodel: () => import('~/mocks/artifacts/MLmodel?raw'),
+          'confusion_matrix.json': () =>
+            import('~/mocks/artifacts/confusion_matrix.json'),
+          'input_example.json': () =>
+            import('~/mocks/artifacts/input_example.json'),
+          'serving_input_example.json': () =>
+            import('~/mocks/artifacts/serving_input_example.json'),
+          'cv_results.csv': () =>
+            import('~/mocks/artifacts/cv_results.csv?raw'),
         };
 
         const ext = fileName.split('.').pop()?.toLowerCase() || '';

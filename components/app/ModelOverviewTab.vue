@@ -22,9 +22,7 @@
             >
               <span class="text-muted-foreground text-xs">Model ID</span>
               <CopyPaste :has-copy="true" icon-left>
-                <code
-                  class="text-xs bg-muted px-1.5 py-0.5 rounded font-mono"
-                >
+                <code class="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
                   {{ content.id }}
                 </code>
               </CopyPaste>
@@ -120,10 +118,7 @@
             v-else
             class="flex flex-col items-center justify-center text-muted-foreground text-xs py-4"
           >
-            <Icon
-              name="lucide:inbox"
-              class="w-6 h-6 mb-1 opacity-50"
-            />
+            <Icon name="lucide:inbox" class="w-6 h-6 mb-1 opacity-50" />
             <span>No parameters available</span>
           </div>
         </CardContent>
@@ -182,238 +177,262 @@
             v-if="!content.run?.metrics?.length"
             class="flex flex-col items-center justify-center text-muted-foreground text-xs py-4"
           >
-            <Icon
-              name="lucide:bar-chart-3"
-              class="w-6 h-6 mb-1 opacity-50"
-            />
+            <Icon name="lucide:bar-chart-3" class="w-6 h-6 mb-1 opacity-50" />
             <span>No metrics available</span>
           </div>
 
           <!-- Metrics content (only when data available) -->
           <template v-if="content.run?.metrics?.length">
-          <!-- Chart view -->
-          <TabsContent value="chart" class="mt-0">
-            <!-- Chart view toggle -->
-            <div class="flex items-center justify-end mb-4">
-              <div class="flex items-center gap-1 p-0.5 rounded-md bg-muted/50">
-                <button
-                  class="px-2 py-1 text-xs rounded transition-colors"
-                  :class="chartViewMode === 'grouped' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
-                  @click="chartViewMode = 'grouped'"
-                >
-                  <Icon name="lucide:layers" class="w-3 h-3 inline mr-1" />
-                  Grouped
-                </button>
-                <button
-                  class="px-2 py-1 text-xs rounded transition-colors"
-                  :class="chartViewMode === 'individual' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
-                  @click="chartViewMode = 'individual'"
-                >
-                  <Icon name="lucide:layout-grid" class="w-3 h-3 inline mr-1" />
-                  Individual
-                </button>
-              </div>
-            </div>
-
-            <!-- Grouped View -->
-            <template v-if="chartViewMode === 'grouped'">
-            <!-- Normalized metrics (0-1 scale) -->
-            <div v-if="normalizedMetricsChartData.length" class="mb-6">
-              <p class="text-xs text-muted-foreground mb-3">
-                <span class="font-medium">Normalized Metrics</span> (scale:
-                0-1) - {{ normalizedMetricsChartData.length }} metrics
-              </p>
-              <TooltipProvider>
-                <div class="space-y-1">
-                  <Tooltip
-                    v-for="metric in normalizedMetricsChartData"
-                    :key="metric.key"
-                  >
-                    <TooltipTrigger as-child>
-                      <div
-                        class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default"
-                      >
-                        <span
-                          class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
-                          style="width: 160px"
-                          >{{ metric.label }}</span
-                        >
-                        <div class="flex-1 flex items-center gap-2">
-                          <div
-                            class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors"
-                          >
-                            <div
-                              class="h-full rounded bg-blue-400/80 dark:bg-blue-400/70 group-hover:bg-blue-500 dark:group-hover:bg-blue-400 transition-all duration-300"
-                              :style="{ width: metric.barPct + '%' }"
-                            />
-                          </div>
-                          <span
-                            class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all"
-                          >
-                            {{ metric.display }}
-                          </span>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" class="text-xs">
-                      <p class="font-medium">{{ metric.label }}</p>
-                      <p class="text-muted-foreground">
-                        Value: {{ metric.display }}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </TooltipProvider>
-            </div>
-
-            <!-- Other metrics (different scales) -->
-            <div v-if="otherMetricsChartData.length">
-              <p class="text-xs text-muted-foreground mb-3">
-                <span class="font-medium">Other Metrics</span> -
-                {{ otherMetricsChartData.length }} metrics
-              </p>
-              <TooltipProvider>
-                <div class="space-y-1">
-                  <Tooltip
-                    v-for="metric in otherMetricsChartData"
-                    :key="metric.key"
-                  >
-                    <TooltipTrigger as-child>
-                      <div
-                        class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default"
-                      >
-                        <span
-                          class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
-                          style="width: 160px"
-                          >{{ metric.label }}</span
-                        >
-                        <div class="flex-1 flex items-center gap-2">
-                          <div
-                            class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors"
-                          >
-                            <div
-                              class="h-full rounded bg-green-400/80 dark:bg-green-400/70 group-hover:bg-green-500 dark:group-hover:bg-green-400 transition-all duration-300"
-                              :style="{ width: metric.barPct + '%' }"
-                            />
-                          </div>
-                          <span
-                            class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all"
-                          >
-                            {{ metric.display }}
-                          </span>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" class="text-xs">
-                      <p class="font-medium">{{ metric.label }}</p>
-                      <p class="text-muted-foreground">
-                        Value: {{ metric.display }}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </TooltipProvider>
-            </div>
-            </template>
-
-            <!-- Individual View -->
-            <template v-if="chartViewMode === 'individual'">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Chart view -->
+            <TabsContent value="chart" class="mt-0">
+              <!-- Chart view toggle -->
+              <div class="flex items-center justify-end mb-4">
                 <div
-                  v-for="metric in allMetricsChartData"
-                  :key="metric.key"
-                  class="p-3 rounded-lg border bg-card"
+                  class="flex items-center gap-1 p-0.5 rounded-md bg-muted/50"
                 >
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-medium text-foreground">{{ metric.label }}</span>
-                    <span class="text-sm font-bold" :class="metric.isNormalized ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'">
-                      {{ metric.display }}
-                    </span>
-                  </div>
-                  <div class="h-3 rounded-full overflow-hidden bg-muted/30">
-                    <div
-                      class="h-full rounded-full transition-all duration-500"
-                      :class="metric.isNormalized ? 'bg-blue-500 dark:bg-blue-400' : 'bg-green-500 dark:bg-green-400'"
-                      :style="{ width: metric.barPct + '%' }"
+                  <button
+                    class="px-2 py-1 text-xs rounded transition-colors"
+                    :class="
+                      chartViewMode === 'grouped'
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    "
+                    @click="chartViewMode = 'grouped'"
+                  >
+                    <Icon name="lucide:layers" class="w-3 h-3 inline mr-1" />
+                    Grouped
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded transition-colors"
+                    :class="
+                      chartViewMode === 'individual'
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    "
+                    @click="chartViewMode = 'individual'"
+                  >
+                    <Icon
+                      name="lucide:layout-grid"
+                      class="w-3 h-3 inline mr-1"
                     />
-                  </div>
-                  <div class="flex justify-between mt-1">
-                    <span class="text-[10px] text-muted-foreground">0</span>
-                    <span class="text-[10px] text-muted-foreground">{{ metric.isNormalized ? '1' : metric.maxValue }}</span>
-                  </div>
+                    Individual
+                  </button>
                 </div>
               </div>
-            </template>
 
-            <div
-              class="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/50"
-            >
-              <Icon
-                name="lucide:activity"
-                class="w-3 h-3 text-muted-foreground/60"
-              />
-              <span class="text-xs text-muted-foreground">{{
-                content.name
-              }}</span>
-            </div>
-          </TabsContent>
+              <!-- Grouped View -->
+              <template v-if="chartViewMode === 'grouped'">
+                <!-- Normalized metrics (0-1 scale) -->
+                <div v-if="normalizedMetricsChartData.length" class="mb-6">
+                  <p class="text-xs text-muted-foreground mb-3">
+                    <span class="font-medium">Normalized Metrics</span> (scale:
+                    0-1) - {{ normalizedMetricsChartData.length }} metrics
+                  </p>
+                  <TooltipProvider>
+                    <div class="space-y-1">
+                      <Tooltip
+                        v-for="metric in normalizedMetricsChartData"
+                        :key="metric.key"
+                      >
+                        <TooltipTrigger as-child>
+                          <div
+                            class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default"
+                          >
+                            <span
+                              class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
+                              style="width: 160px"
+                              >{{ metric.label }}</span
+                            >
+                            <div class="flex-1 flex items-center gap-2">
+                              <div
+                                class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors"
+                              >
+                                <div
+                                  class="h-full rounded bg-blue-400/80 dark:bg-blue-400/70 group-hover:bg-blue-500 dark:group-hover:bg-blue-400 transition-all duration-300"
+                                  :style="{ width: metric.barPct + '%' }"
+                                />
+                              </div>
+                              <span
+                                class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all"
+                              >
+                                {{ metric.display }}
+                              </span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          <p class="font-medium">{{ metric.label }}</p>
+                          <p class="text-muted-foreground">
+                            Value: {{ metric.display }}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
 
-          <!-- Table view -->
-          <TabsContent value="table" class="mt-0">
-            <!-- Summary Metrics -->
-            <div
-              v-if="summaryMetrics.length"
-              class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4"
-            >
+                <!-- Other metrics (different scales) -->
+                <div v-if="otherMetricsChartData.length">
+                  <p class="text-xs text-muted-foreground mb-3">
+                    <span class="font-medium">Other Metrics</span> -
+                    {{ otherMetricsChartData.length }} metrics
+                  </p>
+                  <TooltipProvider>
+                    <div class="space-y-1">
+                      <Tooltip
+                        v-for="metric in otherMetricsChartData"
+                        :key="metric.key"
+                      >
+                        <TooltipTrigger as-child>
+                          <div
+                            class="group flex items-center gap-3 p-1.5 -mx-1.5 rounded-md hover:bg-muted/30 transition-colors cursor-default"
+                          >
+                            <span
+                              class="text-xs text-muted-foreground group-hover:text-foreground flex-shrink-0 text-right truncate transition-colors"
+                              style="width: 160px"
+                              >{{ metric.label }}</span
+                            >
+                            <div class="flex-1 flex items-center gap-2">
+                              <div
+                                class="flex-1 h-7 rounded overflow-hidden bg-muted/20 group-hover:bg-muted/40 transition-colors"
+                              >
+                                <div
+                                  class="h-full rounded bg-green-400/80 dark:bg-green-400/70 group-hover:bg-green-500 dark:group-hover:bg-green-400 transition-all duration-300"
+                                  :style="{ width: metric.barPct + '%' }"
+                                />
+                              </div>
+                              <span
+                                class="text-xs text-muted-foreground group-hover:text-foreground group-hover:font-medium flex-shrink-0 w-10 text-right tabular-nums transition-all"
+                              >
+                                {{ metric.display }}
+                              </span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          <p class="font-medium">{{ metric.label }}</p>
+                          <p class="text-muted-foreground">
+                            Value: {{ metric.display }}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
+              </template>
+
+              <!-- Individual View -->
+              <template v-if="chartViewMode === 'individual'">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    v-for="metric in allMetricsChartData"
+                    :key="metric.key"
+                    class="p-3 rounded-lg border bg-card"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-medium text-foreground">{{
+                        metric.label
+                      }}</span>
+                      <span
+                        class="text-sm font-bold"
+                        :class="
+                          metric.isNormalized
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-green-600 dark:text-green-400'
+                        "
+                      >
+                        {{ metric.display }}
+                      </span>
+                    </div>
+                    <div class="h-3 rounded-full overflow-hidden bg-muted/30">
+                      <div
+                        class="h-full rounded-full transition-all duration-500"
+                        :class="
+                          metric.isNormalized
+                            ? 'bg-blue-500 dark:bg-blue-400'
+                            : 'bg-green-500 dark:bg-green-400'
+                        "
+                        :style="{ width: metric.barPct + '%' }"
+                      />
+                    </div>
+                    <div class="flex justify-between mt-1">
+                      <span class="text-[10px] text-muted-foreground">0</span>
+                      <span class="text-[10px] text-muted-foreground">{{
+                        metric.isNormalized ? '1' : metric.maxValue
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
               <div
-                v-for="metric in summaryMetrics"
-                :key="metric.key"
-                :class="[
-                  metric.bgClass,
-                  'rounded-lg p-2.5 flex items-center justify-between border transition-all duration-200 hover:scale-[1.01]',
-                  metric.borderClass,
-                ]"
+                class="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/50"
+              >
+                <Icon
+                  name="lucide:activity"
+                  class="w-3 h-3 text-muted-foreground/60"
+                />
+                <span class="text-xs text-muted-foreground">{{
+                  content.name
+                }}</span>
+              </div>
+            </TabsContent>
+
+            <!-- Table view -->
+            <TabsContent value="table" class="mt-0">
+              <!-- Summary Metrics -->
+              <div
+                v-if="summaryMetrics.length"
+                class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4"
               >
                 <div
+                  v-for="metric in summaryMetrics"
+                  :key="metric.key"
                   :class="[
-                    'flex items-center gap-1 text-xs',
-                    metric.textClass,
+                    metric.bgClass,
+                    'rounded-lg p-2.5 flex items-center justify-between border transition-all duration-200 hover:scale-[1.01]',
+                    metric.borderClass,
                   ]"
                 >
-                  <Icon :name="metric.icon" class="w-3 h-3" />
-                  {{ metric.label }}
-                </div>
-                <div :class="['text-sm font-bold', metric.valueClass]">
-                  {{ formatMetricDisplay(metric.value) }}
+                  <div
+                    :class="[
+                      'flex items-center gap-1 text-xs',
+                      metric.textClass,
+                    ]"
+                  >
+                    <Icon :name="metric.icon" class="w-3 h-3" />
+                    {{ metric.label }}
+                  </div>
+                  <div :class="['text-sm font-bold', metric.valueClass]">
+                    {{ formatMetricDisplay(metric.value) }}
+                  </div>
                 </div>
               </div>
-            </div>
-            <!-- All Metrics -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
-              <div
-                v-for="metric in content.run.metrics"
-                :key="metric.key"
-                class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
-              >
-                <span class="text-muted-foreground text-xs">{{
-                  formatMetricKey(metric.key)
-                }}</span>
-                <span
-                  :class="[
-                    'text-sm font-medium',
-                    getMetricColor(metric.value),
-                  ]"
+              <!-- All Metrics -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+                <div
+                  v-for="metric in content.run.metrics"
+                  :key="metric.key"
+                  class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
                 >
-                  {{ formatMetricDisplay(metric.value) }}
-                </span>
+                  <span class="text-muted-foreground text-xs">{{
+                    formatMetricKey(metric.key)
+                  }}</span>
+                  <span
+                    :class="[
+                      'text-sm font-medium',
+                      getMetricColor(metric.value),
+                    ]"
+                  >
+                    {{ formatMetricDisplay(metric.value) }}
+                  </span>
+                </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
           </template>
         </CardContent>
       </Card>
     </Tabs>
-
   </div>
 </template>
 
@@ -565,7 +584,10 @@ const allMetricsChartData = computed(() => {
 
   // Find max for non-normalized metrics
   const otherMetrics = parsed.filter((m: any) => m.raw < 0 || m.raw > 1);
-  const otherMax = otherMetrics.length > 0 ? Math.max(...otherMetrics.map((m: any) => m.raw)) : 1;
+  const otherMax =
+    otherMetrics.length > 0
+      ? Math.max(...otherMetrics.map((m: any) => m.raw))
+      : 1;
 
   return parsed.map((m: any) => {
     const isNormalized = m.raw >= 0 && m.raw <= 1;

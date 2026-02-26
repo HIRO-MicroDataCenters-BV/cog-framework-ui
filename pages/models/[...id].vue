@@ -12,6 +12,19 @@
         :artifacts="additional?.artifacts"
         :loading="associationsLoading"
       />
+
+      <!-- Associations Tab -->
+      <ModelAssociationsTab
+        v-if="activeTab === 'associations'"
+        :associations="additional"
+        :loading="associationsLoading"
+      />
+
+      <!-- Compare Tab -->
+      <ModelCompareTab
+        v-if="activeTab === 'compare'"
+        :model="content"
+      />
     </div>
   </div>
 </template>
@@ -20,6 +33,8 @@
 import SimpleTabs from '~/components/app/SimpleTabs.vue';
 import ModelOverviewTab from '~/components/app/ModelOverviewTab.vue';
 import ModelArtifactsTab from '~/components/app/ModelArtifactsTab.vue';
+import ModelAssociationsTab from '~/components/app/ModelAssociationsTab.vue';
+import ModelCompareTab from '~/components/app/ModelCompareTab.vue';
 
 const dayjs = useDayjs();
 const route = useRoute();
@@ -35,6 +50,8 @@ const activeTab = ref('overview');
 const tabs = [
   { key: 'overview', label: 'Overview' },
   { key: 'artifacts', label: 'Artifacts' },
+  { key: 'associations', label: 'Associations' },
+  { key: 'compare', label: 'Compare' },
 ];
 
 // Load associations data when switching to artifacts tab
@@ -64,7 +81,7 @@ const loadAssociations = async () => {
 
 // Watch for tab changes to lazy load associations
 watch(activeTab, (newTab) => {
-  if (newTab === 'artifacts') {
+  if (newTab === 'artifacts' || newTab === 'associations') {
     loadAssociations();
   }
 });
