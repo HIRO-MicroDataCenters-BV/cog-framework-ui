@@ -38,11 +38,16 @@ setOpen(!isIframe.value);
 // Theme toggle
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === 'dark');
+const isAnimating = ref(false);
 
 const toggleTheme = () => {
+  isAnimating.value = true;
   const value = isDark.value ? 'light' : 'dark';
   colorMode.value = value;
   colorMode.preference = value;
+  setTimeout(() => {
+    isAnimating.value = false;
+  }, 500);
 };
 </script>
 
@@ -158,7 +163,10 @@ const toggleTheme = () => {
         <SidebarMenuItem>
           <SidebarMenuButton :tooltip="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
             <span class="text-lg">
-              <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" />
+              <Icon
+                :name="isDark ? 'lucide:sun' : 'lucide:moon'"
+                :class="{ 'theme-icon-animate': isAnimating }"
+              />
             </span>
             <span>{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
           </SidebarMenuButton>
@@ -176,5 +184,18 @@ const toggleTheme = () => {
 <style scoped>
 .icon-chevron {
   transition: transform 0.3s;
+}
+
+.theme-icon-animate {
+  animation: theme-rotate 0.5s ease-in-out;
+}
+
+@keyframes theme-rotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }
 </style>
