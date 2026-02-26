@@ -1,0 +1,12 @@
+{
+  "confusion_matrix": [
+    [24, 0, 0],
+    [0, 24, 0],
+    [0, 79, 1040]
+  ],
+  "labels": [
+    "CPU HOG",
+    "NET LOSS",
+    "Normal"
+  ]
+}

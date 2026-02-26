@@ -1009,5 +1009,78 @@ export const useApiWithMock = () => {
       }
       return request(`/headers`);
     },
+
+    getArtifactPreview: async (fileName: string) => {
+      if (mock.value.enabled) {
+        await mockDelay(300);
+
+        // Map file names to mock data
+        const mockFiles: Record<string, () => Promise<any>> = {
+          'conda.yaml': () => import('~/mocks/artifacts/conda.yaml?raw'),
+          'python_env.yaml': () => import('~/mocks/artifacts/python_env.yaml?raw'),
+          'requirements.txt': () => import('~/mocks/artifacts/requirements.txt?raw'),
+          'MLmodel': () => import('~/mocks/artifacts/MLmodel?raw'),
+          'confusion_matrix.json': () => import('~/mocks/artifacts/confusion_matrix.json'),
+          'input_example.json': () => import('~/mocks/artifacts/input_example.json'),
+          'serving_input_example.json': () => import('~/mocks/artifacts/serving_input_example.json'),
+          'cv_results.csv': () => import('~/mocks/artifacts/cv_results.csv?raw'),
+        };
+
+        const ext = fileName.split('.').pop()?.toLowerCase() || '';
+
+        if (mockFiles[fileName]) {
+          const data = await mockFiles[fileName]();
+          const content = data.default || data;
+
+          // For CSV, parse into headers and rows
+          if (ext === 'csv') {
+            const lines = content.trim().split('\n');
+            const headers = lines[0].split(',');
+            const rows = lines.slice(1).map((line: string) => line.split(','));
+            return Promise.resolve({
+              status_code: 200,
+              message: 'Artifact preview loaded',
+              data: { type: 'csv', headers, rows },
+            });
+          }
+
+          // For JSON, return parsed object
+          if (ext === 'json') {
+            return Promise.resolve({
+              status_code: 200,
+              message: 'Artifact preview loaded',
+              data: { type: 'json', content: JSON.stringify(content, null, 2) },
+            });
+          }
+
+          // For text/yaml files, return raw content
+          return Promise.resolve({
+            status_code: 200,
+            message: 'Artifact preview loaded',
+            data: { type: 'text', content },
+          });
+        }
+
+        // For images, return a placeholder URL
+        if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+          return Promise.resolve({
+            status_code: 200,
+            message: 'Artifact preview loaded',
+            data: {
+              type: 'image',
+              url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Confusion_matrix.svg/400px-Confusion_matrix.svg.png',
+            },
+          });
+        }
+
+        // Default fallback
+        return Promise.resolve({
+          status_code: 404,
+          message: 'Preview not available',
+          data: null,
+        });
+      }
+      return request(`/artifacts/preview?file=${encodeURIComponent(fileName)}`);
+    },
   };
 };

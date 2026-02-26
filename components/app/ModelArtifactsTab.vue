@@ -19,7 +19,6 @@
       <CardContent class="flex-1 overflow-y-auto px-2 pb-4 pt-0">
         <div v-if="fileTree.length" class="space-y-0.5">
           <TreeRoot
-            v-model="selectedFiles"
             v-model:expanded="expandedFolders"
             :items="fileTree"
             :get-key="(item) => item.id"
@@ -30,15 +29,15 @@
               <TreeItem
                 v-for="item in flattenItems"
                 :key="item._id"
-                v-slot="{ isExpanded, isSelected, handleToggle, handleSelect }"
+                v-slot="{ isExpanded, handleToggle }"
                 :style="{ paddingLeft: `${item.level * 12}px` }"
                 :value="item.value"
                 :level="item.level"
                 class="flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors text-sm select-none"
                 :class="[
-                  isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50',
+                  selectedFile?.id === item.value.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50',
                 ]"
-                @click="() => { if (item.value.isFolder) { handleToggle(); } else { handleSelect(); selectFile(item.value); } }"
+                @click="() => { if (item.value.isFolder) { handleToggle(); } else { selectFile(item.value); } }"
               >
                 <!-- Folder toggle -->
                 <button
@@ -208,8 +207,10 @@
         </div>
 
         <!-- Code/Text Preview (JSON, YAML, TXT) -->
-        <div v-else class="h-full overflow-auto">
-          <pre class="p-4 text-xs font-mono text-foreground whitespace-pre-wrap break-words">{{ previewData?.content }}</pre>
+        <div v-else class="h-full overflow-auto p-4">
+          <div class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 overflow-hidden h-full">
+            <pre class="p-4 text-xs font-mono text-zinc-100 whitespace-pre-wrap break-words overflow-auto h-full">{{ previewData?.content }}</pre>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -239,7 +240,8 @@ const props = defineProps<{
   artifacts: any;
 }>();
 
-const selectedFiles = ref<FileItem[]>([]);
+const { getArtifactPreview } = useApi();
+
 const expandedFolders = ref<string[]>([]);
 const selectedFile = ref<FileItem | null>(null);
 const previewData = ref<PreviewData | null>(null);
@@ -436,60 +438,19 @@ const loadPreview = async () => {
   previewData.value = null;
 
   try {
-    // TODO: Replace with actual API call
-    // const fileUrl = `${props.artifacts.artifact_uri}/${selectedFile.value.path}`;
-    // const response = await fetch(`/api/artifacts/preview?url=${encodeURIComponent(fileUrl)}`);
+    const fileName = selectedFile.value.name;
+    const res = await getArtifactPreview(fileName);
 
-    // Mock preview data for demonstration
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (res && 'data' in res && res.data) {
+      const { type, content, headers, rows, url } = res.data as any;
 
-    const ext = getFileExtension(selectedFile.value.name);
-
-    if (ext === 'csv') {
-      // Mock CSV data
-      previewData.value = {
-        headers: ['Class', 'CPU HOG', 'NET LOSS', 'Normal'],
-        rows: [
-          ['CPU HOG', '24', '0', '0'],
-          ['NET LOSS', '0', '24', '0'],
-          ['Normal', '0', '79', '1040'],
-        ],
-      };
-    } else if (isImageFile(selectedFile.value.name)) {
-      // Mock image URL
-      previewData.value = {
-        url: 'https://via.placeholder.com/400x300?text=Confusion+Matrix',
-      };
-    } else if (ext === 'json') {
-      previewData.value = {
-        content: JSON.stringify(
-          {
-            model_type: 'NaiveBayes',
-            accuracy: 0.932,
-            f1_score: 0.78,
-          },
-          null,
-          2
-        ),
-      };
-    } else if (ext === 'yaml' || ext === 'yml') {
-      previewData.value = {
-        content: `name: pyfunc
-conda_env:
-  name: mlflow-env
-  channels:
-    - defaults
-  dependencies:
-    - python=3.9
-    - pip
-    - pip:
-        - mlflow
-        - scikit-learn`,
-      };
-    } else {
-      previewData.value = {
-        content: 'File content preview...',
-      };
+      if (type === 'csv') {
+        previewData.value = { headers, rows };
+      } else if (type === 'image') {
+        previewData.value = { url };
+      } else {
+        previewData.value = { content };
+      }
     }
   } catch (error) {
     console.error('Failed to load preview:', error);
