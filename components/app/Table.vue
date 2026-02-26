@@ -867,7 +867,6 @@ defineExpose({ fetchData });
                 <Icon name="lucide:plus" />
                 {{ t(`action.add_${page.section}`) }}
               </Button>
-              <AppColorModeSwitch />
             </div>
           </div>
         </div>
