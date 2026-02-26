@@ -415,12 +415,21 @@ const summaryMetrics = computed(() => {
   const summaryKeys = [
     {
       key: 'test_accuracy',
-      label: 'Accuracy',
+      label: 'Test Accuracy',
       icon: 'lucide:target',
       bgClass: 'bg-green-50 dark:bg-green-900/20',
       borderClass: 'border-green-200 dark:border-green-800',
       textClass: 'text-green-700 dark:text-green-400',
       valueClass: 'text-green-800 dark:text-green-300',
+    },
+    {
+      key: 'train_accuracy',
+      label: 'Train Accuracy',
+      icon: 'lucide:target',
+      bgClass: 'bg-teal-50 dark:bg-teal-900/20',
+      borderClass: 'border-teal-200 dark:border-teal-800',
+      textClass: 'text-teal-700 dark:text-teal-400',
+      valueClass: 'text-teal-800 dark:text-teal-300',
     },
     {
       key: 'test_f1_macro',
