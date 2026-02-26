@@ -193,6 +193,30 @@
           <template v-if="content.run?.metrics?.length">
           <!-- Chart view -->
           <TabsContent value="chart" class="mt-0">
+            <!-- Chart view toggle -->
+            <div class="flex items-center justify-end mb-4">
+              <div class="flex items-center gap-1 p-0.5 rounded-md bg-muted/50">
+                <button
+                  class="px-2 py-1 text-xs rounded transition-colors"
+                  :class="chartViewMode === 'grouped' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                  @click="chartViewMode = 'grouped'"
+                >
+                  <Icon name="lucide:layers" class="w-3 h-3 inline mr-1" />
+                  Grouped
+                </button>
+                <button
+                  class="px-2 py-1 text-xs rounded transition-colors"
+                  :class="chartViewMode === 'individual' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'"
+                  @click="chartViewMode = 'individual'"
+                >
+                  <Icon name="lucide:layout-grid" class="w-3 h-3 inline mr-1" />
+                  Individual
+                </button>
+              </div>
+            </div>
+
+            <!-- Grouped View -->
+            <template v-if="chartViewMode === 'grouped'">
             <!-- Normalized metrics (0-1 scale) -->
             <div v-if="normalizedMetricsChartData.length" class="mb-6">
               <p class="text-xs text-muted-foreground mb-3">
@@ -200,7 +224,7 @@
                 0-1) - {{ normalizedMetricsChartData.length }} metrics
               </p>
               <TooltipProvider>
-                <div class="space-y-2.5">
+                <div class="space-y-1">
                   <Tooltip
                     v-for="metric in normalizedMetricsChartData"
                     :key="metric.key"
@@ -249,7 +273,7 @@
                 {{ otherMetricsChartData.length }} metrics
               </p>
               <TooltipProvider>
-                <div class="space-y-2.5">
+                <div class="space-y-1">
                   <Tooltip
                     v-for="metric in otherMetricsChartData"
                     :key="metric.key"
@@ -290,6 +314,36 @@
                 </div>
               </TooltipProvider>
             </div>
+            </template>
+
+            <!-- Individual View -->
+            <template v-if="chartViewMode === 'individual'">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  v-for="metric in allMetricsChartData"
+                  :key="metric.key"
+                  class="p-3 rounded-lg border bg-card"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-medium text-foreground">{{ metric.label }}</span>
+                    <span class="text-sm font-bold" :class="metric.isNormalized ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'">
+                      {{ metric.display }}
+                    </span>
+                  </div>
+                  <div class="h-3 rounded-full overflow-hidden bg-muted/30">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="metric.isNormalized ? 'bg-blue-500 dark:bg-blue-400' : 'bg-green-500 dark:bg-green-400'"
+                      :style="{ width: metric.barPct + '%' }"
+                    />
+                  </div>
+                  <div class="flex justify-between mt-1">
+                    <span class="text-[10px] text-muted-foreground">0</span>
+                    <span class="text-[10px] text-muted-foreground">{{ metric.isNormalized ? '1' : metric.maxValue }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
 
             <div
               class="flex items-center gap-1.5 mt-4 pt-3 border-t border-border/50"
@@ -380,6 +434,7 @@ const props = defineProps<{
 
 const dayjs = useDayjs();
 const metricsView = ref<'chart' | 'table'>('table');
+const chartViewMode = ref<'grouped' | 'individual'>('grouped');
 
 // Helper functions
 const formatParamKey = (key: string): string => {
@@ -498,5 +553,30 @@ const otherMetricsChartData = computed(() => {
     barPct: (m.raw / max) * 100,
     display: Number.isInteger(m.raw) ? String(m.raw) : m.raw.toFixed(2),
   }));
+});
+
+// All metrics combined for individual view
+const allMetricsChartData = computed(() => {
+  const metrics = props.content?.run?.metrics || [];
+  const parsed = metrics
+    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m: any) => !isNaN(m.raw));
+  if (parsed.length === 0) return [];
+
+  // Find max for non-normalized metrics
+  const otherMetrics = parsed.filter((m: any) => m.raw < 0 || m.raw > 1);
+  const otherMax = otherMetrics.length > 0 ? Math.max(...otherMetrics.map((m: any) => m.raw)) : 1;
+
+  return parsed.map((m: any) => {
+    const isNormalized = m.raw >= 0 && m.raw <= 1;
+    return {
+      key: m.key,
+      label: formatMetricKey(m.key),
+      barPct: isNormalized ? m.raw * 100 : (m.raw / otherMax) * 100,
+      display: Number.isInteger(m.raw) ? String(m.raw) : m.raw.toFixed(2),
+      isNormalized,
+      maxValue: isNormalized ? '1' : otherMax.toFixed(0),
+    };
+  });
 });
 </script>
