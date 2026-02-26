@@ -1,6 +1,22 @@
 <template>
   <div v-if="content" class="w-full h-full flex flex-col overflow-hidden">
-    <SimpleTabs v-model="activeTab" :tabs="tabs" class="flex-shrink-0" />
+    <div class="flex items-center justify-between flex-shrink-0 pr-4">
+      <SimpleTabs v-model="activeTab" :tabs="tabs" />
+      <Button
+        variant="outline"
+        size="sm"
+        class="h-8"
+        :disabled="isRefreshing"
+        @click="refreshData"
+      >
+        <Icon
+          name="lucide:refresh-cw"
+          class="w-4 h-4 mr-1.5"
+          :class="{ 'animate-spin': isRefreshing }"
+        />
+        Refresh
+      </Button>
+    </div>
 
     <div class="flex-1 overflow-y-auto px-4 py-4">
       <!-- Overview Tab -->
@@ -45,6 +61,7 @@ const content = ref<any>();
 const additional = ref<any>();
 const associationsLoading = ref(false);
 const associationsLoaded = ref(false);
+const isRefreshing = ref(false);
 
 const activeTab = ref('overview');
 const tabs = [
@@ -85,6 +102,29 @@ watch(activeTab, (newTab) => {
     loadAssociations();
   }
 });
+
+// Refresh all data
+const refreshData = async () => {
+  isRefreshing.value = true;
+  associationsLoaded.value = false;
+
+  try {
+    // Reload model data
+    const res = await getModelById(id.value);
+    if (res && 'data' in res && res.data) {
+      content.value = res.data;
+    }
+
+    // Reload associations if on artifacts or associations tab
+    if (activeTab.value === 'artifacts' || activeTab.value === 'associations') {
+      await loadAssociations();
+    }
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    isRefreshing.value = false;
+  }
+};
 
 onMounted(async () => {
   try {
