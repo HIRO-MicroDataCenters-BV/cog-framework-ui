@@ -23,10 +23,13 @@ export const badgeVariants = cva(
           'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
         pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
         succeeded: 'border-transparent bg-green-700 text-white',
-        file: 'border-transparent bg-blue-100 text-blue-600',
-        database: 'border-transparent bg-purple-100 text-purple-600',
-        stream: 'border-transparent bg-orange-100 text-orange-600',
-        time_series: 'border-transparent bg-green-100 text-green-600',
+        file: 'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-100',
+        database:
+          'border-transparent bg-purple-100 text-purple-600 dark:bg-purple-900/60 dark:text-purple-100',
+        stream:
+          'border-transparent bg-orange-100 text-orange-600 dark:bg-orange-900/60 dark:text-orange-100',
+        time_series:
+          'border-transparent bg-green-100 text-green-600 dark:bg-green-900/60 dark:text-green-100',
         sklearn:
           'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300',
         pytorch:

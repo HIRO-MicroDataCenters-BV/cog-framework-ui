@@ -36,20 +36,24 @@ setOpen(!isIframe.value);
 </script>
 
 <template>
-  <Sidebar collapsible="icon" class="bg-white">
+  <Sidebar collapsible="icon" class="bg-sidebar">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground ring-0 outline-none focus-visible:ring-0 focus-visible:outline-none data-[state=open]:ring-0"
                 size="lg"
               >
                 <div
                   class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
                 >
-                  <img src="/images/logo.svg" class="size-10" alt="cog-logo" />
+                  <img
+                    src="/images/logo.svg"
+                    class="size-10 dark:invert"
+                    alt="cog-logo"
+                  />
                 </div>
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-semibold">{{

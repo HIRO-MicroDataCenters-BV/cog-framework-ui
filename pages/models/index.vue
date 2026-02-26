@@ -88,15 +88,39 @@ const columns = [
     id: 'type',
     size: 120,
     cell: ({ row }: { row: TableRowType }) => {
-      const value = row.getValue<string>('type');
-      return h(
-        Badge,
-        {
-          type: 'model_type',
-          value,
-        },
-        () => [],
-      );
+      const value = (row.getValue<string>('type') || '').toLowerCase();
+      const modelTypeBadgeClasses: Record<string, string> = {
+        sklearn:
+          'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
+        pytorch: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        tensorflow:
+          'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-100',
+        xgboost:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        xcboost:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        keras:
+          'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-100',
+      };
+      const modelTypeIcons: Record<string, string> = {
+        sklearn: 'lucide:box',
+        pytorch: 'lucide:box',
+        tensorflow: 'lucide:box',
+        xgboost: 'lucide:box',
+        xcboost: 'lucide:box',
+        keras: 'lucide:box',
+      };
+      const classes = modelTypeBadgeClasses[value];
+      if (!classes) return value || null;
+      const baseClass =
+        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
+      return h('span', { class: `${baseClass} ${classes}` }, [
+        h(resolveComponent('Icon'), {
+          name: modelTypeIcons[value] || 'lucide:box',
+          class: 'size-3 shrink-0',
+        }),
+        value,
+      ]);
     },
   },
   {

@@ -296,6 +296,10 @@ export default defineI18nConfig(() => ({
         metric_list: 'Enter metric list (JSON)',
         feature_list: 'Enter feature list (JSON)',
       },
+      theme: {
+        dark: 'Dark',
+        light: 'Light',
+      },
       action: {
         upload: 'Upload',
         run: 'Run',
