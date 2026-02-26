@@ -335,7 +335,7 @@
               </div>
             </div>
             <!-- All Metrics -->
-            <div class="space-y-0.5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
               <div
                 v-for="metric in content.run.metrics"
                 :key="metric.key"
@@ -346,7 +346,7 @@
                 }}</span>
                 <span
                   :class="[
-                    'text-xs font-medium',
+                    'text-sm font-medium',
                     getMetricColor(metric.value),
                   ]"
                 >
