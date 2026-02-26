@@ -131,7 +131,7 @@
     </div>
 
     <!-- Metrics Section with Chart / Table toggle -->
-    <Tabs v-if="content.run?.metrics?.length" v-model="metricsView">
+    <Tabs v-model="metricsView">
       <Card class="transition-all duration-200 hover:shadow-md">
         <CardHeader class="py-3 px-4">
           <div class="flex items-center justify-between">
@@ -164,7 +164,7 @@
                   : 'Performance Metrics'
               }}
             </CardTitle>
-            <TabsList class="h-7">
+            <TabsList v-if="content.run?.metrics?.length" class="h-7">
               <TabsTrigger value="table" class="h-6 px-2.5 text-xs gap-1">
                 <Icon name="lucide:table-2" class="w-3 h-3" />
                 Table
@@ -177,6 +177,20 @@
           </div>
         </CardHeader>
         <CardContent class="px-4 pb-4 pt-0">
+          <!-- Empty state -->
+          <div
+            v-if="!content.run?.metrics?.length"
+            class="text-muted-foreground text-xs text-center py-4"
+          >
+            <Icon
+              name="lucide:bar-chart-3"
+              class="w-6 h-6 mx-auto mb-1 opacity-50"
+            />
+            No metrics available
+          </div>
+
+          <!-- Metrics content (only when data available) -->
+          <template v-if="content.run?.metrics?.length">
           <!-- Chart view -->
           <TabsContent value="chart" class="mt-0">
             <!-- Normalized metrics (0-1 scale) -->
@@ -341,40 +355,11 @@
               </div>
             </div>
           </TabsContent>
+          </template>
         </CardContent>
       </Card>
     </Tabs>
 
-    <!-- Tags -->
-    <Card
-      v-if="content.run?.tags?.length"
-      class="transition-all duration-200 hover:shadow-md"
-    >
-      <CardHeader class="py-3 px-4">
-        <CardTitle class="flex items-center gap-2 text-sm">
-          <div class="p-1 rounded bg-amber-100 dark:bg-amber-900/50">
-            <Icon
-              name="lucide:tags"
-              class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"
-            />
-          </div>
-          Tags
-        </CardTitle>
-      </CardHeader>
-      <CardContent class="px-4 pb-4 pt-0">
-        <div class="flex flex-wrap gap-1.5">
-          <Badge
-            v-for="tag in content.run.tags"
-            :key="tag"
-            variant="secondary"
-            class="text-xs px-2 py-0.5 transition-all hover:scale-105"
-          >
-            <Icon name="lucide:hash" class="w-2.5 h-2.5 mr-0.5" />
-            {{ tag }}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
   </div>
 </template>
 

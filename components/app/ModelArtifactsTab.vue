@@ -1,5 +1,13 @@
 <template>
-  <div class="h-full flex gap-4">
+  <!-- Loading State -->
+  <div v-if="loading" class="h-full flex items-center justify-center">
+    <div class="text-center">
+      <Icon name="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
+      <p class="text-sm text-muted-foreground">Loading artifacts...</p>
+    </div>
+  </div>
+
+  <div v-else class="h-full flex gap-4">
     <!-- Left Panel: File Tree -->
     <Card class="w-80 flex-shrink-0 flex flex-col transition-all duration-200">
       <CardHeader class="py-3 px-4 flex-shrink-0">
@@ -238,6 +246,7 @@ interface PreviewData {
 
 const props = defineProps<{
   artifacts: any;
+  loading?: boolean;
 }>();
 
 const { getArtifactPreview } = useApi();

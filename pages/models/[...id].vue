@@ -10,6 +10,7 @@
       <ModelArtifactsTab
         v-if="activeTab === 'artifacts'"
         :artifacts="additional?.artifacts"
+        :loading="associationsLoading"
       />
     </div>
   </div>
@@ -27,12 +28,46 @@ const { setPage } = useApp();
 const id = computed(() => route.params.id[0] as string);
 const content = ref<any>();
 const additional = ref<any>();
+const associationsLoading = ref(false);
+const associationsLoaded = ref(false);
 
 const activeTab = ref('overview');
 const tabs = [
   { key: 'overview', label: 'Overview' },
   { key: 'artifacts', label: 'Artifacts' },
 ];
+
+// Load associations data when switching to artifacts tab
+const loadAssociations = async () => {
+  if (associationsLoaded.value || associationsLoading.value) return;
+
+  associationsLoading.value = true;
+  try {
+    const resAssociations = await getModelAssociationsById(id.value);
+    if (
+      resAssociations &&
+      'data' in resAssociations &&
+      resAssociations.data &&
+      Array.isArray(resAssociations.data) &&
+      resAssociations.data.length > 0
+    ) {
+      additional.value = resAssociations.data[0];
+      console.log('Associations data:', additional.value);
+    }
+    associationsLoaded.value = true;
+  } catch (err) {
+    console.warn('Failed to load associations:', err);
+  } finally {
+    associationsLoading.value = false;
+  }
+};
+
+// Watch for tab changes to lazy load associations
+watch(activeTab, (newTab) => {
+  if (newTab === 'artifacts') {
+    loadAssociations();
+  }
+});
 
 onMounted(async () => {
   try {
@@ -53,23 +88,6 @@ onMounted(async () => {
       }
     } else {
       console.error('Invalid response format or no data:', res);
-    }
-
-    // Load additional associations data if needed
-    try {
-      const resAssociations = await getModelAssociationsById(id.value);
-      if (
-        resAssociations &&
-        'data' in resAssociations &&
-        resAssociations.data &&
-        Array.isArray(resAssociations.data) &&
-        resAssociations.data.length > 0
-      ) {
-        additional.value = resAssociations.data[0];
-        console.log('Associations data:', additional.value);
-      }
-    } catch (err) {
-      console.warn('Failed to load associations:', err);
     }
   } catch (error) {
     console.error('Error loading model:', error);

@@ -32,6 +32,22 @@
         {
           "key": "n_samples_train",
           "value": "4665"
+        },
+        {
+          "key": "model_type",
+          "value": "NaiveBayes"
+        },
+        {
+          "key": "n_classes",
+          "value": "3"
+        },
+        {
+          "key": "n_samples_test",
+          "value": "1167"
+        },
+        {
+          "key": "n_samples_train",
+          "value": "4665"
         }
       ],
       "metrics": [
