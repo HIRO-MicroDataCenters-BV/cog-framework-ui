@@ -118,13 +118,13 @@
           </div>
           <div
             v-else
-            class="text-muted-foreground text-xs text-center py-4"
+            class="flex flex-col items-center justify-center text-muted-foreground text-xs py-4"
           >
             <Icon
               name="lucide:inbox"
-              class="w-6 h-6 mx-auto mb-1 opacity-50"
+              class="w-6 h-6 mb-1 opacity-50"
             />
-            No parameters available
+            <span>No parameters available</span>
           </div>
         </CardContent>
       </Card>
@@ -180,13 +180,13 @@
           <!-- Empty state -->
           <div
             v-if="!content.run?.metrics?.length"
-            class="text-muted-foreground text-xs text-center py-4"
+            class="flex flex-col items-center justify-center text-muted-foreground text-xs py-4"
           >
             <Icon
               name="lucide:bar-chart-3"
-              class="w-6 h-6 mx-auto mb-1 opacity-50"
+              class="w-6 h-6 mb-1 opacity-50"
             />
-            No metrics available
+            <span>No metrics available</span>
           </div>
 
           <!-- Metrics content (only when data available) -->
