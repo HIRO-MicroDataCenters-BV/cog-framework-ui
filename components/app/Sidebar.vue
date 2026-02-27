@@ -161,7 +161,10 @@ const toggleTheme = () => {
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton :tooltip="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
+          <SidebarMenuButton
+            :tooltip="isDark ? 'Light mode' : 'Dark mode'"
+            @click="toggleTheme"
+          >
             <span class="text-lg">
               <Icon
                 :name="isDark ? 'lucide:sun' : 'lucide:moon'"

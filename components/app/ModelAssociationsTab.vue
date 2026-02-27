@@ -2,7 +2,10 @@
   <!-- Loading State -->
   <div v-if="loading" class="h-full flex items-center justify-center">
     <div class="text-center">
-      <Icon name="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
+      <Icon
+        name="lucide:loader-2"
+        class="w-8 h-8 mx-auto mb-2 animate-spin text-primary"
+      />
       <p class="text-sm text-muted-foreground">Loading associations...</p>
     </div>
   </div>
@@ -35,7 +38,9 @@
             class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
           >
             <span class="text-muted-foreground text-xs">Name</span>
-            <span class="text-sm font-medium">{{ associations.model_name }}</span>
+            <span class="text-sm font-medium">{{
+              associations.model_name
+            }}</span>
           </div>
           <div
             class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
@@ -53,7 +58,9 @@
             class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
           >
             <span class="text-muted-foreground text-xs">Registered</span>
-            <span class="text-sm">{{ formatDate(associations.register_date) }}</span>
+            <span class="text-sm">{{
+              formatDate(associations.register_date)
+            }}</span>
           </div>
         </div>
         <div
@@ -77,7 +84,11 @@
             />
           </div>
           Associated Datasets
-          <Badge v-if="associations?.datasets?.length" variant="secondary" class="ml-auto text-xs">
+          <Badge
+            v-if="associations?.datasets?.length"
+            variant="secondary"
+            class="ml-auto text-xs"
+          >
             {{ associations.datasets.length }}
           </Badge>
         </CardTitle>
@@ -91,11 +102,19 @@
           >
             <div class="flex items-center gap-3">
               <div class="p-2 rounded-md bg-green-100 dark:bg-green-900/30">
-                <Icon name="lucide:database" class="w-4 h-4 text-green-600 dark:text-green-400" />
+                <Icon
+                  name="lucide:database"
+                  class="w-4 h-4 text-green-600 dark:text-green-400"
+                />
               </div>
               <div>
-                <p class="text-sm font-medium">{{ dataset.name || dataset.dataset_name }}</p>
-                <p v-if="dataset.description" class="text-xs text-muted-foreground">
+                <p class="text-sm font-medium">
+                  {{ dataset.name || dataset.dataset_name }}
+                </p>
+                <p
+                  v-if="dataset.description"
+                  class="text-xs text-muted-foreground"
+                >
                   {{ dataset.description }}
                 </p>
               </div>
@@ -116,7 +135,10 @@
     </Card>
 
     <!-- Artifact Path Card -->
-    <Card v-if="associations?.artifacts?.artifact_uri" class="transition-all duration-200 hover:shadow-md">
+    <Card
+      v-if="associations?.artifacts?.artifact_uri"
+      class="transition-all duration-200 hover:shadow-md"
+    >
       <CardHeader class="py-3 px-4">
         <CardTitle class="flex items-center gap-2 text-sm">
           <div class="p-1 rounded bg-purple-100 dark:bg-purple-900/50">
@@ -129,9 +151,14 @@
         </CardTitle>
       </CardHeader>
       <CardContent class="px-4 pb-4 pt-0">
-        <div class="flex items-center justify-between gap-2 p-3 rounded-lg border bg-muted/20">
+        <div
+          class="flex items-center justify-between gap-2 p-3 rounded-lg border bg-muted/20"
+        >
           <div class="flex items-center gap-2 min-w-0">
-            <Icon name="lucide:cloud" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <Icon
+              name="lucide:cloud"
+              class="w-4 h-4 text-muted-foreground flex-shrink-0"
+            />
             <code class="text-xs font-mono text-muted-foreground break-all">
               {{ associations.artifacts.artifact_uri }}
             </code>
@@ -142,7 +169,10 @@
             class="h-7 px-2 flex-shrink-0"
             @click="copyPath"
           >
-            <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="w-3.5 h-3.5" />
+            <Icon
+              :name="copied ? 'lucide:check' : 'lucide:copy'"
+              class="w-3.5 h-3.5"
+            />
           </Button>
         </div>
       </CardContent>
@@ -170,7 +200,9 @@ const copyPath = async () => {
   if (!props.associations?.artifacts?.artifact_uri) return;
 
   try {
-    await navigator.clipboard.writeText(props.associations.artifacts.artifact_uri);
+    await navigator.clipboard.writeText(
+      props.associations.artifacts.artifact_uri,
+    );
     copied.value = true;
     setTimeout(() => {
       copied.value = false;

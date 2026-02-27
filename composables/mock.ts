@@ -1090,7 +1090,9 @@ export const useApiWithMock = () => {
         });
       }
       // Real API: /models/artifact/preview?url=<encoded_s3_url>
-      return request(`/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`);
+      return request(
+        `/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`,
+      );
     },
   };
 };

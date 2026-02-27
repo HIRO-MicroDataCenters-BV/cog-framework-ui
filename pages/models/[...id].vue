@@ -37,10 +37,7 @@
       />
 
       <!-- Compare Tab -->
-      <ModelCompareTab
-        v-if="activeTab === 'compare'"
-        :model="content"
-      />
+      <ModelCompareTab v-if="activeTab === 'compare'" :model="content" />
     </div>
   </div>
 </template>

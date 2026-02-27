@@ -396,7 +396,11 @@ export const useApi = () => {
         });
 
         if (!res.ok) {
-          return { status_code: res.status, message: 'Failed to load preview', data: null };
+          return {
+            status_code: res.status,
+            message: 'Failed to load preview',
+            data: null,
+          };
         }
 
         // Get filename from URL or content-disposition header
@@ -456,7 +460,11 @@ export const useApi = () => {
         };
       } catch (error) {
         console.error('Error fetching artifact preview:', error);
-        return { status_code: 500, message: 'Failed to load preview', data: null };
+        return {
+          status_code: 500,
+          message: 'Failed to load preview',
+          data: null,
+        };
       }
     },
 

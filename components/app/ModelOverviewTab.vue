@@ -85,7 +85,9 @@
           <!-- Tags Section -->
           <div v-if="content.run?.tags?.length" class="mt-3 pt-3 border-t">
             <div class="flex items-start gap-2 px-2">
-              <span class="text-muted-foreground text-xs flex items-center gap-1 flex-shrink-0 pt-0.5">
+              <span
+                class="text-muted-foreground text-xs flex items-center gap-1 flex-shrink-0 pt-0.5"
+              >
                 <Icon name="lucide:tags" class="w-3 h-3" />
                 Tags
               </span>
@@ -96,7 +98,11 @@
                   variant="secondary"
                   class="text-[10px] px-1.5 py-0.5"
                 >
-                  <span class="font-semibold">{{ tag.key }}</span>: <span class="text-blue-600 dark:text-blue-400">{{ tag.value }}</span>
+                  <span class="font-semibold">{{ tag.key }}</span
+                  >:
+                  <span class="text-blue-600 dark:text-blue-400">{{
+                    tag.value
+                  }}</span>
                 </Badge>
               </div>
             </div>
@@ -453,7 +459,6 @@
         </CardContent>
       </Card>
     </Tabs>
-
   </div>
 </template>
 
