@@ -1018,7 +1018,7 @@ export const useApiWithMock = () => {
         const fileName = artifactUrl.split('/').pop() || '';
 
         // Map file names to mock data
-        const mockFiles: Record<string, () => Promise<any>> = {
+        const mockFiles: Record<string, () => Promise<unknown>> = {
           'conda.yaml': () => import('~/mocks/artifacts/conda.yaml?raw'),
           'python_env.yaml': () =>
             import('~/mocks/artifacts/python_env.yaml?raw'),

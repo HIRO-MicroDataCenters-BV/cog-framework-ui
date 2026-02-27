@@ -49,13 +49,16 @@ import ModelArtifactsTab from '~/components/app/ModelArtifactsTab.vue';
 import ModelAssociationsTab from '~/components/app/ModelAssociationsTab.vue';
 import ModelCompareTab from '~/components/app/ModelCompareTab.vue';
 
+import type { ModelDetail } from '~/types/model.types';
+
 const dayjs = useDayjs();
 const route = useRoute();
 const { getModelById, getModelAssociationsById } = useApi();
 const { setPage } = useApp();
 const id = computed(() => route.params.id[0] as string);
-const content = ref<any>();
-const additional = ref<any>();
+
+const content = ref<ModelDetail | null>(null);
+const additional = ref<Record<string, unknown> | null>(null);
 const associationsLoading = ref(false);
 const associationsLoaded = ref(false);
 const isRefreshing = ref(false);

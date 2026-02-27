@@ -182,9 +182,10 @@
 
 <script lang="ts" setup>
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import type { ModelAssociations } from '~/types/model.types';
 
 const props = defineProps<{
-  associations: any;
+  associations: ModelAssociations | null;
   loading?: boolean;
 }>();
 

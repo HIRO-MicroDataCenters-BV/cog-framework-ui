@@ -22,7 +22,9 @@
 </template>
 
 <script lang="ts" setup>
+import type { ModelSummary } from '~/types/model.types';
+
 const props = defineProps<{
-  model: any;
+  model: ModelSummary | null;
 }>();
 </script>

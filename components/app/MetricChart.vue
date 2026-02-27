@@ -27,8 +27,8 @@ const data = computed(() => [
   { key: 'remaining', value: 1 - props.value },
 ]);
 
-const value = (d: { value: number }) => d.value;
-const color = (d: { key: string }) =>
+const valueAccessor = (d: { value: number }) => d.value;
+const colorAccessor = (d: { key: string }) =>
   chartConfig.value[d.key]?.color || 'hsl(var(--muted))';
 </script>
 
@@ -38,8 +38,8 @@ const color = (d: { key: string }) =>
       <ChartContainer :config="chartConfig" class="w-full h-full">
         <VisSingleContainer :data="data" class="w-full h-full">
           <VisDonut
-            :value="value"
-            :color="color"
+            :value="valueAccessor"
+            :color="colorAccessor"
             :arc-width="8"
             :pad-angle="0.02"
           />

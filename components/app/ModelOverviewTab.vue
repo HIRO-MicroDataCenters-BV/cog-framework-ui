@@ -472,9 +472,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import type { ModelOverviewContent } from '~/types/model.types';
 
 const props = defineProps<{
-  content: any;
+  content: ModelOverviewContent | null;
 }>();
 
 const dayjs = useDayjs();
@@ -511,7 +512,7 @@ const getMetricColor = (value: string | number): string => {
 
 // Summary metrics for quick view
 const summaryMetrics = computed(() => {
-  const metrics = props.content?.run?.metrics || [];
+  const metrics = props.content?.run?.metrics ?? [];
   const summaryKeys = [
     {
       key: 'test_accuracy',
@@ -562,7 +563,7 @@ const summaryMetrics = computed(() => {
 
   return summaryKeys
     .map((s) => {
-      const metric = metrics.find((m: any) => m.key === s.key);
+      const metric = metrics.find((m) => m.key === s.key);
       return metric ? { ...s, value: metric.value } : null;
     })
     .filter(Boolean);
@@ -570,12 +571,12 @@ const summaryMetrics = computed(() => {
 
 // Metrics with 0-1 scale (ratios, percentages)
 const normalizedMetricsChartData = computed(() => {
-  const metrics = props.content?.run?.metrics || [];
+  const metrics = props.content?.run?.metrics ?? [];
   const parsed = metrics
-    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
-    .filter((m: any) => !isNaN(m.raw) && m.raw >= 0 && m.raw <= 1);
+    .map((m) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m) => !Number.isNaN(m.raw) && m.raw >= 0 && m.raw <= 1);
   if (parsed.length === 0) return [];
-  return parsed.map((m: any) => ({
+  return parsed.map((m) => ({
     key: m.key,
     label: formatMetricKey(m.key),
     barPct: m.raw * 100,
@@ -585,14 +586,14 @@ const normalizedMetricsChartData = computed(() => {
 
 // Metrics with other scales (counts, larger values)
 const otherMetricsChartData = computed(() => {
-  const metrics = props.content?.run?.metrics || [];
+  const metrics = props.content?.run?.metrics ?? [];
   const parsed = metrics
-    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
-    .filter((m: any) => !isNaN(m.raw) && (m.raw < 0 || m.raw > 1));
+    .map((m) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m) => !Number.isNaN(m.raw) && (m.raw < 0 || m.raw > 1));
   if (parsed.length === 0) return [];
-  const max = Math.max(...parsed.map((m: any) => m.raw));
+  const max = Math.max(...parsed.map((m) => m.raw));
   if (max <= 0) return [];
-  return parsed.map((m: any) => ({
+  return parsed.map((m) => ({
     key: m.key,
     label: formatMetricKey(m.key),
     barPct: (m.raw / max) * 100,
@@ -602,20 +603,18 @@ const otherMetricsChartData = computed(() => {
 
 // All metrics combined for individual view
 const allMetricsChartData = computed(() => {
-  const metrics = props.content?.run?.metrics || [];
+  const metrics = props.content?.run?.metrics ?? [];
   const parsed = metrics
-    .map((m: any) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
-    .filter((m: any) => !isNaN(m.raw));
+    .map((m) => ({ key: m.key, raw: parseFloat(String(m.value)) }))
+    .filter((m) => !Number.isNaN(m.raw));
   if (parsed.length === 0) return [];
 
   // Find max for non-normalized metrics
-  const otherMetrics = parsed.filter((m: any) => m.raw < 0 || m.raw > 1);
+  const otherMetrics = parsed.filter((m) => m.raw < 0 || m.raw > 1);
   const otherMax =
-    otherMetrics.length > 0
-      ? Math.max(...otherMetrics.map((m: any) => m.raw))
-      : 1;
+    otherMetrics.length > 0 ? Math.max(...otherMetrics.map((m) => m.raw)) : 1;
 
-  return parsed.map((m: any) => {
+  return parsed.map((m) => {
     const isNormalized = m.raw >= 0 && m.raw <= 1;
     return {
       key: m.key,

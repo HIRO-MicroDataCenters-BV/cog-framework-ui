@@ -327,6 +327,7 @@
 <script lang="ts" setup>
 import { TreeRoot, TreeItem } from 'reka-ui';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import type { ModelArtifactFile, ModelArtifacts } from '~/types/model.types';
 
 interface FileItem {
   id: string;
@@ -344,7 +345,7 @@ interface PreviewData {
 }
 
 const props = defineProps<{
-  artifacts: any;
+  artifacts: ModelArtifacts | null;
   loading?: boolean;
 }>();
 
@@ -382,9 +383,8 @@ const fileTree = computed<FileItem[]>(() => {
   if (!files.length) return [];
 
   const result: FileItem[] = [];
-  const firstLevelFolders: string[] = [];
 
-  files.forEach((file: any) => {
+  files.forEach((file: ModelArtifactFile) => {
     const pathParts = file.artifact_path.split('/');
     let currentLevel = result;
     let currentPath = '';
@@ -405,11 +405,6 @@ const fileTree = computed<FileItem[]>(() => {
         };
         currentLevel.push(newItem);
         existing = newItem;
-
-        // Track first level folders for auto-expand
-        if (!isFile && index === 0) {
-          firstLevelFolders.push(currentPath);
-        }
       }
 
       if (!isFile && existing.children) {
@@ -417,12 +412,6 @@ const fileTree = computed<FileItem[]>(() => {
       }
     });
   });
-
-  // Auto-expand first level folders only once
-  if (!hasInitializedExpand.value && firstLevelFolders.length > 0) {
-    hasInitializedExpand.value = true;
-    expandedFolders.value = [...firstLevelFolders];
-  }
 
   // Sort: folders first, then files
   return sortItems(result);
@@ -564,7 +553,13 @@ const loadPreview = async () => {
     const res = await getArtifactPreview(artifactUrl);
 
     if (res && 'data' in res && res.data) {
-      const { type, content, headers, rows, url } = res.data as any;
+      const { type, content, headers, rows, url } = res.data as {
+        type?: 'csv' | 'image' | string;
+        content?: string;
+        headers?: string[];
+        rows?: string[][];
+        url?: string;
+      };
 
       if (type === 'csv') {
         previewData.value = { headers, rows };
