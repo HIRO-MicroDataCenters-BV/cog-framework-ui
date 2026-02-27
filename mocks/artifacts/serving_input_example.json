@@ -1,0 +1,9 @@
+{
+  "inputs": {
+    "feature_1": [0.23],
+    "feature_2": [0.45],
+    "feature_3": [0.67],
+    "feature_4": [0.89],
+    "feature_5": [0.12]
+  }
+}

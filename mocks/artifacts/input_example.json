@@ -1,0 +1,12 @@
+{
+  "columns": [
+    "feature_1",
+    "feature_2",
+    "feature_3",
+    "feature_4",
+    "feature_5"
+  ],
+  "data": [
+    [0.23, 0.45, 0.67, 0.89, 0.12]
+  ]
+}

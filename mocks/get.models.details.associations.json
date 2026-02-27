@@ -3,46 +3,54 @@
   "message": "Model Associations",
   "data": [
     {
-      "model_id": "e655d2c1-c2b5-459e-9652-c3125312fb74",
-      "model_name": "FedSCVI_Model",
+      "model_id": "5497384b-acec-4fb9-93a8-3cec7a9d6841",
+      "model_name": "NaiveBayes_training",
       "model_description": "log_model",
       "user_id": "admin@hiro.com",
-      "register_date": "2025-11-14T08:08:12.274000",
+      "register_date": "2025-12-18T12:19:33.336000",
       "datasets": [],
       "artifacts": {
-        "base_uri": "s3://mlflow/5/e655d2c1c2b5459e9652c3125312fb74/artifacts",
+        "artifact_uri": "s3://mlflow/11/5497384bacec4fb993a83cec7a9d6841/artifacts",
         "model_files": [
           {
-            "name": "tmp8nif6qve.csv",
-            "path": "metrics/tmp8nif6qve.csv"
+            "name": "confusion_matrix.json",
+            "artifact_path": "confusion_matrix.json"
           },
           {
-            "name": "tmp3ftnloxx.png",
-            "path": "plots/tmp3ftnloxx.png"
+            "name": "confusion_matrix.png",
+            "artifact_path": "confusion_matrix.png"
+          },
+          {
+            "name": "cv_results.csv",
+            "artifact_path": "cv_results.csv"
           },
           {
             "name": "MLmodel",
-            "path": "scvi_model/MLmodel"
+            "artifact_path": "model/MLmodel"
           },
           {
             "name": "conda.yaml",
-            "path": "scvi_model/conda.yaml"
+            "artifact_path": "model/conda.yaml"
+          },
+          {
+            "name": "input_example.json",
+            "artifact_path": "model/input_example.json"
           },
           {
             "name": "python_env.yaml",
-            "path": "scvi_model/python_env.yaml"
+            "artifact_path": "model/python_env.yaml"
+          },
+          {
+            "name": "python_model.pkl",
+            "artifact_path": "model/python_model.pkl"
           },
           {
             "name": "requirements.txt",
-            "path": "scvi_model/requirements.txt"
+            "artifact_path": "model/requirements.txt"
           },
           {
-            "name": "model.pth",
-            "path": "scvi_model/data/model.pth"
-          },
-          {
-            "name": "pickle_module_info.txt",
-            "path": "scvi_model/data/pickle_module_info.txt"
+            "name": "serving_input_example.json",
+            "artifact_path": "model/serving_input_example.json"
           }
         ]
       }

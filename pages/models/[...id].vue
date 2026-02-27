@@ -1,149 +1,130 @@
 <template>
-  <div v-if="content" class="w-[840px] mx-auto max-w-full px-4">
-    <div class="mb-8">
-      <header class="mb-8">
-        <h1 v-if="page.title != ''" class="text-2xl font-medium">
-          {{ page.title }}
-        </h1>
-        <p class="text-gray-500 mt-2">
-          {{ content.description }}
-        </p>
-      </header>
-      <div class="flex gap-2">
-        <Badge v-if="content?.type"
-          ><Icon name="lucide:bot" />{{ content.type }}</Badge
-        >
-      </div>
+  <div v-if="content" class="w-full h-full flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between flex-shrink-0 pr-4">
+      <SimpleTabs v-model="activeTab" :tabs="tabs" />
+      <Button
+        variant="outline"
+        size="sm"
+        class="h-8"
+        :disabled="isRefreshing"
+        @click="refreshData"
+      >
+        <Icon
+          name="lucide:refresh-cw"
+          class="w-4 h-4 mr-1.5"
+          :class="{ 'animate-spin': isRefreshing }"
+        />
+        Refresh
+      </Button>
     </div>
-    <div>
-      <template v-for="group in schema" :key="group.key">
-        <div v-if="group.label" class="mt-4 mb-2 first:mt-0">
-          <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300">
-            {{ $t(`label.${group.key}`) }}
-          </h3>
-        </div>
-        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-4 mb-8">
-          <template v-for="item in group.items" :key="item.key">
-            <div class="flex items-center gap-2 text-gray-500">
-              <Icon :name="item.icon" />
-              <span>{{ $t(`label.${item.key}`) }}</span>
-            </div>
-            <div>
-              <div class="w-fit flex items-center gap-2">
-                <CopyPaste :has-copy="item.hasCopy">
-                  <template v-if="item.type === 'text'">
-                    <span>{{
-                      (group as { prefix?: string | null }).prefix &&
-                      additional?.[(group as { prefix: string }).prefix]?.[
-                        item.key
-                      ]
-                        ? additional[(group as { prefix: string }).prefix]?.[
-                            item.key
-                          ]
-                        : additional?.[item.key]
-                          ? additional[item.key]
-                          : content?.[item.key] || '-'
-                    }}</span>
-                  </template>
-                  <template v-if="item.type === 'date'">
-                    <span>{{
-                      (() => {
-                        const dateValue =
-                          (group as { prefix?: string | null }).prefix &&
-                          additional?.[(group as { prefix: string }).prefix]?.[
-                            item.key
-                          ]
-                            ? additional[
-                                (group as { prefix: string }).prefix
-                              ]?.[item.key]
-                            : additional?.[item.key]
-                              ? additional[item.key]
-                              : content?.[item.key];
-                        return dateValue
-                          ? dayjs(dateValue).format('YYYY MMM DD, HH:mm')
-                          : '-';
-                      })()
-                    }}</span>
-                  </template>
-                  <template v-if="item.type === 'list'">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <Badge
-                        v-for="value in ((group as { prefix?: string | null })
-                          .prefix
-                          ? additional[(group as { prefix: string }).prefix]?.[
-                              item.key
-                            ]
-                          : additional[item.key]
-                        ).split(',')"
-                        :key="value"
-                        >{{ value }}</Badge
-                      >
-                    </div>
-                  </template>
-                </CopyPaste>
-                <span
-                  v-if="
-                    item.key == 'register_date' ||
-                    item.key == 'last_modified_time'
-                  "
-                  class="text-gray-500"
-                >
-                  {{ $t('hint.by') }}
-                  <template v-if="item.key == 'register_date'">
-                    {{ content?.register_user_id || '-' }}
-                  </template>
-                  <template v-if="item.key == 'last_modified_time'">
-                    {{ content?.last_modified_user_id || '-' }}
-                  </template>
-                </span>
-              </div>
-            </div>
-          </template>
-        </div>
-      </template>
+
+    <div class="flex-1 overflow-y-auto px-4 py-4">
+      <!-- Overview Tab -->
+      <ModelOverviewTab v-if="activeTab === 'overview'" :content="content" />
+
+      <!-- Artifacts Tab -->
+      <ModelArtifactsTab
+        v-if="activeTab === 'artifacts'"
+        :artifacts="additional?.artifacts"
+        :loading="associationsLoading"
+      />
+
+      <!-- Associations Tab -->
+      <ModelAssociationsTab
+        v-if="activeTab === 'associations'"
+        :associations="additional"
+        :loading="associationsLoading"
+      />
+
+      <!-- Compare Tab -->
+      <ModelCompareTab v-if="activeTab === 'compare'" :model="content" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import CopyPaste from '~/components/app/CopyPaste.vue';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
+import ModelOverviewTab from '~/components/app/ModelOverviewTab.vue';
+import ModelArtifactsTab from '~/components/app/ModelArtifactsTab.vue';
+import ModelAssociationsTab from '~/components/app/ModelAssociationsTab.vue';
+import ModelCompareTab from '~/components/app/ModelCompareTab.vue';
 
-const { t } = useI18n();
+import type { ModelDetail } from '~/types/model.types';
+
 const dayjs = useDayjs();
 const route = useRoute();
 const { getModelById, getModelAssociationsById } = useApi();
-const { setPage, page } = useApp();
+const { setPage } = useApp();
 const id = computed(() => route.params.id[0] as string);
-const content = ref();
-const additional = ref();
 
-const schema = [
-  {
-    key: 'default',
-    label: null,
-    prefix: null,
-    items: [
-      {
-        key: 'id',
-        type: 'text',
-        icon: 'lucide:hash',
-        hasCopy: true,
-      },
-      {
-        key: 'register_date',
-        type: 'date',
-        icon: 'lucide:circle-plus',
-        hasCopy: true,
-      },
-      {
-        key: 'last_modified_time',
-        type: 'date',
-        icon: 'lucide:circle-fading-plus',
-        hasCopy: true,
-      },
-    ],
-  },
+const content = ref<ModelDetail | null>(null);
+const additional = ref<Record<string, unknown> | null>(null);
+const associationsLoading = ref(false);
+const associationsLoaded = ref(false);
+const isRefreshing = ref(false);
+
+const activeTab = ref('overview');
+const tabs = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'artifacts', label: 'Artifacts' },
+  { key: 'associations', label: 'Associations' },
+  { key: 'compare', label: 'Compare' },
 ];
+
+// Load associations data when switching to artifacts tab
+const loadAssociations = async () => {
+  if (associationsLoaded.value || associationsLoading.value) return;
+
+  associationsLoading.value = true;
+  try {
+    const resAssociations = await getModelAssociationsById(id.value);
+    if (
+      resAssociations &&
+      'data' in resAssociations &&
+      resAssociations.data &&
+      Array.isArray(resAssociations.data) &&
+      resAssociations.data.length > 0
+    ) {
+      additional.value = resAssociations.data[0];
+      console.log('Associations data:', additional.value);
+    }
+    associationsLoaded.value = true;
+  } catch (err) {
+    console.warn('Failed to load associations:', err);
+  } finally {
+    associationsLoading.value = false;
+  }
+};
+
+// Watch for tab changes to lazy load associations
+watch(activeTab, (newTab) => {
+  if (newTab === 'artifacts' || newTab === 'associations') {
+    loadAssociations();
+  }
+});
+
+// Refresh all data
+const refreshData = async () => {
+  isRefreshing.value = true;
+  associationsLoaded.value = false;
+
+  try {
+    // Reload model data
+    const res = await getModelById(id.value);
+    if (res && 'data' in res && res.data) {
+      content.value = res.data;
+    }
+
+    // Reload associations if on artifacts or associations tab
+    if (activeTab.value === 'artifacts' || activeTab.value === 'associations') {
+      await loadAssociations();
+    }
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    isRefreshing.value = false;
+  }
+};
 
 onMounted(async () => {
   try {
@@ -165,27 +146,32 @@ onMounted(async () => {
     } else {
       console.error('Invalid response format or no data:', res);
     }
-
-    // Load additional associations data if needed
-    try {
-      const resAssociations = await getModelAssociationsById(id.value);
-      if (
-        resAssociations &&
-        'data' in resAssociations &&
-        resAssociations.data &&
-        Array.isArray(resAssociations.data) &&
-        resAssociations.data.length > 0
-      ) {
-        additional.value = resAssociations.data[0];
-        console.log('Associations data:', additional.value);
-      }
-    } catch (err) {
-      console.warn('Failed to load associations:', err);
-    }
   } catch (error) {
     console.error('Error loading model:', error);
   }
 });
 </script>
 
-<style></style>
+<style scoped>
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}
+</style>
