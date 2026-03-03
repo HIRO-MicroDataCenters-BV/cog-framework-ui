@@ -396,18 +396,9 @@
                     :key="m.id"
                     class="py-2 px-3 text-center"
                   >
-                    <div
-                      :class="[
-                        'py-1 px-2',
-                        isParamDifferent(paramKey, m.id)
-                          ? 'bg-orange-100 dark:bg-orange-900/30 rounded'
-                          : '',
-                      ]"
-                    >
-                      <span class="text-xs">{{
-                        getParamValue(m, paramKey) ?? 'N/A'
-                      }}</span>
-                    </div>
+                    <span class="text-xs">{{
+                      getParamValue(m, paramKey) ?? 'N/A'
+                    }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -500,28 +491,14 @@
                     :key="m.id"
                     class="py-2 px-3 text-center"
                   >
-                    <div
-                      :class="[
-                        'py-1 px-2',
-                        isBestValue(metricKey, m.id)
-                          ? 'bg-green-100 dark:bg-green-900/30 rounded'
-                          : '',
-                      ]"
-                    >
-                      <div class="flex items-center justify-center gap-1">
-                        <Icon
-                          v-if="isBestValue(metricKey, m.id)"
-                          name="lucide:trophy"
-                          class="w-3 h-3 text-yellow-500"
-                        />
-                        <span class="font-medium tabular-nums">
-                          {{
-                            getMetricValue(m, metricKey) !== null
-                              ? getMetricValue(m, metricKey)?.toFixed(4)
-                              : 'N/A'
-                          }}
-                        </span>
-                      </div>
+                    <div>
+                      <span class="font-medium tabular-nums">
+                        {{
+                          getMetricValue(m, metricKey) !== null
+                            ? getMetricValue(m, metricKey)?.toFixed(4)
+                            : 'N/A'
+                        }}
+                      </span>
                       <div
                         v-if="
                           getMetricDiff(m, metricKey) !== null &&
