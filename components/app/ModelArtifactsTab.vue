@@ -10,7 +10,7 @@
     </div>
   </div>
 
-  <div v-else class="h-full flex gap-4">
+  <div v-else class="h-full flex gap-4 overflow-hidden">
     <!-- Left Panel: File Tree -->
     <Card class="w-80 flex-shrink-0 flex flex-col transition-all duration-200">
       <CardHeader class="py-3 px-4 flex-shrink-0">
@@ -157,7 +157,7 @@
     </Card>
 
     <!-- Right Panel: Preview -->
-    <Card class="flex-1 flex flex-col transition-all duration-200">
+    <Card class="flex-1 min-w-0 flex flex-col transition-all duration-200 overflow-hidden">
       <CardHeader class="py-3 px-4 flex-shrink-0 border-b">
         <div class="flex items-center justify-between">
           <CardTitle class="flex items-center gap-2 text-sm">
@@ -296,10 +296,10 @@
         <!-- Code/Text Preview (JSON, YAML, TXT) -->
         <div v-else class="h-full overflow-auto p-4">
           <div
-            class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 overflow-hidden h-full"
+            class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 h-full overflow-auto"
           >
             <pre
-              class="p-4 text-xs font-mono text-zinc-100 whitespace-pre-wrap break-words overflow-auto h-full"
+              class="p-4 text-xs font-mono text-zinc-100 whitespace-pre"
               >{{ previewData?.content }}</pre
             >
           </div>
