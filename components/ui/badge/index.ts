@@ -40,6 +40,10 @@ export const badgeVariants = cva(
           'border-transparent bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
         keras:
           'border-transparent bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300',
+        pyfunc:
+          'border-transparent bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-300',
+        classification:
+          'border-transparent bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300',
       },
     },
     defaultVariants: {
@@ -133,6 +137,16 @@ export const badgeConfig = {
     },
     keras: {
       variant: 'keras' as const,
+      icon: 'File',
+      animate: false,
+    },
+    pyfunc: {
+      variant: 'pyfunc' as const,
+      icon: 'File',
+      animate: false,
+    },
+    classification: {
+      variant: 'classification' as const,
       icon: 'File',
       animate: false,
     },
