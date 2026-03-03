@@ -173,21 +173,6 @@
           </CardTitle>
           <div v-if="selectedFile" class="flex items-center gap-2">
             <Button
-              v-if="isPreviewable(selectedFile.name)"
-              size="sm"
-              variant="outline"
-              class="h-7 text-xs"
-              :disabled="isLoading"
-              @click="loadPreview"
-            >
-              <Icon
-                name="lucide:refresh-cw"
-                class="w-3 h-3 mr-1"
-                :class="{ 'animate-spin': isLoading }"
-              />
-              Refresh
-            </Button>
-            <Button
               size="sm"
               variant="default"
               class="h-7 text-xs"
@@ -355,8 +340,24 @@ const expandedFolders = ref<string[]>([]);
 const selectedFile = ref<FileItem | null>(null);
 const previewData = ref<PreviewData | null>(null);
 const isLoading = ref(false);
-const hasInitializedExpand = ref(false);
 const pathCopied = ref(false);
+
+// Helper to collect all folder IDs recursively
+const collectAllFolderIds = (items: FileItem[]): string[] => {
+  const ids: string[] = [];
+  const traverse = (nodes: FileItem[]) => {
+    for (const node of nodes) {
+      if (node.isFolder) {
+        ids.push(node.id);
+        if (node.children) {
+          traverse(node.children);
+        }
+      }
+    }
+  };
+  traverse(items);
+  return ids;
+};
 
 // Sort function: folders first, then files, alphabetically
 const sortItems = (items: FileItem[]): FileItem[] => {
@@ -616,6 +617,17 @@ const copyPath = async () => {
     console.error('Failed to copy:', err);
   }
 };
+
+// Auto-expand all folders when tree is first loaded
+watch(
+  fileTree,
+  (newTree) => {
+    if (newTree.length > 0 && expandedFolders.value.length === 0) {
+      expandedFolders.value = collectAllFolderIds(newTree);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>

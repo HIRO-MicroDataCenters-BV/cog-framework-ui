@@ -25,7 +25,7 @@
       <!-- Artifacts Tab -->
       <ModelArtifactsTab
         v-if="activeTab === 'artifacts'"
-        :artifacts="additional?.artifacts"
+        :artifacts="additional?.artifacts ?? null"
         :loading="associationsLoading"
       />
 
