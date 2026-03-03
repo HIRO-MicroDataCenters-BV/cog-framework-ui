@@ -1,250 +1,8 @@
 <template>
   <div class="h-full flex flex-col">
-    <!-- Model Selector Section -->
-    <Card class="mb-4 transition-all duration-200">
-      <CardHeader class="py-3 px-4">
-        <div class="flex items-center justify-between">
-          <CardTitle class="flex items-center gap-2 text-sm">
-            <div class="p-1 rounded bg-purple-100 dark:bg-purple-900/50">
-              <Icon
-                name="lucide:git-compare"
-                class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400"
-              />
-            </div>
-            Select Models to Compare
-          </CardTitle>
-          <Button
-            v-if="selectedModels.length > 0"
-            variant="ghost"
-            size="sm"
-            class="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive"
-            @click="clearAllModels"
-          >
-            <Icon name="lucide:x" class="w-3 h-3" />
-            Clear All
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent class="px-4 pb-4 pt-0">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <!-- Current Model (Model A - Locked) -->
-          <div
-            class="relative p-3 rounded-lg border-2 border-primary/30 bg-primary/5"
-          >
-            <div
-              class="absolute -top-2 left-3 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-medium rounded"
-            >
-              Base Model (Current)
-            </div>
-            <div class="mt-2">
-              <p class="text-sm font-medium truncate">
-                {{ model?.name || 'No model selected' }}
-              </p>
-              <div class="flex items-center gap-2 mt-1">
-                <Badge :variant="model?.type || 'secondary'" class="text-xs">
-                  {{ model?.type || 'N/A' }}
-                </Badge>
-                <span class="text-xs text-muted-foreground"
-                  >v{{ model?.version ?? 0 }}</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Model B Selector -->
-          <div
-            ref="selectorB"
-            class="relative p-3 rounded-lg border border-dashed hover:border-solid hover:border-muted-foreground/30 transition-colors"
-          >
-            <div
-              class="absolute -top-2 left-3 px-2 py-0.5 bg-muted text-muted-foreground text-[10px] font-medium rounded"
-            >
-              Model B
-            </div>
-            <div class="mt-2">
-              <!-- Selected Model Display -->
-              <div
-                v-if="getSelectedModel(0)"
-                class="flex items-center justify-between"
-              >
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">
-                    {{ getSelectedModel(0)?.name }}
-                  </p>
-                  <div class="flex items-center gap-2 mt-1">
-                    <Badge :variant="getSelectedModel(0)?.type" class="text-xs">
-                      {{ getSelectedModel(0)?.type }}
-                    </Badge>
-                    <span class="text-xs text-muted-foreground"
-                      >v{{ getSelectedModel(0)?.version }}</span
-                    >
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="h-6 w-6 p-0 ml-2 flex-shrink-0"
-                  @click="clearModelSelection(0)"
-                >
-                  <Icon name="lucide:x" class="w-3.5 h-3.5" />
-                </Button>
-              </div>
-
-              <!-- Model Selector -->
-              <div v-else>
-                <div class="relative">
-                  <Input
-                    v-model="searchQueries[0]"
-                    placeholder="Select model to compare..."
-                    class="h-8 text-xs pr-8"
-                    @focus="openDropdown(0)"
-                  />
-                  <Icon
-                    name="lucide:search"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
-                  />
-                </div>
-
-                <!-- Dropdown -->
-                <div
-                  v-if="openDropdowns[0]"
-                  class="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border rounded-md shadow-lg max-h-48 overflow-auto"
-                >
-                  <div
-                    v-if="loadingModels"
-                    class="p-3 text-center text-xs text-muted-foreground"
-                  >
-                    Loading models...
-                  </div>
-                  <div
-                    v-else-if="getFilteredModels(0).length === 0"
-                    class="p-3 text-center text-xs text-muted-foreground"
-                  >
-                    No models found
-                  </div>
-                  <template v-else>
-                    <button
-                      v-for="m in getFilteredModels(0)"
-                      :key="m.id"
-                      class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0"
-                      @click="selectModel(0, m.id)"
-                    >
-                      <p class="text-sm font-medium truncate">{{ m.name }}</p>
-                      <div class="flex items-center gap-2 mt-0.5">
-                        <Badge :variant="m.type" class="text-[10px]">{{
-                          m.type
-                        }}</Badge>
-                        <span class="text-xs text-muted-foreground"
-                          >v{{ m.version }}</span
-                        >
-                      </div>
-                    </button>
-                  </template>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Model C Selector (Optional) -->
-          <div
-            ref="selectorC"
-            class="relative p-3 rounded-lg border border-dashed hover:border-solid hover:border-muted-foreground/30 transition-colors"
-          >
-            <div
-              class="absolute -top-2 left-3 px-2 py-0.5 bg-muted text-muted-foreground text-[10px] font-medium rounded"
-            >
-              Model C (Optional)
-            </div>
-            <div class="mt-2">
-              <!-- Selected Model Display -->
-              <div
-                v-if="getSelectedModel(1)"
-                class="flex items-center justify-between"
-              >
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">
-                    {{ getSelectedModel(1)?.name }}
-                  </p>
-                  <div class="flex items-center gap-2 mt-1">
-                    <Badge :variant="getSelectedModel(1)?.type" class="text-xs">
-                      {{ getSelectedModel(1)?.type }}
-                    </Badge>
-                    <span class="text-xs text-muted-foreground"
-                      >v{{ getSelectedModel(1)?.version }}</span
-                    >
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="h-6 w-6 p-0 ml-2 flex-shrink-0"
-                  @click="clearModelSelection(1)"
-                >
-                  <Icon name="lucide:x" class="w-3.5 h-3.5" />
-                </Button>
-              </div>
-
-              <!-- Model Selector -->
-              <div v-else>
-                <div class="relative">
-                  <Input
-                    v-model="searchQueries[1]"
-                    placeholder="Add another model..."
-                    class="h-8 text-xs pr-8"
-                    @focus="openDropdown(1)"
-                  />
-                  <Icon
-                    name="lucide:search"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
-                  />
-                </div>
-
-                <!-- Dropdown -->
-                <div
-                  v-if="openDropdowns[1]"
-                  class="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border rounded-md shadow-lg max-h-48 overflow-auto"
-                >
-                  <div
-                    v-if="loadingModels"
-                    class="p-3 text-center text-xs text-muted-foreground"
-                  >
-                    Loading models...
-                  </div>
-                  <div
-                    v-else-if="getFilteredModels(1).length === 0"
-                    class="p-3 text-center text-xs text-muted-foreground"
-                  >
-                    No models found
-                  </div>
-                  <template v-else>
-                    <button
-                      v-for="m in getFilteredModels(1)"
-                      :key="m.id"
-                      class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0"
-                      @click="selectModel(1, m.id)"
-                    >
-                      <p class="text-sm font-medium truncate">{{ m.name }}</p>
-                      <div class="flex items-center gap-2 mt-0.5">
-                        <Badge :variant="m.type" class="text-[10px]">{{
-                          m.type
-                        }}</Badge>
-                        <span class="text-xs text-muted-foreground"
-                          >v{{ m.version }}</span
-                        >
-                      </div>
-                    </button>
-                  </template>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-
-    <!-- Comparison Content -->
+    <!-- Empty state: no base model (e.g. page not loaded) -->
     <div
-      v-if="selectedModels.length === 0"
+      v-if="!model"
       class="flex-1 flex items-center justify-center"
     >
       <div class="text-center max-w-md">
@@ -256,13 +14,13 @@
         </div>
         <h3 class="text-lg font-semibold mb-2">Select Models to Compare</h3>
         <p class="text-sm text-muted-foreground">
-          Choose at least one model from the dropdown above to start comparing
-          metrics, parameters, and performance.
+          Add at least one model using the comparison grid to compare metrics,
+          parameters, and details.
         </p>
       </div>
     </div>
 
-    <!-- Loading State -->
+    <!-- Loading state -->
     <div
       v-else-if="loadingDetails"
       class="flex-1 flex items-center justify-center"
@@ -273,317 +31,194 @@
       </div>
     </div>
 
-    <!-- Comparison Results -->
-    <div v-else class="flex-1 overflow-auto space-y-4">
-      <!-- Model Information -->
-      <Card class="transition-all duration-200 hover:shadow-md">
-        <CardHeader class="py-3 px-4">
-          <CardTitle class="flex items-center gap-2 text-sm">
-            <div class="p-1 rounded bg-green-100 dark:bg-green-900/50">
-              <Icon
-                name="lucide:info"
-                class="w-3.5 h-3.5 text-green-600 dark:text-green-400"
-              />
-            </div>
-            Model Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="px-4 pb-4 pt-0">
-          <div class="grid gap-3" :class="gridColsClass">
-            <div
-              v-for="m in allCompareModels"
-              :key="m.id"
-              class="p-3 rounded-lg border bg-card dark:bg-muted/30 dark:border-primary/40"
-              :class="
-                m.id === model?.id ? 'border-primary/50' : 'border-border'
-              "
-            >
-              <div class="flex items-center gap-2 mb-3">
-                <Badge :variant="m.type" class="text-xs">
-                  {{ m.type }}
-                </Badge>
-                <span class="text-xs text-muted-foreground"
-                  >v{{ m.version }}</span
-                >
-                <Badge
-                  v-if="m.id === model?.id"
-                  variant="outline"
-                  class="text-[10px] border-primary text-primary"
-                >
-                  Base
-                </Badge>
-              </div>
-              <h4 class="font-medium text-sm mb-2 truncate">{{ m.name }}</h4>
-              <div class="space-y-1 text-xs">
-                <div class="flex justify-between">
-                  <span class="text-muted-foreground">Description</span>
-                  <span class="text-right max-w-32 truncate">{{
-                    m.description || 'N/A'
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted-foreground">Registered</span>
-                  <span>{{ formatDate(m.register_date) }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted-foreground">Last Modified</span>
-                  <span>{{ formatDate(m.last_modified_time) }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted-foreground">User</span>
-                  <span class="truncate max-w-24">{{
-                    m.register_user_id
-                  }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <!-- Comparison grid (similar to product compare layout) -->
+    <div v-else class="flex-1 overflow-auto pb-4">
+      <!-- Header: title + item count + show only differences -->
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <h2 class="text-lg font-semibold truncate max-w-md">
+          Compare {{ model?.name ?? 'Model' }} vs others
+        </h2>
+        <span class="text-sm text-muted-foreground whitespace-nowrap">
+          {{ allCompareModels.length }} item{{ allCompareModels.length !== 1 ? 's' : '' }}
+        </span>
+        <label
+          class="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground"
+        >
+          <Checkbox v-model:checked="showOnlyDifferences" />
+          <span>Show only differences</span>
+        </label>
+      </div>
 
-      <!-- Parameters Comparison -->
-      <Card class="transition-all duration-200 hover:shadow-md">
-        <CardHeader class="py-3 px-4">
-          <CardTitle class="flex items-center gap-2 text-sm">
-            <div class="p-1 rounded bg-orange-100 dark:bg-orange-900/50">
-              <Icon
-                name="lucide:settings"
-                class="w-3.5 h-3.5 text-orange-600 dark:text-orange-400"
-              />
-            </div>
-            Parameters Comparison
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="px-4 pb-4 pt-0">
-          <div v-if="allParamKeys.length === 0" class="text-center py-4">
-            <Icon
-              name="lucide:inbox"
-              class="w-6 h-6 mx-auto mb-2 text-muted-foreground/50"
-            />
-            <p class="text-xs text-muted-foreground">
-              No parameters available for comparison
-            </p>
-          </div>
-          <div v-else class="overflow-x-auto">
-            <table class="w-full text-xs">
-              <thead>
-                <tr class="border-b">
-                  <th
-                    class="text-left py-2 px-3 font-medium text-muted-foreground w-48"
-                  >
-                    Parameter
-                  </th>
-                  <th
-                    v-for="m in allCompareModels"
-                    :key="m.id"
-                    class="text-center py-2 px-3 font-medium min-w-32"
-                  >
-                    <span class="truncate max-w-28">{{ m.name }}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="paramKey in allParamKeys"
-                  :key="paramKey"
-                  class="border-b border-border/50 hover:bg-muted/30 transition-colors"
-                >
-                  <td class="py-2 px-3 text-muted-foreground">
-                    {{ formatParamKey(paramKey) }}
-                  </td>
-                  <td
-                    v-for="m in allCompareModels"
-                    :key="m.id"
-                    class="py-2 px-3 text-center"
-                  >
-                    <span class="text-xs">{{
-                      getParamValue(m, paramKey) ?? 'N/A'
-                    }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <!-- Metrics Comparison -->
-      <Card class="transition-all duration-200 hover:shadow-md">
-        <CardHeader class="py-3 px-4">
-          <div class="flex items-center justify-between">
-            <CardTitle class="flex items-center gap-2 text-sm">
-              <div class="p-1 rounded bg-blue-100 dark:bg-blue-900/50">
-                <Icon
-                  name="lucide:bar-chart-3"
-                  class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"
-                />
-              </div>
-              Metrics Comparison
-            </CardTitle>
-            <div class="flex items-center gap-2">
-              <Button
-                v-for="view in ['table', 'chart'] as const"
-                :key="view"
-                variant="ghost"
-                size="sm"
-                class="h-7 px-2 text-xs"
-                :class="
-                  metricsView === view
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground'
-                "
-                @click="metricsView = view"
+      <div class="overflow-x-auto border rounded-lg bg-card shadow-sm pt-4">
+        <table class="w-full min-w-[640px] text-sm border-collapse">
+          <thead>
+            <tr class="border-b bg-background/70 dark:bg-muted/40">
+              <!-- Label column -->
+              <th
+                class="w-48 min-w-48 pt-6 pb-4 px-4 text-left font-medium text-muted-foreground align-top"
               >
-                <Icon
-                  :name="
-                    view === 'table'
-                      ? 'lucide:table-2'
-                      : 'lucide:bar-chart-horizontal'
-                  "
-                  class="w-3 h-3 mr-1"
-                />
-                {{ view === 'table' ? 'Table' : 'Chart' }}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent class="px-4 pb-4 pt-0">
-          <!-- Table View -->
-          <div v-if="metricsView === 'table'" class="overflow-x-auto">
-            <table class="w-full text-xs">
-              <thead>
-                <tr class="border-b">
-                  <th
-                    class="text-left py-2 px-3 font-medium text-muted-foreground w-48"
-                  >
-                    Metric
-                  </th>
-                  <th
-                    v-for="m in allCompareModels"
-                    :key="m.id"
-                    class="text-center py-2 px-3 font-medium min-w-32"
-                  >
-                    <div class="flex flex-col items-center gap-1">
-                      <Badge :variant="m.type" class="text-[10px]">
-                        {{ m.type }}
-                      </Badge>
-                      <span class="truncate max-w-28">{{ m.name }}</span>
-                      <span
-                        v-if="m.id === model?.id"
-                        class="text-[9px] text-primary font-normal"
-                        >(Base)</span
-                      >
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="metricKey in allMetricKeys"
-                  :key="metricKey"
-                  class="border-b border-border/50 hover:bg-muted/30 transition-colors"
-                >
-                  <td class="py-2 px-3 text-muted-foreground">
-                    {{ formatMetricKey(metricKey) }}
-                  </td>
-                  <td
-                    v-for="m in allCompareModels"
-                    :key="m.id"
-                    class="py-2 px-3 text-center"
-                  >
-                    <div>
-                      <span class="font-medium tabular-nums">
-                        {{
-                          getMetricValue(m, metricKey) !== null
-                            ? getMetricValue(m, metricKey)?.toFixed(4)
-                            : 'N/A'
-                        }}
-                      </span>
-                      <div
-                        v-if="
-                          getMetricDiff(m, metricKey) !== null &&
-                          m.id !== model?.id
-                        "
-                        :class="[
-                          'text-[10px] mt-0.5',
-                          (getMetricDiff(m, metricKey) ?? 0) >= 0
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-red-600 dark:text-red-400',
-                        ]"
-                      >
-                        {{ (getMetricDiff(m, metricKey) ?? 0) >= 0 ? '+' : ''
-                        }}{{ getMetricDiff(m, metricKey)?.toFixed(1) }}%
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Chart View -->
-          <div v-else class="space-y-3">
-            <div
-              v-for="metricKey in normalizedMetricKeys"
-              :key="metricKey"
-              class="p-3 rounded-lg border bg-card/50"
-            >
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-medium">{{
-                  formatMetricKey(metricKey)
-                }}</span>
-                <div class="flex items-center gap-1">
-                  <Icon
-                    v-if="getBestModelForMetric(metricKey)"
-                    name="lucide:trophy"
-                    class="w-3 h-3 text-yellow-500"
-                  />
-                  <span class="text-[10px] text-muted-foreground">
-                    Best: {{ getBestModelForMetric(metricKey)?.name ?? 'N/A' }}
-                  </span>
-                </div>
-              </div>
-              <div class="space-y-1.5">
+                &nbsp;
+              </th>
+              <!-- Model columns: card (icon, name, badge, remove) -->
+              <th
+                v-for="m in allCompareModels"
+                :key="m.id"
+                class="min-w-[220px] max-w-[260px] p-0 align-top"
+              >
                 <div
-                  v-for="m in allCompareModels"
-                  :key="m.id"
-                  class="flex items-center gap-2"
+                  class="relative flex h-full flex-col pt-6 pb-5 px-4 border border-border/60 border-b-0 border-r last:border-r-0 transition-colors"
+                  :class="[
+                    m.id === model?.id
+                      ? 'bg-primary/5 ring-1 ring-primary/40'
+                      : 'bg-muted/40 dark:bg-muted/60',
+                  ]"
                 >
-                  <span
-                    class="text-[10px] text-muted-foreground w-20 truncate text-right"
-                    >{{ m.name }}</span
+                  <Button
+                    v-if="m.id !== model?.id"
+                    variant="ghost"
+                    size="sm"
+                    class="absolute top-2 right-2 h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-destructive"
+                    @click="removeModel(m.id)"
                   >
-                  <div
-                    class="flex-1 h-5 rounded overflow-hidden bg-muted/30 relative"
+                    <Icon name="lucide:x" class="w-4 h-4" />
+                  </Button>
+                  <p
+                    class="font-medium text-foreground truncate pr-8 mb-1"
+                    :title="m.name"
                   >
-                    <div
-                      class="h-full rounded transition-all duration-500"
-                      :class="getBarColorClass(m, metricKey)"
-                      :style="{ width: getBarWidth(m, metricKey) }"
+                    {{ m.name }}
+                  </p>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <Badge :variant="m.type" class="text-xs">
+                      {{ m.type }}
+                    </Badge>
+                    <span class="text-xs text-muted-foreground">v{{ m.version }}</span>
+                  </div>
+                </div>
+              </th>
+              <!-- Add a model columns -->
+              <th
+                v-for="(_, slotIndex) in addSlots"
+                :key="'add-' + slotIndex"
+                class="min-w-[220px] max-w-[260px] p-0 align-top"
+              >
+                <div
+                  :ref="slotIndex === 0 ? addSlot0Ref : addSlot1Ref"
+                  class="relative flex h-full flex-col pt-6 pb-5 px-4 border border-border/60 border-b-0 border-r last:border-r-0 border-dashed bg-muted/10"
+                >
+                  <p class="text-sm font-medium text-muted-foreground mb-3">
+                    Add a model
+                  </p>
+                  <div class="relative">
+                    <Input
+                      :model-value="searchQueries[slotIndex]"
+                      placeholder="Choose a model"
+                      class="h-9 text-sm pr-8"
+                      @update:model-value="(v: string) => (searchQueries[slotIndex] = v)"
+                      @focus="openDropdown(slotIndex)"
+                    />
+                    <Icon
+                      name="lucide:chevron-down"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
                     />
                   </div>
-                  <span
-                    class="text-xs font-medium w-12 text-right tabular-nums"
+                  <!-- Dropdown list -->
+                  <div
+                    v-if="openDropdowns[slotIndex]"
+                    class="absolute left-0 right-0 top-full mt-3 z-50 bg-popover border rounded-md shadow-lg max-h-52 overflow-auto min-w-[200px]"
                   >
-                    {{
-                      getMetricValue(m, metricKey) !== null
-                        ? getMetricValue(m, metricKey)?.toFixed(4)
-                        : 'N/A'
-                    }}
-                  </span>
+                    <div
+                      v-if="loadingModels"
+                      class="p-3 text-center text-xs text-muted-foreground"
+                    >
+                      Loading models...
+                    </div>
+                    <div
+                      v-else-if="getFilteredModels(slotIndex).length === 0"
+                      class="p-3 text-center text-xs text-muted-foreground"
+                    >
+                      No models found
+                    </div>
+                    <template v-else>
+                      <button
+                        v-for="m in getFilteredModels(slotIndex)"
+                        :key="m.id"
+                        type="button"
+                        class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0 text-sm"
+                        @click="selectModel(slotIndex, m.id)"
+                      >
+                        <p class="font-medium truncate">{{ m.name }}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                          <Badge :variant="m.type" class="text-[10px]">{{
+                            m.type
+                          }}</Badge>
+                          <span class="text-xs text-muted-foreground"
+                            >v{{ m.version }}</span
+                          >
+                        </div>
+                      </button>
+                    </template>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="(row, rowIndex) in filteredComparisonRows" :key="row.id">
+              <!-- Section headers (Model info, Parameters, Metrics) -->
+              <tr
+                v-if="row.sectionLabel && (rowIndex === 0 || filteredComparisonRows[rowIndex - 1]?.sectionLabel !== row.sectionLabel)"
+                class="bg-muted/40"
+              >
+                <td
+                  colspan="100"
+                  class="py-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                >
+                  {{ row.sectionLabel }}
+                </td>
+              </tr>
+              <tr
+                class="border-b border-border/50 hover:bg-muted/20 transition-colors"
+                :class="{ 'bg-muted/10': row.sectionLabel }"
+              >
+                <td class="py-2.5 px-4 text-muted-foreground font-medium">
+                  {{ row.label }}
+                </td>
+                <td
+                  v-for="m in allCompareModels"
+                  :key="m.id"
+                  class="py-2.5 px-4 border-r border-border/50 last:border-r-0"
+                >
+                  <span class="text-foreground">{{ row.getValue(m) }}</span>
+                </td>
+                <td
+                  v-for="(_, slotIndex) in addSlots"
+                  :key="'add-' + slotIndex"
+                  class="py-2.5 px-4 border-r border-border/50 last:border-r-0 bg-muted/10"
+                >
+                  &nbsp;
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state when "Show only differences" filters everything -->
+      <div
+        v-if="filteredComparisonRows.length === 0 && comparisonRows.length > 0"
+        class="text-center py-8 text-muted-foreground text-sm"
+      >
+        No differences between the selected models. Uncheck "Show only
+        differences" to see all specs.
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core';
-import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import { Checkbox } from '~/components/ui/checkbox';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Input } from '~/components/ui/input';
@@ -597,34 +232,34 @@ const props = defineProps<{
 const dayjs = useDayjs();
 const { getModels, getModelById } = useApi();
 
-// Refs for click outside
-const selectorB = ref<HTMLElement | null>(null);
-const selectorC = ref<HTMLElement | null>(null);
+// Refs for click outside (add model dropdowns)
+const addSlot0Ref = ref<HTMLElement | null>(null);
+const addSlot1Ref = ref<HTMLElement | null>(null);
+const addSlotRefs = [addSlot0Ref, addSlot1Ref];
 
 // State
 const loadingModels = ref(false);
 const loadingDetails = ref(false);
 const availableModels = ref<ModelSummary[]>([]);
-const selectedModelIds = ref<(string | null)[]>([null, null]);
 const selectedModels = ref<ModelDetail[]>([]);
-const metricsView = ref<'table' | 'chart'>('table');
-const searchQueries = ref<string[]>(['', '']);
-const openDropdowns = ref<boolean[]>([false, false]);
+const showOnlyDifferences = ref(false);
 
-// Click outside handlers
-onClickOutside(selectorB, () => {
+// We allow comparing base model + up to 2 more
+const MAX_EXTRA_MODELS = 2;
+const searchQueries = ref<string[]>(Array(MAX_EXTRA_MODELS).fill(''));
+const openDropdowns = ref<boolean[]>(Array(MAX_EXTRA_MODELS).fill(false));
+
+const addSlots = computed(() => {
+  const remaining = Math.max(
+    0,
+    1 + MAX_EXTRA_MODELS - allCompareModels.value.length,
+  );
+  return Array.from({ length: remaining }, (_, i) => i);
+});
+
+onClickOutside([addSlot0Ref, addSlot1Ref], () => {
   openDropdowns.value[0] = false;
-});
-onClickOutside(selectorC, () => {
   openDropdowns.value[1] = false;
-});
-
-// Computed
-const excludedIds = computed(() => {
-  const ids = [props.model?.id, ...selectedModelIds.value].filter(
-    Boolean,
-  ) as string[];
-  return ids;
 });
 
 const allCompareModels = computed(() => {
@@ -634,6 +269,13 @@ const allCompareModels = computed(() => {
   }
   models.push(...selectedModels.value);
   return models;
+});
+
+// Computed
+const excludedIds = computed(() => {
+  const baseId = props.model?.id ? [props.model.id] : [];
+  const extraIds = selectedModels.value.map((m) => m.id);
+  return [...baseId, ...extraIds];
 });
 
 const allMetricKeys = computed(() => {
@@ -646,15 +288,6 @@ const allMetricKeys = computed(() => {
   return Array.from(keys).sort();
 });
 
-const normalizedMetricKeys = computed(() => {
-  return allMetricKeys.value.filter((key) => {
-    const values = allCompareModels.value
-      .map((m) => getMetricValue(m, key))
-      .filter((v) => v !== null) as number[];
-    return values.every((v) => v >= 0 && v <= 1);
-  });
-});
-
 const allParamKeys = computed(() => {
   const keys = new Set<string>();
   allCompareModels.value.forEach((m) => {
@@ -665,10 +298,87 @@ const allParamKeys = computed(() => {
   return Array.from(keys).sort();
 });
 
-const gridColsClass = computed(() => {
-  const count = allCompareModels.value.length;
-  if (count <= 2) return 'grid-cols-1 md:grid-cols-2';
-  return 'grid-cols-1 md:grid-cols-3';
+type ComparisonRow = {
+  id: string;
+  label: string;
+  sectionLabel?: string;
+  getValue: (m: ModelDetail) => string | number;
+};
+
+const formatDate = (date: string | undefined): string => {
+  if (!date) return 'N/A';
+  return dayjs(date).format('MMM DD, YYYY');
+};
+
+const formatMetricKey = (key: string): string => {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const formatParamKey = (key: string): string => {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const getMetricValue = (model: ModelDetail, key: string): number | null => {
+  const metric = model.run?.metrics?.find((m) => m.key === key);
+  if (!metric) return null;
+  const num =
+    typeof metric.value === 'string' ? parseFloat(metric.value) : metric.value;
+  return isNaN(num) ? null : num;
+};
+
+const getParamValue = (model: ModelDetail, key: string): string | null => {
+  const param = model.run?.params?.find((p) => p.key === key);
+  return param?.value ?? null;
+};
+
+const comparisonRows = computed((): ComparisonRow[] => {
+  const rows: ComparisonRow[] = [];
+  const models = allCompareModels.value;
+
+  if (models.length === 0) return rows;
+
+  rows.push(
+    { id: 'description', label: 'Description', sectionLabel: 'Model info', getValue: (m) => m.description || 'N/A' },
+    { id: 'registered', label: 'Registered', getValue: (m) => formatDate(m.register_date) },
+    { id: 'last_modified', label: 'Last modified', getValue: (m) => formatDate(m.last_modified_time) },
+    { id: 'user', label: 'Registered by', getValue: (m) => m.register_user_id || 'N/A' },
+  );
+
+  const hasParams = allParamKeys.value.length > 0;
+  allParamKeys.value.forEach((key, idx) => {
+    rows.push({
+      id: `param-${key}`,
+      label: formatParamKey(key),
+      sectionLabel: idx === 0 && hasParams ? 'Parameters' : undefined,
+      getValue: (m) => getParamValue(m, key) ?? 'N/A',
+    });
+  });
+
+  const hasMetrics = allMetricKeys.value.length > 0;
+  allMetricKeys.value.forEach((key, idx) => {
+    rows.push({
+      id: `metric-${key}`,
+      label: formatMetricKey(key),
+      sectionLabel: idx === 0 && hasMetrics ? 'Metrics' : undefined,
+      getValue: (m) => {
+        const v = getMetricValue(m, key);
+        return v !== null ? Number(v).toFixed(4) : 'N/A';
+      },
+    });
+  });
+
+  return rows;
+});
+
+const filteredComparisonRows = computed(() => {
+  if (!showOnlyDifferences.value) return comparisonRows.value;
+  const models = allCompareModels.value;
+  return comparisonRows.value.filter((row) => {
+    if (row.sectionLabel && row.label === row.sectionLabel) return true;
+    const values = models.map((m) => String(row.getValue(m)));
+    const unique = new Set(values);
+    return unique.size > 1;
+  });
 });
 
 // Methods
@@ -685,6 +395,7 @@ const fetchModels = async () => {
 };
 
 const openDropdown = (index: number) => {
+  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
   openDropdowns.value[index] = true;
 };
 
@@ -701,14 +412,8 @@ const getFilteredModels = (index: number) => {
   });
 };
 
-const getSelectedModel = (index: number) => {
-  const modelId = selectedModelIds.value[index];
-  if (!modelId) return null;
-  return availableModels.value.find((m) => m.id === modelId);
-};
-
 const selectModel = async (index: number, modelId: string) => {
-  selectedModelIds.value[index] = modelId;
+  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
   openDropdowns.value[index] = false;
   searchQueries.value[index] = '';
 
@@ -716,118 +421,22 @@ const selectModel = async (index: number, modelId: string) => {
   try {
     const response = await getModelById(modelId);
     if (response.data) {
-      const existingIndex = selectedModels.value.findIndex(
-        (m) => m.id === modelId,
-      );
-      if (existingIndex === -1) {
+      const existingIndex = selectedModels.value.findIndex((m) => m.id === modelId);
+      if (existingIndex === -1 && selectedModels.value.length < MAX_EXTRA_MODELS) {
         selectedModels.value.push(response.data);
       }
     }
   } catch (error) {
     console.error('Failed to fetch model details:', error);
-    selectedModelIds.value[index] = null;
   } finally {
     loadingDetails.value = false;
   }
 };
 
-const clearModelSelection = (index: number) => {
-  const modelId = selectedModelIds.value[index];
+const removeModel = (modelId: string) => {
   selectedModels.value = selectedModels.value.filter((m) => m.id !== modelId);
-  selectedModelIds.value[index] = null;
 };
 
-const clearAllModels = () => {
-  selectedModelIds.value = [null, null];
-  selectedModels.value = [];
-};
-
-const getMetricValue = (model: ModelDetail, key: string): number | null => {
-  const metric = model.run?.metrics?.find((m) => m.key === key);
-  if (!metric) return null;
-  const num =
-    typeof metric.value === 'string' ? parseFloat(metric.value) : metric.value;
-  return isNaN(num) ? null : num;
-};
-
-const getParamValue = (model: ModelDetail, key: string): string | null => {
-  const param = model.run?.params?.find((p) => p.key === key);
-  return param?.value ?? null;
-};
-
-const isBestValue = (metricKey: string, modelId: string): boolean => {
-  const values = allCompareModels.value.map((m) => ({
-    id: m.id,
-    value: getMetricValue(m, metricKey),
-  }));
-  const validValues = values.filter((v) => v.value !== null);
-  if (validValues.length === 0) return false;
-  const maxValue = Math.max(...validValues.map((v) => v.value!));
-  const best = validValues.find((v) => v.value === maxValue);
-  return best?.id === modelId;
-};
-
-const getBestModelForMetric = (metricKey: string): ModelDetail | null => {
-  const values = allCompareModels.value.map((m) => ({
-    model: m,
-    value: getMetricValue(m, metricKey),
-  }));
-  const validValues = values.filter((v) => v.value !== null);
-  if (validValues.length === 0) return null;
-  const maxValue = Math.max(...validValues.map((v) => v.value!));
-  return validValues.find((v) => v.value === maxValue)?.model ?? null;
-};
-
-const getMetricDiff = (
-  model: ModelDetail,
-  metricKey: string,
-): number | null => {
-  if (model.id === props.model?.id || !props.model) return null;
-  const baseValue = getMetricValue(props.model as ModelDetail, metricKey);
-  const compareValue = getMetricValue(model, metricKey);
-  if (baseValue === null || compareValue === null) return null;
-  if (baseValue === 0) return null;
-  return ((compareValue - baseValue) / baseValue) * 100;
-};
-
-const isParamDifferent = (paramKey: string, modelId: string): boolean => {
-  if (!props.model || modelId === props.model.id) return false;
-  const baseValue = getParamValue(props.model as ModelDetail, paramKey);
-  const model = allCompareModels.value.find((m) => m.id === modelId);
-  if (!model) return false;
-  const compareValue = getParamValue(model, paramKey);
-  return baseValue !== compareValue;
-};
-
-const getBarWidth = (model: ModelDetail, metricKey: string): string => {
-  const value = getMetricValue(model, metricKey);
-  if (value === null) return '0%';
-  return `${Math.min(100, value * 100)}%`;
-};
-
-const getBarColorClass = (model: ModelDetail, metricKey: string): string => {
-  const isBest = isBestValue(metricKey, model.id);
-  const isBase = model.id === props.model?.id;
-
-  if (isBest) return 'bg-green-500 dark:bg-green-400';
-  if (isBase) return 'bg-blue-500 dark:bg-blue-400';
-  return 'bg-purple-400 dark:bg-purple-500';
-};
-
-const formatMetricKey = (key: string): string => {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-};
-
-const formatParamKey = (key: string): string => {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-};
-
-const formatDate = (date: string | undefined): string => {
-  if (!date) return 'N/A';
-  return dayjs(date).format('MMM DD, YYYY');
-};
-
-// Lifecycle
 onMounted(() => {
   fetchModels();
 });
