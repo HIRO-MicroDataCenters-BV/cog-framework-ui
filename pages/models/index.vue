@@ -101,6 +101,9 @@ const columns = [
           'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
         keras:
           'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-100',
+        pyfunc: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-800 dark:text-cyan-100',
+        classification:
+          'bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-100',
       };
       const modelTypeIcons: Record<string, string> = {
         sklearn: 'lucide:box',
@@ -109,6 +112,8 @@ const columns = [
         xgboost: 'lucide:box',
         xcboost: 'lucide:box',
         keras: 'lucide:box',
+        pyfunc: 'lucide:box',
+        classification: 'lucide:box',
       };
       const classes = modelTypeBadgeClasses[value];
       if (!classes) return value || null;
