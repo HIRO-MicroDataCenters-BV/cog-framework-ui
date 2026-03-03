@@ -157,7 +157,9 @@
     </Card>
 
     <!-- Right Panel: Preview -->
-    <Card class="flex-1 min-w-0 flex flex-col transition-all duration-200 overflow-hidden">
+    <Card
+      class="flex-1 min-w-0 flex flex-col transition-all duration-200 overflow-hidden"
+    >
       <CardHeader class="py-3 px-4 flex-shrink-0 border-b">
         <div class="flex items-center justify-between">
           <CardTitle class="flex items-center gap-2 text-sm">
@@ -298,10 +300,9 @@
           <div
             class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 h-full overflow-auto"
           >
-            <pre
-              class="p-4 text-xs font-mono text-zinc-100 whitespace-pre"
-              >{{ previewData?.content }}</pre
-            >
+            <pre class="p-4 text-xs font-mono text-zinc-100 whitespace-pre">{{
+              previewData?.content
+            }}</pre>
           </div>
         </div>
       </CardContent>
@@ -626,7 +627,7 @@ watch(
       expandedFolders.value = collectAllFolderIds(newTree);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 
