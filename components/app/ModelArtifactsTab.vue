@@ -10,7 +10,7 @@
     </div>
   </div>
 
-  <div v-else class="h-full flex gap-4">
+  <div v-else class="h-full flex gap-4 overflow-hidden">
     <!-- Left Panel: File Tree -->
     <Card class="w-80 flex-shrink-0 flex flex-col transition-all duration-200">
       <CardHeader class="py-3 px-4 flex-shrink-0">
@@ -157,7 +157,9 @@
     </Card>
 
     <!-- Right Panel: Preview -->
-    <Card class="flex-1 flex flex-col transition-all duration-200">
+    <Card
+      class="flex-1 min-w-0 flex flex-col transition-all duration-200 overflow-hidden"
+    >
       <CardHeader class="py-3 px-4 flex-shrink-0 border-b">
         <div class="flex items-center justify-between">
           <CardTitle class="flex items-center gap-2 text-sm">
@@ -172,21 +174,6 @@
             {{ selectedFile ? selectedFile.name : 'Preview' }}
           </CardTitle>
           <div v-if="selectedFile" class="flex items-center gap-2">
-            <Button
-              v-if="isPreviewable(selectedFile.name)"
-              size="sm"
-              variant="outline"
-              class="h-7 text-xs"
-              :disabled="isLoading"
-              @click="loadPreview"
-            >
-              <Icon
-                name="lucide:refresh-cw"
-                class="w-3 h-3 mr-1"
-                :class="{ 'animate-spin': isLoading }"
-              />
-              Refresh
-            </Button>
             <Button
               size="sm"
               variant="default"
@@ -311,12 +298,11 @@
         <!-- Code/Text Preview (JSON, YAML, TXT) -->
         <div v-else class="h-full overflow-auto p-4">
           <div
-            class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 overflow-hidden h-full"
+            class="rounded-lg border bg-zinc-950 dark:bg-zinc-900 h-full overflow-auto"
           >
-            <pre
-              class="p-4 text-xs font-mono text-zinc-100 whitespace-pre-wrap break-words overflow-auto h-full"
-              >{{ previewData?.content }}</pre
-            >
+            <pre class="p-4 text-xs font-mono text-zinc-100 whitespace-pre">{{
+              previewData?.content
+            }}</pre>
           </div>
         </div>
       </CardContent>
@@ -355,8 +341,24 @@ const expandedFolders = ref<string[]>([]);
 const selectedFile = ref<FileItem | null>(null);
 const previewData = ref<PreviewData | null>(null);
 const isLoading = ref(false);
-const hasInitializedExpand = ref(false);
 const pathCopied = ref(false);
+
+// Helper to collect all folder IDs recursively
+const collectAllFolderIds = (items: FileItem[]): string[] => {
+  const ids: string[] = [];
+  const traverse = (nodes: FileItem[]) => {
+    for (const node of nodes) {
+      if (node.isFolder) {
+        ids.push(node.id);
+        if (node.children) {
+          traverse(node.children);
+        }
+      }
+    }
+  };
+  traverse(items);
+  return ids;
+};
 
 // Sort function: folders first, then files, alphabetically
 const sortItems = (items: FileItem[]): FileItem[] => {
@@ -616,6 +618,17 @@ const copyPath = async () => {
     console.error('Failed to copy:', err);
   }
 };
+
+// Auto-expand all folders when tree is first loaded
+watch(
+  fileTree,
+  (newTree) => {
+    if (newTree.length > 0 && expandedFolders.value.length === 0) {
+      expandedFolders.value = collectAllFolderIds(newTree);
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
