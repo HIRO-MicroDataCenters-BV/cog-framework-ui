@@ -31,15 +31,10 @@
     <div v-else class="flex-1 flex flex-col overflow-hidden">
       <!-- Toolbar -->
       <div
-        class="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0"
+        class="flex flex-wrap items-center justify-between gap-3 mb-2 flex-shrink-0"
       >
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-md bg-primary/10">
-              <Icon name="lucide:git-compare" class="w-4 h-4 text-primary" />
-            </div>
-            <h2 class="text-base font-semibold">Model Comparison</h2>
-          </div>
+          <h2 class="text-base font-semibold">Model Comparison</h2>
           <Badge variant="secondary" class="text-xs">
             {{ allCompareModels.length }} model{{
               allCompareModels.length !== 1 ? 's' : ''
@@ -82,10 +77,10 @@
               <th
                 v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[200px] max-w-[240px] p-0 align-top"
+                class="min-w-[200px] max-w-[240px] p-0 align-top text-left"
               >
                 <div
-                  class="relative flex flex-col p-4 border-l transition-colors h-full"
+                  class="relative flex flex-col items-start p-4 border-l transition-colors h-full"
                   :class="[
                     index === 0
                       ? 'bg-primary/5 dark:bg-primary/10 border-primary/20'
