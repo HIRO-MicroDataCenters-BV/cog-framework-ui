@@ -31,36 +31,25 @@
     <div v-else class="flex-1 flex flex-col overflow-hidden">
       <!-- Toolbar -->
       <div
-        class="flex flex-wrap items-center justify-between gap-3 mb-2 flex-shrink-0"
+        v-if="selectedModels.length > 0"
+        class="flex items-center justify-end flex-shrink-0 mb-1"
       >
-        <div class="flex items-center gap-3">
-          <h2 class="text-base font-semibold">Model Comparison</h2>
-          <Badge variant="secondary" class="text-xs">
-            {{ allCompareModels.length }} model{{
-              allCompareModels.length !== 1 ? 's' : ''
-            }}
-          </Badge>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <!-- Hidden for now -->
-          <label
-            class="hidden flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
-          >
-            <Checkbox v-model:checked="showOnlyDifferences" />
-            <span>Differences only</span>
-          </label>
-          <Button
-            v-if="selectedModels.length > 0"
-            variant="ghost"
-            size="sm"
-            class="h-8 text-xs gap-1.5 text-muted-foreground hover:text-destructive"
-            @click="clearAllModels"
-          >
-            <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
-            Clear
-          </Button>
-        </div>
+        <!-- Hidden for now -->
+        <label
+          class="hidden flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+        >
+          <Checkbox v-model:checked="showOnlyDifferences" />
+          <span>Differences only</span>
+        </label>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-6 text-xs gap-1 text-muted-foreground hover:bg-transparent hover:text-muted-foreground px-2"
+          @click="clearAllModels"
+        >
+          <Icon name="lucide:trash-2" class="w-3 h-3" />
+          Clear
+        </Button>
       </div>
 
       <!-- Comparison Table -->
@@ -121,6 +110,13 @@
                       <span class="text-[11px] text-muted-foreground"
                         >v{{ m.version }}</span
                       >
+                      <CopyPaste :has-copy="true" :copy-text="m.id">
+                        <span
+                          class="text-[10px] text-muted-foreground"
+                          :title="m.id"
+                          >{{ shortenUuid(m.id) }}</span
+                        >
+                      </CopyPaste>
                     </div>
                   </div>
                 </div>
@@ -231,15 +227,13 @@
               <tr
                 class="border-b border-border/30 hover:bg-muted/10 transition-colors"
               >
-                <td
-                  class="py-2.5 px-4 text-muted-foreground font-medium text-sm"
-                >
+                <td class="py-2 px-4 text-muted-foreground font-medium text-xs">
                   {{ row.label }}
                 </td>
                 <td
                   v-for="(m, mIndex) in allCompareModels"
                   :key="m.id"
-                  class="py-2.5 px-4 border-l"
+                  class="py-2 px-4 border-l text-xs"
                   :class="[
                     mIndex === 0
                       ? 'border-primary/20 bg-primary/[0.02]'
@@ -310,6 +304,8 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Input } from '~/components/ui/input';
 import { Spinner } from '~/components/ui/spinner';
+import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
 import type { ModelDetail, ModelSummary } from '~/types/model.types';
 
 const props = defineProps<{
