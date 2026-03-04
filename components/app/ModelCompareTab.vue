@@ -1,10 +1,7 @@
 <template>
   <div class="h-full flex flex-col">
-    <!-- Empty state: no base model (e.g. page not loaded) -->
-    <div
-      v-if="!model"
-      class="flex-1 flex items-center justify-center"
-    >
+    <!-- Empty state: no base model -->
+    <div v-if="!model" class="flex-1 flex items-center justify-center">
       <div class="text-center max-w-md">
         <div class="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
           <Icon
@@ -14,8 +11,7 @@
         </div>
         <h3 class="text-lg font-semibold mb-2">Select Models to Compare</h3>
         <p class="text-sm text-muted-foreground">
-          Add at least one model using the comparison grid to compare metrics,
-          parameters, and details.
+          Add models to compare metrics, parameters, and details.
         </p>
       </div>
     </div>
@@ -31,107 +27,153 @@
       </div>
     </div>
 
-    <!-- Comparison grid (similar to product compare layout) -->
-    <div v-else class="flex-1 overflow-auto pb-4">
-      <!-- Header: title + item count + show only differences -->
-      <div class="flex flex-wrap items-center gap-3 mb-3">
-        <h2 class="text-lg font-semibold truncate max-w-md">
-          Compare {{ model?.name ?? 'Model' }} vs others
-        </h2>
-        <span class="text-sm text-muted-foreground whitespace-nowrap">
-          {{ allCompareModels.length }} item{{ allCompareModels.length !== 1 ? 's' : '' }}
-        </span>
-        <label
-          class="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground"
-        >
-          <Checkbox v-model:checked="showOnlyDifferences" />
-          <span>Show only differences</span>
-        </label>
+    <!-- Main comparison view -->
+    <div v-else class="flex-1 flex flex-col overflow-hidden">
+      <!-- Toolbar -->
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0"
+      >
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <div class="p-1.5 rounded-md bg-primary/10">
+              <Icon name="lucide:git-compare" class="w-4 h-4 text-primary" />
+            </div>
+            <h2 class="text-base font-semibold">Model Comparison</h2>
+          </div>
+          <Badge variant="secondary" class="text-xs">
+            {{ allCompareModels.length }} model{{
+              allCompareModels.length !== 1 ? 's' : ''
+            }}
+          </Badge>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label
+            class="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+          >
+            <Checkbox v-model:checked="showOnlyDifferences" />
+            <span>Differences only</span>
+          </label>
+          <Button
+            v-if="selectedModels.length > 0"
+            variant="ghost"
+            size="sm"
+            class="h-8 text-xs gap-1.5 text-muted-foreground hover:text-destructive"
+            @click="clearAllModels"
+          >
+            <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
+            Clear
+          </Button>
+        </div>
       </div>
 
-      <div class="overflow-x-auto border rounded-lg bg-card shadow-sm pt-4">
+      <!-- Comparison Table -->
+      <div class="flex-1 overflow-auto border rounded-lg bg-card shadow-sm">
         <table class="w-full min-w-[640px] text-sm border-collapse">
-          <thead>
-            <tr class="border-b bg-background/70 dark:bg-muted/40">
+          <thead class="sticky top-0 z-10">
+            <tr class="bg-background dark:bg-card border-b">
               <!-- Label column -->
               <th
-                class="w-48 min-w-48 pt-6 pb-4 px-4 text-left font-medium text-muted-foreground align-top"
+                class="w-48 min-w-48 py-4 px-4 text-left font-medium text-muted-foreground align-bottom bg-background dark:bg-card"
               >
-                &nbsp;
+                <span class="text-xs uppercase tracking-wider">Attribute</span>
               </th>
-              <!-- Model columns: card (icon, name, badge, remove) -->
+              <!-- Model columns -->
               <th
-                v-for="m in allCompareModels"
+                v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[220px] max-w-[260px] p-0 align-top"
+                class="min-w-[200px] max-w-[240px] p-0 align-top"
               >
                 <div
-                  class="relative flex h-full flex-col pt-6 pb-5 px-4 border border-border/60 border-b-0 border-r last:border-r-0 transition-colors"
+                  class="relative flex flex-col p-4 border-l transition-colors h-full"
                   :class="[
-                    m.id === model?.id
-                      ? 'bg-primary/5 ring-1 ring-primary/40'
-                      : 'bg-muted/40 dark:bg-muted/60',
+                    index === 0
+                      ? 'bg-primary/5 dark:bg-primary/10 border-primary/20'
+                      : 'bg-muted/30 dark:bg-muted/40 border-border/60',
                   ]"
                 >
+                  <!-- Base badge -->
+                  <Badge
+                    v-if="index === 0"
+                    variant="default"
+                    class="absolute top-2 left-2 text-[9px] px-1.5 py-0"
+                  >
+                    BASE
+                  </Badge>
+                  <!-- Remove button -->
                   <Button
-                    v-if="m.id !== model?.id"
+                    v-if="index !== 0"
                     variant="ghost"
                     size="sm"
-                    class="absolute top-2 right-2 h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-destructive"
+                    class="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     @click="removeModel(m.id)"
                   >
-                    <Icon name="lucide:x" class="w-4 h-4" />
+                    <Icon name="lucide:x" class="w-3.5 h-3.5" />
                   </Button>
-                  <p
-                    class="font-medium text-foreground truncate pr-8 mb-1"
-                    :title="m.name"
-                  >
-                    {{ m.name }}
-                  </p>
-                  <div class="flex items-center gap-2 mt-1 flex-wrap">
-                    <Badge :variant="m.type" class="text-xs">
-                      {{ m.type }}
-                    </Badge>
-                    <span class="text-xs text-muted-foreground">v{{ m.version }}</span>
+
+                  <div :class="index === 0 ? 'mt-5' : 'mt-1'">
+                    <p
+                      class="font-semibold text-foreground truncate pr-6"
+                      :title="m.name"
+                    >
+                      {{ m.name }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <Badge :variant="m.type" class="text-[10px]">
+                        {{ m.type }}
+                      </Badge>
+                      <span class="text-[11px] text-muted-foreground"
+                        >v{{ m.version }}</span
+                      >
+                    </div>
                   </div>
                 </div>
               </th>
-              <!-- Add a model columns -->
+              <!-- Add model slots -->
               <th
                 v-for="(_, slotIndex) in addSlots"
                 :key="'add-' + slotIndex"
-                class="min-w-[220px] max-w-[260px] p-0 align-top"
+                class="min-w-[200px] max-w-[240px] p-0 align-top bg-background dark:bg-card"
               >
                 <div
-                  :ref="slotIndex === 0 ? addSlot0Ref : addSlot1Ref"
-                  class="relative flex h-full flex-col pt-6 pb-5 px-4 border border-border/60 border-b-0 border-r last:border-r-0 border-dashed bg-muted/10"
+                  :ref="(el) => setAddSlotRef(slotIndex, el as HTMLElement)"
+                  class="relative flex flex-col p-4 border-l border-dashed border-border/60 bg-muted/5 h-full"
                 >
-                  <p class="text-sm font-medium text-muted-foreground mb-3">
-                    Add a model
-                  </p>
+                  <div class="flex items-center gap-2 mb-2">
+                    <Icon
+                      name="lucide:plus-circle"
+                      class="w-4 h-4 text-muted-foreground/60"
+                    />
+                    <span class="text-sm font-medium text-muted-foreground"
+                      >Add Model</span
+                    >
+                  </div>
                   <div class="relative">
                     <Input
                       :model-value="searchQueries[slotIndex]"
-                      placeholder="Choose a model"
-                      class="h-9 text-sm pr-8"
-                      @update:model-value="(v: string) => (searchQueries[slotIndex] = v)"
+                      placeholder="Search models..."
+                      class="h-8 text-xs pr-8 bg-background"
+                      @update:model-value="
+                        (v: string) => (searchQueries[slotIndex] = v)
+                      "
                       @focus="openDropdown(slotIndex)"
                     />
                     <Icon
-                      name="lucide:chevron-down"
-                      class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
+                      name="lucide:search"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
                     />
                   </div>
-                  <!-- Dropdown list -->
+                  <!-- Dropdown -->
                   <div
                     v-if="openDropdowns[slotIndex]"
-                    class="absolute left-0 right-0 top-full mt-3 z-50 bg-popover border rounded-md shadow-lg max-h-52 overflow-auto min-w-[200px]"
+                    class="absolute left-2 right-2 top-full mt-1 z-50 bg-popover border rounded-md shadow-lg max-h-52 overflow-auto"
                   >
                     <div
                       v-if="loadingModels"
                       class="p-3 text-center text-xs text-muted-foreground"
                     >
-                      Loading models...
+                      <Spinner class="w-4 h-4 mx-auto mb-1" />
+                      Loading...
                     </div>
                     <div
                       v-else-if="getFilteredModels(slotIndex).length === 0"
@@ -144,15 +186,15 @@
                         v-for="m in getFilteredModels(slotIndex)"
                         :key="m.id"
                         type="button"
-                        class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0 text-sm"
+                        class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
                         @click="selectModel(slotIndex, m.id)"
                       >
-                        <p class="font-medium truncate">{{ m.name }}</p>
+                        <p class="text-sm font-medium truncate">{{ m.name }}</p>
                         <div class="flex items-center gap-2 mt-0.5">
-                          <Badge :variant="m.type" class="text-[10px]">{{
+                          <Badge :variant="m.type" class="text-[9px]">{{
                             m.type
                           }}</Badge>
-                          <span class="text-xs text-muted-foreground"
+                          <span class="text-[10px] text-muted-foreground"
                             >v{{ m.version }}</span
                           >
                         </div>
@@ -164,39 +206,79 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="(row, rowIndex) in filteredComparisonRows" :key="row.id">
-              <!-- Section headers (Model info, Parameters, Metrics) -->
+            <template
+              v-for="(row, rowIndex) in filteredComparisonRows"
+              :key="row.id"
+            >
+              <!-- Section headers -->
               <tr
-                v-if="row.sectionLabel && (rowIndex === 0 || filteredComparisonRows[rowIndex - 1]?.sectionLabel !== row.sectionLabel)"
-                class="bg-muted/40"
+                v-if="shouldShowSectionHeader(row, rowIndex)"
+                class="bg-muted/50 dark:bg-muted/30"
               >
                 <td
-                  colspan="100"
-                  class="py-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                  :colspan="allCompareModels.length + addSlots.length + 1"
+                  class="py-2 px-4"
                 >
-                  {{ row.sectionLabel }}
+                  <div class="flex items-center gap-2">
+                    <Icon
+                      :name="getSectionIcon(row.sectionLabel!)"
+                      class="w-3.5 h-3.5 text-muted-foreground"
+                    />
+                    <span
+                      class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                      >{{ row.sectionLabel }}</span
+                    >
+                  </div>
                 </td>
               </tr>
+              <!-- Data rows -->
               <tr
-                class="border-b border-border/50 hover:bg-muted/20 transition-colors"
-                :class="{ 'bg-muted/10': row.sectionLabel }"
+                class="border-b border-border/30 hover:bg-muted/10 transition-colors"
               >
-                <td class="py-2.5 px-4 text-muted-foreground font-medium">
+                <td
+                  class="py-2.5 px-4 text-muted-foreground font-medium text-sm"
+                >
                   {{ row.label }}
                 </td>
                 <td
-                  v-for="m in allCompareModels"
+                  v-for="(m, mIndex) in allCompareModels"
                   :key="m.id"
-                  class="py-2.5 px-4 border-r border-border/50 last:border-r-0"
+                  class="py-2.5 px-4 border-l"
+                  :class="[
+                    mIndex === 0
+                      ? 'border-primary/20 bg-primary/[0.02]'
+                      : 'border-border/30',
+                  ]"
                 >
-                  <span class="text-foreground">{{ row.getValue(m) }}</span>
+                  <!-- Metric value with percentage diff -->
+                  <div
+                    v-if="row.id.startsWith('metric-')"
+                    class="flex items-center gap-2"
+                  >
+                    <span class="font-medium tabular-nums">
+                      {{ row.getValue(m) }}
+                    </span>
+                    <!-- Percentage diff from base -->
+                    <span
+                      v-if="mIndex !== 0 && getDiffFromBase(row, m) !== null"
+                      class="text-[10px] font-medium"
+                      :class="getDiffColorClass(getDiffFromBase(row, m)!)"
+                    >
+                      {{ formatDiff(getDiffFromBase(row, m)!) }}
+                    </span>
+                  </div>
+                  <!-- Regular value -->
+                  <span v-else class="text-foreground">{{
+                    row.getValue(m)
+                  }}</span>
                 </td>
+                <!-- Empty slots -->
                 <td
                   v-for="(_, slotIndex) in addSlots"
-                  :key="'add-' + slotIndex"
-                  class="py-2.5 px-4 border-r border-border/50 last:border-r-0 bg-muted/10"
+                  :key="'empty-' + slotIndex"
+                  class="py-2.5 px-4 border-l border-dashed border-border/30 bg-muted/5"
                 >
-                  &nbsp;
+                  <span class="text-muted-foreground/30">—</span>
                 </td>
               </tr>
             </template>
@@ -204,13 +286,22 @@
         </table>
       </div>
 
-      <!-- Empty state when "Show only differences" filters everything -->
+      <!-- Empty differences state -->
       <div
         v-if="filteredComparisonRows.length === 0 && comparisonRows.length > 0"
         class="text-center py-8 text-muted-foreground text-sm"
       >
-        No differences between the selected models. Uncheck "Show only
-        differences" to see all specs.
+        <Icon
+          name="lucide:check-circle"
+          class="w-8 h-8 mx-auto mb-2 text-green-500"
+        />
+        <p>All values are identical across selected models.</p>
+        <button
+          class="text-primary hover:underline mt-1"
+          @click="showOnlyDifferences = false"
+        >
+          Show all attributes
+        </button>
       </div>
     </div>
   </div>
@@ -232,10 +323,11 @@ const props = defineProps<{
 const dayjs = useDayjs();
 const { getModels, getModelById } = useApi();
 
-// Refs for click outside (add model dropdowns)
-const addSlot0Ref = ref<HTMLElement | null>(null);
-const addSlot1Ref = ref<HTMLElement | null>(null);
-const addSlotRefs = [addSlot0Ref, addSlot1Ref];
+// Refs for click outside
+const addSlotRefs = ref<(HTMLElement | null)[]>([null, null]);
+const setAddSlotRef = (index: number, el: HTMLElement | null) => {
+  addSlotRefs.value[index] = el;
+};
 
 // State
 const loadingModels = ref(false);
@@ -244,7 +336,6 @@ const availableModels = ref<ModelSummary[]>([]);
 const selectedModels = ref<ModelDetail[]>([]);
 const showOnlyDifferences = ref(false);
 
-// We allow comparing base model + up to 2 more
 const MAX_EXTRA_MODELS = 2;
 const searchQueries = ref<string[]>(Array(MAX_EXTRA_MODELS).fill(''));
 const openDropdowns = ref<boolean[]>(Array(MAX_EXTRA_MODELS).fill(false));
@@ -257,9 +348,8 @@ const addSlots = computed(() => {
   return Array.from({ length: remaining }, (_, i) => i);
 });
 
-onClickOutside([addSlot0Ref, addSlot1Ref], () => {
-  openDropdowns.value[0] = false;
-  openDropdowns.value[1] = false;
+onClickOutside(addSlotRefs, () => {
+  openDropdowns.value = openDropdowns.value.map(() => false);
 });
 
 const allCompareModels = computed(() => {
@@ -271,7 +361,6 @@ const allCompareModels = computed(() => {
   return models;
 });
 
-// Computed
 const excludedIds = computed(() => {
   const baseId = props.model?.id ? [props.model.id] : [];
   const extraIds = selectedModels.value.map((m) => m.id);
@@ -281,9 +370,7 @@ const excludedIds = computed(() => {
 const allMetricKeys = computed(() => {
   const keys = new Set<string>();
   allCompareModels.value.forEach((m) => {
-    m.run?.metrics?.forEach((metric) => {
-      keys.add(metric.key);
-    });
+    m.run?.metrics?.forEach((metric) => keys.add(metric.key));
   });
   return Array.from(keys).sort();
 });
@@ -291,9 +378,7 @@ const allMetricKeys = computed(() => {
 const allParamKeys = computed(() => {
   const keys = new Set<string>();
   allCompareModels.value.forEach((m) => {
-    m.run?.params?.forEach((param) => {
-      keys.add(param.key);
-    });
+    m.run?.params?.forEach((param) => keys.add(param.key));
   });
   return Array.from(keys).sort();
 });
@@ -331,35 +416,98 @@ const getParamValue = (model: ModelDetail, key: string): string | null => {
   return param?.value ?? null;
 };
 
+const getSectionIcon = (section: string): string => {
+  const icons: Record<string, string> = {
+    'Model info': 'lucide:info',
+    Parameters: 'lucide:sliders-horizontal',
+    Metrics: 'lucide:bar-chart-3',
+  };
+  return icons[section] || 'lucide:folder';
+};
+
+const shouldShowSectionHeader = (
+  row: ComparisonRow,
+  index: number,
+): boolean => {
+  if (!row.sectionLabel) return false;
+  if (index === 0) return true;
+  return (
+    filteredComparisonRows.value[index - 1]?.sectionLabel !== row.sectionLabel
+  );
+};
+
+const isRowDifferent = (row: ComparisonRow): boolean => {
+  const values = allCompareModels.value.map((m) => String(row.getValue(m)));
+  return new Set(values).size > 1;
+};
+
+const getDiffFromBase = (
+  row: ComparisonRow,
+  model: ModelDetail,
+): number | null => {
+  if (!row.id.startsWith('metric-') || !props.model) return null;
+  const key = row.id.replace('metric-', '');
+  const baseValue = getMetricValue(props.model as ModelDetail, key);
+  const compareValue = getMetricValue(model, key);
+  if (baseValue === null || compareValue === null || baseValue === 0)
+    return null;
+  return ((compareValue - baseValue) / baseValue) * 100;
+};
+
+const getDiffColorClass = (diff: number): string => {
+  if (diff > 0) return 'text-green-600 dark:text-green-400';
+  if (diff < 0) return 'text-red-600 dark:text-red-400';
+  return 'text-muted-foreground';
+};
+
+const formatDiff = (diff: number): string => {
+  const sign = diff > 0 ? '+' : '';
+  return `${sign}${diff.toFixed(1)}%`;
+};
+
 const comparisonRows = computed((): ComparisonRow[] => {
   const rows: ComparisonRow[] = [];
   const models = allCompareModels.value;
-
   if (models.length === 0) return rows;
 
   rows.push(
-    { id: 'description', label: 'Description', sectionLabel: 'Model info', getValue: (m) => m.description || 'N/A' },
-    { id: 'registered', label: 'Registered', getValue: (m) => formatDate(m.register_date) },
-    { id: 'last_modified', label: 'Last modified', getValue: (m) => formatDate(m.last_modified_time) },
-    { id: 'user', label: 'Registered by', getValue: (m) => m.register_user_id || 'N/A' },
+    {
+      id: 'description',
+      label: 'Description',
+      sectionLabel: 'Model info',
+      getValue: (m) => m.description || 'N/A',
+    },
+    {
+      id: 'registered',
+      label: 'Registered',
+      getValue: (m) => formatDate(m.register_date),
+    },
+    {
+      id: 'last_modified',
+      label: 'Last Modified',
+      getValue: (m) => formatDate(m.last_modified_time),
+    },
+    {
+      id: 'user',
+      label: 'Registered By',
+      getValue: (m) => m.register_user_id || 'N/A',
+    },
   );
 
-  const hasParams = allParamKeys.value.length > 0;
   allParamKeys.value.forEach((key, idx) => {
     rows.push({
       id: `param-${key}`,
       label: formatParamKey(key),
-      sectionLabel: idx === 0 && hasParams ? 'Parameters' : undefined,
+      sectionLabel: idx === 0 ? 'Parameters' : undefined,
       getValue: (m) => getParamValue(m, key) ?? 'N/A',
     });
   });
 
-  const hasMetrics = allMetricKeys.value.length > 0;
   allMetricKeys.value.forEach((key, idx) => {
     rows.push({
       id: `metric-${key}`,
       label: formatMetricKey(key),
-      sectionLabel: idx === 0 && hasMetrics ? 'Metrics' : undefined,
+      sectionLabel: idx === 0 ? 'Metrics' : undefined,
       getValue: (m) => {
         const v = getMetricValue(m, key);
         return v !== null ? Number(v).toFixed(4) : 'N/A';
@@ -372,12 +520,22 @@ const comparisonRows = computed((): ComparisonRow[] => {
 
 const filteredComparisonRows = computed(() => {
   if (!showOnlyDifferences.value) return comparisonRows.value;
-  const models = allCompareModels.value;
   return comparisonRows.value.filter((row) => {
-    if (row.sectionLabel && row.label === row.sectionLabel) return true;
-    const values = models.map((m) => String(row.getValue(m)));
-    const unique = new Set(values);
-    return unique.size > 1;
+    // Always show section headers if at least one row in that section has differences
+    if (row.sectionLabel) {
+      const sectionRows = comparisonRows.value.filter(
+        (r) =>
+          r.sectionLabel === row.sectionLabel ||
+          (!r.sectionLabel &&
+            comparisonRows.value
+              .slice(0, comparisonRows.value.indexOf(r))
+              .reverse()
+              .find((pr) => pr.sectionLabel)?.sectionLabel ===
+              row.sectionLabel),
+      );
+      return sectionRows.some((r) => isRowDifferent(r));
+    }
+    return isRowDifferent(row);
   });
 });
 
@@ -406,8 +564,7 @@ const getFilteredModels = (index: number) => {
     if (!query) return true;
     return (
       m.name.toLowerCase().includes(query) ||
-      m.type.toLowerCase().includes(query) ||
-      m.id.toLowerCase().includes(query)
+      m.type.toLowerCase().includes(query)
     );
   });
 };
@@ -421,8 +578,8 @@ const selectModel = async (index: number, modelId: string) => {
   try {
     const response = await getModelById(modelId);
     if (response.data) {
-      const existingIndex = selectedModels.value.findIndex((m) => m.id === modelId);
-      if (existingIndex === -1 && selectedModels.value.length < MAX_EXTRA_MODELS) {
+      const existing = selectedModels.value.findIndex((m) => m.id === modelId);
+      if (existing === -1 && selectedModels.value.length < MAX_EXTRA_MODELS) {
         selectedModels.value.push(response.data);
       }
     }
@@ -435,6 +592,10 @@ const selectModel = async (index: number, modelId: string) => {
 
 const removeModel = (modelId: string) => {
   selectedModels.value = selectedModels.value.filter((m) => m.id !== modelId);
+};
+
+const clearAllModels = () => {
+  selectedModels.value = [];
 };
 
 onMounted(() => {
