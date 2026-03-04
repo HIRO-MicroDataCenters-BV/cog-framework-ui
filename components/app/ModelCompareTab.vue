@@ -148,7 +148,7 @@
                     <Input
                       :model-value="searchQueries[slotIndex]"
                       placeholder="Search models..."
-                      class="h-8 text-xs pr-8 bg-background"
+                      class="h-8 text-xs pr-8"
                       @update:model-value="
                         (v: string) => (searchQueries[slotIndex] = v)
                       "
