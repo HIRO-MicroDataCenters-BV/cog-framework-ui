@@ -43,8 +43,9 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Hidden for now -->
           <label
-            class="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+            class="hidden flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
           >
             <Checkbox v-model:checked="showOnlyDifferences" />
             <span>Differences only</span>
@@ -319,9 +320,11 @@ const dayjs = useDayjs();
 const { getModels, getModelById } = useApi();
 
 // Refs for click outside
-const addSlotRefs = ref<(HTMLElement | null)[]>([null, null]);
+const addSlot0 = ref<HTMLElement | null>(null);
+const addSlot1 = ref<HTMLElement | null>(null);
 const setAddSlotRef = (index: number, el: HTMLElement | null) => {
-  addSlotRefs.value[index] = el;
+  if (index === 0) addSlot0.value = el;
+  else if (index === 1) addSlot1.value = el;
 };
 
 // State
@@ -343,8 +346,11 @@ const addSlots = computed(() => {
   return Array.from({ length: remaining }, (_, i) => i);
 });
 
-onClickOutside(addSlotRefs, () => {
-  openDropdowns.value = openDropdowns.value.map(() => false);
+onClickOutside(addSlot0, () => {
+  openDropdowns.value[0] = false;
+});
+onClickOutside(addSlot1, () => {
+  openDropdowns.value[1] = false;
 });
 
 const allCompareModels = computed(() => {
@@ -515,22 +521,37 @@ const comparisonRows = computed((): ComparisonRow[] => {
 
 const filteredComparisonRows = computed(() => {
   if (!showOnlyDifferences.value) return comparisonRows.value;
-  return comparisonRows.value.filter((row) => {
-    // Always show section headers if at least one row in that section has differences
+
+  // First, find all rows that have differences
+  const rowsWithDifferences = comparisonRows.value.filter((row) =>
+    isRowDifferent(row),
+  );
+
+  // Get the section labels that have at least one difference
+  const sectionsWithDifferences = new Set<string>();
+  let currentSection = '';
+  comparisonRows.value.forEach((row) => {
     if (row.sectionLabel) {
-      const sectionRows = comparisonRows.value.filter(
-        (r) =>
-          r.sectionLabel === row.sectionLabel ||
-          (!r.sectionLabel &&
-            comparisonRows.value
-              .slice(0, comparisonRows.value.indexOf(r))
-              .reverse()
-              .find((pr) => pr.sectionLabel)?.sectionLabel ===
-              row.sectionLabel),
-      );
-      return sectionRows.some((r) => isRowDifferent(r));
+      currentSection = row.sectionLabel;
     }
-    return isRowDifferent(row);
+    if (isRowDifferent(row) && currentSection) {
+      sectionsWithDifferences.add(currentSection);
+    }
+  });
+
+  // Filter rows: show rows with differences + section headers for sections that have differences
+  let currentSectionLabel = '';
+  return comparisonRows.value.filter((row) => {
+    if (row.sectionLabel) {
+      currentSectionLabel = row.sectionLabel;
+    }
+    // Show row if it has differences
+    if (isRowDifferent(row)) return true;
+    // Show section header row if that section has any differences
+    if (row.sectionLabel && sectionsWithDifferences.has(row.sectionLabel)) {
+      return true;
+    }
+    return false;
   });
 });
 
