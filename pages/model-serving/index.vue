@@ -16,13 +16,38 @@ setPage({
 const columns = [
   {
     id: 'isvc_name',
-    header: 'Service Name',
     size: 180,
     cell: ({ row }: { row: TableRowType }) => row.getValue('isvc_name'),
   },
   {
+    id: 'model_name',
+    size: 150,
+    cell: ({ row }: { row: TableRowType }) => {
+      const name = row.getValue<string>('model_name');
+      const version = row.original.model_version;
+      if (!name) return h('span', { class: 'text-muted-foreground' }, '-');
+      return h('div', { class: 'flex items-center gap-2' }, [
+        h('span', {}, name),
+        version ? h(Badge, { variant: 'secondary' }, () => `v${version}`) : null,
+      ]);
+    },
+  },
+  {
+    id: 'served_model_url',
+    size: 300,
+    cell: ({ row }: { row: TableRowType }) => {
+      const url = row.getValue<string>('served_model_url');
+      return h(CopyPaste, { hasCopy: true, copyText: url }, () =>
+        h('a', {
+          href: url,
+          target: '_blank',
+          class: 'text-primary hover:underline truncate block max-w-[280px]',
+        }, url),
+      );
+    },
+  },
+  {
     id: 'status',
-    header: 'Status',
     size: 100,
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
@@ -38,37 +63,7 @@ const columns = [
     },
   },
   {
-    id: 'model_name',
-    header: 'Model',
-    size: 150,
-    cell: ({ row }: { row: TableRowType }) => {
-      const name = row.getValue<string>('model_name');
-      const version = row.original.model_version;
-      if (!name) return h('span', { class: 'text-muted-foreground' }, '-');
-      return h('div', { class: 'flex items-center gap-2' }, [
-        h('span', {}, name),
-        version ? h(Badge, { variant: 'secondary' }, () => `v${version}`) : null,
-      ]);
-    },
-  },
-  {
-    id: 'served_model_url',
-    header: 'URL',
-    size: 300,
-    cell: ({ row }: { row: TableRowType }) => {
-      const url = row.getValue<string>('served_model_url');
-      return h(CopyPaste, { hasCopy: true, copyText: url }, () =>
-        h('a', {
-          href: url,
-          target: '_blank',
-          class: 'text-primary hover:underline truncate block max-w-[280px]',
-        }, url),
-      );
-    },
-  },
-  {
     id: 'traffic_percentage',
-    header: 'Traffic',
     size: 80,
     cell: ({ row }: { row: TableRowType }) => {
       const traffic = row.getValue<number>('traffic_percentage');
@@ -77,7 +72,6 @@ const columns = [
   },
   {
     id: 'creation_timestamp',
-    header: 'Created',
     size: 115,
     cell: ({ row }: { row: TableRowType }) => {
       const dateTime = row.getValue<string>('creation_timestamp');
@@ -89,11 +83,14 @@ const columns = [
   },
   {
     id: 'age',
-    header: 'Age',
     size: 120,
     cell: ({ row }: { row: TableRowType }) => {
-      const age = row.getValue<string>('age');
-      return h('span', { class: 'text-muted-foreground text-sm' }, age);
+      const age = row.getValue<string>('age') || '';
+      const [days, time] = age.split(', ');
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, days),
+        h('div', { class: 'text-xs text-muted-foreground' }, time || ''),
+      ]);
     },
   },
 ];

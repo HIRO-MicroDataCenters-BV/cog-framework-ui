@@ -78,6 +78,7 @@ export default defineI18nConfig(() => ({
       title: {
         datasets: 'Datasets',
         models: 'Models',
+        'model-serving': 'Model Serving',
         pipelines: 'Pipelines',
         platform: 'Platform',
         actions: 'Actions',
@@ -500,6 +501,12 @@ export default defineI18nConfig(() => ({
         user_id: 'Owner',
         register_user_id: 'Author',
         ownership: 'Ownership',
+        isvc_name: 'ISVC Name',
+        served_model_url: 'URL',
+        model_name: 'Model Name',
+        traffic_percentage: 'Traffic',
+        creation_timestamp: 'Created',
+        age: 'Age',
       },
       status: {
         completed: 'Completed',
