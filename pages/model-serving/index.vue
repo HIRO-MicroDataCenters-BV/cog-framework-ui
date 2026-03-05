@@ -28,7 +28,13 @@ const columns = [
       if (!name) return h('span', { class: 'text-muted-foreground' }, '-');
       return h('div', { class: 'flex items-center gap-2 overflow-hidden' }, [
         h('span', { class: 'truncate' }, name),
-        version ? h(Badge, { variant: 'secondary', class: 'shrink-0' }, () => `v${version}`) : null,
+        version
+          ? h(
+              Badge,
+              { variant: 'secondary', class: 'shrink-0' },
+              () => `v${version}`,
+            )
+          : null,
       ]);
     },
   },
@@ -49,9 +55,13 @@ const columns = [
                   { hasCopy: true, copyText: url },
                   {
                     default: () =>
-                      h('span', {
-                        class: 'truncate block max-w-[280px] text-xs',
-                      }, url),
+                      h(
+                        'span',
+                        {
+                          class: 'truncate block max-w-[280px] text-xs',
+                        },
+                        url,
+                      ),
                   },
                 ),
               ),
@@ -67,14 +77,22 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => {
       const status = row.getValue<string>('status');
       const statusClasses: Record<string, string> = {
-        ready: 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
-        pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
+        ready:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        pending:
+          'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
         failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
       };
-      const classes = statusClasses[status] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100';
-      return h('span', {
-        class: `inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0 ${classes}`,
-      }, status);
+      const classes =
+        statusClasses[status] ||
+        'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100';
+      return h(
+        'span',
+        {
+          class: `inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0 ${classes}`,
+        },
+        status,
+      );
     },
   },
   {
@@ -92,7 +110,11 @@ const columns = [
       const dateTime = row.getValue<string>('creation_timestamp');
       return h('div', { class: 'flex flex-col' }, [
         h('div', {}, dayjs(dateTime).format('DD-MMM-YYYY')),
-        h('div', { class: 'text-xs text-muted-foreground' }, dayjs(dateTime).format('HH:mm:ss')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(dateTime).format('HH:mm:ss'),
+        ),
       ]);
     },
   },

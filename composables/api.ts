@@ -27,6 +27,7 @@ import runsData from '@/mocks/get.runs.json';
 import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
 import runsFlowData from '@/mocks/get.runs.flow.json';
+import modelsServingData from '@/mocks/get.models-serving.json';
 
 /**
  * @fileoverview Cognitive Framework API client
@@ -268,8 +269,26 @@ export const useApi = () => {
      *
      * @returns {Promise<ModelServingResponse>} Response containing served models data with pagination
      */
-    getModelsServing: async (): Promise<ModelServingResponse & { pagination: { total_items: number; page: number; limit: number } } | null> => {
-      const res = (await request(`/models-serving`)) as ModelServingResponse | null;
+    getModelsServing: async (): Promise<
+      | (ModelServingResponse & {
+          pagination: { total_items: number; page: number; limit: number };
+        })
+      | null
+    > => {
+      if (mockEnabled) {
+        const data = modelsServingData as ModelServingResponse;
+        return {
+          ...data,
+          pagination: {
+            total_items: data.data.length,
+            page: 1,
+            limit: data.data.length,
+          },
+        };
+      }
+      const res = (await request(
+        `/models-serving`,
+      )) as ModelServingResponse | null;
       if (res && res.data) {
         return {
           ...res,

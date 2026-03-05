@@ -724,6 +724,26 @@ export const useApiWithMock = () => {
       return request(`/models?${q}`);
     },
 
+    getModelsServing: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const modelsServingJson = await import(
+          '~/mocks/get.models-serving.json'
+        );
+        return Promise.resolve({
+          status_code: modelsServingJson.status_code,
+          message: modelsServingJson.message,
+          data: modelsServingJson.data,
+          pagination: {
+            total_items: modelsServingJson.data.length,
+            page: 1,
+            limit: modelsServingJson.data.length,
+          },
+        });
+      }
+      return request(`/models-serving`);
+    },
+
     getModelById: async (id: string) => {
       if (mock.value.enabled) {
         await mockDelay();
