@@ -67,7 +67,7 @@
               <th
                 v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[200px] max-w-[240px] p-0 align-top text-left"
+                class="min-w-[200px] p-0 align-top text-left"
               >
                 <div
                   class="relative flex flex-col items-start p-4 border-l transition-colors h-full"
@@ -121,77 +121,76 @@
                   </div>
                 </div>
               </th>
-              <!-- Add model slots -->
+              <!-- Add model button column -->
               <th
-                v-for="(_, slotIndex) in addSlots"
-                :key="'add-' + slotIndex"
-                class="min-w-[200px] max-w-[240px] p-0 align-top bg-background dark:bg-card"
+                v-if="canAddMore"
+                class="w-12 min-w-12 p-0 align-top bg-background dark:bg-card"
               >
                 <div
-                  :ref="(el) => setAddSlotRef(slotIndex, el as HTMLElement)"
-                  class="relative flex flex-col p-4 border-l border-dashed border-border/60 bg-muted/5 h-full"
+                  ref="addButtonRef"
+                  class="relative flex items-center justify-center p-4 border-l border-dashed border-border/40 h-full"
                 >
-                  <div class="flex items-center gap-2 mb-2">
-                    <Icon
-                      name="lucide:plus-circle"
-                      class="w-4 h-4 text-muted-foreground/60"
-                    />
-                    <span class="text-sm font-medium text-muted-foreground"
-                      >Add Model</span
-                    >
-                  </div>
-                  <div class="relative">
-                    <Input
-                      :model-value="searchQueries[slotIndex]"
-                      placeholder="Search models..."
-                      class="h-8 text-xs pr-8"
-                      @update:model-value="
-                        (v: string) => (searchQueries[slotIndex] = v)
-                      "
-                      @focus="openDropdown(slotIndex)"
-                    />
-                    <Icon
-                      name="lucide:search"
-                      class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
-                    />
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    @click="toggleAddDropdown"
+                  >
+                    <Icon name="lucide:plus" class="w-4 h-4" />
+                  </Button>
                   <!-- Dropdown -->
                   <div
-                    v-if="openDropdowns[slotIndex]"
-                    class="absolute left-2 right-2 top-full mt-1 z-50 bg-popover border rounded-md shadow-lg max-h-52 overflow-auto"
+                    v-if="showAddDropdown"
+                    class="absolute right-0 top-full mt-1 z-50 w-64 bg-popover border rounded-md shadow-lg"
                   >
-                    <div
-                      v-if="loadingModels"
-                      class="p-3 text-center text-xs text-muted-foreground"
-                    >
-                      <Spinner class="w-4 h-4 mx-auto mb-1" />
-                      Loading...
+                    <div class="p-2 border-b">
+                      <div class="relative">
+                        <Input
+                          v-model="addSearchQuery"
+                          placeholder="Search models..."
+                          class="h-8 text-xs pr-8"
+                          @focus="fetchModels"
+                        />
+                        <Icon
+                          name="lucide:search"
+                          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
+                        />
+                      </div>
                     </div>
-                    <div
-                      v-else-if="getFilteredModels(slotIndex).length === 0"
-                      class="p-3 text-center text-xs text-muted-foreground"
-                    >
-                      No models found
-                    </div>
-                    <template v-else>
-                      <button
-                        v-for="m in getFilteredModels(slotIndex)"
-                        :key="m.id"
-                        type="button"
-                        class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
-                        @click="selectModel(slotIndex, m.id)"
+                    <div class="max-h-52 overflow-auto">
+                      <div
+                        v-if="loadingModels"
+                        class="p-3 text-center text-xs text-muted-foreground"
                       >
-                        <p class="text-sm font-medium truncate">{{ m.name }}</p>
-                        <div class="flex items-center gap-2 mt-0.5">
-                          <Badge :variant="m.type" class="text-[9px]">{{
-                            m.type
-                          }}</Badge>
-                          <span class="text-[10px] text-muted-foreground"
-                            >v{{ m.version }}</span
-                          >
-                        </div>
-                      </button>
-                    </template>
+                        <Spinner class="w-4 h-4 mx-auto mb-1" />
+                        Loading...
+                      </div>
+                      <div
+                        v-else-if="filteredAvailableModels.length === 0"
+                        class="p-3 text-center text-xs text-muted-foreground"
+                      >
+                        No models found
+                      </div>
+                      <template v-else>
+                        <button
+                          v-for="m in filteredAvailableModels"
+                          :key="m.id"
+                          type="button"
+                          class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
+                          @click="addModel(m.id)"
+                        >
+                          <p class="text-sm font-medium truncate">{{ m.name }}</p>
+                          <div class="flex items-center gap-2 mt-0.5">
+                            <Badge :variant="m.type" class="text-[9px]">{{
+                              m.type
+                            }}</Badge>
+                            <span class="text-[10px] text-muted-foreground"
+                              >v{{ m.version }}</span
+                            >
+                          </div>
+                        </button>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </th>
@@ -262,11 +261,11 @@
                     row.getValue(m)
                   }}</span>
                 </td>
-                <!-- Empty slots -->
+                <!-- Empty slot -->
                 <td
                   v-for="(_, slotIndex) in addSlots"
                   :key="'empty-' + slotIndex"
-                  class="py-2.5 px-4 border-l border-dashed border-border/30 bg-muted/5"
+                  class="w-[220px] py-2.5 px-4 border-l border-dashed border-border/30 bg-muted/5"
                 >
                   <span class="text-muted-foreground/30">—</span>
                 </td>
@@ -335,11 +334,9 @@ const searchQueries = ref<string[]>(Array(MAX_EXTRA_MODELS).fill(''));
 const openDropdowns = ref<boolean[]>(Array(MAX_EXTRA_MODELS).fill(false));
 
 const addSlots = computed(() => {
-  const remaining = Math.max(
-    0,
-    1 + MAX_EXTRA_MODELS - allCompareModels.value.length,
-  );
-  return Array.from({ length: remaining }, (_, i) => i);
+  // Only show 1 add slot at a time to save space
+  const canAddMore = allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
+  return canAddMore ? [0] : [];
 });
 
 onClickOutside(addSlot0, () => {
