@@ -5,7 +5,19 @@ const {
   user: currentUser,
   loading: userLoading,
   fetchCurrentUser,
+  clearUser,
 } = useCurrentUser();
+
+const handleLogout = async () => {
+  try {
+    await $fetch('/authservice/logout', { method: 'GET' });
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    clearUser();
+    navigateTo('/');
+  }
+};
 
 // Track avatar image load failure so we show initials fallback instead of broken icon
 const avatarError = ref(false);
@@ -143,7 +155,10 @@ const showAvatarImage = computed(() =>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem class="text-destructive focus:text-destructive">
+          <DropdownMenuItem
+            class="text-destructive focus:text-destructive"
+            @click="handleLogout"
+          >
             <Icon :name="userMenuItems[5].icon" class="mr-2 h-4 w-4" />
             {{ userMenuItems[5].title }}
           </DropdownMenuItem>

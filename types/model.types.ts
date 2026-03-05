@@ -53,7 +53,13 @@ export interface ModelAssociations {
 export interface ModelSummary {
   id: string;
   name: string;
+  type: string;
   description?: string;
+  version: number;
+  last_modified_time: string;
+  register_date: string;
+  register_user_id: string;
+  last_modified_user_id: string;
 }
 
 export type ModelOverviewContent = ModelDetail;
