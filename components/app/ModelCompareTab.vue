@@ -179,7 +179,9 @@
                           class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
                           @click="addModel(m.id)"
                         >
-                          <p class="text-sm font-medium truncate">{{ m.name }}</p>
+                          <p class="text-sm font-medium truncate">
+                            {{ m.name }}
+                          </p>
                           <div class="flex items-center gap-2 mt-0.5">
                             <Badge :variant="m.type" class="text-[9px]">{{
                               m.type

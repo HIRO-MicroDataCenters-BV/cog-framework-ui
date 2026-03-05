@@ -155,7 +155,10 @@ const showAvatarImage = computed(() =>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem class="text-destructive focus:text-destructive" @click="handleLogout">
+          <DropdownMenuItem
+            class="text-destructive focus:text-destructive"
+            @click="handleLogout"
+          >
             <Icon :name="userMenuItems[5].icon" class="mr-2 h-4 w-4" />
             {{ userMenuItems[5].title }}
           </DropdownMenuItem>
