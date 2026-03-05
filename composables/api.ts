@@ -12,6 +12,7 @@ import type {
   PodParams,
   InferenceServiceParams,
 } from '~/types/api.types';
+import type { ModelServingResponse } from '~/types/model.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -261,6 +262,27 @@ export const useApi = () => {
       const res = await request(`/models?${q}`);
       return res;
     },
+
+    /**
+     * Retrieves all served models
+     *
+     * @returns {Promise<ModelServingResponse>} Response containing served models data with pagination
+     */
+    getModelsServing: async (): Promise<ModelServingResponse & { pagination: { total_items: number; page: number; limit: number } } | null> => {
+      const res = (await request(`/models-serving`)) as ModelServingResponse | null;
+      if (res && res.data) {
+        return {
+          ...res,
+          pagination: {
+            total_items: res.data.length,
+            page: 1,
+            limit: res.data.length,
+          },
+        };
+      }
+      return null;
+    },
+
     /**
      * Registers a new model
      *

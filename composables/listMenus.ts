@@ -20,6 +20,14 @@ export const uselistMenus = () => {
           isActive: false,
         },
         {
+          key: 'model-serving',
+          title: t('menu.model_serving'),
+          url: 'model-serving',
+          icon: 'lucide:server',
+          items: [],
+          isActive: false,
+        },
+        {
           key: 'pipelines',
           title: t('menu.pipelines'),
           url: 'pipelines',
