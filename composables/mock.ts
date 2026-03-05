@@ -744,6 +744,21 @@ export const useApiWithMock = () => {
       return request(`/models-serving`);
     },
 
+    patchModelServing: async (data: {
+      isvc_name: string;
+      canary_traffic_percent?: number;
+    }) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Model serving updated successfully',
+          data: data,
+        });
+      }
+      return request(`/models-serving`, 'PATCH', data);
+    },
+
     getModelById: async (id: string) => {
       if (mock.value.enabled) {
         await mockDelay();

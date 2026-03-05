@@ -84,10 +84,12 @@ export default defineI18nConfig(() => ({
         actions: 'Actions',
         dataset_actions: 'Dataset Actions',
         model_actions: 'Model Actions',
+        model_serving_actions: 'Model Serving Actions',
         pipeline_actions: 'Pipeline Actions',
         select_filter: 'Select Filter',
         add_dataset: 'Add Dataset',
         add_model: 'Add Model',
+        edit_model_serving: 'Edit Model Serving',
         upload_component: 'Upload components as .yaml',
         dataset_management: 'Datasets',
         training_builder: 'Training Builder',
@@ -116,6 +118,7 @@ export default defineI18nConfig(() => ({
       description: {
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
+        edit_model_serving: 'Update traffic percentage for {name}',
       },
       builder: {
         components: 'Components',
@@ -197,6 +200,7 @@ export default defineI18nConfig(() => ({
         name: 'Name',
         new: 'New',
         description: 'Description',
+        canary_traffic_percent: 'Traffic Percentage',
         connection_string: 'Connection String',
         filter_condition: 'Filter Condition',
         transform_expression: 'Transform Expression',

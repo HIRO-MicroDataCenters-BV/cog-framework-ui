@@ -1,17 +1,39 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
+import type { ModelServing } from '~/types/model.types';
 import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { Badge } from '~/components/ui/badge';
+import DropdownAction from '@/components/app/menu/Actions.vue';
+import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
 const { getModelsServing } = useApi();
 const { setPage } = useApp();
+const tableRef = ref();
 
 setPage({
   section: 'model-serving',
 });
+
+// Edit dialog state
+const editDialogOpen = ref(false);
+const selectedModelServing = ref<ModelServing | null>(null);
+
+const openEditDialog = (row: ModelServing) => {
+  selectedModelServing.value = row;
+  editDialogOpen.value = true;
+};
+
+const closeEditDialog = () => {
+  editDialogOpen.value = false;
+  selectedModelServing.value = null;
+};
+
+const onEditSaved = () => {
+  tableRef.value?.fetchData();
+};
 
 const columns = [
   {
@@ -130,15 +152,46 @@ const columns = [
       ]);
     },
   },
+  {
+    id: 'actions',
+    size: 56,
+    enableHiding: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      return h(DropdownAction, {
+        title: row.getValue('isvc_name') as string,
+        id: row.getValue('isvc_name') as string,
+        items: [
+          {
+            key: 'edit',
+            label: 'edit',
+            action: () => {
+              openEditDialog(row.original as ModelServing);
+            },
+          },
+        ],
+        menuTitle: t('title.model_serving_actions'),
+      });
+    },
+  },
 ];
 </script>
 
 <template>
-  <AppTable
-    :columns="columns"
-    :data-source="getModelsServing"
-    :sortable-columns="['creation_timestamp']"
-    :filterable-columns="['status']"
-    class="grow"
-  />
+  <div class="flex flex-col grow">
+    <AppTable
+      ref="tableRef"
+      :columns="columns"
+      :data-source="getModelsServing"
+      :sortable-columns="['creation_timestamp']"
+      :filterable-columns="['status']"
+      class="grow"
+    />
+
+    <ModelServingEditDialog
+      :open="editDialogOpen"
+      :model-serving="selectedModelServing"
+      @close="closeEditDialog"
+      @saved="onEditSaved"
+    />
+  </div>
 </template>
