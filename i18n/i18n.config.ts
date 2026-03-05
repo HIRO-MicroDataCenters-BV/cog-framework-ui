@@ -339,7 +339,7 @@ export default defineI18nConfig(() => ({
         preview: 'Preview',
         delete_model: 'Delete Model',
         add_models: 'Add Model',
-        'add_model-serving': 'Add Model Serving',
+        'add_model-serving': 'Serve Model',
         add_training_builder: 'Add Training Builder',
         add_runs: 'Add Runs',
         add_model_validation: 'Add Model Validation',
