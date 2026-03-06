@@ -31,9 +31,77 @@
     <div v-else class="flex-1 flex flex-col overflow-hidden">
       <!-- Toolbar -->
       <div
-        v-if="selectedModels.length > 0"
-        class="flex items-center justify-end flex-shrink-0 mb-1"
+        v-if="selectedModels.length > 0 || canAddMore"
+        class="flex items-center justify-end flex-shrink-0 mb-1 gap-1"
       >
+        <!-- Add model button -->
+        <div v-if="canAddMore" ref="addButtonRef" class="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            class="h-6 text-xs gap-1 px-2"
+            @click="toggleAddDropdown"
+          >
+            <Icon name="lucide:plus" class="w-3 h-3" />
+            Add Model
+          </Button>
+          <!-- Dropdown -->
+          <div
+            v-if="showAddDropdown"
+            class="absolute right-0 top-full mt-1 z-50 w-64 bg-popover border rounded-md shadow-lg"
+          >
+            <div class="p-2 border-b">
+              <div class="relative">
+                <Input
+                  v-model="addSearchQuery"
+                  placeholder="Search models..."
+                  class="h-8 text-xs pr-8"
+                  @focus="fetchModels"
+                />
+                <Icon
+                  name="lucide:search"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
+                />
+              </div>
+            </div>
+            <div class="max-h-52 overflow-auto">
+              <div
+                v-if="loadingModels"
+                class="p-3 text-center text-xs text-muted-foreground"
+              >
+                <Spinner class="w-4 h-4 mx-auto mb-1" />
+                Loading...
+              </div>
+              <div
+                v-else-if="filteredAvailableModels.length === 0"
+                class="p-3 text-center text-xs text-muted-foreground"
+              >
+                No models found
+              </div>
+              <template v-else>
+                <button
+                  v-for="m in filteredAvailableModels"
+                  :key="m.id"
+                  type="button"
+                  class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
+                  @click="addModel(m.id)"
+                >
+                  <p class="text-sm font-medium truncate">
+                    {{ m.name }}
+                  </p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <Badge :variant="m.type" class="text-[9px]">{{
+                      m.type
+                    }}</Badge>
+                    <span class="text-[10px] text-muted-foreground"
+                      >v{{ m.version }}</span
+                    >
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
         <!-- Hidden for now -->
         <label
           class="hidden flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
@@ -42,6 +110,7 @@
           <span>Differences only</span>
         </label>
         <Button
+          v-if="selectedModels.length > 0"
           variant="ghost"
           size="sm"
           class="h-6 text-xs gap-1 text-muted-foreground hover:bg-transparent hover:text-muted-foreground px-2"
@@ -121,81 +190,6 @@
                   </div>
                 </div>
               </th>
-              <!-- Add model button column -->
-              <th
-                v-if="canAddMore"
-                class="w-12 min-w-12 p-0 align-top bg-background dark:bg-card"
-              >
-                <div
-                  ref="addButtonRef"
-                  class="relative flex items-center justify-center p-4 border-l border-dashed border-border/40 h-full"
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
-                    @click="toggleAddDropdown"
-                  >
-                    <Icon name="lucide:plus" class="w-4 h-4" />
-                  </Button>
-                  <!-- Dropdown -->
-                  <div
-                    v-if="showAddDropdown"
-                    class="absolute right-0 top-full mt-1 z-50 w-64 bg-popover border rounded-md shadow-lg"
-                  >
-                    <div class="p-2 border-b">
-                      <div class="relative">
-                        <Input
-                          v-model="addSearchQuery"
-                          placeholder="Search models..."
-                          class="h-8 text-xs pr-8"
-                          @focus="fetchModels"
-                        />
-                        <Icon
-                          name="lucide:search"
-                          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
-                        />
-                      </div>
-                    </div>
-                    <div class="max-h-52 overflow-auto">
-                      <div
-                        v-if="loadingModels"
-                        class="p-3 text-center text-xs text-muted-foreground"
-                      >
-                        <Spinner class="w-4 h-4 mx-auto mb-1" />
-                        Loading...
-                      </div>
-                      <div
-                        v-else-if="filteredAvailableModels.length === 0"
-                        class="p-3 text-center text-xs text-muted-foreground"
-                      >
-                        No models found
-                      </div>
-                      <template v-else>
-                        <button
-                          v-for="m in filteredAvailableModels"
-                          :key="m.id"
-                          type="button"
-                          class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
-                          @click="addModel(m.id)"
-                        >
-                          <p class="text-sm font-medium truncate">
-                            {{ m.name }}
-                          </p>
-                          <div class="flex items-center gap-2 mt-0.5">
-                            <Badge :variant="m.type" class="text-[9px]">{{
-                              m.type
-                            }}</Badge>
-                            <span class="text-[10px] text-muted-foreground"
-                              >v{{ m.version }}</span
-                            >
-                          </div>
-                        </button>
-                      </template>
-                    </div>
-                  </div>
-                </div>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -208,10 +202,7 @@
                 v-if="shouldShowSectionHeader(row, rowIndex)"
                 class="bg-muted/50 dark:bg-muted/30"
               >
-                <td
-                  :colspan="allCompareModels.length + addSlots.length + 1"
-                  class="py-2 px-4"
-                >
+                <td :colspan="allCompareModels.length + 1" class="py-2 px-4">
                   <div class="flex items-center gap-2">
                     <Icon
                       :name="getSectionIcon(row.sectionLabel!)"
@@ -262,14 +253,6 @@
                   <span v-else class="text-foreground">{{
                     row.getValue(m)
                   }}</span>
-                </td>
-                <!-- Empty slot -->
-                <td
-                  v-for="(_, slotIndex) in addSlots"
-                  :key="'empty-' + slotIndex"
-                  class="w-[220px] py-2.5 px-4 border-l border-dashed border-border/30 bg-muted/5"
-                >
-                  <span class="text-muted-foreground/30">—</span>
                 </td>
               </tr>
             </template>
@@ -332,10 +315,6 @@ const MAX_EXTRA_MODELS = 2;
 
 const canAddMore = computed(() => {
   return allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
-});
-
-const addSlots = computed(() => {
-  return canAddMore.value ? [0] : [];
 });
 
 const toggleAddDropdown = () => {
