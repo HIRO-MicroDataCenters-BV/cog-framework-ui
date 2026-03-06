@@ -139,7 +139,7 @@
                 class="min-w-[220px] w-[220px] p-2 align-top text-left"
               >
                 <div
-                  class="relative rounded-lg border shadow-sm transition-all h-[140px] flex flex-col bg-card border-border hover:shadow-md"
+                  class="relative rounded-lg border h-[140px] flex flex-col bg-card border-border"
                 >
                   <!-- Header with badge and remove button -->
                   <div
