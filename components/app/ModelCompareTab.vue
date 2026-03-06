@@ -136,52 +136,59 @@
               <th
                 v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[200px] p-0 align-top text-left"
+                class="min-w-[220px] w-[220px] p-2 align-top text-left"
               >
                 <div
-                  class="relative flex flex-col items-start p-4 border-l transition-colors h-full"
-                  :class="[
-                    index === 0
-                      ? 'bg-primary/5 dark:bg-primary/10 border-primary/20'
-                      : 'bg-muted/30 dark:bg-muted/40 border-border/60',
-                  ]"
+                  class="relative rounded-lg border shadow-sm transition-all h-[140px] flex flex-col bg-card border-border hover:shadow-md"
                 >
-                  <!-- Base badge -->
-                  <Badge
-                    v-if="index === 0"
-                    variant="default"
-                    class="absolute top-2 left-2 text-[9px] px-1.5 py-0"
+                  <!-- Header with badge and remove button -->
+                  <div
+                    class="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30 shrink-0"
                   >
-                    BASE
-                  </Badge>
-                  <!-- Remove button -->
-                  <Button
-                    v-if="index !== 0"
-                    variant="ghost"
-                    size="sm"
-                    class="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    @click="removeModel(m.id)"
-                  >
-                    <Icon name="lucide:x" class="w-3.5 h-3.5" />
-                  </Button>
-
-                  <div :class="index === 0 ? 'mt-5' : 'mt-1'">
-                    <p
-                      class="font-semibold text-foreground truncate pr-6"
-                      :title="m.name"
+                    <Badge variant="secondary" class="text-[9px] px-1.5 py-0">
+                      {{ index === 0 ? 'BASE' : `#${index + 1}` }}
+                    </Badge>
+                    <Button
+                      v-if="index !== 0"
+                      variant="ghost"
+                      size="sm"
+                      class="h-5 w-5 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      @click="removeModel(m.id)"
                     >
-                      {{ m.name }}
-                    </p>
-                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge :variant="m.type" class="text-[10px]">
-                        {{ m.type }}
-                      </Badge>
-                      <span class="text-[11px] text-muted-foreground"
-                        >v{{ m.version }}</span
+                      <Icon name="lucide:x" class="w-3 h-3" />
+                    </Button>
+                    <div v-else class="w-5 h-5" />
+                  </div>
+
+                  <!-- Model info -->
+                  <div class="p-3 flex-1 flex flex-col">
+                    <div class="flex items-start gap-2.5 flex-1">
+                      <div
+                        class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center bg-muted text-muted-foreground"
                       >
+                        <Icon name="lucide:box" class="w-4 h-4" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p
+                          class="font-semibold text-sm text-foreground truncate"
+                          :title="m.name"
+                        >
+                          {{ m.name }}
+                        </p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <Badge :variant="m.type" class="text-[9px]">
+                            {{ m.type }}
+                          </Badge>
+                          <span class="text-[10px] text-muted-foreground"
+                            >v{{ m.version }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-border/30">
                       <CopyPaste :has-copy="true" :copy-text="m.id">
                         <span
-                          class="text-[10px] text-muted-foreground"
+                          class="text-[10px] text-muted-foreground font-mono"
                           :title="m.id"
                           >{{ shortenUuid(m.id) }}</span
                         >
@@ -225,12 +232,7 @@
                 <td
                   v-for="(m, mIndex) in allCompareModels"
                   :key="m.id"
-                  class="py-2 px-4 border-l text-xs"
-                  :class="[
-                    mIndex === 0
-                      ? 'border-primary/20 bg-primary/[0.02]'
-                      : 'border-border/30',
-                  ]"
+                  class="py-2 px-4 border-l border-border/30 text-xs"
                 >
                   <!-- Metric value with percentage diff -->
                   <div
