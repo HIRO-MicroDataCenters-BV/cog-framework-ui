@@ -179,7 +179,9 @@
                           <Badge :variant="m.type" class="text-[9px]">
                             {{ m.type }}
                           </Badge>
-                          <Badge variant="outline" class="text-[9px] dark:border-zinc-600 dark:text-zinc-300"
+                          <Badge
+                            variant="outline"
+                            class="text-[9px] dark:border-zinc-600 dark:text-zinc-300"
                             >v{{ m.version }}</Badge
                           >
                           <CopyPaste :has-copy="true" :copy-text="m.id">
