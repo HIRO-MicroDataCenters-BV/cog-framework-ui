@@ -31,9 +31,77 @@
     <div v-else class="flex-1 flex flex-col overflow-hidden">
       <!-- Toolbar -->
       <div
-        v-if="selectedModels.length > 0"
-        class="flex items-center justify-end flex-shrink-0 mb-1"
+        v-if="selectedModels.length > 0 || canAddMore"
+        class="flex items-center justify-end flex-shrink-0 mb-1 gap-1"
       >
+        <!-- Add model button -->
+        <div v-if="canAddMore" ref="addButtonRef" class="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            class="h-6 text-xs gap-1 px-2"
+            @click="toggleAddDropdown"
+          >
+            <Icon name="lucide:plus" class="w-3 h-3" />
+            Add Model
+          </Button>
+          <!-- Dropdown -->
+          <div
+            v-if="showAddDropdown"
+            class="absolute right-0 top-full mt-1 z-50 w-64 bg-popover border rounded-md shadow-lg"
+          >
+            <div class="p-2 border-b">
+              <div class="relative">
+                <Input
+                  v-model="addSearchQuery"
+                  placeholder="Search models..."
+                  class="h-8 text-xs pr-8"
+                  @focus="fetchModels"
+                />
+                <Icon
+                  name="lucide:search"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
+                />
+              </div>
+            </div>
+            <div class="max-h-52 overflow-auto">
+              <div
+                v-if="loadingModels"
+                class="p-3 text-center text-xs text-muted-foreground"
+              >
+                <Spinner class="w-4 h-4 mx-auto mb-1" />
+                Loading...
+              </div>
+              <div
+                v-else-if="filteredAvailableModels.length === 0"
+                class="p-3 text-center text-xs text-muted-foreground"
+              >
+                No models found
+              </div>
+              <template v-else>
+                <button
+                  v-for="m in filteredAvailableModels"
+                  :key="m.id"
+                  type="button"
+                  class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
+                  @click="addModel(m.id)"
+                >
+                  <p class="text-sm font-medium truncate">
+                    {{ m.name }}
+                  </p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <Badge :variant="m.type" class="text-[9px]">{{
+                      m.type
+                    }}</Badge>
+                    <span class="text-[10px] text-muted-foreground"
+                      >v{{ m.version }}</span
+                    >
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
         <!-- Hidden for now -->
         <label
           class="hidden flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
@@ -42,6 +110,7 @@
           <span>Differences only</span>
         </label>
         <Button
+          v-if="selectedModels.length > 0"
           variant="ghost"
           size="sm"
           class="h-6 text-xs gap-1 text-muted-foreground hover:bg-transparent hover:text-muted-foreground px-2"
@@ -54,12 +123,12 @@
 
       <!-- Comparison Table -->
       <div class="flex-1 overflow-auto border rounded-lg bg-card shadow-sm">
-        <table class="w-full min-w-[640px] text-sm border-collapse">
+        <table class="w-full min-w-[640px] text-sm border-collapse table-fixed">
           <thead class="sticky top-0 z-10">
             <tr class="bg-background dark:bg-card border-b">
               <!-- Label column -->
               <th
-                class="w-48 min-w-48 py-4 px-4 text-left font-medium text-muted-foreground align-bottom bg-background dark:bg-card"
+                class="w-48 py-4 px-4 text-center font-medium text-muted-foreground align-middle bg-background dark:bg-card"
               >
                 <span class="text-xs uppercase tracking-wider">Attribute</span>
               </th>
@@ -67,131 +136,63 @@
               <th
                 v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[200px] p-0 align-top text-left"
+                class="p-2 align-top text-left"
               >
                 <div
-                  class="relative flex flex-col items-start p-4 border-l transition-colors h-full"
-                  :class="[
-                    index === 0
-                      ? 'bg-primary/5 dark:bg-primary/10 border-primary/20'
-                      : 'bg-muted/30 dark:bg-muted/40 border-border/60',
-                  ]"
+                  class="relative rounded-lg border h-[110px] w-full flex flex-col bg-card border-border dark:border-zinc-700"
                 >
-                  <!-- Base badge -->
-                  <Badge
-                    v-if="index === 0"
-                    variant="default"
-                    class="absolute top-2 left-2 text-[9px] px-1.5 py-0"
-                  >
-                    BASE
-                  </Badge>
-                  <!-- Remove button -->
-                  <Button
-                    v-if="index !== 0"
-                    variant="ghost"
-                    size="sm"
-                    class="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    @click="removeModel(m.id)"
-                  >
-                    <Icon name="lucide:x" class="w-3.5 h-3.5" />
-                  </Button>
-
-                  <div :class="index === 0 ? 'mt-5' : 'mt-1'">
-                    <p
-                      class="font-semibold text-foreground truncate pr-6"
-                      :title="m.name"
-                    >
-                      {{ m.name }}
-                    </p>
-                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge :variant="m.type" class="text-[10px]">
-                        {{ m.type }}
-                      </Badge>
-                      <span class="text-[11px] text-muted-foreground"
-                        >v{{ m.version }}</span
-                      >
-                      <CopyPaste :has-copy="true" :copy-text="m.id">
-                        <span
-                          class="text-[10px] text-muted-foreground"
-                          :title="m.id"
-                          >{{ shortenUuid(m.id) }}</span
-                        >
-                      </CopyPaste>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <!-- Add model button column -->
-              <th
-                v-if="canAddMore"
-                class="w-12 min-w-12 p-0 align-top bg-background dark:bg-card"
-              >
-                <div
-                  ref="addButtonRef"
-                  class="relative flex items-center justify-center p-4 border-l border-dashed border-border/40 h-full"
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
-                    @click="toggleAddDropdown"
-                  >
-                    <Icon name="lucide:plus" class="w-4 h-4" />
-                  </Button>
-                  <!-- Dropdown -->
+                  <!-- Header with badge and remove button -->
                   <div
-                    v-if="showAddDropdown"
-                    class="absolute right-0 top-full mt-1 z-50 w-64 bg-popover border rounded-md shadow-lg"
+                    class="flex items-center justify-between px-3 py-1.5 border-b border-border/50 dark:border-zinc-700 bg-muted/30 dark:bg-zinc-800/50 shrink-0"
                   >
-                    <div class="p-2 border-b">
-                      <div class="relative">
-                        <Input
-                          v-model="addSearchQuery"
-                          placeholder="Search models..."
-                          class="h-8 text-xs pr-8"
-                          @focus="fetchModels"
-                        />
-                        <Icon
-                          name="lucide:search"
-                          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
-                        />
-                      </div>
-                    </div>
-                    <div class="max-h-52 overflow-auto">
+                    <Badge variant="secondary" class="text-[9px] px-1.5 py-0">
+                      {{ index === 0 ? 'BASE' : `#${index + 1}` }}
+                    </Badge>
+                    <Button
+                      v-if="index !== 0"
+                      variant="ghost"
+                      size="sm"
+                      class="h-5 w-5 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      @click="removeModel(m.id)"
+                    >
+                      <Icon name="lucide:x" class="w-3 h-3" />
+                    </Button>
+                    <div v-else class="w-5 h-5" />
+                  </div>
+
+                  <!-- Model info -->
+                  <div class="p-3 flex-1 flex flex-col">
+                    <div class="flex items-start gap-2.5 flex-1">
                       <div
-                        v-if="loadingModels"
-                        class="p-3 text-center text-xs text-muted-foreground"
+                        class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center bg-muted text-muted-foreground"
                       >
-                        <Spinner class="w-4 h-4 mx-auto mb-1" />
-                        Loading...
+                        <Icon name="lucide:box" class="w-4 h-4" />
                       </div>
-                      <div
-                        v-else-if="filteredAvailableModels.length === 0"
-                        class="p-3 text-center text-xs text-muted-foreground"
-                      >
-                        No models found
-                      </div>
-                      <template v-else>
-                        <button
-                          v-for="m in filteredAvailableModels"
-                          :key="m.id"
-                          type="button"
-                          class="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
-                          @click="addModel(m.id)"
+                      <div class="flex-1 min-w-0">
+                        <p
+                          class="font-semibold text-sm text-foreground truncate"
+                          :title="m.name"
                         >
-                          <p class="text-sm font-medium truncate">
-                            {{ m.name }}
-                          </p>
-                          <div class="flex items-center gap-2 mt-0.5">
-                            <Badge :variant="m.type" class="text-[9px]">{{
-                              m.type
-                            }}</Badge>
-                            <span class="text-[10px] text-muted-foreground"
-                              >v{{ m.version }}</span
+                          {{ m.name }}
+                        </p>
+                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <Badge :variant="m.type" class="text-[9px]">
+                            {{ m.type }}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            class="text-[9px] dark:border-zinc-600 dark:text-zinc-300"
+                            >v{{ m.version }}</Badge
+                          >
+                          <CopyPaste :has-copy="true" :copy-text="m.id">
+                            <span
+                              class="text-[10px] text-muted-foreground font-mono"
+                              :title="m.id"
+                              >{{ shortenUuid(m.id) }}</span
                             >
-                          </div>
-                        </button>
-                      </template>
+                          </CopyPaste>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -208,10 +209,7 @@
                 v-if="shouldShowSectionHeader(row, rowIndex)"
                 class="bg-muted/50 dark:bg-muted/30"
               >
-                <td
-                  :colspan="allCompareModels.length + addSlots.length + 1"
-                  class="py-2 px-4"
-                >
+                <td :colspan="allCompareModels.length + 1" class="py-2 px-4">
                   <div class="flex items-center gap-2">
                     <Icon
                       :name="getSectionIcon(row.sectionLabel!)"
@@ -234,12 +232,7 @@
                 <td
                   v-for="(m, mIndex) in allCompareModels"
                   :key="m.id"
-                  class="py-2 px-4 border-l text-xs"
-                  :class="[
-                    mIndex === 0
-                      ? 'border-primary/20 bg-primary/[0.02]'
-                      : 'border-border/30',
-                  ]"
+                  class="py-2 px-4 border-l border-border/30 text-xs"
                 >
                   <!-- Metric value with percentage diff -->
                   <div
@@ -262,14 +255,6 @@
                   <span v-else class="text-foreground">{{
                     row.getValue(m)
                   }}</span>
-                </td>
-                <!-- Empty slot -->
-                <td
-                  v-for="(_, slotIndex) in addSlots"
-                  :key="'empty-' + slotIndex"
-                  class="w-[220px] py-2.5 px-4 border-l border-dashed border-border/30 bg-muted/5"
-                >
-                  <span class="text-muted-foreground/30">—</span>
                 </td>
               </tr>
             </template>
@@ -317,12 +302,7 @@ const dayjs = useDayjs();
 const { getModels, getModelById } = useApi();
 
 // Refs for click outside
-const addSlot0 = ref<HTMLElement | null>(null);
-const addSlot1 = ref<HTMLElement | null>(null);
-const setAddSlotRef = (index: number, el: HTMLElement | null) => {
-  if (index === 0) addSlot0.value = el;
-  else if (index === 1) addSlot1.value = el;
-};
+const addButtonRef = ref<HTMLElement | null>(null);
 
 // State
 const loadingModels = ref(false);
@@ -330,22 +310,36 @@ const loadingDetails = ref(false);
 const availableModels = ref<ModelSummary[]>([]);
 const selectedModels = ref<ModelDetail[]>([]);
 const showOnlyDifferences = ref(false);
+const showAddDropdown = ref(false);
+const addSearchQuery = ref('');
 
 const MAX_EXTRA_MODELS = 2;
-const searchQueries = ref<string[]>(Array(MAX_EXTRA_MODELS).fill(''));
-const openDropdowns = ref<boolean[]>(Array(MAX_EXTRA_MODELS).fill(false));
 
-const addSlots = computed(() => {
-  // Only show 1 add slot at a time to save space
-  const canAddMore = allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
-  return canAddMore ? [0] : [];
+const canAddMore = computed(() => {
+  return allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
 });
 
-onClickOutside(addSlot0, () => {
-  openDropdowns.value[0] = false;
+const toggleAddDropdown = () => {
+  showAddDropdown.value = !showAddDropdown.value;
+  if (showAddDropdown.value) {
+    fetchModels();
+  }
+};
+
+const filteredAvailableModels = computed(() => {
+  const query = addSearchQuery.value?.toLowerCase() || '';
+  return availableModels.value.filter((m) => {
+    if (excludedIds.value.includes(m.id)) return false;
+    if (!query) return true;
+    return (
+      m.name.toLowerCase().includes(query) ||
+      m.type.toLowerCase().includes(query)
+    );
+  });
 });
-onClickOutside(addSlot1, () => {
-  openDropdowns.value[1] = false;
+
+onClickOutside(addButtonRef, () => {
+  showAddDropdown.value = false;
 });
 
 const allCompareModels = computed(() => {
@@ -563,27 +557,9 @@ const fetchModels = async () => {
   }
 };
 
-const openDropdown = (index: number) => {
-  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
-  openDropdowns.value[index] = true;
-};
-
-const getFilteredModels = (index: number) => {
-  const query = searchQueries.value[index]?.toLowerCase() || '';
-  return availableModels.value.filter((m) => {
-    if (excludedIds.value.includes(m.id)) return false;
-    if (!query) return true;
-    return (
-      m.name.toLowerCase().includes(query) ||
-      m.type.toLowerCase().includes(query)
-    );
-  });
-};
-
-const selectModel = async (index: number, modelId: string) => {
-  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
-  openDropdowns.value[index] = false;
-  searchQueries.value[index] = '';
+const addModel = async (modelId: string) => {
+  showAddDropdown.value = false;
+  addSearchQuery.value = '';
 
   loadingDetails.value = true;
   try {
