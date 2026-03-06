@@ -123,12 +123,12 @@
 
       <!-- Comparison Table -->
       <div class="flex-1 overflow-auto border rounded-lg bg-card shadow-sm">
-        <table class="w-full min-w-[640px] text-sm border-collapse">
+        <table class="w-full min-w-[640px] text-sm border-collapse table-fixed">
           <thead class="sticky top-0 z-10">
             <tr class="bg-background dark:bg-card border-b">
               <!-- Label column -->
               <th
-                class="w-48 min-w-48 py-4 px-4 text-center font-medium text-muted-foreground align-middle bg-background dark:bg-card"
+                class="w-48 py-4 px-4 text-center font-medium text-muted-foreground align-middle bg-background dark:bg-card"
               >
                 <span class="text-xs uppercase tracking-wider">Attribute</span>
               </th>
@@ -136,10 +136,10 @@
               <th
                 v-for="(m, index) in allCompareModels"
                 :key="m.id"
-                class="min-w-[220px] w-[220px] p-2 align-top text-left"
+                class="p-2 align-top text-left"
               >
                 <div
-                  class="relative rounded-lg border h-[140px] flex flex-col bg-card border-border"
+                  class="relative rounded-lg border h-[140px] w-full flex flex-col bg-card border-border"
                 >
                   <!-- Header with badge and remove button -->
                   <div
