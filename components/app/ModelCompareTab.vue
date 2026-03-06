@@ -139,7 +139,7 @@
                 class="p-2 align-top text-left"
               >
                 <div
-                  class="relative rounded-lg border h-[140px] w-full flex flex-col bg-card border-border"
+                  class="relative rounded-lg border h-[140px] w-full flex flex-col bg-card border-border dark:border-zinc-700"
                 >
                   <!-- Header with badge and remove button -->
                   <div
