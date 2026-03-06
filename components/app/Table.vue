@@ -101,6 +101,14 @@ const props = defineProps({
     type: String as PropType<string | null>,
     default: null,
   },
+  hideHeader: {
+    type: Boolean,
+    default: false,
+  },
+  externalSearch: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -218,10 +226,15 @@ const fetchData = async () => {
     params.sort_by = route.query.sort_by as string;
   }
 
+  const effectiveSearch = props.externalSearch ?? searchValue.value;
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
-  } else if (searchValue.value && selectedFilterColumn.value) {
-    params[selectedFilterColumn.value as string] = searchValue.value;
+  } else if (effectiveSearch) {
+    const filterColumn =
+      (route.query.column as string) ||
+      selectedFilterColumn.value ||
+      getAutoColumn(effectiveSearch);
+    params[getFilterColumnName(filterColumn)] = effectiveSearch;
   }
 
   if (route.query.page) {
@@ -805,12 +818,19 @@ watch(
   { deep: true },
 );
 
-defineExpose({ fetchData });
+watch(
+  () => props.externalSearch,
+  () => {
+    if (props.hideHeader) fetchData();
+  },
+);
+
+defineExpose({ fetchData, totalItems });
 </script>
 
 <template>
   <div :class="['w-full flex flex-col relative h-svh', props.class]">
-    <div class="pl-4 p-3">
+    <div v-if="!props.hideHeader" class="pl-4 p-3">
       <div>
         <div class="pb-2 flex justify-between gap-2">
           <div>

@@ -1,41 +1,78 @@
 <script setup lang="ts">
-import type { TableRowType } from '@/types/row.types';
 import type { ModelServing } from '~/types/model.types';
-import { useApi } from '@/composables/api';
+import type { TableRowType } from '~/types/row.types';
+import ModelServingCard from '~/components/app/ModelServingCard.vue';
 import CopyPaste from '~/components/app/CopyPaste.vue';
-import { Badge } from '~/components/ui/badge';
-import DropdownAction from '@/components/app/menu/Actions.vue';
+import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
+import AppTable from '~/components/app/Table.vue';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Spinner } from '~/components/ui/spinner';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
 const { getModelsServing } = useApi();
-const { setPage } = useApp();
-const tableRef = ref();
+const { setPage, page } = useApp();
+const menu = uselistMenus();
+const tableRef = ref<InstanceType<typeof AppTable> | null>(null);
 
 setPage({
   section: 'model-serving',
 });
 
-// Edit dialog state
+const list = ref<ModelServing[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+const searchQuery = ref('');
+const isRefreshing = ref(false);
+const viewMode = ref<'table' | 'cards'>('cards');
+
 const editDialogOpen = ref(false);
 const selectedModelServing = ref<ModelServing | null>(null);
 
-const openEditDialog = (row: ModelServing) => {
+const sectionIcon = computed(
+  () => menu.value.main.find((item) => item.key === page.section)?.icon ?? 'lucide:server',
+);
+
+const tableTotalItems = computed(
+  () => tableRef.value?.totalItems?.value ?? 0,
+);
+
+function openEditDialog(row: ModelServing) {
   selectedModelServing.value = row;
   editDialogOpen.value = true;
-};
+}
 
-const closeEditDialog = () => {
+function closeEditDialog() {
   editDialogOpen.value = false;
   selectedModelServing.value = null;
-};
+}
 
-const onEditSaved = () => {
+function onEditSaved() {
   tableRef.value?.fetchData();
-};
+}
 
-const columns = [
+const filteredList = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return list.value;
+  return list.value.filter((item) => {
+    const name = (item.isvc_name ?? '').toLowerCase();
+    const modelName = (item.model_name ?? '').toLowerCase();
+    const status = (item.status ?? '').toLowerCase();
+    const revision = (item.latest_ready_revision ?? '').toLowerCase();
+    return (
+      name.includes(q) ||
+      modelName.includes(q) ||
+      status.includes(q) ||
+      revision.includes(q)
+    );
+  });
+});
+
+// AppTable column definitions (same style as models/datasets pages)
+const tableColumns = [
   {
     id: 'isvc_name',
     size: 180,
@@ -47,13 +84,13 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => {
       const name = row.getValue<string>('model_name');
       const version = row.original.model_version;
-      if (!name) return h('span', { class: 'text-muted-foreground' }, '-');
+      if (!name) return h('span', { class: 'text-muted-foreground' }, '—');
       return h('div', { class: 'flex items-center gap-2 overflow-hidden' }, [
         h('span', { class: 'truncate' }, name),
         version
           ? h(
               Badge,
-              { variant: 'secondary', class: 'shrink-0' },
+              { variant: 'secondary', class: 'shrink-0 text-[10px]' },
               () => `v${version}`,
             )
           : null,
@@ -82,12 +119,12 @@ const columns = [
                         {
                           class: 'truncate block max-w-[280px] text-xs',
                         },
-                        url,
+                        url ?? '—',
                       ),
                   },
                 ),
               ),
-              h(resolveComponent('TooltipContent'), null, () => url),
+              h(resolveComponent('TooltipContent'), null, () => url ?? ''),
             ],
           }),
       );
@@ -106,14 +143,14 @@ const columns = [
         failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
       };
       const classes =
-        statusClasses[status] ||
-        'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100';
+        statusClasses[status ?? ''] ||
+        'bg-muted text-muted-foreground';
       return h(
         'span',
         {
           class: `inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0 ${classes}`,
         },
-        status,
+        status ?? '—',
       );
     },
   },
@@ -122,7 +159,7 @@ const columns = [
     size: 80,
     cell: ({ row }: { row: TableRowType }) => {
       const traffic = row.getValue<number>('traffic_percentage');
-      return h('span', {}, `${traffic}%`);
+      return h('span', {}, `${traffic ?? 0}%`);
     },
   },
   {
@@ -147,8 +184,8 @@ const columns = [
       const age = row.getValue<string>('age') || '';
       const [days, time] = age.split(', ');
       return h('div', { class: 'flex flex-col' }, [
-        h('div', {}, days),
-        h('div', { class: 'text-xs text-muted-foreground' }, time || ''),
+        h('div', {}, days || '—'),
+        h('div', { class: 'text-xs text-muted-foreground' }, time ?? ''),
       ]);
     },
   },
@@ -164,9 +201,7 @@ const columns = [
           {
             key: 'edit',
             label: 'edit',
-            action: () => {
-              openEditDialog(row.original as ModelServing);
-            },
+            action: () => openEditDialog(row.original as ModelServing),
           },
         ],
         menuTitle: t('title.model_serving_actions'),
@@ -174,18 +209,197 @@ const columns = [
     },
   },
 ];
+
+async function fetchList() {
+  if (!isRefreshing.value) loading.value = true;
+  error.value = null;
+  try {
+    const res = await getModelsServing();
+    const data = res?.data;
+    list.value = Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error(e);
+    error.value = 'Failed to load model serving list.';
+  } finally {
+    loading.value = false;
+    isRefreshing.value = false;
+  }
+}
+
+function refresh() {
+  isRefreshing.value = true;
+  fetchList();
+}
+
+function onCardUpdated() {
+  fetchList();
+}
+
+function onServeModel() {
+  // TODO: Open serve-model dialog or navigate to serve flow
+}
+
+onMounted(() => {
+  fetchList();
+});
 </script>
 
 <template>
-  <div class="flex flex-col grow">
-    <AppTable
-      ref="tableRef"
-      :columns="columns"
-      :data-source="getModelsServing"
-      :sortable-columns="['creation_timestamp']"
-      :filterable-columns="['status']"
-      class="grow"
-    />
+  <div class="w-full flex flex-col">
+    <!-- Single header for both views: title, search, view toggle, refresh, serve (toggle stays in same place) -->
+    <div class="pl-4 p-3">
+      <div class="pb-2 flex justify-between gap-2">
+        <div>
+          <h2 class="text-xl font-medium flex items-center gap-2">
+            <Icon :name="sectionIcon" class="h-4 w-4 mr-2" />
+            {{ t(`title.${page.section}`) }}
+            ({{ viewMode === 'cards' ? list.length : tableTotalItems }})
+          </h2>
+        </div>
+
+        <div class="flex gap-2">
+          <div class="relative">
+            <Input
+              v-model="searchQuery"
+              class="w-64 pl-8"
+              type="search"
+              :placeholder="t('placeholder.search_by_name_or_id')"
+            />
+            <Icon
+              name="lucide:search"
+              class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <div class="flex rounded-md border border-border overflow-hidden shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="rounded-none h-8 px-2.5"
+                :class="viewMode === 'table' ? 'bg-muted' : ''"
+                title="Table view"
+                @click="viewMode = 'table'"
+              >
+                <Icon name="lucide:table-2" class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="rounded-none h-8 px-2.5"
+                :class="viewMode === 'cards' ? 'bg-muted' : ''"
+                title="Cards view"
+                @click="viewMode = 'cards'"
+              >
+                <Icon name="lucide:layout-grid" class="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              class="cursor-pointer shrink-0"
+              :title="t('action.refresh')"
+              :disabled="isRefreshing"
+              @click="viewMode === 'table' ? tableRef?.fetchData() : refresh()"
+            >
+              <Icon
+                name="lucide:refresh-cw"
+                :class="[
+                  'h-4 w-4 transition-transform duration-300',
+                  isRefreshing && 'animate-spin',
+                ]"
+              />
+            </Button>
+
+            <Button class="cursor-pointer gap-2" @click="onServeModel">
+              <Icon name="lucide:plus" class="h-4 w-4" />
+              {{ t(`action.add_${page.section}`) }}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table view: AppTable without its own header (uses header above) -->
+    <template v-if="viewMode === 'table'">
+      <AppTable
+        ref="tableRef"
+        :columns="tableColumns"
+        :data-source="getModelsServing"
+        :sortable-columns="['creation_timestamp']"
+        :filterable-columns="['status']"
+        :hide-header="true"
+        :external-search="searchQuery"
+        class="grow"
+      />
+    </template>
+
+    <!-- Cards view: loading / error / empty / cards -->
+    <div
+      v-else
+      class="flex flex-col gap-6 px-4 pb-4 flex-1 min-h-0"
+    >
+        <div
+          v-if="loading"
+          class="flex items-center justify-center min-h-[280px]"
+        >
+          <div class="text-center">
+            <Spinner class="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <p class="text-sm text-muted-foreground">Loading served models...</p>
+          </div>
+        </div>
+
+        <div
+          v-else-if="error"
+          class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-6 text-center"
+        >
+          <p class="text-sm text-destructive">{{ error }}</p>
+          <Button variant="outline" size="sm" class="mt-3" @click="fetchList">
+            Retry
+          </Button>
+        </div>
+
+        <div
+          v-else-if="list.length === 0"
+          class="flex flex-col items-center justify-center min-h-[280px] text-center"
+        >
+          <div class="rounded-full bg-muted/50 p-4 mb-4">
+            <Icon
+              name="lucide:server"
+              class="w-10 h-10 text-muted-foreground/60"
+            />
+          </div>
+          <h3 class="font-semibold text-foreground mb-1">No served models</h3>
+          <p class="text-sm text-muted-foreground max-w-sm">
+            Deployed inference services will appear here. Each card shows traffic split and lets you adjust canary percentage.
+          </p>
+        </div>
+
+        <div
+          v-else-if="filteredList.length === 0"
+          class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
+        >
+          <p class="text-sm text-muted-foreground">
+            No results for "{{ searchQuery }}"
+          </p>
+          <Button variant="ghost" size="sm" class="mt-2" @click="searchQuery = ''">
+            Clear search
+          </Button>
+        </div>
+
+        <div
+          v-else
+          class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          <ModelServingCard
+            v-for="item in filteredList"
+            :key="item.isvc_name"
+            :serving="item"
+            @updated="onCardUpdated"
+          />
+        </div>
+      </div>
 
     <ModelServingEditDialog
       :open="editDialogOpen"
