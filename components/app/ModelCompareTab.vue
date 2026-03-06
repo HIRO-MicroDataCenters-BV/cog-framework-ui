@@ -317,12 +317,7 @@ const dayjs = useDayjs();
 const { getModels, getModelById } = useApi();
 
 // Refs for click outside
-const addSlot0 = ref<HTMLElement | null>(null);
-const addSlot1 = ref<HTMLElement | null>(null);
-const setAddSlotRef = (index: number, el: HTMLElement | null) => {
-  if (index === 0) addSlot0.value = el;
-  else if (index === 1) addSlot1.value = el;
-};
+const addButtonRef = ref<HTMLElement | null>(null);
 
 // State
 const loadingModels = ref(false);
@@ -330,22 +325,40 @@ const loadingDetails = ref(false);
 const availableModels = ref<ModelSummary[]>([]);
 const selectedModels = ref<ModelDetail[]>([]);
 const showOnlyDifferences = ref(false);
+const showAddDropdown = ref(false);
+const addSearchQuery = ref('');
 
 const MAX_EXTRA_MODELS = 2;
-const searchQueries = ref<string[]>(Array(MAX_EXTRA_MODELS).fill(''));
-const openDropdowns = ref<boolean[]>(Array(MAX_EXTRA_MODELS).fill(false));
+
+const canAddMore = computed(() => {
+  return allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
+});
 
 const addSlots = computed(() => {
-  // Only show 1 add slot at a time to save space
-  const canAddMore = allCompareModels.value.length < 1 + MAX_EXTRA_MODELS;
-  return canAddMore ? [0] : [];
+  return canAddMore.value ? [0] : [];
 });
 
-onClickOutside(addSlot0, () => {
-  openDropdowns.value[0] = false;
+const toggleAddDropdown = () => {
+  showAddDropdown.value = !showAddDropdown.value;
+  if (showAddDropdown.value) {
+    fetchModels();
+  }
+};
+
+const filteredAvailableModels = computed(() => {
+  const query = addSearchQuery.value?.toLowerCase() || '';
+  return availableModels.value.filter((m) => {
+    if (excludedIds.value.includes(m.id)) return false;
+    if (!query) return true;
+    return (
+      m.name.toLowerCase().includes(query) ||
+      m.type.toLowerCase().includes(query)
+    );
+  });
 });
-onClickOutside(addSlot1, () => {
-  openDropdowns.value[1] = false;
+
+onClickOutside(addButtonRef, () => {
+  showAddDropdown.value = false;
 });
 
 const allCompareModels = computed(() => {
@@ -563,27 +576,9 @@ const fetchModels = async () => {
   }
 };
 
-const openDropdown = (index: number) => {
-  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
-  openDropdowns.value[index] = true;
-};
-
-const getFilteredModels = (index: number) => {
-  const query = searchQueries.value[index]?.toLowerCase() || '';
-  return availableModels.value.filter((m) => {
-    if (excludedIds.value.includes(m.id)) return false;
-    if (!query) return true;
-    return (
-      m.name.toLowerCase().includes(query) ||
-      m.type.toLowerCase().includes(query)
-    );
-  });
-};
-
-const selectModel = async (index: number, modelId: string) => {
-  if (index < 0 || index >= MAX_EXTRA_MODELS) return;
-  openDropdowns.value[index] = false;
-  searchQueries.value[index] = '';
+const addModel = async (modelId: string) => {
+  showAddDropdown.value = false;
+  addSearchQuery.value = '';
 
   loadingDetails.value = true;
   try {
