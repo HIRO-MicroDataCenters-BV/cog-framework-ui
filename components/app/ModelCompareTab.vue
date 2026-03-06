@@ -139,11 +139,11 @@
                 class="p-2 align-top text-left"
               >
                 <div
-                  class="relative rounded-lg border h-[140px] w-full flex flex-col bg-card border-border dark:border-zinc-700"
+                  class="relative rounded-lg border h-[110px] w-full flex flex-col bg-card border-border dark:border-zinc-700"
                 >
                   <!-- Header with badge and remove button -->
                   <div
-                    class="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30 shrink-0"
+                    class="flex items-center justify-between px-3 py-1.5 border-b border-border/50 dark:border-zinc-700 bg-muted/30 dark:bg-zinc-800/50 shrink-0"
                   >
                     <Badge variant="secondary" class="text-[9px] px-1.5 py-0">
                       {{ index === 0 ? 'BASE' : `#${index + 1}` }}
@@ -175,24 +175,22 @@
                         >
                           {{ m.name }}
                         </p>
-                        <div class="flex items-center gap-1.5 mt-1">
+                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                           <Badge :variant="m.type" class="text-[9px]">
                             {{ m.type }}
                           </Badge>
-                          <span class="text-[10px] text-muted-foreground"
-                            >v{{ m.version }}</span
+                          <Badge variant="outline" class="text-[9px] dark:border-zinc-600 dark:text-zinc-300"
+                            >v{{ m.version }}</Badge
                           >
+                          <CopyPaste :has-copy="true" :copy-text="m.id">
+                            <span
+                              class="text-[10px] text-muted-foreground font-mono"
+                              :title="m.id"
+                              >{{ shortenUuid(m.id) }}</span
+                            >
+                          </CopyPaste>
                         </div>
                       </div>
-                    </div>
-                    <div class="mt-auto pt-2 border-t border-border/30">
-                      <CopyPaste :has-copy="true" :copy-text="m.id">
-                        <span
-                          class="text-[10px] text-muted-foreground font-mono"
-                          :title="m.id"
-                          >{{ shortenUuid(m.id) }}</span
-                        >
-                      </CopyPaste>
                     </div>
                   </div>
                 </div>
