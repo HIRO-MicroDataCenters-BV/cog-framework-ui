@@ -128,7 +128,7 @@
             <tr class="bg-background dark:bg-card border-b">
               <!-- Label column -->
               <th
-                class="w-48 min-w-48 py-4 px-4 text-left font-medium text-muted-foreground align-bottom bg-background dark:bg-card"
+                class="w-48 min-w-48 py-4 px-4 text-center font-medium text-muted-foreground align-middle bg-background dark:bg-card"
               >
                 <span class="text-xs uppercase tracking-wider">Attribute</span>
               </th>
