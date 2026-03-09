@@ -158,6 +158,8 @@ const statusDotClass = computed(() => {
   if (s === 'ready') return 'bg-green-500 shadow-green-500/50 shadow-sm';
   if (s === 'pending') return 'bg-amber-500 shadow-amber-500/50 shadow-sm animate-pulse';
   if (s === 'failed') return 'bg-red-500 shadow-red-500/50 shadow-sm';
+  if (s === 'unknown') return 'bg-gray-500 shadow-gray-500/50 shadow-sm';
+  if (s === 'terminating') return 'bg-purple-500 shadow-purple-500/50 shadow-sm animate-pulse';
   return 'bg-muted-foreground';
 });
 
@@ -166,6 +168,8 @@ const statusBadgeClass = computed(() => {
   if (s === 'ready') return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
   if (s === 'pending') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
   if (s === 'failed') return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+  if (s === 'unknown') return 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300';
+  if (s === 'terminating') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
   return 'bg-muted text-muted-foreground';
 });
 

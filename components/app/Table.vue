@@ -866,6 +866,8 @@ defineExpose({ fetchData, totalItems });
             </div>
 
             <div class="flex gap-2 items-center">
+              <slot name="header-actions" />
+
               <Button
                 variant="outline"
                 size="icon"

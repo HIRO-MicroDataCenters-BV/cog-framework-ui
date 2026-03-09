@@ -290,35 +290,75 @@ export const useApi = () => {
     /**
      * Retrieves all served models
      *
+     * @param {Object} params - Query parameters for pagination and filtering
      * @returns {Promise<ModelServingResponse>} Response containing served models data with pagination
      */
-    getModelsServing: async (): Promise<
+    getModelsServing: async (
+      params: Record<string, unknown> = {},
+    ): Promise<
       | (ModelServingResponse & {
-          pagination: { total_items: number; page: number; limit: number };
+          pagination: { total_items: number; page: number; limit: number; total_pages: number };
         })
       | null
     > => {
       if (mockEnabled) {
         const data = modelsServingData as ModelServingResponse;
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...data.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) => item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
         return {
-          ...data,
+          status_code: data.status_code,
+          message: data.message,
+          data: paginatedData,
           pagination: {
-            total_items: data.data.length,
-            page: 1,
-            limit: data.data.length,
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
           },
         };
       }
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       const res = (await request(
-        `/models-serving`,
+        `/models-serving${q ? `?${q}` : ''}`,
       )) as ModelServingResponse | null;
       if (res && res.data) {
+        const page = parseInt((params.page as string) || '1');
+        const limit = parseInt((params.limit as string) || '10');
         return {
           ...res,
           pagination: {
             total_items: res.data.length,
-            page: 1,
-            limit: res.data.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(res.data.length / limit),
           },
         };
       }

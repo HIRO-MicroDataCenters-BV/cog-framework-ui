@@ -141,6 +141,10 @@ const tableColumns = [
         pending:
           'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
         failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        unknown:
+          'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100',
+        terminating:
+          'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-100',
       };
       const classes =
         statusClasses[status ?? ''] ||
@@ -245,15 +249,50 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full flex flex-col">
-    <!-- Single header for both views: title, search, view toggle, refresh, serve (toggle stays in same place) -->
+  <!-- Table view: AppTable with its own header -->
+  <AppTable
+    v-if="viewMode === 'table'"
+    ref="tableRef"
+    :columns="tableColumns"
+    :data-source="getModelsServing"
+    :sortable-columns="['creation_timestamp']"
+    :filterable-columns="['status']"
+    :page-size="10"
+    class="grow"
+  >
+    <template #header-actions>
+      <div class="flex rounded-md border border-border overflow-hidden shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          class="rounded-none h-8 px-2.5 bg-muted"
+          title="Table view"
+        >
+          <Icon name="lucide:table-2" class="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="rounded-none h-8 px-2.5"
+          title="Cards view"
+          @click="viewMode = 'cards'"
+        >
+          <Icon name="lucide:layout-grid" class="h-4 w-4" />
+        </Button>
+      </div>
+    </template>
+  </AppTable>
+
+  <!-- Cards view -->
+  <div v-else class="w-full flex flex-col h-svh">
+    <!-- Header for cards view -->
     <div class="pl-4 p-3">
       <div class="pb-2 flex justify-between gap-2">
         <div>
           <h2 class="text-xl font-medium flex items-center gap-2">
             <Icon :name="sectionIcon" class="h-4 w-4 mr-2" />
             {{ t(`title.${page.section}`) }}
-            ({{ viewMode === 'cards' ? list.length : tableTotalItems }})
+            ({{ list.length }})
           </h2>
         </div>
 
@@ -301,7 +340,7 @@ onMounted(() => {
               class="cursor-pointer shrink-0"
               :title="t('action.refresh')"
               :disabled="isRefreshing"
-              @click="viewMode === 'table' ? tableRef?.fetchData() : refresh()"
+              @click="refresh()"
             >
               <Icon
                 name="lucide:refresh-cw"
@@ -321,26 +360,9 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Table view: AppTable without its own header (uses header above) -->
-    <template v-if="viewMode === 'table'">
-      <AppTable
-        ref="tableRef"
-        :columns="tableColumns"
-        :data-source="getModelsServing"
-        :sortable-columns="['creation_timestamp']"
-        :filterable-columns="['status']"
-        :hide-header="true"
-        :external-search="searchQuery"
-        class="grow"
-      />
-    </template>
-
-    <!-- Cards view: loading / error / empty / cards -->
-    <div
-      v-else
-      class="flex flex-col gap-6 px-4 pb-4 flex-1 min-h-0"
-    >
-        <div
+    <!-- Cards content: loading / error / empty / cards -->
+    <div class="flex flex-col gap-6 px-4 pb-4 flex-1 min-h-0 overflow-auto">
+      <div
           v-if="loading"
           class="flex items-center justify-center min-h-[280px]"
         >
@@ -388,24 +410,24 @@ onMounted(() => {
           </Button>
         </div>
 
-        <div
-          v-else
-          class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          <ModelServingCard
-            v-for="item in filteredList"
-            :key="item.isvc_name"
-            :serving="item"
-            @updated="onCardUpdated"
-          />
-        </div>
+      <div
+        v-else
+        class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        <ModelServingCard
+          v-for="item in filteredList"
+          :key="item.isvc_name"
+          :serving="item"
+          @updated="onCardUpdated"
+        />
       </div>
-
-    <ModelServingEditDialog
-      :open="editDialogOpen"
-      :model-serving="selectedModelServing"
-      @close="closeEditDialog"
-      @saved="onEditSaved"
-    />
+    </div>
   </div>
+
+  <ModelServingEditDialog
+    :open="editDialogOpen"
+    :model-serving="selectedModelServing"
+    @close="closeEditDialog"
+    @saved="onEditSaved"
+  />
 </template>

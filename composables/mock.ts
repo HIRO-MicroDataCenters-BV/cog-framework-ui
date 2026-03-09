@@ -724,24 +724,57 @@ export const useApiWithMock = () => {
       return request(`/models?${q}`);
     },
 
-    getModelsServing: async () => {
+    getModelsServing: async (params: Record<string, unknown> = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
         const modelsServingJson = await import(
           '~/mocks/get.models-serving.json'
         );
+
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...modelsServingJson.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) => item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
         return Promise.resolve({
           status_code: modelsServingJson.status_code,
           message: modelsServingJson.message,
-          data: modelsServingJson.data,
+          data: paginatedData,
           pagination: {
-            total_items: modelsServingJson.data.length,
-            page: 1,
-            limit: modelsServingJson.data.length,
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
           },
         });
       }
-      return request(`/models-serving`);
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/models-serving${q ? `?${q}` : ''}`);
     },
 
     patchModelServing: async (data: {
