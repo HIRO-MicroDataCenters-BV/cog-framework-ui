@@ -66,6 +66,7 @@ watch(searchQuery, () => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     cardsCurrentPage.value = 1;
+    isRefreshing.value = true; // Keep cards + pagination visible during search
     fetchList();
   }, 300);
 });
@@ -446,7 +447,7 @@ onMounted(() => {
 
           <!-- Pagination bar - same style as Table (always visible at bottom) -->
           <div
-            v-if="cardsTotalItems > cardsPageSize"
+            v-if="cardsTotalItems > 0"
             class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
           >
             <AppPagination
