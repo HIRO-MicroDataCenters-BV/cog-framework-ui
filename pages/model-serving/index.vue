@@ -447,10 +447,10 @@ onMounted(() => {
           <!-- Pagination bar - same style as Table (always visible at bottom) -->
           <div
             v-if="cardsTotalItems > cardsPageSize"
-            class="shrink-0 py-1 px-4 border-t border-border bg-white dark:bg-gray-800 flex items-center justify-between -mx-4"
+            class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
           >
-            <div class="flex-1" />
             <AppPagination
+              class="w-full"
               :current-page="cardsCurrentPage"
               :total-items="cardsTotalItems"
               :page-size="cardsPageSize"

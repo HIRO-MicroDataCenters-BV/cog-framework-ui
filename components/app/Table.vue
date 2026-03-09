@@ -1081,7 +1081,7 @@ defineExpose({ fetchData, totalItems });
     </div>
 
     <div
-      class="py-1 px-4 border-t border-border bg-white dark:bg-gray-800 absolute bottom-0 left-0 right-0"
+      class="py-1 px-4 border-t border-border bg-card absolute bottom-0 left-0 right-0"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
