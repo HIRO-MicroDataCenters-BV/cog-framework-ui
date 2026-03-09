@@ -240,12 +240,14 @@ const cardsCanNextPage = computed(() => cardsCurrentPage.value < cardsTotalPages
 
 function setCardsPage(page: number) {
   cardsCurrentPage.value = page;
+  isRefreshing.value = true; // Keep cards + pagination visible during fetch
   fetchList();
 }
 
 function setCardsPageSize(size: number) {
   cardsPageSize.value = size;
   cardsCurrentPage.value = 1;
+  isRefreshing.value = true; // Keep cards + pagination visible during fetch
   fetchList();
 }
 
@@ -380,7 +382,7 @@ onMounted(() => {
     </div>
 
     <!-- Cards content: loading / error / empty / cards -->
-    <div class="flex-1 flex flex-col min-h-0 px-4 pb-4">
+    <div class="flex-1 flex flex-col min-h-0 px-4 pb-0">
       <div
           v-if="loading"
           class="flex items-center justify-center min-h-[280px]"
@@ -430,7 +432,7 @@ onMounted(() => {
         </div>
 
         <template v-else>
-          <!-- Cards grid - scrollable -->
+          <!-- Cards grid - scrollable area -->
           <div class="flex-1 overflow-auto min-h-0">
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <ModelServingCard
@@ -442,12 +444,14 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Pagination at bottom - always visible -->
+          <!-- Pagination bar - same style as Table (always visible at bottom) -->
           <div
             v-if="cardsTotalItems > cardsPageSize"
-            class="shrink-0 mt-4 pt-4 border-t flex justify-center"
+            class="shrink-0 py-1 px-4 border-t border-border bg-white dark:bg-gray-800 flex items-center justify-between -mx-4"
           >
+            <div class="flex-1" />
             <AppPagination
+              :compact="true"
               :current-page="cardsCurrentPage"
               :total-items="cardsTotalItems"
               :page-size="cardsPageSize"
