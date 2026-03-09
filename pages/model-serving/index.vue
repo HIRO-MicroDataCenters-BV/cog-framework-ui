@@ -10,6 +10,13 @@ import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
 import { Spinner } from '~/components/ui/spinner';
 
 const dayjs = useDayjs();
@@ -39,18 +46,38 @@ const cardsPageSize = ref(
   parseInt((route.query.limit as string) || '8', 10) || 8,
 );
 const searchQuery = ref((route.query.search as string) || '');
+const statusFilter = ref((route.query.status as string) || 'all');
+const sortOrder = ref<'asc' | 'desc'>(
+  (['asc', 'desc'].includes(route.query.sort_order as string)
+    ? route.query.sort_order
+    : 'desc') as 'asc' | 'desc',
+);
 const cardsTotalItems = ref(0);
+
+const SORT_OPTIONS = [
+  { value: 'desc', label: 'Newest first' },
+  { value: 'asc', label: 'Oldest first' },
+] as const;
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All status' },
+  { value: 'ready', label: 'Ready' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'failed', label: 'Failed' },
+  { value: 'terminating', label: 'Terminating' },
+  { value: 'unknown', label: 'Unknown' },
+] as const;
 
 const editDialogOpen = ref(false);
 const selectedModelServing = ref<ModelServing | null>(null);
 
 const sectionIcon = computed(
-  () => menu.value.main.find((item) => item.key === page.section)?.icon ?? 'lucide:server',
+  () =>
+    menu.value.main.find((item) => item.key === page.section)?.icon ??
+    'lucide:server',
 );
 
-const tableTotalItems = computed(
-  () => tableRef.value?.totalItems?.value ?? 0,
-);
+const tableTotalItems = computed(() => tableRef.value?.totalItems?.value ?? 0);
 
 function openEditDialog(row: ModelServing) {
   selectedModelServing.value = row;
@@ -90,14 +117,43 @@ watch(
     const page = parseInt((query.page as string) || '1', 10) || 1;
     const limit = parseInt((query.limit as string) || '8', 10) || 8;
     const search = (query.search as string) || '';
+    const status = (query.status as string) || 'all';
+    const order = (
+      ['asc', 'desc'].includes(query.sort_order as string)
+        ? query.sort_order
+        : 'desc'
+    ) as 'asc' | 'desc';
     if (page !== cardsCurrentPage.value) cardsCurrentPage.value = page;
     if (limit !== cardsPageSize.value) cardsPageSize.value = limit;
     if (search !== searchQuery.value) searchQuery.value = search;
+    if (status !== statusFilter.value) statusFilter.value = status;
+    if (order !== sortOrder.value) sortOrder.value = order;
     isRefreshing.value = true;
     fetchList();
   },
   { deep: true },
 );
+
+// Watch status filter - update route
+watch(statusFilter, () => {
+  const query = { ...route.query } as Record<string, string>;
+  query.page = '1';
+  if (statusFilter.value && statusFilter.value !== 'all') {
+    query.status = statusFilter.value;
+  } else {
+    delete query.status;
+  }
+  router.replace({ query });
+});
+
+// Watch sort order - update route
+watch(sortOrder, () => {
+  const query = { ...route.query } as Record<string, string>;
+  query.page = '1';
+  query.sort_by = 'creation_timestamp';
+  query.sort_order = sortOrder.value;
+  router.replace({ query });
+});
 
 // AppTable column definitions (same style as models/datasets pages)
 const tableColumns = [
@@ -175,8 +231,7 @@ const tableColumns = [
           'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-100',
       };
       const classes =
-        statusClasses[status ?? ''] ||
-        'bg-muted text-muted-foreground';
+        statusClasses[status ?? ''] || 'bg-muted text-muted-foreground';
       return h(
         'span',
         {
@@ -250,6 +305,10 @@ async function fetchList() {
       page: cardsCurrentPage.value,
       limit: cardsPageSize.value,
       search: searchQuery.value || undefined,
+      sort_by: 'creation_timestamp',
+      sort_order: sortOrder.value,
+      ...(statusFilter.value &&
+        statusFilter.value !== 'all' && { status: statusFilter.value }),
     });
     const data = res?.data;
     list.value = Array.isArray(data) ? data : [];
@@ -263,9 +322,13 @@ async function fetchList() {
   }
 }
 
-const cardsTotalPages = computed(() => Math.ceil(cardsTotalItems.value / cardsPageSize.value));
+const cardsTotalPages = computed(() =>
+  Math.ceil(cardsTotalItems.value / cardsPageSize.value),
+);
 const cardsCanPreviousPage = computed(() => cardsCurrentPage.value > 1);
-const cardsCanNextPage = computed(() => cardsCurrentPage.value < cardsTotalPages.value);
+const cardsCanNextPage = computed(
+  () => cardsCurrentPage.value < cardsTotalPages.value,
+);
 
 function setCardsPage(pageNum: number) {
   const query = { ...route.query } as Record<string, string>;
@@ -311,7 +374,9 @@ onMounted(() => {
     class="grow"
   >
     <template #header-actions>
-      <div class="flex rounded-md border border-border overflow-hidden shrink-0">
+      <div
+        class="flex rounded-md border border-border overflow-hidden shrink-0"
+      >
         <Button
           variant="ghost"
           size="sm"
@@ -360,8 +425,40 @@ onMounted(() => {
             />
           </div>
 
+          <Select v-model="statusFilter">
+            <SelectTrigger class="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in STATUS_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select v-model="sortOrder">
+            <SelectTrigger class="w-[140px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in SORT_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
           <div class="flex gap-2 items-center">
-            <div class="flex rounded-md border border-border overflow-hidden shrink-0">
+            <div
+              class="flex rounded-md border border-border overflow-hidden shrink-0"
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -413,86 +510,92 @@ onMounted(() => {
     <!-- Cards content: loading / error / empty / cards -->
     <div class="flex-1 flex flex-col min-h-0 px-4 pb-0">
       <div
-          v-if="loading"
-          class="flex items-center justify-center min-h-[280px]"
-        >
-          <div class="text-center">
-            <Spinner class="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-            <p class="text-sm text-muted-foreground">Loading served models...</p>
-          </div>
+        v-if="loading"
+        class="flex items-center justify-center min-h-[280px]"
+      >
+        <div class="text-center">
+          <Spinner class="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+          <p class="text-sm text-muted-foreground">Loading served models...</p>
         </div>
+      </div>
 
-        <div
-          v-else-if="error"
-          class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-6 text-center"
-        >
-          <p class="text-sm text-destructive">{{ error }}</p>
-          <Button variant="outline" size="sm" class="mt-3" @click="fetchList">
-            Retry
-          </Button>
+      <div
+        v-else-if="error"
+        class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-6 text-center"
+      >
+        <p class="text-sm text-destructive">{{ error }}</p>
+        <Button variant="outline" size="sm" class="mt-3" @click="fetchList">
+          Retry
+        </Button>
+      </div>
+
+      <div
+        v-else-if="list.length === 0 && !searchQuery"
+        class="flex flex-col items-center justify-center min-h-[280px] text-center"
+      >
+        <div class="rounded-full bg-muted/50 p-4 mb-4">
+          <Icon
+            name="lucide:server"
+            class="w-10 h-10 text-muted-foreground/60"
+          />
         </div>
+        <h3 class="font-semibold text-foreground mb-1">No served models</h3>
+        <p class="text-sm text-muted-foreground max-w-sm">
+          Deployed inference services will appear here. Each card shows traffic
+          split and lets you adjust canary percentage.
+        </p>
+      </div>
 
-        <div
-          v-else-if="list.length === 0 && !searchQuery"
-          class="flex flex-col items-center justify-center min-h-[280px] text-center"
+      <div
+        v-else-if="list.length === 0 && searchQuery"
+        class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
+      >
+        <p class="text-sm text-muted-foreground">
+          No results for "{{ searchQuery }}"
+        </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="mt-2"
+          @click="searchQuery = ''"
         >
-          <div class="rounded-full bg-muted/50 p-4 mb-4">
-            <Icon
-              name="lucide:server"
-              class="w-10 h-10 text-muted-foreground/60"
+          Clear search
+        </Button>
+      </div>
+
+      <template v-else>
+        <!-- Cards grid - scrollable area -->
+        <div class="flex-1 overflow-auto min-h-0">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <ModelServingCard
+              v-for="item in list"
+              :key="item.isvc_name"
+              :serving="item"
+              @updated="onCardUpdated"
             />
           </div>
-          <h3 class="font-semibold text-foreground mb-1">No served models</h3>
-          <p class="text-sm text-muted-foreground max-w-sm">
-            Deployed inference services will appear here. Each card shows traffic split and lets you adjust canary percentage.
-          </p>
         </div>
 
+        <!-- Pagination bar - same style as Table (always visible at bottom) -->
         <div
-          v-else-if="list.length === 0 && searchQuery"
-          class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
+          v-if="cardsTotalItems > 0"
+          class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
         >
-          <p class="text-sm text-muted-foreground">
-            No results for "{{ searchQuery }}"
-          </p>
-          <Button variant="ghost" size="sm" class="mt-2" @click="searchQuery = ''">
-            Clear search
-          </Button>
+          <AppPagination
+            class="w-full"
+            :current-page="cardsCurrentPage"
+            :total-items="cardsTotalItems"
+            :page-size="cardsPageSize"
+            :can-previous-page="cardsCanPreviousPage"
+            :can-next-page="cardsCanNextPage"
+            :sibling-count="2"
+            :show-edges="true"
+            :page-size-options="[8, 12, 16]"
+            @on-set-page="setCardsPage"
+            @on-set-page-size="setCardsPageSize"
+          />
         </div>
-
-        <template v-else>
-          <!-- Cards grid - scrollable area -->
-          <div class="flex-1 overflow-auto min-h-0">
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <ModelServingCard
-                v-for="item in list"
-                :key="item.isvc_name"
-                :serving="item"
-                @updated="onCardUpdated"
-              />
-            </div>
-          </div>
-
-          <!-- Pagination bar - same style as Table (always visible at bottom) -->
-          <div
-            v-if="cardsTotalItems > 0"
-            class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
-          >
-            <AppPagination
-              class="w-full"
-              :current-page="cardsCurrentPage"
-              :total-items="cardsTotalItems"
-              :page-size="cardsPageSize"
-              :can-previous-page="cardsCanPreviousPage"
-              :can-next-page="cardsCanNextPage"
-              :sibling-count="2"
-              :show-edges="true"
-              :page-size-options="[8, 12, 16]"
-              @on-set-page="setCardsPage"
-              @on-set-page-size="setCardsPageSize"
-            />
-          </div>
-        </template>
+      </template>
     </div>
   </div>
 

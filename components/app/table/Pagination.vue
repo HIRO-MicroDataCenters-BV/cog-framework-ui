@@ -141,7 +141,9 @@ const handlePageSizeChange = (value) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between space-x-2 w-full text-xs text-foreground">
+  <div
+    class="flex items-center justify-between space-x-2 w-full text-xs text-foreground"
+  >
     <div class="flex items-center gap-2">
       <Select
         :model-value="pageSize.toString()"

@@ -751,8 +751,20 @@ export const useApiWithMock = () => {
         // Apply status filter
         if (searchParams.status) {
           filteredData = filteredData.filter(
-            (item) => item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+            (item) =>
+              item.status?.toLowerCase() === searchParams.status.toLowerCase(),
           );
+        }
+
+        // Apply sort
+        const sortBy = searchParams.sort_by || 'creation_timestamp';
+        const sortOrder = (searchParams.sort_order || 'desc') as 'asc' | 'desc';
+        if (sortBy === 'creation_timestamp') {
+          filteredData = filteredData.sort((a, b) => {
+            const dateA = new Date(a.creation_timestamp || 0).getTime();
+            const dateB = new Date(b.creation_timestamp || 0).getTime();
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
         }
 
         const startIndex = (page - 1) * limit;
