@@ -12,7 +12,7 @@
         <slot name="header" />
       </SheetHeader>
 
-      <div class="flex-1 overflow-y-auto min-h-0 py-4 pr-4" :class="bodyClass">
+      <div class="flex-1 overflow-y-auto min-h-0 py-4 px-4" :class="bodyClass">
         <slot />
       </div>
 
