@@ -791,7 +791,7 @@ export const useApiWithMock = () => {
 
     patchModelServing: async (data: {
       isvc_name: string;
-      canary_traffic_percent?: number;
+      canary_traffic_percent: number;
     }) => {
       if (mock.value.enabled) {
         await mockDelay();
