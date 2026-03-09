@@ -6,6 +6,7 @@ import CopyPaste from '~/components/app/CopyPaste.vue';
 import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
 import AppTable from '~/components/app/Table.vue';
+import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -28,6 +29,11 @@ const error = ref<string | null>(null);
 const searchQuery = ref('');
 const isRefreshing = ref(false);
 const viewMode = ref<'table' | 'cards'>('cards');
+
+// Cards pagination
+const cardsCurrentPage = ref(1);
+const cardsPageSize = ref(8);
+const cardsTotalItems = ref(0);
 
 const editDialogOpen = ref(false);
 const selectedModelServing = ref<ModelServing | null>(null);
@@ -54,21 +60,14 @@ function onEditSaved() {
   tableRef.value?.fetchData();
 }
 
-const filteredList = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return list.value;
-  return list.value.filter((item) => {
-    const name = (item.isvc_name ?? '').toLowerCase();
-    const modelName = (item.model_name ?? '').toLowerCase();
-    const status = (item.status ?? '').toLowerCase();
-    const revision = (item.latest_ready_revision ?? '').toLowerCase();
-    return (
-      name.includes(q) ||
-      modelName.includes(q) ||
-      status.includes(q) ||
-      revision.includes(q)
-    );
-  });
+// Watch search query to refetch with debounce
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    cardsCurrentPage.value = 1;
+    fetchList();
+  }, 300);
 });
 
 // AppTable column definitions (same style as models/datasets pages)
@@ -218,9 +217,14 @@ async function fetchList() {
   if (!isRefreshing.value) loading.value = true;
   error.value = null;
   try {
-    const res = await getModelsServing();
+    const res = await getModelsServing({
+      page: cardsCurrentPage.value,
+      limit: cardsPageSize.value,
+      search: searchQuery.value || undefined,
+    });
     const data = res?.data;
     list.value = Array.isArray(data) ? data : [];
+    cardsTotalItems.value = res?.pagination?.total_items ?? 0;
   } catch (e) {
     console.error(e);
     error.value = 'Failed to load model serving list.';
@@ -228,6 +232,21 @@ async function fetchList() {
     loading.value = false;
     isRefreshing.value = false;
   }
+}
+
+const cardsTotalPages = computed(() => Math.ceil(cardsTotalItems.value / cardsPageSize.value));
+const cardsCanPreviousPage = computed(() => cardsCurrentPage.value > 1);
+const cardsCanNextPage = computed(() => cardsCurrentPage.value < cardsTotalPages.value);
+
+function setCardsPage(page: number) {
+  cardsCurrentPage.value = page;
+  fetchList();
+}
+
+function setCardsPageSize(size: number) {
+  cardsPageSize.value = size;
+  cardsCurrentPage.value = 1;
+  fetchList();
 }
 
 function refresh() {
@@ -292,7 +311,7 @@ onMounted(() => {
           <h2 class="text-xl font-medium flex items-center gap-2">
             <Icon :name="sectionIcon" class="h-4 w-4 mr-2" />
             {{ t(`title.${page.section}`) }}
-            ({{ list.length }})
+            ({{ cardsTotalItems }})
           </h2>
         </div>
 
@@ -361,7 +380,7 @@ onMounted(() => {
     </div>
 
     <!-- Cards content: loading / error / empty / cards -->
-    <div class="flex flex-col gap-6 px-4 pb-4 flex-1 min-h-0 overflow-auto">
+    <div class="flex-1 flex flex-col min-h-0 px-4 pb-4">
       <div
           v-if="loading"
           class="flex items-center justify-center min-h-[280px]"
@@ -383,7 +402,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="list.length === 0"
+          v-else-if="list.length === 0 && !searchQuery"
           class="flex flex-col items-center justify-center min-h-[280px] text-center"
         >
           <div class="rounded-full bg-muted/50 p-4 mb-4">
@@ -399,7 +418,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="filteredList.length === 0"
+          v-else-if="list.length === 0 && searchQuery"
           class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
         >
           <p class="text-sm text-muted-foreground">
@@ -410,17 +429,38 @@ onMounted(() => {
           </Button>
         </div>
 
-      <div
-        v-else
-        class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        <ModelServingCard
-          v-for="item in filteredList"
-          :key="item.isvc_name"
-          :serving="item"
-          @updated="onCardUpdated"
-        />
-      </div>
+        <template v-else>
+          <!-- Cards grid - scrollable -->
+          <div class="flex-1 overflow-auto min-h-0">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <ModelServingCard
+                v-for="item in list"
+                :key="item.isvc_name"
+                :serving="item"
+                @updated="onCardUpdated"
+              />
+            </div>
+          </div>
+
+          <!-- Pagination at bottom - always visible -->
+          <div
+            v-if="cardsTotalItems > cardsPageSize"
+            class="shrink-0 mt-4 pt-4 border-t flex justify-center"
+          >
+            <AppPagination
+              :current-page="cardsCurrentPage"
+              :total-items="cardsTotalItems"
+              :page-size="cardsPageSize"
+              :can-previous-page="cardsCanPreviousPage"
+              :can-next-page="cardsCanNextPage"
+              :sibling-count="2"
+              :show-edges="true"
+              :page-size-options="[8, 12, 16]"
+              @on-set-page="setCardsPage"
+              @on-set-page-size="setCardsPageSize"
+            />
+          </div>
+        </template>
     </div>
   </div>
 
