@@ -84,12 +84,23 @@
           :copy-text="serving.served_model_url"
           class="flex-1 min-w-0"
         >
-          <span
-            class="text-xs text-muted-foreground hover:text-foreground truncate block cursor-pointer transition-colors"
-            :title="serving.served_model_url"
-          >
-            {{ serving.served_model_url ?? '—' }}
-          </span>
+          <TooltipProvider :delay-duration="300">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <span
+                  class="text-xs text-muted-foreground hover:text-foreground truncate block cursor-pointer transition-colors"
+                >
+                  {{ serving.served_model_url ?? '—' }}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                class="max-w-[min(24rem,90vw)] break-all text-xs"
+              >
+                {{ serving.served_model_url ?? '—' }}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CopyPaste>
       </div>
     </div>
@@ -166,6 +177,12 @@
 import { Card } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import type { ModelServing } from '~/types/model.types';
 
