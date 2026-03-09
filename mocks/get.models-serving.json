@@ -3,6 +3,26 @@
   "message": "Model inference details.",
   "data": [
     {
+      "isvc_name": "sai-isvc",
+      "served_model_url": "http://sai-isvc.admin.dashboard.cog.hiro-develop.nl",
+      "status": "ready",
+      "model_id": "7e036570-1e1c-4a9a-b70f-3bb032b28990",
+      "model_name": "FedSCVI_Model",
+      "model_version": "40",
+      "dataset_id": "5162373f-27df-4acd-a839-47fc24429115",
+      "creation_timestamp": "2026-03-09T15:15:43Z",
+      "age": "0:07:57",
+      "latest_ready_revision": "sai-isvc-predictor-00002",
+      "traffic_percentage": 100,
+      "has_canary": true,
+      "stable_revision": "sai-isvc-predictor-00001",
+      "canary_revision": "sai-isvc-predictor-00002",
+      "stable_traffic_percent": 10,
+      "canary_traffic_percent": 90,
+      "canary_model_id": "c0e55ad5-7b6c-4507-a237-582f47a9a1ef",
+      "canary_model_version": "39"
+    },
+    {
       "isvc_name": "hp3",
       "served_model_url": "http://hp3.admin.dashboard.cog.hiro-develop.nl",
       "status": "ready",
@@ -36,7 +56,9 @@
       "stable_revision": "kitnet-predictor-00001",
       "canary_revision": "kitnet-predictor-00002",
       "stable_traffic_percent": 50,
-      "canary_traffic_percent": 50
+      "canary_traffic_percent": 50,
+      "canary_model_id": null,
+      "canary_model_version": null
     },
     {
       "isvc_name": "podprediction",
@@ -54,7 +76,9 @@
       "stable_revision": "podprediction-predictor-00002",
       "canary_revision": "podprediction-predictor-00003",
       "stable_traffic_percent": 25,
-      "canary_traffic_percent": 75
+      "canary_traffic_percent": 75,
+      "canary_model_id": null,
+      "canary_model_version": null
     },
     {
       "isvc_name": "security",
@@ -90,7 +114,9 @@
       "stable_revision": "anomaly-classifier-predictor-00001",
       "canary_revision": "anomaly-classifier-predictor-00002",
       "stable_traffic_percent": 75,
-      "canary_traffic_percent": 25
+      "canary_traffic_percent": 25,
+      "canary_model_id": null,
+      "canary_model_version": null
     },
     {
       "isvc_name": "anomaly-classifier2",
