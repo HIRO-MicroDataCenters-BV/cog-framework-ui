@@ -567,12 +567,12 @@ onMounted(() => {
         <!-- Cards grid - scrollable area -->
         <div class="flex-1 overflow-auto min-h-0">
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <ModelServingCard
-              v-for="item in list"
-              :key="item.isvc_name"
-              :serving="item"
-              @updated="onCardUpdated"
-            />
+              <ModelServingCard
+                v-for="item in list"
+                :key="item.isvc_name"
+                :serving="item"
+                @updated="onCardUpdated"
+              />
           </div>
         </div>
 
