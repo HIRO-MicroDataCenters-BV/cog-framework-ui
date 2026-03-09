@@ -87,7 +87,10 @@ const handleSave = async () => {
       isvc_name: props.modelServing.isvc_name,
       canary_traffic_percent: trafficPercent.value,
     });
-    emit('saved');
+    emit('saved', {
+      isvc_name: props.modelServing.isvc_name,
+      canary_traffic_percent: trafficPercent.value,
+    });
     handleClose();
   } catch (error) {
     console.error('Failed to update model serving:', error);

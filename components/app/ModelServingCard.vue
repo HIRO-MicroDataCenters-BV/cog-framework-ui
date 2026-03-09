@@ -1,6 +1,7 @@
 <template>
   <Card
-    class="overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-zinc-900/50 border-border dark:border-zinc-700"
+    class="overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-zinc-900/50 border-border dark:border-zinc-700 cursor-pointer"
+    @click="emit('select')"
   >
     <!-- Header with status indicator -->
     <div class="relative p-4 pb-3">
@@ -105,9 +106,10 @@
       </div>
     </div>
 
-    <!-- Traffic split -->
+    <!-- Traffic split (stop propagation so slider doesn't open sheet) -->
     <div
       class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/10 dark:bg-zinc-800/20"
+      @click.stop
     >
       <div class="flex items-center justify-between gap-2 mb-2">
         <span class="text-xs font-medium text-muted-foreground"
@@ -222,7 +224,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'updated'): void;
+  (e: 'updated', payload?: { isvc_name: string; canary_traffic_percent: number }): void;
+  (e: 'select'): void;
 }>();
 
 const { patchModelServing } = useApi();
@@ -311,7 +314,10 @@ async function saveTraffic() {
       isvc_name: props.serving.isvc_name,
       canary_traffic_percent: localCanaryPercent.value,
     });
-    emit('updated');
+    emit('updated', {
+      isvc_name: props.serving.isvc_name,
+      canary_traffic_percent: localCanaryPercent.value,
+    });
   } catch (e) {
     console.error(e);
     toaster.show('error', 'Failed to update traffic');

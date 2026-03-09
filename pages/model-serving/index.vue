@@ -2,6 +2,7 @@
 import type { ModelServing } from '~/types/model.types';
 import type { TableRowType } from '~/types/row.types';
 import ModelServingCard from '~/components/app/ModelServingCard.vue';
+import ModelServingSheet from '~/components/app/ModelServingSheet.vue';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
@@ -70,6 +71,8 @@ const STATUS_OPTIONS = [
 
 const editDialogOpen = ref(false);
 const selectedModelServing = ref<ModelServing | null>(null);
+const sheetOpen = ref(false);
+const sheetServing = ref<ModelServing | null>(null);
 
 const sectionIcon = computed(
   () =>
@@ -89,8 +92,52 @@ function closeEditDialog() {
   selectedModelServing.value = null;
 }
 
-function onEditSaved() {
-  tableRef.value?.fetchData();
+function openSheet(serving: ModelServing) {
+  sheetServing.value = serving;
+  sheetOpen.value = true;
+}
+
+function closeSheet() {
+  sheetOpen.value = false;
+  sheetServing.value = null;
+}
+
+function onSheetEdit(serving: ModelServing) {
+  closeSheet();
+  selectedModelServing.value = serving;
+  editDialogOpen.value = true;
+}
+
+function onEditSaved(payload?: {
+  isvc_name: string;
+  canary_traffic_percent: number;
+}) {
+  if (payload) {
+    updateServingInList(payload);
+  }
+}
+
+function updateServingInList(payload: {
+  isvc_name: string;
+  canary_traffic_percent: number;
+}) {
+  const idx = list.value.findIndex(
+    (s) => s.isvc_name === payload.isvc_name,
+  );
+  if (idx >= 0) {
+    const updated = {
+      ...list.value[idx],
+      canary_traffic_percent: payload.canary_traffic_percent,
+      stable_traffic_percent: 100 - payload.canary_traffic_percent,
+    };
+    list.value = list.value.map((s, i) => (i === idx ? updated : s));
+    if (sheetServing.value?.isvc_name === payload.isvc_name) {
+      sheetServing.value = updated;
+    }
+    if (selectedModelServing.value?.isvc_name === payload.isvc_name) {
+      selectedModelServing.value = updated;
+    }
+  }
 }
 
 // Watch search query - update route with debounce (route watch will trigger fetch)
@@ -348,8 +395,11 @@ function refresh() {
   fetchList();
 }
 
-function onCardUpdated() {
-  fetchList();
+function onCardUpdated(payload: {
+  isvc_name: string;
+  canary_traffic_percent: number;
+}) {
+  updateServingInList(payload);
 }
 
 function onServeModel() {
@@ -571,6 +621,7 @@ onMounted(() => {
                 v-for="item in list"
                 :key="item.isvc_name"
                 :serving="item"
+                @select="openSheet(item)"
                 @updated="onCardUpdated"
               />
           </div>
@@ -599,10 +650,16 @@ onMounted(() => {
     </div>
   </div>
 
+  <ModelServingSheet
+    v-model:open="sheetOpen"
+    :serving="sheetServing"
+    @edit="onSheetEdit"
+  />
+
   <ModelServingEditDialog
     :open="editDialogOpen"
     :model-serving="selectedModelServing"
     @close="closeEditDialog"
-    @saved="onEditSaved"
+    @saved="(p) => onEditSaved(p)"
   />
 </template>
