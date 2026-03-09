@@ -178,14 +178,13 @@
         </Button>
         <Button
           size="sm"
-          variant="secondary"
           class="h-6 px-2 text-[10px] shrink-0 transition-all duration-200"
           :class="[
-            isSaving || !hasChanges
-              ? 'opacity-40 cursor-not-allowed bg-muted/50'
-              : 'opacity-100 cursor-pointer bg-secondary hover:bg-secondary/90',
+            isSaving
+              ? 'opacity-40 cursor-not-allowed bg-muted/50 text-muted-foreground'
+              : 'opacity-100 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90',
           ]"
-          :disabled="isSaving || !hasChanges"
+          :disabled="isSaving"
           title="Update"
           @click="saveTraffic"
         >
