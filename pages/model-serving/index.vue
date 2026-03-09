@@ -14,6 +14,8 @@ import { Spinner } from '~/components/ui/spinner';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const { getModelsServing } = useApi();
 const { setPage, page } = useApp();
 const menu = uselistMenus();
@@ -26,13 +28,17 @@ setPage({
 const list = ref<ModelServing[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
-const searchQuery = ref('');
 const isRefreshing = ref(false);
 const viewMode = ref<'table' | 'cards'>('cards');
 
-// Cards pagination
-const cardsCurrentPage = ref(1);
-const cardsPageSize = ref(8);
+// Cards pagination - init from route query (same keys as table view)
+const cardsCurrentPage = ref(
+  parseInt((route.query.page as string) || '1', 10) || 1,
+);
+const cardsPageSize = ref(
+  parseInt((route.query.limit as string) || '8', 10) || 8,
+);
+const searchQuery = ref((route.query.search as string) || '');
 const cardsTotalItems = ref(0);
 
 const editDialogOpen = ref(false);
@@ -60,16 +66,38 @@ function onEditSaved() {
   tableRef.value?.fetchData();
 }
 
-// Watch search query to refetch with debounce
+// Watch search query - update route with debounce (route watch will trigger fetch)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, () => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    cardsCurrentPage.value = 1;
-    isRefreshing.value = true; // Keep cards + pagination visible during search
-    fetchList();
+    const query = { ...route.query } as Record<string, string>;
+    query.page = '1';
+    if (searchQuery.value) {
+      query.search = searchQuery.value;
+    } else {
+      delete query.search;
+    }
+    router.replace({ query });
   }, 300);
 });
+
+// Watch route.query - sync cards state and fetch when URL changes (e.g. pagination, back button)
+watch(
+  () => route.query,
+  (query) => {
+    if (viewMode.value !== 'cards') return;
+    const page = parseInt((query.page as string) || '1', 10) || 1;
+    const limit = parseInt((query.limit as string) || '8', 10) || 8;
+    const search = (query.search as string) || '';
+    if (page !== cardsCurrentPage.value) cardsCurrentPage.value = page;
+    if (limit !== cardsPageSize.value) cardsPageSize.value = limit;
+    if (search !== searchQuery.value) searchQuery.value = search;
+    isRefreshing.value = true;
+    fetchList();
+  },
+  { deep: true },
+);
 
 // AppTable column definitions (same style as models/datasets pages)
 const tableColumns = [
@@ -239,17 +267,17 @@ const cardsTotalPages = computed(() => Math.ceil(cardsTotalItems.value / cardsPa
 const cardsCanPreviousPage = computed(() => cardsCurrentPage.value > 1);
 const cardsCanNextPage = computed(() => cardsCurrentPage.value < cardsTotalPages.value);
 
-function setCardsPage(page: number) {
-  cardsCurrentPage.value = page;
-  isRefreshing.value = true; // Keep cards + pagination visible during fetch
-  fetchList();
+function setCardsPage(pageNum: number) {
+  const query = { ...route.query } as Record<string, string>;
+  query.page = pageNum.toString();
+  router.replace({ query });
 }
 
 function setCardsPageSize(size: number) {
-  cardsPageSize.value = size;
-  cardsCurrentPage.value = 1;
-  isRefreshing.value = true; // Keep cards + pagination visible during fetch
-  fetchList();
+  const query = { ...route.query } as Record<string, string>;
+  query.limit = size.toString();
+  query.page = '1';
+  router.replace({ query });
 }
 
 function refresh() {
