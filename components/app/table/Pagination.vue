@@ -36,10 +36,6 @@ const props = defineProps({
     type: Array,
     default: () => [5, 10, 15, 20, 50, 100],
   },
-  compact: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 const emit = defineEmits(['on-set-page', 'on-set-page-size']);
@@ -145,13 +141,13 @@ const handlePageSizeChange = (value) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between space-x-2 w-full" :class="{ 'text-xs': compact }">
+  <div class="flex items-center justify-between space-x-2 w-full text-xs">
     <div class="flex items-center gap-2">
       <Select
         :model-value="pageSize.toString()"
         @update:model-value="handlePageSizeChange"
       >
-        <SelectTrigger :class="compact ? 'w-[80px] h-7' : 'w-[100px]'">
+        <SelectTrigger class="min-w-[92px] w-[92px] h-7">
           <Icon name="lucide:rows-3" class="size-4" />
           <SelectValue />
         </SelectTrigger>
@@ -172,8 +168,7 @@ const handlePageSizeChange = (value) => {
           v-if="
             showEdges && currentPage > PAGINATION_CONFIG.FIRST_PAGE_THRESHOLD
           "
-          :class="compact ? 'px-2 h-7 border rounded-md text-xs' : 'px-3 h-10 border rounded-md text-sm'"
-          class="hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          class="px-2 h-7 border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="currentPage === 1"
           @click="handleFirstPage"
         >
@@ -181,8 +176,7 @@ const handlePageSizeChange = (value) => {
         </button>
 
         <button
-          :class="compact ? 'px-2 h-7 border rounded-md text-xs' : 'px-3 h-10 border rounded-md text-sm'"
-          class="hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          class="px-2 h-7 border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="!canPreviousPage"
           @click="handlePrevPage"
         >
@@ -193,12 +187,11 @@ const handlePageSizeChange = (value) => {
           <button
             v-if="item.type === 'page'"
             :class="[
-              compact ? 'w-7 h-7 p-0' : 'w-10 h-10 p-0',
-              'border rounded-md',
+              'w-7 h-7 p-0 border rounded-md',
               {
                 'bg-primary text-primary-foreground hover:bg-primary/90':
                   item.value === currentPage,
-                'bg-background hover:bg-gray-50 cursor-pointer':
+                'bg-background hover:bg-muted cursor-pointer':
                   item.value !== currentPage,
               },
             ]"
@@ -208,16 +201,14 @@ const handlePageSizeChange = (value) => {
           </button>
           <span
             v-else
-            :class="compact ? 'w-7 h-7 p-0' : 'w-10 h-10 p-0'"
-            class="flex items-center justify-center text-gray-500"
+            class="w-7 h-7 p-0 flex items-center justify-center text-muted-foreground"
           >
             ...
           </span>
         </template>
 
         <button
-          :class="compact ? 'px-2 h-7 border rounded-md text-xs' : 'px-3 h-10 border rounded-md text-sm'"
-          class="hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          class="px-2 h-7 border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="!canNextPage"
           @click="handleNextPage"
         >
@@ -229,8 +220,7 @@ const handlePageSizeChange = (value) => {
             showEdges &&
             currentPage < totalPages - PAGINATION_CONFIG.LAST_PAGE_THRESHOLD
           "
-          :class="compact ? 'px-2 h-7 border rounded-md text-xs' : 'px-3 h-10 border rounded-md text-sm'"
-          class="hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          class="px-2 h-7 border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="currentPage === totalPages"
           @click="handleLastPage"
         >

@@ -451,7 +451,6 @@ onMounted(() => {
           >
             <div class="flex-1" />
             <AppPagination
-              :compact="true"
               :current-page="cardsCurrentPage"
               :total-items="cardsTotalItems"
               :page-size="cardsPageSize"
