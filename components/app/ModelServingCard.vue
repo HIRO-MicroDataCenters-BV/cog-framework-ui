@@ -179,8 +179,14 @@
         <Button
           size="sm"
           variant="secondary"
-          class="h-6 px-2 text-[10px] shrink-0 cursor-pointer"
+          class="h-6 px-2 text-[10px] shrink-0 transition-all duration-200"
+          :class="[
+            isSaving || !hasChanges
+              ? 'opacity-40 cursor-not-allowed bg-muted/50'
+              : 'opacity-100 cursor-pointer bg-secondary hover:bg-secondary/90',
+          ]"
           :disabled="isSaving || !hasChanges"
+          title="Update"
           @click="saveTraffic"
         >
           <Icon
