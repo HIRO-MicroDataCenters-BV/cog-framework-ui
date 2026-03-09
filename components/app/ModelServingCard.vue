@@ -115,27 +115,27 @@
         >
         <div class="flex items-center gap-2 text-[10px]">
           <span class="flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-primary/80" />
-            Stable {{ 100 - localCanaryPercent }}%
-          </span>
-          <span class="flex items-center gap-1">
             <span class="w-2 h-2 rounded-full bg-amber-500/80" />
             Canary {{ localCanaryPercent }}%
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-primary/80" />
+            Stable {{ 100 - localCanaryPercent }}%
           </span>
         </div>
       </div>
 
-      <!-- Visual bar -->
+      <!-- Visual bar: Canary (left) | Stable (right) -->
       <div
         class="h-1.5 w-full rounded-full overflow-hidden bg-muted dark:bg-zinc-700 flex mb-3"
       >
         <div
-          class="h-full bg-primary/80 transition-all duration-300"
-          :style="{ width: `${100 - localCanaryPercent}%` }"
-        />
-        <div
           class="h-full bg-amber-500/80 transition-all duration-300"
           :style="{ width: `${localCanaryPercent}%` }"
+        />
+        <div
+          class="h-full bg-primary/80 transition-all duration-300"
+          :style="{ width: `${100 - localCanaryPercent}%` }"
         />
       </div>
 
