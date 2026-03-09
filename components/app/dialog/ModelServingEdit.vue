@@ -67,7 +67,8 @@ watch(
   (value) => {
     if (value) {
       trafficPercent.value =
-        value.canary_traffic_percent ?? value.traffic_percentage ?? 0;
+        value.canary_traffic_percent ??
+        (value.has_canary ? (value.traffic_percentage ?? 0) : 0);
     }
   },
   { immediate: true },

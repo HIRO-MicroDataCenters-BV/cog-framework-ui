@@ -81,6 +81,8 @@ export interface ModelServing {
   canary_revision: string | null;
   stable_traffic_percent: number | null;
   canary_traffic_percent: number | null;
+  canary_model_id?: string | null;
+  canary_model_version?: string | null;
 }
 
 export interface ModelServingResponse {

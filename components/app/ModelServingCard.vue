@@ -139,13 +139,14 @@
         />
       </div>
 
-      <!-- Slider, step controls, and update -->
+      <!-- Slider, step controls, and update (enabled only when has_canary) -->
       <div class="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="icon"
-          class="h-6 w-6 shrink-0 cursor-pointer"
-          :disabled="localCanaryPercent <= 0"
+          class="h-6 w-6 shrink-0"
+          :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+          :disabled="!serving.has_canary || localCanaryPercent <= 0"
           :title="'-5'"
           @click="stepCanary(-5)"
         >
@@ -158,7 +159,8 @@
             min="0"
             max="100"
             step="5"
-            class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 cursor-pointer"
+            :disabled="!serving.has_canary"
+            class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
             @input="onSliderInput"
           />
           <span
@@ -169,8 +171,9 @@
         <Button
           variant="outline"
           size="icon"
-          class="h-6 w-6 shrink-0 cursor-pointer"
-          :disabled="localCanaryPercent >= 100"
+          class="h-6 w-6 shrink-0"
+          :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+          :disabled="!serving.has_canary || localCanaryPercent >= 100"
           :title="'+5'"
           @click="stepCanary(5)"
         >
@@ -178,13 +181,14 @@
         </Button>
         <Button
           size="sm"
-          class="h-6 px-2 text-[10px] shrink-0 transition-all duration-200"
-          :class="[
-            isSaving
-              ? 'opacity-40 cursor-not-allowed bg-muted/50 text-muted-foreground'
-              : 'opacity-100 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90',
-          ]"
-          :disabled="isSaving"
+          variant="secondary"
+          class="h-6 px-2 text-[10px] shrink-0 transition-opacity duration-200"
+          :class="
+            isSaving || !serving.has_canary
+              ? 'opacity-50 cursor-not-allowed'
+              : 'opacity-100 cursor-pointer'
+          "
+          :disabled="isSaving || !serving.has_canary"
           title="Update"
           @click="saveTraffic"
         >
@@ -226,7 +230,8 @@ const toaster = useToaster();
 
 const isSaving = ref(false);
 const localCanaryPercent = ref(
-  props.serving.canary_traffic_percent ?? props.serving.traffic_percentage ?? 0,
+  props.serving.canary_traffic_percent ??
+    (props.serving.has_canary ? (props.serving.traffic_percentage ?? 0) : 0),
 );
 
 const statusDotClass = computed(() => {
@@ -260,8 +265,7 @@ const hasChanges = computed(
   () =>
     localCanaryPercent.value !==
     (props.serving.canary_traffic_percent ??
-      props.serving.traffic_percentage ??
-      0),
+      (props.serving.has_canary ? (props.serving.traffic_percentage ?? 0) : 0)),
 );
 
 function formatAge(age: string | undefined): string {
@@ -278,7 +282,8 @@ function shortenRevision(revision: string | undefined): string {
 
 watch(
   () =>
-    props.serving.canary_traffic_percent ?? props.serving.traffic_percentage,
+    props.serving.canary_traffic_percent ??
+    (props.serving.has_canary ? props.serving.traffic_percentage : null),
   (v) => {
     localCanaryPercent.value = v ?? 0;
   },

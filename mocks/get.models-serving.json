@@ -14,13 +14,13 @@
       "age": "0:07:57",
       "latest_ready_revision": "sai-isvc-predictor-00002",
       "traffic_percentage": 100,
-      "has_canary": true,
+      "has_canary": false,
       "stable_revision": "sai-isvc-predictor-00001",
-      "canary_revision": "sai-isvc-predictor-00002",
-      "stable_traffic_percent": 10,
-      "canary_traffic_percent": 90,
-      "canary_model_id": "c0e55ad5-7b6c-4507-a237-582f47a9a1ef",
-      "canary_model_version": "39"
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null,
+      "canary_model_id": null,
+      "canary_model_version": null
     },
     {
       "isvc_name": "hp3",
@@ -36,9 +36,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "hp3-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "kitnet",
@@ -51,14 +51,12 @@
       "creation_timestamp": "2026-01-28T16:36:01Z",
       "age": "35 days, 23:02:29",
       "latest_ready_revision": "kitnet-predictor-00001",
-      "traffic_percentage": 50,
+      "traffic_percentage": 70,
       "has_canary": true,
       "stable_revision": "kitnet-predictor-00001",
       "canary_revision": "kitnet-predictor-00002",
-      "stable_traffic_percent": 50,
-      "canary_traffic_percent": 50,
-      "canary_model_id": null,
-      "canary_model_version": null
+      "stable_traffic_percent": 30,
+      "canary_traffic_percent": 70
     },
     {
       "isvc_name": "podprediction",
@@ -71,14 +69,12 @@
       "creation_timestamp": "2025-12-23T19:48:38Z",
       "age": "71 days, 19:49:52",
       "latest_ready_revision": "podprediction-predictor-00003",
-      "traffic_percentage": 75,
+      "traffic_percentage": 45,
       "has_canary": true,
       "stable_revision": "podprediction-predictor-00002",
       "canary_revision": "podprediction-predictor-00003",
-      "stable_traffic_percent": 25,
-      "canary_traffic_percent": 75,
-      "canary_model_id": null,
-      "canary_model_version": null
+      "stable_traffic_percent": 55,
+      "canary_traffic_percent": 45
     },
     {
       "isvc_name": "security",
@@ -94,9 +90,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "security-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "anomaly-classifier",
@@ -109,14 +105,12 @@
       "creation_timestamp": "2025-12-18T09:49:30Z",
       "age": "77 days, 5:49:00",
       "latest_ready_revision": "anomaly-classifier-predictor-00001",
-      "traffic_percentage": 25,
+      "traffic_percentage": 20,
       "has_canary": true,
       "stable_revision": "anomaly-classifier-predictor-00001",
       "canary_revision": "anomaly-classifier-predictor-00002",
-      "stable_traffic_percent": 75,
-      "canary_traffic_percent": 25,
-      "canary_model_id": null,
-      "canary_model_version": null
+      "stable_traffic_percent": 80,
+      "canary_traffic_percent": 20
     },
     {
       "isvc_name": "anomaly-classifier2",
@@ -132,9 +126,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "anomaly-classifier2-predictor-00004",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "anomaliesdetector",
@@ -150,9 +144,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "anomaliesdetector-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "fraud-detection",
@@ -168,9 +162,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "fraud-detection-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "recommendation-engine",
@@ -186,9 +180,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "recommendation-engine-predictor-00002",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "sentiment-analyzer",
@@ -204,9 +198,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "sentiment-analyzer-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "image-classifier",
@@ -219,12 +213,12 @@
       "creation_timestamp": "2025-12-02T09:45:15Z",
       "age": "93 days, 5:53:15",
       "latest_ready_revision": "image-classifier-predictor-00003",
-      "traffic_percentage": 80,
+      "traffic_percentage": 75,
       "has_canary": true,
       "stable_revision": "image-classifier-predictor-00002",
       "canary_revision": "image-classifier-predictor-00003",
-      "stable_traffic_percent": 20,
-      "canary_traffic_percent": 80
+      "stable_traffic_percent": 25,
+      "canary_traffic_percent": 75
     },
     {
       "isvc_name": "text-summarizer",
@@ -240,9 +234,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "text-summarizer-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "speech-to-text",
@@ -258,9 +252,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "speech-to-text-predictor-00002",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "object-detector",
@@ -276,9 +270,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "object-detector-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "chatbot-service",
@@ -291,12 +285,12 @@
       "creation_timestamp": "2025-11-15T13:45:30Z",
       "age": "110 days, 1:53:00",
       "latest_ready_revision": "chatbot-service-predictor-00005",
-      "traffic_percentage": 60,
+      "traffic_percentage": 40,
       "has_canary": true,
       "stable_revision": "chatbot-service-predictor-00004",
       "canary_revision": "chatbot-service-predictor-00005",
-      "stable_traffic_percent": 40,
-      "canary_traffic_percent": 60
+      "stable_traffic_percent": 60,
+      "canary_traffic_percent": 40
     },
     {
       "isvc_name": "translation-api",
@@ -312,9 +306,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "translation-api-predictor-00002",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "ner-extractor",
@@ -327,12 +321,12 @@
       "creation_timestamp": "2025-11-05T17:20:15Z",
       "age": "120 days, 22:18:15",
       "latest_ready_revision": "ner-extractor-predictor-00001",
-      "traffic_percentage": 30,
+      "traffic_percentage": 55,
       "has_canary": true,
       "stable_revision": "ner-extractor-predictor-00001",
       "canary_revision": "ner-extractor-predictor-00002",
-      "stable_traffic_percent": 70,
-      "canary_traffic_percent": 30
+      "stable_traffic_percent": 45,
+      "canary_traffic_percent": 55
     },
     {
       "isvc_name": "emotion-detector",
@@ -348,9 +342,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "emotion-detector-predictor-00002",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "price-predictor",
@@ -366,9 +360,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "price-predictor-predictor-00003",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "document-ocr",
@@ -384,9 +378,9 @@
       "traffic_percentage": 100,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "document-ocr-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 100
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "video-analyzer",
@@ -402,9 +396,9 @@
       "traffic_percentage": 0,
       "has_canary": false,
       "stable_revision": null,
-      "canary_revision": "video-analyzer-predictor-00001",
-      "stable_traffic_percent": null,
-      "canary_traffic_percent": 0
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     },
     {
       "isvc_name": "audio-classifier",
@@ -417,12 +411,12 @@
       "creation_timestamp": "2025-10-15T08:20:00Z",
       "age": "141 days, 7:18:30",
       "latest_ready_revision": "audio-classifier-predictor-00002",
-      "traffic_percentage": 90,
+      "traffic_percentage": 85,
       "has_canary": true,
       "stable_revision": "audio-classifier-predictor-00001",
       "canary_revision": "audio-classifier-predictor-00002",
-      "stable_traffic_percent": 10,
-      "canary_traffic_percent": 90
+      "stable_traffic_percent": 15,
+      "canary_traffic_percent": 85
     }
   ]
 }
