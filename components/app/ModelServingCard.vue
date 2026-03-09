@@ -139,25 +139,47 @@
         />
       </div>
 
-      <!-- Slider and update -->
-      <div class="flex items-center gap-3">
-        <div class="flex-1 flex items-center gap-2">
+      <!-- Slider, step controls, and update -->
+      <div class="flex items-center gap-1.5">
+        <Button
+          variant="outline"
+          size="icon"
+          class="h-6 w-6 shrink-0 cursor-pointer"
+          :disabled="localCanaryPercent <= 0"
+          :title="'-5'"
+          @click="stepCanary(-5)"
+        >
+          <Icon name="lucide:minus" class="h-3 w-3" />
+        </Button>
+        <div class="flex-1 flex items-center gap-1.5 min-w-0">
           <input
             v-model.number="localCanaryPercent"
             type="range"
             min="0"
             max="100"
-            class="flex-1 h-1.5 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 cursor-pointer"
+            step="5"
+            class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 cursor-pointer"
             @input="onSliderInput"
           />
-          <span class="text-xs font-medium tabular-nums w-8 text-right"
+          <span
+            class="text-[10px] font-medium tabular-nums w-6 text-right shrink-0"
             >{{ localCanaryPercent }}%</span
           >
         </div>
         <Button
+          variant="outline"
+          size="icon"
+          class="h-6 w-6 shrink-0 cursor-pointer"
+          :disabled="localCanaryPercent >= 100"
+          :title="'+5'"
+          @click="stepCanary(5)"
+        >
+          <Icon name="lucide:plus" class="h-3 w-3" />
+        </Button>
+        <Button
           size="sm"
           variant="secondary"
-          class="shrink-0 h-7 text-xs"
+          class="h-6 px-2 text-[10px] shrink-0 cursor-pointer"
           :disabled="isSaving || !hasChanges"
           @click="saveTraffic"
         >
@@ -261,6 +283,13 @@ function onSliderInput() {
   localCanaryPercent.value = Math.min(
     100,
     Math.max(0, Number(localCanaryPercent.value)),
+  );
+}
+
+function stepCanary(delta: number) {
+  localCanaryPercent.value = Math.min(
+    100,
+    Math.max(0, localCanaryPercent.value + delta),
   );
 }
 
