@@ -63,25 +63,47 @@
         </div>
         <!-- Age moved to header -->
         <template v-if="!serving.has_canary">
-          <div>
-            <span class="text-muted-foreground block mb-0.5">Revision</span>
-            <span
-              class="font-medium text-foreground truncate block"
-            :title="serving.latest_ready_revision ?? undefined"
-            >
-              {{ shortenRevision(serving.latest_ready_revision) }}
-            </span>
+          <div class="col-span-2 flex items-center justify-between gap-2">
+            <span class="text-muted-foreground">Revision</span>
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span
+                    class="font-mono text-[11px] text-foreground truncate text-right"
+                  >
+                    {{ shortenRevisionMiddle(serving.latest_ready_revision ?? undefined) }}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  class="max-w-[min(24rem,90vw)] break-all text-[10px]"
+                >
+                  {{ serving.latest_ready_revision ?? '—' }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </template>
         <template v-else>
-          <div>
-            <span class="text-muted-foreground block mb-0.5">Revision</span>
-            <span
-              class="font-medium text-foreground truncate block"
-              :title="serving.stable_revision ?? undefined"
-            >
-              {{ shortenRevision(serving.stable_revision ?? '') }}
-            </span>
+          <div class="col-span-2 flex items-center justify-between gap-2">
+            <span class="text-muted-foreground">Revision</span>
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span
+                    class="font-mono text-[11px] text-foreground truncate text-right"
+                  >
+                    {{ shortenRevisionMiddle(serving.stable_revision ?? undefined) }}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  class="max-w-[min(24rem,90vw)] break-all text-[10px]"
+                >
+                  {{ serving.stable_revision ?? '—' }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </template>
       </div>
