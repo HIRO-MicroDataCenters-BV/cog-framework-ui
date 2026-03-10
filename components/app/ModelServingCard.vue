@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-zinc-900/50 border-border dark:border-zinc-700 cursor-pointer"
+    class="overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-zinc-900/50 border-border dark:border-zinc-700 cursor-pointer flex flex-col h-full"
     @click="emit('select')"
   >
     <!-- Header with status indicator -->
@@ -145,134 +145,137 @@
       </div>
     </div>
 
-    <!-- URL section -->
-    <div class="px-4 py-2 border-t border-border/50 dark:border-zinc-700/50">
-      <div class="flex items-center gap-2">
-        <Icon
-          name="lucide:link"
-          class="w-3.5 h-3.5 text-muted-foreground shrink-0"
-        />
-        <CopyPaste
-          :has-copy="true"
-          :copy-text="serving.served_model_url"
-          class="flex-1 min-w-0"
-        >
-          <TooltipProvider :delay-duration="300">
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <span
-                  class="text-xs text-muted-foreground hover:text-foreground truncate block cursor-pointer transition-colors"
+    <!-- Bottom section: URL + Traffic split -->
+    <div class="mt-auto">
+      <!-- URL section -->
+      <div class="px-4 py-2 border-t border-border/50 dark:border-zinc-700/50">
+        <div class="flex items-center gap-2">
+          <Icon
+            name="lucide:link"
+            class="w-3.5 h-3.5 text-muted-foreground shrink-0"
+          />
+          <CopyPaste
+            :has-copy="true"
+            :copy-text="serving.served_model_url"
+            class="flex-1 min-w-0"
+          >
+            <TooltipProvider :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span
+                    class="text-xs text-muted-foreground hover:text-foreground truncate block cursor-pointer transition-colors"
+                  >
+                    {{ serving.served_model_url ?? '—' }}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  class="max-w-[min(24rem,90vw)] break-all text-xs"
                 >
                   {{ serving.served_model_url ?? '—' }}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                class="max-w-[min(24rem,90vw)] break-all text-xs"
-              >
-                {{ serving.served_model_url ?? '—' }}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </CopyPaste>
-      </div>
-    </div>
-
-    <!-- Traffic split (stop propagation so slider doesn't open sheet) -->
-    <div
-      class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/10 dark:bg-zinc-800/20"
-      @click.stop
-    >
-      <div class="flex items-center justify-between gap-2 mb-2">
-        <span class="text-xs font-medium text-muted-foreground"
-          >Traffic Split</span
-        >
-        <div class="flex items-center gap-2 text-[10px]">
-          <span class="flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-amber-500/80" />
-            Canary {{ localCanaryPercent }}%
-          </span>
-          <span class="flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-primary/80" />
-            Stable {{ 100 - localCanaryPercent }}%
-          </span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CopyPaste>
         </div>
       </div>
 
-      <!-- Visual bar: Canary (left) | Stable (right) -->
+      <!-- Traffic split (stop propagation so slider doesn't open sheet) -->
       <div
-        class="h-1.5 w-full rounded-full overflow-hidden bg-muted dark:bg-zinc-700 flex mb-3"
+        class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/10 dark:bg-zinc-800/20"
+        @click.stop
       >
-        <div
-          class="h-full bg-amber-500/80 transition-all duration-300"
-          :style="{ width: `${localCanaryPercent}%` }"
-        />
-        <div
-          class="h-full bg-primary/80 transition-all duration-300"
-          :style="{ width: `${100 - localCanaryPercent}%` }"
-        />
-      </div>
-
-      <!-- Slider, step controls, and update (enabled only when has_canary) -->
-      <div class="flex items-center gap-1.5">
-        <Button
-          variant="outline"
-          size="icon"
-          class="h-6 w-6 shrink-0"
-          :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
-          :disabled="!serving.has_canary || localCanaryPercent <= 0"
-          :title="'-5'"
-          @click="stepCanary(-5)"
-        >
-          <Icon name="lucide:minus" class="h-3 w-3" />
-        </Button>
-        <div class="flex-1 flex items-center gap-1.5 min-w-0">
-          <input
-            v-model.number="localCanaryPercent"
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            :disabled="!serving.has_canary"
-            class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
-            @input="onSliderInput"
-          />
-          <span
-            class="text-[10px] font-medium tabular-nums w-6 text-right shrink-0"
-            >{{ localCanaryPercent }}%</span
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="text-xs font-medium text-muted-foreground"
+            >Traffic Split</span
           >
+          <div class="flex items-center gap-2 text-[10px]">
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500/80" />
+              Canary {{ localCanaryPercent }}%
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-primary/80" />
+              Stable {{ 100 - localCanaryPercent }}%
+            </span>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          class="h-6 w-6 shrink-0"
-          :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
-          :disabled="!serving.has_canary || localCanaryPercent >= 100"
-          :title="'+5'"
-          @click="stepCanary(5)"
+
+        <!-- Visual bar: Canary (left) | Stable (right) -->
+        <div
+          class="h-1.5 w-full rounded-full overflow-hidden bg-muted dark:bg-zinc-700 flex mb-3"
         >
-          <Icon name="lucide:plus" class="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          class="h-6 px-2 text-[10px] shrink-0 transition-opacity duration-200"
-          :class="
-            isSaving || !serving.has_canary
-              ? 'opacity-50 cursor-not-allowed'
-              : 'opacity-100 cursor-pointer'
-          "
-          :disabled="isSaving || !serving.has_canary"
-          title="Update"
-          @click="saveTraffic"
-        >
-          <Icon
-            v-if="isSaving"
-            name="lucide:loader-2"
-            class="w-3 h-3 animate-spin"
+          <div
+            class="h-full bg-amber-500/80 transition-all duration-300"
+            :style="{ width: `${localCanaryPercent}%` }"
           />
-          <template v-else>Update</template>
-        </Button>
+          <div
+            class="h-full bg-primary/80 transition-all duration-300"
+            :style="{ width: `${100 - localCanaryPercent}%` }"
+          />
+        </div>
+
+        <!-- Slider, step controls, and update (enabled only when has_canary) -->
+        <div class="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="icon"
+            class="h-6 w-6 shrink-0"
+            :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+            :disabled="!serving.has_canary || localCanaryPercent <= 0"
+            :title="'-5'"
+            @click="stepCanary(-5)"
+          >
+            <Icon name="lucide:minus" class="h-3 w-3" />
+          </Button>
+          <div class="flex-1 flex items-center gap-1.5 min-w-0">
+            <input
+              v-model.number="localCanaryPercent"
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              :disabled="!serving.has_canary"
+              class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
+              @input="onSliderInput"
+            />
+            <span
+              class="text-[10px] font-medium tabular-nums w-6 text-right shrink-0"
+              >{{ localCanaryPercent }}%</span
+            >
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            class="h-6 w-6 shrink-0"
+            :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+            :disabled="!serving.has_canary || localCanaryPercent >= 100"
+            :title="'+5'"
+            @click="stepCanary(5)"
+          >
+            <Icon name="lucide:plus" class="h-3 w-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            class="h-6 px-2 text-[10px] shrink-0 transition-opacity duration-200"
+            :class="
+              isSaving || !serving.has_canary
+                ? 'opacity-50 cursor-not-allowed'
+                : 'opacity-100 cursor-pointer'
+            "
+            :disabled="isSaving || !serving.has_canary"
+            title="Update"
+            @click="saveTraffic"
+          >
+            <Icon
+              v-if="isSaving"
+              name="lucide:loader-2"
+              class="w-3 h-3 animate-spin"
+            />
+            <template v-else>Update</template>
+          </Button>
+        </div>
       </div>
     </div>
   </Card>
