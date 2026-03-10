@@ -408,7 +408,7 @@ const steps = [
   { id: 'review', label: 'Review' },
 ];
 
-const form = reactive({
+const blankForm = () => ({
   model_id: '',
   isvc_name: '',
   model_name: '',
@@ -416,9 +416,11 @@ const form = reactive({
   dataset_id: '',
   transformer_image: '',
   transformer_parameters_json: '',
-  protocol_version: 'v1',
+  protocol_version: 'v1' as 'v1' | 'v2',
   model_format: '',
 });
+
+const form = reactive(blankForm());
 
 type ModelSummary = {
   id: string;
@@ -454,6 +456,23 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => props.open,
+  (open) => {
+    if (!open) {
+      resetState();
+    }
+  },
+);
+
+const resetState = () => {
+  Object.assign(form, blankForm());
+  availableVersions.value = [];
+  selectedModelId.value = '';
+  currentStep.value = 0;
+  isSubmitting.value = false;
+};
+
 const canGoNext = computed(() => {
   if (currentStep.value === 0) {
     return (
@@ -467,6 +486,7 @@ const canGoNext = computed(() => {
 });
 
 const handleClose = () => {
+  resetState();
   emit('close');
 };
 
@@ -509,7 +529,8 @@ const handleSubmit = async () => {
 
     toaster.show('success', 'Canary serving created');
     emit('created');
-    handleClose();
+    resetState();
+    emit('close');
   } catch (error) {
     console.error('Failed to create canary serving', error);
     toaster.show('error', 'Failed to create canary serving');
