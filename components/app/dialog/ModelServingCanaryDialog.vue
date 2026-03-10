@@ -109,11 +109,6 @@
                   v-model="form.model_version"
                   placeholder="Version"
                 />
-                <Input
-                  id="model_format"
-                  v-model="form.model_format"
-                  placeholder="Format (e.g. mlflow, sklearn)"
-                />
               </template>
               <div
                 v-if="form.model_id || form.model_version || form.model_format"
@@ -154,7 +149,27 @@
             />
           </div>
 
-
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="model_format" class="text-right">Model format</Label>
+            <div class="col-span-3">
+              <Select v-model="form.model_format">
+                <SelectTrigger id="model_format" class="w-full">
+                  <SelectValue placeholder="Select model format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mlflow">mlflow</SelectItem>
+                  <SelectItem value="sklearn">sklearn</SelectItem>
+                  <SelectItem value="xgboost">xgboost</SelectItem>
+                  <SelectItem value="lightgbm">lightgbm</SelectItem>
+                  <SelectItem value="tensorflow">tensorflow</SelectItem>
+                  <SelectItem value="pytorch">pytorch</SelectItem>
+                  <SelectItem value="pmml">pmml</SelectItem>
+                  <SelectItem value="paddle">paddle</SelectItem>
+                  <SelectItem value="tensorrt">tensorrt</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
             <Label for="protocol_version" class="text-right">
@@ -199,16 +214,86 @@
           </div>
 
           <div class="grid grid-cols-4 items-start gap-4">
-            <Label class="text-right pt-2">Prometheus</Label>
-            <div class="col-span-3 grid gap-2">
-              <Input
-                v-model="form.prometheus_url"
-                placeholder="PROMETHEUS_URL (optional)"
+            <Label class="text-right pt-2">Transformer parameters</Label>
+            <div class="col-span-3">
+              <textarea
+                v-model="form.transformer_parameters_json"
+                class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex min-h-24 w-full rounded-md border bg-transparent px-3 py-2 text-[13px] font-mono leading-snug shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                rows="4"
+                placeholder="Optional"
               />
-              <Input
-                v-model="form.prometheus_metrics"
-                placeholder="PROMETHEUS_METRICS (optional)"
-              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Review -->
+        <div v-else-if="currentStep === 2" class="space-y-4 text-sm">
+          <div class="grid grid-cols-4 gap-4">
+            <div class="text-right text-muted-foreground">Model</div>
+            <div class="col-span-3 space-y-1">
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Name</span>
+                <span class="font-medium">
+                  {{ form.model_name || '—' }}
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">ID</span>
+                <span class="font-mono text-[11px]">
+                  {{ form.model_id || '—' }}
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Version / Format</span>
+                <span>
+                  {{ form.model_version ? `v${form.model_version}` : '—' }}
+                  <span v-if="form.model_format">
+                    · {{ form.model_format }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-4">
+            <div class="text-right text-muted-foreground">Deployment</div>
+            <div class="col-span-3 space-y-1">
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Service name</span>
+                <span class="font-medium">
+                  {{ form.isvc_name || '—' }}
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Dataset ID</span>
+                <span class="font-mono text-[11px]">
+                  {{ form.dataset_id || '—' }}
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Protocol</span>
+                <span class="font-medium">
+                  {{ form.protocol_version?.toUpperCase() || '—' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-4">
+            <div class="text-right text-muted-foreground">Transformer</div>
+            <div class="col-span-3 space-y-1">
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Image</span>
+                <span class="font-mono text-[11px] break-all">
+                  {{ form.transformer_image || '—' }}
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs text-muted-foreground">Transformer parameters</span>
+                <span class="font-mono text-[11px] break-all">
+                  {{ form.transformer_parameters_json || '—' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -261,7 +346,13 @@ import {
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '~/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import type { ModelServing } from '~/types/model.types';
 
@@ -284,6 +375,7 @@ const currentStep = ref(0);
 const steps = [
   { id: 'details', label: 'Details' },
   { id: 'advanced', label: 'Transformer & Metrics' },
+  { id: 'review', label: 'Review' },
 ];
 
 const form = reactive({
@@ -293,8 +385,7 @@ const form = reactive({
   model_version: '',
   dataset_id: '',
   transformer_image: '',
-  prometheus_url: '',
-  prometheus_metrics: '',
+  transformer_parameters_json: '',
   protocol_version: 'v1',
   model_format: '',
 });
@@ -324,7 +415,6 @@ watch(
   () => props.baseServing,
   (value) => {
     if (!value) return;
-    form.dataset_id = value.dataset_id ?? '';
     form.isvc_name = `${value.isvc_name}-canary`;
     const name = value.model_name || value.isvc_name;
     if (name) {
@@ -372,13 +462,8 @@ const handleSubmit = async () => {
   if (!isValid.value) return;
   isSubmitting.value = true;
   try {
-    const transformer_parameters: Record<string, unknown> = {};
-    if (form.prometheus_url) {
-      transformer_parameters.PROMETHEUS_URL = form.prometheus_url;
-    }
-    if (form.prometheus_metrics) {
-      transformer_parameters.PROMETHEUS_METRICS = form.prometheus_metrics;
-    }
+    const raw = form.transformer_parameters_json?.trim();
+    const transformer_parameters = raw ? (raw as unknown) : undefined;
 
     await postModelServing({
       model_id: form.model_id,
