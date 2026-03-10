@@ -75,9 +75,9 @@ const toggleTheme = () => {
                   <span class="truncate font-semibold">{{
                     t('general.main_project_name')
                   }}</span>
-                  <span class="truncate text-xs text-muted-foreground"
-                    >V {{ appVersion }}</span
-                  >
+                  <span class="truncate text-xs text-muted-foreground">
+                    V {{ appVersion.split('+')[0] }}
+                  </span>
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
