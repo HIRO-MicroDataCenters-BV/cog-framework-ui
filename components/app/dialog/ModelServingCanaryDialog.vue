@@ -51,8 +51,9 @@
           />
         </template>
       </nav>
+      <Separator class="mt-3 mb-2" />
 
-      <div class="mt-2 grid gap-4 py-2">
+      <div class="grid gap-4 py-2">
         <!-- Step 0: Required details -->
         <div v-if="currentStep === 0" class="space-y-4">
           <div
@@ -228,71 +229,94 @@
 
         <!-- Step 2: Review -->
         <div v-else-if="currentStep === 2" class="space-y-4 text-sm">
-          <div class="grid grid-cols-4 gap-4">
-            <div class="text-right text-muted-foreground">Model</div>
-            <div class="col-span-3 space-y-1">
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Name</span>
-                <span class="font-medium">
+          <div
+            class="rounded-md border border-border/60 bg-muted/30 px-3 py-2 space-y-3"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Model
+              </span>
+              <span
+                class="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-800"
+              >
+                Canary preview
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="col-span-2 space-y-1">
+                <div class="text-xs text-muted-foreground">Name</div>
+                <div class="font-medium truncate">
                   {{ form.model_name || '—' }}
-                </span>
+                </div>
               </div>
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">ID</span>
-                <span class="font-mono text-[11px]">
-                  {{ form.model_id || '—' }}
-                </span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Version / Format</span>
-                <span>
+              <div class="col-span-2 space-y-1">
+                <div class="text-xs text-muted-foreground">Version / Format</div>
+                <div>
                   {{ form.model_version ? `v${form.model_version}` : '—' }}
                   <span v-if="form.model_format">
                     · {{ form.model_format }}
                   </span>
-                </span>
+                </div>
+              </div>
+              <div class="col-span-4 space-y-1">
+                <div class="text-xs text-muted-foreground">Model ID</div>
+                <div class="font-mono text-[11px] break-all">
+                  {{ form.model_id || '—' }}
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-4 gap-4">
-            <div class="text-right text-muted-foreground">Deployment</div>
-            <div class="col-span-3 space-y-1">
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Service name</span>
-                <span class="font-medium">
+          <div
+            class="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-3"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Deployment
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="col-span-2 space-y-1">
+                <div class="text-xs text-muted-foreground">Service name</div>
+                <div class="font-medium truncate">
                   {{ form.isvc_name || '—' }}
-                </span>
+                </div>
               </div>
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Dataset ID</span>
-                <span class="font-mono text-[11px]">
-                  {{ form.dataset_id || '—' }}
-                </span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Protocol</span>
-                <span class="font-medium">
+              <div class="col-span-2 space-y-1">
+                <div class="text-xs text-muted-foreground">Protocol</div>
+                <div class="font-medium">
                   {{ form.protocol_version?.toUpperCase() || '—' }}
-                </span>
+                </div>
+              </div>
+              <div class="col-span-4 space-y-1">
+                <div class="text-xs text-muted-foreground">Dataset ID (optional)</div>
+                <div class="font-mono text-[11px] break-all">
+                  {{ form.dataset_id || '—' }}
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-4 gap-4">
-            <div class="text-right text-muted-foreground">Transformer</div>
-            <div class="col-span-3 space-y-1">
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Image</span>
-                <span class="font-mono text-[11px] break-all">
+          <div
+            class="rounded-md border border-border/60 bg-muted/10 px-3 py-2 space-y-3"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Transformer & metrics
+            </div>
+            <div class="space-y-2">
+              <div class="space-y-1">
+                <div class="text-xs text-muted-foreground">Transformer image</div>
+                <div class="font-mono text-[11px] break-all">
                   {{ form.transformer_image || '—' }}
-                </span>
+                </div>
               </div>
-              <div class="flex flex-col">
-                <span class="text-xs text-muted-foreground">Transformer parameters</span>
-                <span class="font-mono text-[11px] break-all">
+              <div class="space-y-1">
+                <div class="text-xs text-muted-foreground">
+                  Transformer parameters (optional)
+                </div>
+                <div
+                  class="font-mono text-[11px] wrap-break-word max-h-24 overflow-y-auto rounded-sm bg-background/40 px-2 py-1 border border-border/40"
+                >
                   {{ form.transformer_parameters_json || '—' }}
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -300,35 +324,41 @@
       </div>
 
       <DialogFooter class="mt-2">
-        <Button variant="outline" @click="handleClose">Cancel</Button>
-        <Button
-          v-if="currentStep > 0"
-          variant="ghost"
-          size="sm"
-          @click="previousStep"
+        <div
+          class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
         >
-          Back
-        </Button>
-        <Button
-          v-if="currentStep < steps.length - 1"
-          size="sm"
-          :disabled="!canGoNext"
-          @click="nextStep"
-        >
-          Next
-        </Button>
-        <Button
-          v-else
-          :disabled="isSubmitting || !isValid"
-          @click="handleSubmit"
-        >
-          <Icon
-            v-if="isSubmitting"
-            name="lucide:loader-2"
-            class="mr-2 h-4 w-4 animate-spin"
-          />
-          Create
-        </Button>
+          <Button variant="outline" @click="handleClose">Cancel</Button>
+          <div class="flex items-center gap-2">
+            <Button
+              v-if="currentStep > 0"
+              variant="ghost"
+              size="sm"
+              @click="previousStep"
+            >
+              Back
+            </Button>
+            <Button
+              v-if="currentStep < steps.length - 1"
+              size="sm"
+              :disabled="!canGoNext"
+              @click="nextStep"
+            >
+              Next
+            </Button>
+            <Button
+              v-else
+              :disabled="isSubmitting || !isValid"
+              @click="handleSubmit"
+            >
+              <Icon
+                v-if="isSubmitting"
+                name="lucide:loader-2"
+                class="mr-2 h-4 w-4 animate-spin"
+              />
+              Create
+            </Button>
+          </div>
+        </div>
       </DialogFooter>
     </DialogContent>
   </Dialog>
