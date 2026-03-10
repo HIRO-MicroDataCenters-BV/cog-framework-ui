@@ -109,6 +109,10 @@ const props = defineProps({
     type: String as PropType<string | undefined>,
     default: undefined,
   },
+  searchPlaceholderKey: {
+    type: String,
+    default: 'placeholder.search_by_name_or_id',
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -856,7 +860,7 @@ defineExpose({ fetchData, totalItems });
                 v-model="searchValue"
                 class="w-64 pl-8"
                 type="search"
-                :placeholder="t('placeholder.search_by_name_or_id')"
+                :placeholder="t(props.searchPlaceholderKey)"
                 @update:model-value="applySearchFilter"
               />
               <Icon

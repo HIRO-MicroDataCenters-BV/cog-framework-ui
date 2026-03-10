@@ -432,6 +432,7 @@ onMounted(() => {
     :sortable-columns="['creation_timestamp']"
     :filterable-columns="['status']"
     :page-size="10"
+    search-placeholder-key="placeholder.search_by_name"
     class="grow"
   >
     <template #header-actions>
@@ -478,7 +479,7 @@ onMounted(() => {
               v-model="searchQuery"
               class="w-64 pl-8"
               type="search"
-              :placeholder="t('placeholder.search_by_name_or_id')"
+              :placeholder="t('placeholder.search_by_name')"
             />
             <Icon
               name="lucide:search"
