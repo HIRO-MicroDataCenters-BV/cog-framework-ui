@@ -22,6 +22,11 @@ const openCreateServingFor = (model: any) => {
   createServingOpen.value = true;
 };
 
+const closeCreateServing = () => {
+  createServingOpen.value = false;
+  selectedModelForServing.value = null;
+};
+
 setPage({
   section: 'models',
 });
@@ -210,7 +215,7 @@ const tabs = uselistTabs().value.model_management;
     <ModelServingCreateFromModel
       :open="createServingOpen"
       :model="selectedModelForServing"
-      @close="createServingOpen = false"
+      @close="closeCreateServing"
       @created="tableRef?.fetchData?.()"
     />
   </div>
