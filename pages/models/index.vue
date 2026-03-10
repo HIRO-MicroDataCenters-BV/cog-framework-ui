@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
+import type { ModelSummary } from '@/types/model.types';
 import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { useSidebar } from '~/components/ui/sidebar';
@@ -15,9 +16,9 @@ const { setPage, page } = useApp();
 const { state: sidebarState } = useSidebar();
 const tableRef = ref();
 const createServingOpen = ref(false);
-const selectedModelForServing = ref<any | null>(null);
+const selectedModelForServing = ref<ModelSummary | null>(null);
 
-const openCreateServingFor = (model: any) => {
+const openCreateServingFor = (model: ModelSummary) => {
   selectedModelForServing.value = model;
   createServingOpen.value = true;
 };

@@ -546,13 +546,23 @@ const handleSubmit = async () => {
   }
 };
 
+interface ModelsApiItem {
+  id?: string;
+  name?: string;
+  version?: number | null;
+  type?: string;
+}
+interface ModelsApiResponse {
+  data?: ModelsApiItem[];
+}
+
 const loadModelDetailsByName = async (name: string) => {
   loadingModelDetails.value = true;
   try {
-    const res = await getModels({ name });
-    const items = (res as any)?.data ?? [];
+    const res = (await getModels({ name })) as ModelsApiResponse | null;
+    const items = res?.data ?? [];
     if (items.length > 0) {
-      const primary = items[0] as any;
+      const primary = items[0];
       form.model_id = String(primary.id ?? form.model_id);
       form.model_name = String(primary.name ?? form.model_name ?? '');
       if (primary.version !== undefined && primary.version !== null) {
@@ -563,7 +573,7 @@ const loadModelDetailsByName = async (name: string) => {
       }
     }
     availableVersions.value = items.map(
-      (m: any): ModelSummary => ({
+      (m: ModelsApiItem): ModelSummary => ({
         id: String(m.id),
         name: String(m.name ?? ''),
         type: m.type ? String(m.type) : undefined,

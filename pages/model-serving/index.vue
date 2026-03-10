@@ -423,263 +423,269 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Table view: AppTable with its own header -->
-  <AppTable
-    v-if="viewMode === 'table'"
-    ref="tableRef"
-    :columns="tableColumns"
-    :data-source="getModelsServing"
-    :sortable-columns="['creation_timestamp']"
-    :filterable-columns="['status']"
-    :page-size="10"
-    search-placeholder-key="placeholder.search_by_name"
-    class="grow"
-  >
-    <template #header-actions>
-      <div
-        class="flex rounded-md border border-border overflow-hidden shrink-0"
-      >
-        <Button
-          variant="ghost"
-          size="sm"
-          class="rounded-none h-8 px-2.5 bg-muted"
-          title="Table view"
-        >
-          <Icon name="lucide:table-2" class="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          class="rounded-none h-8 px-2.5"
-          title="Cards view"
-          @click="viewMode = 'cards'"
-        >
-          <Icon name="lucide:layout-grid" class="h-4 w-4" />
-        </Button>
-      </div>
-    </template>
-  </AppTable>
-
-  <!-- Cards view -->
-  <div v-else class="w-full flex flex-col h-svh">
-    <!-- Header for cards view -->
-    <div class="pl-4 p-3">
-      <div class="pb-2 flex justify-between gap-2">
-        <div>
-          <h2 class="text-xl font-medium flex items-center gap-2">
-            <Icon :name="sectionIcon" class="h-4 w-4 mr-2" />
-            {{ t(`title.${page.section}`) }}
-            ({{ cardsTotalItems }})
-          </h2>
-        </div>
-
-        <div class="flex gap-2">
-          <div class="relative">
-            <Input
-              v-model="searchQuery"
-              class="w-64 pl-8"
-              type="search"
-              :placeholder="t('placeholder.search_by_name')"
-            />
-            <Icon
-              name="lucide:search"
-              class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-          </div>
-
-          <Select v-model="statusFilter">
-            <SelectTrigger class="w-[140px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="opt in STATUS_OPTIONS"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select v-model="sortOrder">
-            <SelectTrigger class="w-[140px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="opt in SORT_OPTIONS"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div class="flex gap-2 items-center">
-            <div
-              class="flex rounded-md border border-border overflow-hidden shrink-0"
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                class="rounded-none h-8 px-2.5"
-                :class="viewMode === 'table' ? 'bg-muted' : ''"
-                title="Table view"
-                @click="viewMode = 'table'"
-              >
-                <Icon name="lucide:table-2" class="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="rounded-none h-8 px-2.5"
-                :class="viewMode === 'cards' ? 'bg-muted' : ''"
-                title="Cards view"
-                @click="viewMode = 'cards'"
-              >
-                <Icon name="lucide:layout-grid" class="h-4 w-4" />
-              </Button>
-            </div>
-
-            <Button
-              variant="outline"
-              size="icon"
-              class="cursor-pointer shrink-0"
-              :title="t('action.refresh')"
-              :disabled="isRefreshing"
-              @click="refresh()"
-            >
-              <Icon
-                name="lucide:refresh-cw"
-                :class="[
-                  'h-4 w-4 transition-transform duration-300',
-                  isRefreshing && 'animate-spin',
-                ]"
-              />
-            </Button>
-
-            <Button class="cursor-pointer gap-2" @click="onServeModel">
-              <Icon name="lucide:plus" class="h-4 w-4" />
-              {{ t(`action.add_${page.section}`) }}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cards content: loading / error / empty / cards -->
-    <div class="flex-1 flex flex-col min-h-0 px-4 pb-0">
-      <div
-        v-if="loading"
-        class="flex items-center justify-center min-h-[280px]"
-      >
-        <div class="text-center">
-          <Spinner class="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-          <p class="text-sm text-muted-foreground">Loading served models...</p>
-        </div>
-      </div>
-
-      <div
-        v-else-if="error"
-        class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-6 text-center"
-      >
-        <p class="text-sm text-destructive">{{ error }}</p>
-        <Button variant="outline" size="sm" class="mt-3" @click="fetchList">
-          Retry
-        </Button>
-      </div>
-
-      <div
-        v-else-if="list.length === 0 && !searchQuery"
-        class="flex flex-col items-center justify-center min-h-[280px] text-center"
-      >
-        <div class="rounded-full bg-muted/50 p-4 mb-4">
-          <Icon
-            name="lucide:server"
-            class="w-10 h-10 text-muted-foreground/60"
-          />
-        </div>
-        <h3 class="font-semibold text-foreground mb-1">No served models</h3>
-        <p class="text-sm text-muted-foreground max-w-sm">
-          Deployed inference services will appear here. Each card shows traffic
-          split and lets you adjust canary percentage.
-        </p>
-      </div>
-
-      <div
-        v-else-if="list.length === 0 && searchQuery"
-        class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
-      >
-        <p class="text-sm text-muted-foreground">
-          No results for "{{ searchQuery }}"
-        </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          class="mt-2"
-          @click="searchQuery = ''"
-        >
-          Clear search
-        </Button>
-      </div>
-
-      <template v-else>
-        <!-- Cards grid - scrollable area -->
-        <div class="flex-1 overflow-auto min-h-0">
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <ModelServingCard
-              v-for="item in list"
-              :key="item.isvc_name"
-              :serving="item"
-              @select="openSheet(item)"
-              @updated="onCardUpdated"
-              @create-canary="(serving) => openCanaryDialog(serving)"
-            />
-          </div>
-        </div>
-
-        <!-- Pagination bar - same style as Table (always visible at bottom) -->
+  <div class="flex flex-col h-full">
+    <!-- Table view: AppTable with its own header -->
+    <AppTable
+      v-if="viewMode === 'table'"
+      ref="tableRef"
+      :columns="tableColumns"
+      :data-source="getModelsServing"
+      :sortable-columns="['creation_timestamp']"
+      :filterable-columns="['status']"
+      :page-size="10"
+      search-placeholder-key="placeholder.search_by_name"
+      class="grow"
+    >
+      <template #header-actions>
         <div
-          v-if="cardsTotalItems > 0"
-          class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
+          class="flex rounded-md border border-border overflow-hidden shrink-0"
         >
-          <AppPagination
-            class="w-full"
-            :current-page="cardsCurrentPage"
-            :total-items="cardsTotalItems"
-            :page-size="cardsPageSize"
-            :can-previous-page="cardsCanPreviousPage"
-            :can-next-page="cardsCanNextPage"
-            :sibling-count="2"
-            :show-edges="true"
-            :page-size-options="[8, 12, 16]"
-            @on-set-page="setCardsPage"
-            @on-set-page-size="setCardsPageSize"
-          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="rounded-none h-8 px-2.5 bg-muted"
+            title="Table view"
+          >
+            <Icon name="lucide:table-2" class="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="rounded-none h-8 px-2.5"
+            title="Cards view"
+            @click="viewMode = 'cards'"
+          >
+            <Icon name="lucide:layout-grid" class="h-4 w-4" />
+          </Button>
         </div>
       </template>
+    </AppTable>
+
+    <!-- Cards view -->
+    <div v-else class="w-full flex flex-col h-svh">
+      <!-- Header for cards view -->
+      <div class="pl-4 p-3">
+        <div class="pb-2 flex justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-medium flex items-center gap-2">
+              <Icon :name="sectionIcon" class="h-4 w-4 mr-2" />
+              {{ t(`title.${page.section}`) }}
+              ({{ cardsTotalItems }})
+            </h2>
+          </div>
+
+          <div class="flex gap-2">
+            <div class="relative">
+              <Input
+                v-model="searchQuery"
+                class="w-64 pl-8"
+                type="search"
+                :placeholder="t('placeholder.search_by_name')"
+              />
+              <Icon
+                name="lucide:search"
+                class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+            </div>
+
+            <Select v-model="statusFilter">
+              <SelectTrigger class="w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="opt in STATUS_OPTIONS"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select v-model="sortOrder">
+              <SelectTrigger class="w-[140px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="opt in SORT_OPTIONS"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div class="flex gap-2 items-center">
+              <div
+                class="flex rounded-md border border-border overflow-hidden shrink-0"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5"
+                  :class="viewMode === 'table' ? 'bg-muted' : ''"
+                  title="Table view"
+                  @click="viewMode = 'table'"
+                >
+                  <Icon name="lucide:table-2" class="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5"
+                  :class="viewMode === 'cards' ? 'bg-muted' : ''"
+                  title="Cards view"
+                  @click="viewMode = 'cards'"
+                >
+                  <Icon name="lucide:layout-grid" class="h-4 w-4" />
+                </Button>
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                class="cursor-pointer shrink-0"
+                :title="t('action.refresh')"
+                :disabled="isRefreshing"
+                @click="refresh()"
+              >
+                <Icon
+                  name="lucide:refresh-cw"
+                  :class="[
+                    'h-4 w-4 transition-transform duration-300',
+                    isRefreshing && 'animate-spin',
+                  ]"
+                />
+              </Button>
+
+              <Button class="cursor-pointer gap-2" @click="onServeModel">
+                <Icon name="lucide:plus" class="h-4 w-4" />
+                {{ t(`action.add_${page.section}`) }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards content: loading / error / empty / cards -->
+      <div class="flex-1 flex flex-col min-h-0 px-4 pb-0">
+        <div
+          v-if="loading"
+          class="flex items-center justify-center min-h-[280px]"
+        >
+          <div class="text-center">
+            <Spinner class="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <p class="text-sm text-muted-foreground">
+              Loading served models...
+            </p>
+          </div>
+        </div>
+
+        <div
+          v-else-if="error"
+          class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-6 text-center"
+        >
+          <p class="text-sm text-destructive">{{ error }}</p>
+          <Button variant="outline" size="sm" class="mt-3" @click="fetchList">
+            Retry
+          </Button>
+        </div>
+
+        <div
+          v-else-if="list.length === 0 && !searchQuery"
+          class="flex flex-col items-center justify-center min-h-[280px] text-center"
+        >
+          <div class="rounded-full bg-muted/50 p-4 mb-4">
+            <Icon
+              name="lucide:server"
+              class="w-10 h-10 text-muted-foreground/60"
+            />
+          </div>
+          <h3 class="font-semibold text-foreground mb-1">No served models</h3>
+          <p class="text-sm text-muted-foreground max-w-sm">
+            Deployed inference services will appear here. Each card shows
+            traffic split and lets you adjust canary percentage.
+          </p>
+        </div>
+
+        <div
+          v-else-if="list.length === 0 && searchQuery"
+          class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
+        >
+          <p class="text-sm text-muted-foreground">
+            No results for "{{ searchQuery }}"
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="mt-2"
+            @click="searchQuery = ''"
+          >
+            Clear search
+          </Button>
+        </div>
+
+        <template v-else>
+          <!-- Cards grid - scrollable area -->
+          <div class="flex-1 overflow-auto min-h-0">
+            <div
+              class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            >
+              <ModelServingCard
+                v-for="item in list"
+                :key="item.isvc_name"
+                :serving="item"
+                @select="openSheet(item)"
+                @updated="onCardUpdated"
+                @create-canary="(serving) => openCanaryDialog(serving)"
+              />
+            </div>
+          </div>
+
+          <!-- Pagination bar - same style as Table (always visible at bottom) -->
+          <div
+            v-if="cardsTotalItems > 0"
+            class="shrink-0 py-1 px-4 border-t border-border bg-card flex items-center -mx-4"
+          >
+            <AppPagination
+              class="w-full"
+              :current-page="cardsCurrentPage"
+              :total-items="cardsTotalItems"
+              :page-size="cardsPageSize"
+              :can-previous-page="cardsCanPreviousPage"
+              :can-next-page="cardsCanNextPage"
+              :sibling-count="2"
+              :show-edges="true"
+              :page-size-options="[8, 12, 16]"
+              @on-set-page="setCardsPage"
+              @on-set-page-size="setCardsPageSize"
+            />
+          </div>
+        </template>
+      </div>
     </div>
+
+    <ModelServingSheet
+      v-model:open="sheetOpen"
+      :serving="sheetServing"
+      @edit="onSheetEdit"
+    />
+
+    <ModelServingEditDialog
+      :open="editDialogOpen"
+      :model-serving="selectedModelServing"
+      @close="closeEditDialog"
+      @saved="(p) => onEditSaved(p)"
+    />
+
+    <ModelServingCanaryDialog
+      :open="canaryDialogOpen"
+      :base-serving="canaryBaseServing"
+      @close="closeCanaryDialog"
+      @created="fetchList"
+    />
   </div>
-
-  <ModelServingSheet
-    v-model:open="sheetOpen"
-    :serving="sheetServing"
-    @edit="onSheetEdit"
-  />
-
-  <ModelServingEditDialog
-    :open="editDialogOpen"
-    :model-serving="selectedModelServing"
-    @close="closeEditDialog"
-    @saved="(p) => onEditSaved(p)"
-  />
-
-  <ModelServingCanaryDialog
-    :open="canaryDialogOpen"
-    :base-serving="canaryBaseServing"
-    @close="closeCanaryDialog"
-    @created="fetchList"
-  />
 </template>

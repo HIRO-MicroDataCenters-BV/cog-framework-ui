@@ -372,15 +372,13 @@ watch(
   (m) => {
     Object.assign(form, blankForm());
     if (!m) return;
-    form.model_id = String((m as any).id ?? '');
-    form.model_name = String((m as any).name ?? '');
+    form.model_id = String(m.id ?? '');
+    form.model_name = String(m.name ?? '');
     form.model_version =
-      (m as any).version !== undefined && (m as any).version !== null
-        ? String((m as any).version)
-        : '';
+      m.version !== undefined && m.version !== null ? String(m.version) : '';
     form.isvc_name = form.model_name ? `${form.model_name}-serving` : '';
-    if ((m as any).type) {
-      form.model_format = String((m as any).type).toLowerCase();
+    if (m.type) {
+      form.model_format = String(m.type).toLowerCase();
     }
   },
   { immediate: true },
