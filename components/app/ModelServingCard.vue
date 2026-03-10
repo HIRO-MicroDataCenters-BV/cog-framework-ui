@@ -4,7 +4,7 @@
     @click="emit('select')"
   >
     <!-- Header with status indicator -->
-    <div class="relative p-4 pb-3">
+    <div class="relative px-4 pt-3 pb-2">
       <!-- Status dot indicator -->
       <div
         class="absolute top-3 right-3 w-2.5 h-2.5 rounded-full"
@@ -13,7 +13,7 @@
       />
 
       <!-- Icon and name -->
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-2.5">
         <div
           class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
         >
@@ -26,10 +26,16 @@
           >
             {{ serving.isvc_name }}
           </h3>
-          <div class="flex items-center gap-2 mt-1">
+          <div class="flex items-center justify-between gap-2 mt-0.5">
             <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
               {{ serving.status }}
             </Badge>
+            <span
+              v-if="serving.age"
+              class="text-[10px] text-muted-foreground tabular-nums shrink-0"
+            >
+              {{ formatAge(serving.age) }}
+            </span>
           </div>
         </div>
       </div>
@@ -55,12 +61,7 @@
             {{ serving.model_version ? `v${serving.model_version}` : '—' }}
           </span>
         </div>
-        <div>
-          <span class="text-muted-foreground block mb-0.5">Age</span>
-          <span class="font-medium text-foreground tabular-nums">{{
-            formatAge(serving.age)
-          }}</span>
-        </div>
+        <!-- Age moved to header -->
         <template v-if="!serving.has_canary">
           <div>
             <span class="text-muted-foreground block mb-0.5">Revision</span>
