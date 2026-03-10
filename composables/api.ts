@@ -1,16 +1,13 @@
-import {
-  apiErrorResponseSchema,
-  apiResponseSchema,
-} from '~/schemas/response.schema';
+import { apiErrorResponseSchema, apiResponseSchema } from '~/schemas/response.schema';
 import type {
-  ModelRecommendParams,
-  ModelQueryParams,
-  DatasetQueryParams,
-  ModelFileUploadParams,
   DatasetFileUploadParams,
-  PipelineComponentParams,
-  PodParams,
+  DatasetQueryParams,
   InferenceServiceParams,
+  ModelFileUploadParams,
+  ModelQueryParams,
+  ModelRecommendParams,
+  PipelineComponentParams,
+  PodParams
 } from '~/types/api.types';
 import type { ModelServingResponse } from '~/types/model.types';
 
@@ -23,7 +20,6 @@ import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
-import runsData from '@/mocks/get.runs.json';
 import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
 import runsFlowData from '@/mocks/get.runs.flow.json';
@@ -257,11 +253,16 @@ export const useApi = () => {
       if (mockEnabled) {
         return Promise.resolve(modelsData);
       }
-      const q = new URLSearchParams(
-        params as Record<string, string>,
-      ).toString();
-      const res = await request(`/models?${q}`);
-      return res;
+      // Backend expects `search` for free-text name queries.
+      const raw = params as Record<string, string>;
+      const mapped: Record<string, string> = { ...raw };
+      if (mapped.name) {
+        mapped.search = mapped.name;
+        delete mapped.name;
+      }
+      const q = new URLSearchParams(mapped).toString();
+
+      return await request(`/models?${q}`);
     },
 
     /**

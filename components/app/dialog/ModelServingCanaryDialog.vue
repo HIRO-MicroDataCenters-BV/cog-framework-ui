@@ -55,14 +55,93 @@
       <div class="mt-2 grid gap-4 py-2">
         <!-- Step 0: Required details -->
         <div v-if="currentStep === 0" class="space-y-4">
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_id" class="text-right">Model ID</Label>
-            <Input
-              id="model_id"
-              v-model="form.model_id"
-              class="col-span-3"
-              placeholder="Required"
-            />
+          <div
+            v-if="availableVersions.length"
+            class="grid grid-cols-4 items-center gap-4"
+          >
+            <Label class="text-right">Select model</Label>
+            <Select v-model="selectedModelId">
+              <SelectTrigger class="col-span-3 min-w-[320px]">
+                <span
+                  v-if="form.model_name"
+                  class="truncate max-w-full"
+                >
+                  {{ form.model_name }}
+                </span>
+                <span
+                  v-else
+                  class="text-muted-foreground"
+                >
+                  Choose model / version
+                </span>
+              </SelectTrigger>
+              <SelectContent class="min-w-[min(420px,90vw)]">
+                <SelectItem
+                  v-for="opt in availableVersions"
+                  :key="opt.id"
+                  :value="opt.id"
+                >
+                  <div class="flex flex-col gap-0.5">
+                    <span>
+                      {{ opt.name }} · v{{ opt.version
+                      }}<span v-if="opt.type"> ({{ opt.type }})</span>
+                    </span>
+                    <span class="break-all text-[10px] font-mono text-muted-foreground">
+                      {{ opt.id }}
+                    </span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div class="grid grid-cols-4 items-start gap-4">
+            <div />
+            <div class="col-span-3 flex flex-col gap-2">
+              <template v-if="!selectedModelId">
+                <Input
+                  id="model_id"
+                  v-model="form.model_id"
+                  placeholder="Required"
+                />
+                <Input
+                  id="model_version"
+                  v-model="form.model_version"
+                  placeholder="Version"
+                />
+                <Input
+                  id="model_format"
+                  v-model="form.model_format"
+                  placeholder="Format (e.g. mlflow, sklearn)"
+                />
+              </template>
+              <div
+                v-if="form.model_id || form.model_version || form.model_format"
+                class="mt-1 rounded-md border border-amber-400/60 bg-amber-400/10 dark:bg-amber-400/15 px-2.5 py-1.5 text-[11px] flex flex-col gap-0.5"
+              >
+                <div class="flex items-center gap-2 text-amber-900 dark:text-amber-50">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0"
+                  />
+                  <span
+                    v-if="form.model_id"
+                    class="font-mono text-[10px]"
+                  >
+                    {{ form.model_id }}
+                  </span>
+                </div>
+                <div
+                  v-if="form.model_version || form.model_format"
+                  class="flex items-center gap-2 text-amber-900 dark:text-amber-50"
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0"
+                  />
+                  <span v-if="form.model_version">v{{ form.model_version }}</span>
+                  <span v-if="form.model_format">({{ form.model_format }})</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
@@ -75,25 +154,7 @@
             />
           </div>
 
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_name" class="text-right">Model name</Label>
-            <Input
-              id="model_name"
-              v-model="form.model_name"
-              class="col-span-3"
-              placeholder="Required"
-            />
-          </div>
 
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_version" class="text-right">Model version</Label>
-            <Input
-              id="model_version"
-              v-model="form.model_version"
-              class="col-span-3"
-              placeholder="Required"
-            />
-          </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
             <Label for="protocol_version" class="text-right">
@@ -110,15 +171,7 @@
             </Select>
           </div>
 
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_format" class="text-right">Model format</Label>
-            <Input
-              id="model_format"
-              v-model="form.model_format"
-              class="col-span-3"
-              placeholder="e.g. mlflow, sklearn"
-            />
-          </div>
+          
         </div>
 
         <!-- Step 1: Optional / advanced -->
@@ -208,13 +261,7 @@ import {
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '~/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import type { ModelServing } from '~/types/model.types';
 
@@ -228,7 +275,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing } = useApi();
+const { postModelServing, getModels } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -252,6 +299,17 @@ const form = reactive({
   model_format: '',
 });
 
+type ModelSummary = {
+  id: string;
+  name: string;
+  type?: string;
+  version?: string | number;
+};
+
+const availableVersions = ref<ModelSummary[]>([]);
+const loadingModelDetails = ref(false);
+const selectedModelId = ref('');
+
 const isValid = computed(
   () =>
     !!form.model_id &&
@@ -260,6 +318,20 @@ const isValid = computed(
     !!form.model_version &&
     !!form.protocol_version &&
     !!form.model_format,
+);
+
+watch(
+  () => props.baseServing,
+  (value) => {
+    if (!value) return;
+    form.dataset_id = value.dataset_id ?? '';
+    form.isvc_name = `${value.isvc_name}-canary`;
+    const name = value.model_name || value.isvc_name;
+    if (name) {
+      loadModelDetailsByName(name);
+    }
+  },
+  { immediate: true },
 );
 
 const canGoNext = computed(() => {
@@ -273,19 +345,6 @@ const canGoNext = computed(() => {
   }
   return true;
 });
-
-watch(
-  () => props.baseServing,
-  (value) => {
-    if (!value) return;
-    form.model_id = value.model_id ?? '';
-    form.model_name = value.model_name ?? '';
-    form.model_version = value.model_version ?? '';
-    form.dataset_id = value.dataset_id ?? '';
-    form.isvc_name = `${value.isvc_name}-canary`;
-  },
-  { immediate: true },
-);
 
 const handleClose = () => {
   emit('close');
@@ -343,5 +402,66 @@ const handleSubmit = async () => {
     isSubmitting.value = false;
   }
 };
+
+const loadModelDetailsByName = async (name: string) => {
+  loadingModelDetails.value = true;
+  try {
+    const res = await getModels({ name });
+    const items = (res as any)?.data ?? [];
+    if (items.length > 0) {
+      const primary = items[0] as any;
+      form.model_id = String(primary.id ?? form.model_id);
+      form.model_name = String(primary.name ?? form.model_name ?? '');
+      if (primary.version !== undefined && primary.version !== null) {
+        form.model_version = String(primary.version);
+      }
+      if (primary.type && !form.model_format) {
+        form.model_format = String(primary.type);
+      }
+    }
+    availableVersions.value = items.map(
+      (m: any): ModelSummary => ({
+        id: String(m.id),
+        name: String(m.name ?? ''),
+        type: m.type ? String(m.type) : undefined,
+        version:
+          m.version !== undefined && m.version !== null
+            ? String(m.version)
+            : undefined,
+      }),
+    );
+    if (availableVersions.value.length) {
+      selectedModelId.value = availableVersions.value[0].id;
+    }
+  } catch (error) {
+    console.error('Failed to load model details', error);
+  } finally {
+    loadingModelDetails.value = false;
+  }
+};
+
+const selectVersion = (opt: ModelSummary) => {
+  if (opt.version !== undefined) {
+    form.model_version = String(opt.version);
+  }
+  form.model_id = opt.id;
+   if (opt.name) {
+    form.model_name = opt.name;
+  }
+  if (opt.type) {
+    form.model_format = opt.type;
+  }
+};
+
+watch(
+  selectedModelId,
+  (id) => {
+    if (!id) return;
+    const opt = availableVersions.value.find((m) => m.id === id);
+    if (opt) {
+      selectVersion(opt);
+    }
+  },
+);
 </script>
 
