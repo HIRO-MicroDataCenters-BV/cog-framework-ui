@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <!-- Model (single when no canary) -->
+      <!-- Model -->
       <section class="space-y-3">
         <div class="flex items-center gap-2">
           <Icon name="lucide:box" class="w-4 h-4 text-muted-foreground" />
@@ -33,111 +33,67 @@
             Model
           </h3>
         </div>
-        <template v-if="!serving.has_canary">
-          <div class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm">
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Name</span>
-              <span class="font-medium text-foreground text-right truncate" :title="serving.model_name ?? undefined">
-                {{ serving.model_name ?? '—' }}
-              </span>
-            </div>
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Version</span>
-              <span class="font-medium text-foreground text-right">
-                {{ serving.model_version ? `v${serving.model_version}` : '—' }}
-              </span>
-            </div>
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Model ID</span>
-              <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.model_id ?? undefined">
-                {{ serving.model_id ?? '—' }}
-              </span>
-            </div>
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Dataset ID</span>
-              <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.dataset_id ?? undefined">
-                {{ serving.dataset_id ?? '—' }}
-              </span>
-            </div>
+        <div class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm">
+          <div class="flex justify-between gap-3">
+            <span class="text-muted-foreground shrink-0">Name</span>
+            <span class="font-medium text-foreground text-right truncate" :title="serving.model_name ?? undefined">
+              {{ serving.model_name ?? '—' }}
+            </span>
           </div>
-        </template>
-        <!-- Stable & Canary when has_canary -->
-        <template v-else>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <!-- Stable -->
-            <div class="rounded-lg border border-primary/30 bg-primary/5 dark:bg-primary/10 p-3 space-y-2.5 text-sm">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="inline-flex h-2 w-2 rounded-full bg-primary" />
-                <span class="text-xs font-semibold text-foreground">Stable</span>
-                <span class="text-[10px] text-muted-foreground">({{ serving.stable_traffic_percent ?? 0 }}% traffic)</span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Name</span>
-                <span class="font-medium text-foreground text-right truncate text-xs" :title="serving.model_name ?? undefined">
-                  {{ serving.model_name ?? '—' }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Version</span>
-                <span class="font-medium text-foreground text-right text-xs">
-                  {{ serving.model_version ? `v${serving.model_version}` : '—' }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Model ID</span>
-                <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[120px]" :title="serving.model_id ?? undefined">
-                  {{ serving.model_id ?? '—' }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Revision</span>
-                <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[120px]" :title="serving.stable_revision ?? undefined">
-                  {{ serving.stable_revision ?? '—' }}
-                </span>
-              </div>
-            </div>
-            <!-- Canary -->
-            <div class="rounded-lg border border-amber-400/40 bg-amber-400/10 dark:bg-amber-400/15 p-3 space-y-2.5 text-sm">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="inline-flex h-2 w-2 rounded-full bg-amber-500" />
-                <span class="text-xs font-semibold text-foreground">Canary</span>
-                <span class="text-[10px] text-muted-foreground">({{ serving.canary_traffic_percent ?? 0 }}% traffic)</span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Model</span>
-                <span class="font-medium text-foreground text-right truncate text-xs" :title="serving.model_name ?? undefined">
-                  {{ serving.model_name ?? '—' }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Version</span>
-                <span class="font-medium text-foreground text-right text-xs">
-                  {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Model ID</span>
-                <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[120px]" :title="serving.canary_model_id ?? undefined">
-                  {{ serving.canary_model_id ?? '—' }}
-                </span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0 text-xs">Revision</span>
-                <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[120px]" :title="serving.canary_revision ?? undefined">
-                  {{ serving.canary_revision ?? '—' }}
-                </span>
-              </div>
-            </div>
+          <div class="flex justify-between gap-3">
+            <span class="text-muted-foreground shrink-0">Version</span>
+            <span class="font-medium text-foreground text-right">
+              {{ serving.model_version ? `v${serving.model_version}` : '—' }}
+            </span>
           </div>
-          <div v-if="serving.dataset_id" class="rounded-lg border border-border/60 bg-card p-2.5 text-sm">
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0 text-xs">Dataset ID</span>
-              <span class="font-mono text-xs font-medium text-foreground text-right truncate" :title="serving.dataset_id">
-                {{ serving.dataset_id }}
-              </span>
-            </div>
+          <div class="flex justify-between gap-3">
+            <span class="text-muted-foreground shrink-0">Model ID</span>
+            <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.model_id ?? undefined">
+              {{ serving.model_id ?? '—' }}
+            </span>
           </div>
-        </template>
+          <div class="flex justify-between gap-3">
+            <span class="text-muted-foreground shrink-0">Dataset ID</span>
+            <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.dataset_id ?? undefined">
+              {{ serving.dataset_id ?? '—' }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Canary rollout (separate section) -->
+      <section v-if="serving.has_canary" class="space-y-3">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:beaker" class="w-4 h-4 text-amber-500" />
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Canary rollout
+          </h3>
+        </div>
+        <div
+          class="rounded-lg border border-amber-400/50 bg-amber-400/10 dark:bg-amber-400/15 p-3 space-y-2 text-sm"
+        >
+          <div class="flex items-center justify-between gap-2 text-xs">
+            <span class="font-medium text-amber-800 dark:text-amber-100 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+              Canary version
+            </span>
+            <span class="font-semibold text-foreground">
+              {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
+            </span>
+          </div>
+          <div class="flex justify-between gap-3 text-xs">
+            <span class="text-muted-foreground shrink-0">Canary model ID</span>
+            <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]" :title="serving.canary_model_id ?? undefined">
+              {{ serving.canary_model_id ?? '—' }}
+            </span>
+          </div>
+          <div class="flex justify-between gap-3 text-xs">
+            <span class="text-muted-foreground shrink-0">Canary revision</span>
+            <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]" :title="serving.canary_revision ?? undefined">
+              {{ serving.canary_revision ?? '—' }}
+            </span>
+          </div>
+        </div>
       </section>
 
       <!-- Deployment -->
@@ -161,29 +117,6 @@
               <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.stable_revision ?? undefined">
                 {{ serving.stable_revision ?? '—' }}
               </span>
-            </div>
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Canary revision</span>
-              <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.canary_revision ?? undefined">
-                {{ serving.canary_revision ?? '—' }}
-              </span>
-            </div>
-            <!-- Traffic bar -->
-            <div class="pt-1">
-              <div class="flex justify-between text-[10px] text-muted-foreground mb-1">
-                <span>Canary {{ serving.canary_traffic_percent ?? 0 }}%</span>
-                <span>Stable {{ serving.stable_traffic_percent ?? 100 }}%</span>
-              </div>
-              <div class="h-1.5 rounded-full overflow-hidden bg-muted flex">
-                <div
-                  class="bg-amber-400/80 transition-all"
-                  :style="{ width: `${serving.canary_traffic_percent ?? 0}%` }"
-                />
-                <div
-                  class="bg-primary/80 transition-all"
-                  :style="{ width: `${serving.stable_traffic_percent ?? 100}%` }"
-                />
-              </div>
             </div>
           </template>
           <div class="flex justify-between gap-3">

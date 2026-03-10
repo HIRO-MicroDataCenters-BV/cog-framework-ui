@@ -39,78 +39,87 @@
     <div
       class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/20 dark:bg-zinc-800/30"
     >
-      <template v-if="!serving.has_canary">
-        <div class="grid grid-cols-2 gap-3 text-xs">
-          <div>
-            <span class="text-muted-foreground block mb-0.5">Model</span>
-            <span
-              class="font-medium text-foreground truncate block"
-              :title="serving.model_name"
-            >
-              {{ serving.model_name ?? '—' }}
-            </span>
-          </div>
-          <div>
-            <span class="text-muted-foreground block mb-0.5">Version</span>
-            <span class="font-medium text-foreground">
-              {{ serving.model_version ? `v${serving.model_version}` : '—' }}
-            </span>
-          </div>
-          <div>
-            <span class="text-muted-foreground block mb-0.5">Age</span>
-            <span class="font-medium text-foreground tabular-nums">{{
-              formatAge(serving.age)
-            }}</span>
-          </div>
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <span class="text-muted-foreground block mb-0.5">Model</span>
+          <span
+            class="font-medium text-foreground truncate block"
+            :title="serving.model_name ?? undefined"
+          >
+            {{ serving.model_name ?? '—' }}
+          </span>
+        </div>
+        <div>
+          <span class="text-muted-foreground block mb-0.5">Version</span>
+          <span class="font-medium text-foreground">
+            {{ serving.model_version ? `v${serving.model_version}` : '—' }}
+          </span>
+        </div>
+        <div>
+          <span class="text-muted-foreground block mb-0.5">Age</span>
+          <span class="font-medium text-foreground tabular-nums">{{
+            formatAge(serving.age)
+          }}</span>
+        </div>
+        <template v-if="!serving.has_canary">
           <div>
             <span class="text-muted-foreground block mb-0.5">Revision</span>
             <span
               class="font-medium text-foreground truncate block"
-              :title="serving.latest_ready_revision"
+            :title="serving.latest_ready_revision ?? undefined"
             >
               {{ shortenRevision(serving.latest_ready_revision) }}
             </span>
           </div>
-        </div>
-      </template>
-      <template v-else>
-        <!-- Stable & Canary when has_canary -->
-        <div class="space-y-2.5 text-xs">
-          <div class="flex gap-3">
-            <div class="flex-1 min-w-0 rounded border border-primary/30 bg-primary/5 dark:bg-primary/10 px-2 py-1.5">
-              <div class="flex items-center gap-1 mb-0.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                <span class="text-[10px] font-semibold text-muted-foreground uppercase">Stable</span>
-              </div>
-              <span class="font-medium text-foreground truncate block text-[11px]" :title="serving.model_name">
-                {{ serving.model_name ?? '—' }}{{ serving.model_version ? ` v${serving.model_version}` : '' }}
-              </span>
-              <span class="font-mono text-[10px] text-muted-foreground truncate block" :title="serving.stable_revision ?? undefined">
-                {{ shortenRevision(serving.stable_revision ?? '') || '—' }}
-              </span>
-            </div>
-            <div class="flex-1 min-w-0 rounded border border-amber-400/40 bg-amber-400/10 dark:bg-amber-400/15 px-2 py-1.5">
-              <div class="flex items-center gap-1 mb-0.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                <span class="text-[10px] font-semibold text-muted-foreground uppercase">Canary</span>
-              </div>
-              <span class="font-medium text-foreground truncate block text-[11px]" :title="serving.model_name">
-                {{ serving.model_name ?? '—' }}
-              </span>
-              <span class="font-medium text-foreground block text-[11px]">
-                {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
-              </span>
-              <span class="font-mono text-[10px] text-muted-foreground truncate block" :title="serving.canary_revision ?? undefined">
-                {{ shortenRevision(serving.canary_revision ?? '') || '—' }}
-              </span>
-            </div>
+        </template>
+        <template v-else>
+          <div>
+            <span class="text-muted-foreground block mb-0.5">Revision</span>
+            <span
+              class="font-medium text-foreground truncate block"
+              :title="serving.stable_revision ?? undefined"
+            >
+              {{ shortenRevision(serving.stable_revision ?? '') }}
+            </span>
           </div>
-          <div class="flex justify-between gap-2 pt-0.5">
-            <span class="text-muted-foreground">Age</span>
-            <span class="font-medium text-foreground tabular-nums">{{ formatAge(serving.age) }}</span>
-          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Canary section -->
+    <div
+      v-if="serving.has_canary"
+      class="px-4 py-2 border-t border-amber-400/40 bg-amber-400/5 dark:bg-amber-400/10"
+    >
+      <div class="flex items-center justify-between gap-2 mb-1">
+        <div class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 dark:text-amber-100">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+          <span>Canary rollout</span>
         </div>
-      </template>
+        <span class="text-[11px] text-muted-foreground">
+          {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
+        </span>
+      </div>
+      <div class="flex items-center justify-between gap-2 text-[11px] mt-0.5">
+        <span class="text-muted-foreground">Canary rev.</span>
+        <TooltipProvider :delay-duration="300">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span
+                class="font-mono text-[10px] text-amber-800 dark:text-amber-200 text-right"
+              >
+                {{ shortenRevisionMiddle(serving.canary_revision ?? undefined) }}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              class="max-w-[min(24rem,90vw)] break-all text-[10px]"
+            >
+              {{ serving.canary_revision ?? '—' }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
 
     <!-- URL section -->
@@ -321,6 +330,18 @@ function shortenRevision(revision: string | undefined): string {
   if (!revision) return '—';
   if (revision.length > 12) return revision.slice(0, 12) + '...';
   return revision;
+}
+
+function shortenRevisionMiddle(
+  revision: string | undefined,
+  max: number = 30,
+): string {
+  if (!revision) return '—';
+  if (revision.length <= max) return revision;
+  // Keep total displayed length at ~30 characters: 14 + 1 + 15
+  const head = revision.slice(0, 14);
+  const tail = revision.slice(-15);
+  return `${head}…${tail}`;
 }
 
 watch(
