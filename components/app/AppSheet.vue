@@ -8,7 +8,9 @@
     >
       <SheetHeader v-if="title || $slots.header" :class="headerClass">
         <SheetTitle v-if="title">{{ title }}</SheetTitle>
-        <SheetDescription v-if="description">{{ description }}</SheetDescription>
+        <SheetDescription v-if="description">{{
+          description
+        }}</SheetDescription>
         <slot name="header" />
       </SheetHeader>
 

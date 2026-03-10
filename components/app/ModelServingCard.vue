@@ -71,7 +71,11 @@
                   <span
                     class="font-mono text-[11px] text-foreground truncate text-right"
                   >
-                    {{ shortenRevisionMiddle(serving.latest_ready_revision ?? undefined) }}
+                    {{
+                      shortenRevisionMiddle(
+                        serving.latest_ready_revision ?? undefined,
+                      )
+                    }}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent
@@ -93,7 +97,11 @@
                   <span
                     class="font-mono text-[11px] text-foreground truncate text-right"
                   >
-                    {{ shortenRevisionMiddle(serving.stable_revision ?? undefined) }}
+                    {{
+                      shortenRevisionMiddle(
+                        serving.stable_revision ?? undefined,
+                      )
+                    }}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent
@@ -115,12 +123,20 @@
       class="px-4 py-2 border-t border-amber-400/40 bg-amber-400/5 dark:bg-amber-400/10"
     >
       <div class="flex items-center justify-between gap-2 mb-1">
-        <div class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 dark:text-amber-100">
+        <div
+          class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 dark:text-amber-100"
+        >
           <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
           <span>Canary rollout</span>
         </div>
         <span class="text-[11px] text-muted-foreground">
-          {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
+          {{
+            serving.canary_model_version
+              ? `v${serving.canary_model_version}`
+              : serving.model_version
+                ? `v${serving.model_version}`
+                : '—'
+          }}
         </span>
       </div>
       <div class="flex items-center justify-between gap-2 text-[11px] mt-0.5">
@@ -131,7 +147,9 @@
               <span
                 class="font-mono text-[10px] text-amber-800 dark:text-amber-200 text-right"
               >
-                {{ shortenRevisionMiddle(serving.canary_revision ?? undefined) }}
+                {{
+                  shortenRevisionMiddle(serving.canary_revision ?? undefined)
+                }}
               </span>
             </TooltipTrigger>
             <TooltipContent
@@ -221,7 +239,11 @@
             variant="outline"
             size="icon"
             class="h-6 w-6 shrink-0"
-            :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+            :class="
+              serving.has_canary
+                ? 'cursor-pointer'
+                : 'cursor-not-allowed opacity-50'
+            "
             :disabled="!serving.has_canary || localCanaryPercent <= 0"
             :title="'-5'"
             @click="stepCanary(-5)"
@@ -248,7 +270,11 @@
             variant="outline"
             size="icon"
             class="h-6 w-6 shrink-0"
-            :class="serving.has_canary ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'"
+            :class="
+              serving.has_canary
+                ? 'cursor-pointer'
+                : 'cursor-not-allowed opacity-50'
+            "
             :disabled="!serving.has_canary || localCanaryPercent >= 100"
             :title="'+5'"
             @click="stepCanary(5)"
@@ -299,7 +325,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'updated', payload?: { isvc_name: string; canary_traffic_percent: number }): void;
+  (
+    e: 'updated',
+    payload?: { isvc_name: string; canary_traffic_percent: number },
+  ): void;
   (e: 'select'): void;
 }>();
 

@@ -1,15 +1,17 @@
 <template>
   <AppSheet
     :open="open"
-    @update:open="(v) => emit('update:open', v)"
     title=""
     description=""
     side="right"
     content-class="w-full sm:max-w-lg"
+    @update:open="(v) => emit('update:open', v)"
   >
     <div v-if="serving" class="flex flex-col gap-5">
       <!-- Hero header -->
-      <div class="flex items-center gap-3 p-4 rounded-lg bg-muted/50 dark:bg-muted/20 -mx-1">
+      <div
+        class="flex items-center gap-3 p-4 rounded-lg bg-muted/50 dark:bg-muted/20 -mx-1"
+      >
         <div
           class="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
         >
@@ -29,14 +31,21 @@
       <section class="space-y-3">
         <div class="flex items-center gap-2">
           <Icon name="lucide:box" class="w-4 h-4 text-muted-foreground" />
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Model
           </h3>
         </div>
-        <div class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm">
+        <div
+          class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm"
+        >
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Name</span>
-            <span class="font-medium text-foreground text-right truncate" :title="serving.model_name ?? undefined">
+            <span
+              class="font-medium text-foreground text-right truncate"
+              :title="serving.model_name ?? undefined"
+            >
               {{ serving.model_name ?? '—' }}
             </span>
           </div>
@@ -48,13 +57,19 @@
           </div>
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Model ID</span>
-            <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.model_id ?? undefined">
+            <span
+              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
+              :title="serving.model_id ?? undefined"
+            >
               {{ serving.model_id ?? '—' }}
             </span>
           </div>
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Dataset ID</span>
-            <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.dataset_id ?? undefined">
+            <span
+              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
+              :title="serving.dataset_id ?? undefined"
+            >
               {{ serving.dataset_id ?? '—' }}
             </span>
           </div>
@@ -65,7 +80,9 @@
       <section v-if="serving.has_canary" class="space-y-3">
         <div class="flex items-center gap-2">
           <Icon name="lucide:beaker" class="w-4 h-4 text-amber-500" />
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Canary rollout
           </h3>
         </div>
@@ -73,23 +90,39 @@
           class="rounded-lg border border-amber-400/50 bg-amber-400/10 dark:bg-amber-400/15 p-3 space-y-2 text-sm"
         >
           <div class="flex items-center justify-between gap-2 text-xs">
-            <span class="font-medium text-amber-800 dark:text-amber-100 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+            <span
+              class="font-medium text-amber-800 dark:text-amber-100 flex items-center gap-1.5"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"
+              />
               Canary version
             </span>
             <span class="font-semibold text-foreground">
-              {{ serving.canary_model_version ? `v${serving.canary_model_version}` : (serving.model_version ? `v${serving.model_version}` : '—') }}
+              {{
+                serving.canary_model_version
+                  ? `v${serving.canary_model_version}`
+                  : serving.model_version
+                    ? `v${serving.model_version}`
+                    : '—'
+              }}
             </span>
           </div>
           <div class="flex justify-between gap-3 text-xs">
             <span class="text-muted-foreground shrink-0">Canary model ID</span>
-            <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]" :title="serving.canary_model_id ?? undefined">
+            <span
+              class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]"
+              :title="serving.canary_model_id ?? undefined"
+            >
               {{ serving.canary_model_id ?? '—' }}
             </span>
           </div>
           <div class="flex justify-between gap-3 text-xs">
             <span class="text-muted-foreground shrink-0">Canary revision</span>
-            <span class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]" :title="serving.canary_revision ?? undefined">
+            <span
+              class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]"
+              :title="serving.canary_revision ?? undefined"
+            >
               {{ serving.canary_revision ?? '—' }}
             </span>
           </div>
@@ -100,36 +133,54 @@
       <section class="space-y-3">
         <div class="flex items-center gap-2">
           <Icon name="lucide:rocket" class="w-4 h-4 text-muted-foreground" />
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Deployment
           </h3>
         </div>
-        <div class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm">
+        <div
+          class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm"
+        >
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Latest revision</span>
-            <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.latest_ready_revision">
+            <span
+              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
+              :title="serving.latest_ready_revision"
+            >
               {{ serving.latest_ready_revision ?? '—' }}
             </span>
           </div>
           <template v-if="serving.has_canary">
             <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground shrink-0">Stable revision</span>
-              <span class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]" :title="serving.stable_revision ?? undefined">
+              <span class="text-muted-foreground shrink-0"
+                >Stable revision</span
+              >
+              <span
+                class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
+                :title="serving.stable_revision ?? undefined"
+              >
                 {{ serving.stable_revision ?? '—' }}
               </span>
             </div>
           </template>
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Traffic</span>
-            <span class="font-medium text-foreground text-right">{{ serving.traffic_percentage ?? 0 }}%</span>
+            <span class="font-medium text-foreground text-right"
+              >{{ serving.traffic_percentage ?? 0 }}%</span
+            >
           </div>
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Age</span>
-            <span class="font-medium text-foreground text-right tabular-nums">{{ serving.age ?? '—' }}</span>
+            <span class="font-medium text-foreground text-right tabular-nums">{{
+              serving.age ?? '—'
+            }}</span>
           </div>
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Created</span>
-            <span class="font-medium text-foreground text-right">{{ formatDate(serving.creation_timestamp) }}</span>
+            <span class="font-medium text-foreground text-right">{{
+              formatDate(serving.creation_timestamp)
+            }}</span>
           </div>
         </div>
       </section>
@@ -138,12 +189,18 @@
       <section class="space-y-3">
         <div class="flex items-center gap-2">
           <Icon name="lucide:link" class="w-4 h-4 text-muted-foreground" />
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3
+            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
             Endpoint
           </h3>
         </div>
         <div class="rounded-lg border border-border/60 bg-card p-3">
-          <CopyPaste :has-copy="true" :copy-text="serving.served_model_url ?? ''" class="block">
+          <CopyPaste
+            :has-copy="true"
+            :copy-text="serving.served_model_url ?? ''"
+            class="block"
+          >
             <span
               class="text-xs text-muted-foreground hover:text-foreground break-all cursor-pointer transition-colors font-mono"
             >
@@ -154,11 +211,7 @@
       </section>
 
       <!-- Edit -->
-      <Button
-        variant="outline"
-        class="w-full"
-        @click="emit('edit', serving)"
-      >
+      <Button variant="outline" class="w-full" @click="emit('edit', serving)">
         <Icon name="lucide:sliders-horizontal" class="w-4 h-4 mr-2" />
         Edit traffic split
       </Button>

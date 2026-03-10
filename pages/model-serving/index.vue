@@ -121,9 +121,7 @@ function updateServingInList(payload: {
   isvc_name: string;
   canary_traffic_percent: number;
 }) {
-  const idx = list.value.findIndex(
-    (s) => s.isvc_name === payload.isvc_name,
-  );
+  const idx = list.value.findIndex((s) => s.isvc_name === payload.isvc_name);
   if (idx >= 0) {
     const updated = {
       ...list.value[idx],
@@ -617,13 +615,13 @@ onMounted(() => {
         <!-- Cards grid - scrollable area -->
         <div class="flex-1 overflow-auto min-h-0">
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <ModelServingCard
-                v-for="item in list"
-                :key="item.isvc_name"
-                :serving="item"
-                @select="openSheet(item)"
-                @updated="onCardUpdated"
-              />
+            <ModelServingCard
+              v-for="item in list"
+              :key="item.isvc_name"
+              :serving="item"
+              @select="openSheet(item)"
+              @updated="onCardUpdated"
+            />
           </div>
         </div>
 
