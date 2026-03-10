@@ -3,15 +3,8 @@
     class="overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-zinc-900/50 border-border dark:border-zinc-700 cursor-pointer flex flex-col h-full"
     @click="emit('select')"
   >
-    <!-- Header with status indicator -->
+    <!-- Header -->
     <div class="relative px-4 pt-3 pb-2">
-      <!-- Status dot indicator -->
-      <div
-        class="absolute top-3 right-3 w-2.5 h-2.5 rounded-full"
-        :class="statusDotClass"
-        :title="serving.status"
-      />
-
       <!-- Icon and name -->
       <div class="flex items-start gap-2.5">
         <div
@@ -20,12 +13,34 @@
           <Icon name="lucide:server" class="w-5 h-5" />
         </div>
         <div class="min-w-0 flex-1">
-          <h3
-            class="font-semibold text-foreground truncate"
-            :title="serving.isvc_name"
-          >
-            {{ serving.isvc_name }}
-          </h3>
+          <div class="flex items-start justify-between gap-2">
+            <h3
+              class="font-semibold text-foreground truncate"
+              :title="serving.isvc_name"
+            >
+              {{ serving.isvc_name }}
+            </h3>
+            <TooltipProvider v-if="!serving.has_canary" :delay-duration="300">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-6 w-6 text-amber-700 hover:text-amber-800 hover:bg-amber-100/60"
+                    @click.stop="emit('create-canary', serving)"
+                  >
+                    <Icon name="lucide:git-branch-plus" class="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  class="text-[11px] px-2 py-1"
+                >
+                  Canary Rollout
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <div class="flex items-center justify-between gap-2 mt-0.5">
             <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
               {{ serving.status }}
@@ -330,6 +345,7 @@ const emit = defineEmits<{
     payload?: { isvc_name: string; canary_traffic_percent: number },
   ): void;
   (e: 'select'): void;
+  (e: 'create-canary', serving: ModelServing): void;
 }>();
 
 const { patchModelServing } = useApi();

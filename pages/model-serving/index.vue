@@ -6,6 +6,7 @@ import ModelServingSheet from '~/components/app/ModelServingSheet.vue';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
+import ModelServingCanaryDialog from '~/components/app/dialog/ModelServingCanaryDialog.vue';
 import AppTable from '~/components/app/Table.vue';
 import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
@@ -71,6 +72,8 @@ const STATUS_OPTIONS = [
 
 const editDialogOpen = ref(false);
 const selectedModelServing = ref<ModelServing | null>(null);
+const canaryDialogOpen = ref(false);
+const canaryBaseServing = ref<ModelServing | null>(null);
 const sheetOpen = ref(false);
 const sheetServing = ref<ModelServing | null>(null);
 
@@ -90,6 +93,16 @@ function openEditDialog(row: ModelServing) {
 function closeEditDialog() {
   editDialogOpen.value = false;
   selectedModelServing.value = null;
+}
+
+function openCanaryDialog(serving: ModelServing) {
+  canaryBaseServing.value = serving;
+  canaryDialogOpen.value = true;
+}
+
+function closeCanaryDialog() {
+  canaryDialogOpen.value = false;
+  canaryBaseServing.value = null;
 }
 
 function openSheet(serving: ModelServing) {
@@ -621,6 +634,7 @@ onMounted(() => {
               :serving="item"
               @select="openSheet(item)"
               @updated="onCardUpdated"
+              @create-canary="(serving) => openCanaryDialog(serving)"
             />
           </div>
         </div>
@@ -659,5 +673,12 @@ onMounted(() => {
     :model-serving="selectedModelServing"
     @close="closeEditDialog"
     @saved="(p) => onEditSaved(p)"
+  />
+
+  <ModelServingCanaryDialog
+    :open="canaryDialogOpen"
+    :base-serving="canaryBaseServing"
+    @close="closeCanaryDialog"
+    @created="fetchList"
   />
 </template>
