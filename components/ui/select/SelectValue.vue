@@ -3,7 +3,9 @@ import type { HTMLAttributes } from 'vue';
 import { SelectValue, type SelectValueProps } from 'reka-ui';
 import { cn } from '@/utils';
 
-const props = defineProps<SelectValueProps & { class?: HTMLAttributes['class'] }>();
+const props = defineProps<
+  SelectValueProps & { class?: HTMLAttributes['class'] }
+>();
 </script>
 
 <template>

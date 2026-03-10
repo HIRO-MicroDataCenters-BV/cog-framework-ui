@@ -1,4 +1,7 @@
-import { apiErrorResponseSchema, apiResponseSchema } from '~/schemas/response.schema';
+import {
+  apiErrorResponseSchema,
+  apiResponseSchema,
+} from '~/schemas/response.schema';
 import type {
   DatasetFileUploadParams,
   DatasetQueryParams,
@@ -7,7 +10,7 @@ import type {
   ModelQueryParams,
   ModelRecommendParams,
   PipelineComponentParams,
-  PodParams
+  PodParams,
 } from '~/types/api.types';
 import type { ModelServingResponse } from '~/types/model.types';
 

@@ -637,6 +637,15 @@ const table = useVueTable({
   },
 });
 
+const visibleHeaders = computed(() => {
+  const groups = table.getHeaderGroups();
+  if (!groups.length) return [];
+  return groups[0].headers.filter(
+    (h) =>
+      !(h.column.columnDef as { meta?: { hidden?: boolean } })?.meta?.hidden,
+  );
+});
+
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
@@ -925,21 +934,32 @@ defineExpose({ fetchData, totalItems });
       </div>
       -->
     </div>
-    <div class="overflow-x-auto w-full flex-1">
-      <table class="border-b w-full border-collapse table-fixed">
+    <div class="overflow-x-auto w-full flex-1 bg-sidebar-background">
+      <table
+        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+      >
+        <colgroup>
+          <col
+            v-for="header in visibleHeaders"
+            :key="header.id"
+            :style="{
+              width:
+                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+            }"
+          />
+        </colgroup>
         <TableHeader
-          class="sticky top-0 bg-muted/40 dark:bg-muted border-b border-t border-border z-10 shadow-xs"
+          class="sticky top-0 border-b border-t border-border z-10 shadow-xs bg-sidebar"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
+            class="h-10 min-h-10 border-0"
           >
             <TableHead
-              v-for="header in headerGroup.headers.filter(
-                (h) => !(h.column.columnDef as any).meta?.hidden,
-              )"
+              v-for="header in visibleHeaders"
               :key="header.id"
-              :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
+              :class="'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10'"
               :style="{
                 width:
                   header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',

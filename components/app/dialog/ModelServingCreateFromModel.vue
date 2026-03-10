@@ -5,7 +5,7 @@
         <DialogTitle>Create model serving</DialogTitle>
         <DialogDescription>
           Configure a new serving endpoint for
-          <span class="font-semibold">{{ model?.name ?? 'this model' }}</span>.
+          <span class="font-semibold">{{ model?.name ?? 'this model' }}</span>
         </DialogDescription>
       </DialogHeader>
 
@@ -16,9 +16,7 @@
             type="button"
             class="flex items-center gap-2 text-sm transition-colors whitespace-nowrap"
             :class="
-              i <= currentStep
-                ? 'text-foreground'
-                : 'text-muted-foreground/60'
+              i <= currentStep ? 'text-foreground' : 'text-muted-foreground/60'
             "
             :disabled="i > currentStep"
             @click="goToStep(i)"
@@ -62,11 +60,16 @@
           </div>
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">Model ID</Label>
-            <span class="col-span-3 font-mono text-xs text-muted-foreground break-all">{{ form.model_id || '—' }}</span>
+            <span
+              class="col-span-3 font-mono text-xs text-muted-foreground break-all"
+              >{{ form.model_id || '—' }}</span
+            >
           </div>
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">Model version</Label>
-            <span class="col-span-3 text-sm">{{ form.model_version ? `v${form.model_version}` : '—' }}</span>
+            <span class="col-span-3 text-sm">{{
+              form.model_version ? `v${form.model_version}` : '—'
+            }}</span>
           </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
@@ -159,7 +162,9 @@
           <div
             class="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-3"
           >
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div
+              class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
               Model
             </div>
             <div class="grid grid-cols-4 gap-3">
@@ -170,7 +175,9 @@
                 </div>
               </div>
               <div class="col-span-2 space-y-1">
-                <div class="text-xs text-muted-foreground">Version / Format</div>
+                <div class="text-xs text-muted-foreground">
+                  Version / Format
+                </div>
                 <div>
                   {{ form.model_version ? `v${form.model_version}` : '—' }}
                   <span v-if="form.model_format">
@@ -190,7 +197,9 @@
           <div
             class="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-3"
           >
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div
+              class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
               Deployment
             </div>
             <div class="grid grid-cols-4 gap-3">
@@ -207,7 +216,9 @@
                 </div>
               </div>
               <div class="col-span-4 space-y-1">
-                <div class="text-xs text-muted-foreground">Dataset ID (optional)</div>
+                <div class="text-xs text-muted-foreground">
+                  Dataset ID (optional)
+                </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.dataset_id || '—' }}
                 </div>
@@ -218,12 +229,16 @@
           <div
             class="rounded-md border border-border/60 bg-muted/10 px-3 py-2 space-y-3"
           >
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div
+              class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
               Transformer & metrics
             </div>
             <div class="space-y-2">
               <div class="space-y-1">
-                <div class="text-xs text-muted-foreground">Transformer image</div>
+                <div class="text-xs text-muted-foreground">
+                  Transformer image
+                </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.transformer_image || '—' }}
                 </div>

@@ -5,7 +5,7 @@
         <DialogTitle>Create canary rollout</DialogTitle>
         <DialogDescription>
           Configure a new canary serving for
-          <span class="font-semibold">{{ baseServing?.isvc_name }}</span>.
+          <span class="font-semibold">{{ baseServing?.isvc_name }}</span>
         </DialogDescription>
       </DialogHeader>
 
@@ -16,9 +16,7 @@
             type="button"
             class="flex items-center gap-2 text-sm transition-colors whitespace-nowrap"
             :class="
-              i <= currentStep
-                ? 'text-foreground'
-                : 'text-muted-foreground/60'
+              i <= currentStep ? 'text-foreground' : 'text-muted-foreground/60'
             "
             :disabled="i > currentStep"
             @click="goToStep(i)"
@@ -63,16 +61,10 @@
             <Label class="text-right">Select model</Label>
             <Select v-model="selectedModelId">
               <SelectTrigger class="col-span-3 min-w-[320px]">
-                <span
-                  v-if="form.model_name"
-                  class="truncate max-w-full"
-                >
+                <span v-if="form.model_name" class="truncate max-w-full">
                   {{ form.model_name }}
                 </span>
-                <span
-                  v-else
-                  class="text-muted-foreground"
-                >
+                <span v-else class="text-muted-foreground">
                   Choose model / version
                 </span>
               </SelectTrigger>
@@ -87,7 +79,9 @@
                       {{ opt.name }} · v{{ opt.version
                       }}<span v-if="opt.type"> ({{ opt.type }})</span>
                     </span>
-                    <span class="break-all text-[10px] font-mono text-muted-foreground">
+                    <span
+                      class="break-all text-[10px] font-mono text-muted-foreground"
+                    >
                       {{ opt.id }}
                     </span>
                   </div>
@@ -115,14 +109,13 @@
                 v-if="form.model_id || form.model_version || form.model_format"
                 class="mt-1 rounded-md border border-amber-400/60 bg-amber-400/10 dark:bg-amber-400/15 px-2.5 py-1.5 text-[11px] flex flex-col gap-0.5"
               >
-                <div class="flex items-center gap-2 text-amber-900 dark:text-amber-50">
+                <div
+                  class="flex items-center gap-2 text-amber-900 dark:text-amber-50"
+                >
                   <span
                     class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0"
                   />
-                  <span
-                    v-if="form.model_id"
-                    class="font-mono text-[10px]"
-                  >
+                  <span v-if="form.model_id" class="font-mono text-[10px]">
                     {{ form.model_id }}
                   </span>
                 </div>
@@ -133,8 +126,12 @@
                   <span
                     class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0"
                   />
-                  <span v-if="form.model_version">v{{ form.model_version }}</span>
-                  <span v-if="form.model_format">({{ form.model_format }})</span>
+                  <span v-if="form.model_version"
+                    >v{{ form.model_version }}</span
+                  >
+                  <span v-if="form.model_format"
+                    >({{ form.model_format }})</span
+                  >
                 </div>
               </div>
             </div>
@@ -186,8 +183,6 @@
               </SelectContent>
             </Select>
           </div>
-
-          
         </div>
 
         <!-- Step 1: Optional / advanced -->
@@ -233,7 +228,9 @@
             class="rounded-md border border-border/60 bg-muted/30 px-3 py-2 space-y-3"
           >
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <span
+                class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
                 Model
               </span>
               <span
@@ -250,7 +247,9 @@
                 </div>
               </div>
               <div class="col-span-2 space-y-1">
-                <div class="text-xs text-muted-foreground">Version / Format</div>
+                <div class="text-xs text-muted-foreground">
+                  Version / Format
+                </div>
                 <div>
                   {{ form.model_version ? `v${form.model_version}` : '—' }}
                   <span v-if="form.model_format">
@@ -270,7 +269,9 @@
           <div
             class="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-3"
           >
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div
+              class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
               Deployment
             </div>
             <div class="grid grid-cols-4 gap-3">
@@ -287,7 +288,9 @@
                 </div>
               </div>
               <div class="col-span-4 space-y-1">
-                <div class="text-xs text-muted-foreground">Dataset ID (optional)</div>
+                <div class="text-xs text-muted-foreground">
+                  Dataset ID (optional)
+                </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.dataset_id || '—' }}
                 </div>
@@ -298,12 +301,16 @@
           <div
             class="rounded-md border border-border/60 bg-muted/10 px-3 py-2 space-y-3"
           >
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div
+              class="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+            >
               Transformer & metrics
             </div>
             <div class="space-y-2">
               <div class="space-y-1">
-                <div class="text-xs text-muted-foreground">Transformer image</div>
+                <div class="text-xs text-muted-foreground">
+                  Transformer image
+                </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.transformer_image || '—' }}
                 </div>
@@ -581,7 +588,7 @@ const selectVersion = (opt: ModelSummary) => {
     form.model_version = String(opt.version);
   }
   form.model_id = opt.id;
-   if (opt.name) {
+  if (opt.name) {
     form.model_name = opt.name;
   }
   if (opt.type) {
@@ -589,15 +596,11 @@ const selectVersion = (opt: ModelSummary) => {
   }
 };
 
-watch(
-  selectedModelId,
-  (id) => {
-    if (!id) return;
-    const opt = availableVersions.value.find((m) => m.id === id);
-    if (opt) {
-      selectVersion(opt);
-    }
-  },
-);
+watch(selectedModelId, (id) => {
+  if (!id) return;
+  const opt = availableVersions.value.find((m) => m.id === id);
+  if (opt) {
+    selectVersion(opt);
+  }
+});
 </script>
-

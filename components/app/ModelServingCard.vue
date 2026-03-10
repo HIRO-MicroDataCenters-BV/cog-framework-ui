@@ -32,10 +32,7 @@
                     <Icon name="lucide:git-branch-plus" class="h-3 w-3" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  class="text-[11px] px-2 py-1"
-                >
+                <TooltipContent side="bottom" class="text-[11px] px-2 py-1">
                   Canary Rollout
                 </TooltipContent>
               </Tooltip>
