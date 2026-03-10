@@ -17,6 +17,7 @@ const actionIcons: Record<string, string> = {
   edit: 'lucide:pencil',
   copy: 'lucide:copy',
   view: 'lucide:eye',
+  serve: 'lucide:server',
 };
 
 const getIcon = (item: Item) => {

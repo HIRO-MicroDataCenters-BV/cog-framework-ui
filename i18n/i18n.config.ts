@@ -342,6 +342,7 @@ export default defineI18nConfig(() => ({
         download: 'Download',
         preview: 'Preview',
         delete_model: 'Delete Model',
+        create_model_serving: 'Server Model',
         add_models: 'Add Model',
         'add_model-serving': 'Serve Model',
         add_training_builder: 'Add Training Builder',
