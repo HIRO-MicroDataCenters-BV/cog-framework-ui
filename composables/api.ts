@@ -266,6 +266,26 @@ export const useApi = () => {
     },
 
     /**
+     * Creates a new model serving configuration
+     *
+     * @param {Object} data - Model serving create data
+     * @returns {Promise<Object>} Response containing created model serving data
+     */
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+    }) => {
+      return request(`/models-serving`, 'POST', data);
+    },
+
+    /**
      * Updates a model serving configuration
      *
      * @param {Object} data - Model serving update data

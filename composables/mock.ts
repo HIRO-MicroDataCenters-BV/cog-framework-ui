@@ -789,6 +789,31 @@ export const useApiWithMock = () => {
       return request(`/models-serving${q ? `?${q}` : ''}`);
     },
 
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+    }) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: 'Model serving created successfully',
+          data,
+        });
+      }
+      return request(`/models-serving`, 'POST', data, {
+        showToast: true,
+        successMessage: 'Model serving created successfully',
+      });
+    },
+
     patchModelServing: async (data: {
       isvc_name: string;
       canary_traffic_percent: number;
