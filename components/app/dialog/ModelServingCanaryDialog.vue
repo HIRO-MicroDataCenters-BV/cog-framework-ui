@@ -395,9 +395,7 @@
                 <div class="text-xs text-muted-foreground">
                   Canary traffic percentage
                 </div>
-                <div class="text-sm">
-                  {{ form.canary_traffic_percent }}%
-                </div>
+                <div class="text-sm">{{ form.canary_traffic_percent }}%</div>
               </div>
               <div class="col-span-4 space-y-1">
                 <div class="text-xs text-muted-foreground">Tag routing</div>
@@ -710,20 +708,23 @@ const handleSubmit = async () => {
         ? form.canary_traffic_percent
         : Number(form.canary_traffic_percent);
 
-    await patchModelServing({
-      model_id: form.model_id,
-      isvc_name: form.isvc_name,
-      model_name: form.model_name,
-      model_version: form.model_version,
-      artifact_path: selectedArtifactPath.value || undefined,
-      dataset_id: form.dataset_id || undefined,
-      transformer_image: form.transformer_image || undefined,
-      transformer_parameters,
-      enable_tag_routing: form.enable_tag_routing,
-      canary_traffic_percent: traffic,
-    });
-
-    toaster.show('success', 'canary_serving_created');
+    await patchModelServing(
+      {
+        model_id: form.model_id,
+        isvc_name: form.isvc_name,
+        model_name: form.model_name,
+        model_version: form.model_version,
+        artifact_path: selectedArtifactPath.value || undefined,
+        dataset_id: form.dataset_id || undefined,
+        transformer_image: form.transformer_image || undefined,
+        transformer_parameters,
+        enable_tag_routing: form.enable_tag_routing,
+        canary_traffic_percent: traffic,
+      },
+      {
+        successMessage: 'canary_serving_created',
+      },
+    );
     emit('created');
     resetState();
     emit('close');

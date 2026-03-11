@@ -327,21 +327,24 @@ export const useApi = () => {
      * @param {Object} data - Model serving update data
      * @returns {Promise<Object>} Response containing updated model serving data
      */
-    patchModelServing: async (data: {
-      isvc_name: string;
-      canary_traffic_percent?: number;
-      model_id?: string;
-      artifact_path?: string;
-      model_name?: string;
-      model_version?: string;
-      dataset_id?: string;
-      transformer_image?: string;
-      transformer_parameters?: Record<string, unknown>;
-      protocol_version?: string;
-      model_format?: string;
-      enable_tag_routing?: boolean;
-    }) => {
-      return request(`/models-serving`, 'PATCH', data);
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent?: number;
+        model_id?: string;
+        artifact_path?: string;
+        model_name?: string;
+        model_version?: string;
+        dataset_id?: string;
+        transformer_image?: string;
+        transformer_parameters?: Record<string, unknown>;
+        protocol_version?: string;
+        model_format?: string;
+        enable_tag_routing?: boolean;
+      },
+      options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      return request(`/models-serving`, 'PATCH', data, options);
     },
 
     /**

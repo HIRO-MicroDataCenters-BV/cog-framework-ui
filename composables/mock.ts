@@ -814,10 +814,13 @@ export const useApiWithMock = () => {
       });
     },
 
-    patchModelServing: async (data: {
-      isvc_name: string;
-      canary_traffic_percent: number;
-    }) => {
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent: number;
+      },
+      _options?: { showToast?: boolean; successMessage?: string },
+    ) => {
       if (mock.value.enabled) {
         await mockDelay();
         return Promise.resolve({
