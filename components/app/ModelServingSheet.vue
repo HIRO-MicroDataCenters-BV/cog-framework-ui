@@ -1,44 +1,45 @@
 <template>
   <AppSheet
     :open="open"
-    title=""
-    description=""
+    :title="serving?.isvc_name || 'Model serving'"
+    description="Model serving details"
+    header-class="sr-only"
     side="right"
     content-class="w-full sm:max-w-lg"
     @update:open="(v) => emit('update:open', v)"
   >
-    <div v-if="serving" class="flex flex-col gap-5">
+    <div v-if="serving" class="flex flex-col gap-3">
       <!-- Hero header -->
       <div
-        class="flex items-center gap-3 p-4 rounded-lg bg-muted/50 dark:bg-muted/20 -mx-1"
+        class="flex items-center gap-2.5 p-3 rounded-lg bg-muted/50 dark:bg-muted/20 -mx-1"
       >
         <div
-          class="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
+          class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
         >
-          <Icon name="lucide:server" class="w-5 h-5" />
+          <Icon name="lucide:server" class="w-4 h-4" />
         </div>
         <div class="min-w-0 flex-1">
           <h2 class="font-semibold text-foreground truncate">
             {{ serving.isvc_name }}
           </h2>
-          <Badge :class="statusBadgeClass" class="mt-1 text-[10px] font-medium">
+          <Badge :class="statusBadgeClass" class="mt-0.5 text-[10px] font-medium">
             {{ serving.status }}
           </Badge>
         </div>
       </div>
 
       <!-- Model -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2">
-          <Icon name="lucide:box" class="w-4 h-4 text-muted-foreground" />
+      <section class="space-y-1.5">
+        <div class="flex items-center gap-1.5">
+          <Icon name="lucide:box" class="w-3.5 h-3.5 text-muted-foreground" />
           <h3
-            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Model
           </h3>
         </div>
         <div
-          class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm"
+          class="rounded-lg border border-border/60 bg-card p-2.5 space-y-1.5 text-sm"
         >
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Name</span>
@@ -81,17 +82,20 @@
       </section>
 
       <!-- Canary rollout (separate section) -->
-      <section v-if="serving.has_canary" class="space-y-3">
-        <div class="flex items-center gap-2">
-          <Icon name="lucide:beaker" class="w-4 h-4 text-amber-500" />
+      <section v-if="serving.has_canary" class="space-y-1.5">
+        <div class="flex items-center gap-1.5">
+          <Icon
+            name="lucide:git-branch-plus"
+            class="w-3.5 h-3.5 text-amber-500"
+          />
           <h3
-            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Canary rollout
           </h3>
         </div>
         <div
-          class="rounded-lg border border-amber-400/50 bg-amber-400/10 dark:bg-amber-400/15 p-3 space-y-2 text-sm"
+          class="rounded-lg border border-amber-400/50 bg-amber-400/10 dark:bg-amber-400/15 p-2.5 space-y-1.5 text-sm"
         >
           <div class="flex items-center justify-between gap-2 text-xs">
             <span
@@ -135,17 +139,17 @@
       </section>
 
       <!-- Deployment -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2">
-          <Icon name="lucide:rocket" class="w-4 h-4 text-muted-foreground" />
+      <section class="space-y-1.5">
+        <div class="flex items-center gap-1.5">
+          <Icon name="lucide:rocket" class="w-3.5 h-3.5 text-muted-foreground" />
           <h3
-            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Deployment
           </h3>
         </div>
         <div
-          class="rounded-lg border border-border/60 bg-card p-3 space-y-2.5 text-sm"
+          class="rounded-lg border border-border/60 bg-card p-2.5 space-y-1.5 text-sm"
         >
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Latest revision</span>
@@ -189,16 +193,16 @@
       </section>
 
       <!-- Endpoint -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2">
-          <Icon name="lucide:link" class="w-4 h-4 text-muted-foreground" />
+      <section class="space-y-1.5">
+        <div class="flex items-center gap-1.5">
+          <Icon name="lucide:link" class="w-3.5 h-3.5 text-muted-foreground" />
           <h3
-            class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Endpoint
           </h3>
         </div>
-        <div class="rounded-lg border border-border/60 bg-card p-3">
+        <div class="rounded-lg border border-border/60 bg-card p-2.5">
           <CopyPaste
             :has-copy="true"
             :copy-text="serving.served_model_url ?? ''"
@@ -218,6 +222,16 @@
         <Icon name="lucide:sliders-horizontal" class="w-4 h-4 mr-2" />
         Edit traffic split
       </Button>
+
+      <!-- Delete -->
+      <Button
+        variant="outline"
+        class="w-full border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        @click="emit('delete', serving)"
+      >
+        <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
+        {{ t('action.delete_model_service') }}
+      </Button>
     </div>
   </AppSheet>
 </template>
@@ -228,7 +242,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import CopyPaste from '@/components/app/CopyPaste.vue';
 import type { ModelServing } from '~/types/model.types';
-import { useDayjs } from '#imports';
+import { useDayjs, useI18n } from '#imports';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   open: boolean;
@@ -238,6 +254,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
   (e: 'edit', serving: ModelServing): void;
+  (e: 'delete', serving: ModelServing): void;
 }>();
 
 const dayjs = useDayjs();

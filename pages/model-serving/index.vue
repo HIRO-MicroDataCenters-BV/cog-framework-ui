@@ -20,12 +20,23 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Spinner } from '~/components/ui/spinner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const { getModelsServing } = useApi();
+const { getModelsServing, deleteModelServing } = useApi();
+const toaster = useToaster();
 const { setPage, page } = useApp();
 const menu = uselistMenus();
 const tableRef = ref<InstanceType<typeof AppTable> | null>(null);
@@ -77,6 +88,8 @@ const canaryBaseServing = ref<ModelServing | null>(null);
 const sheetOpen = ref(false);
 const sheetServing = ref<ModelServing | null>(null);
 const refreshingStatusIsvcName = ref<string | null>(null);
+const deleteConfirmOpen = ref(false);
+const deleteConfirmServing = ref<ModelServing | null>(null);
 
 const sectionIcon = computed(
   () =>
@@ -120,6 +133,28 @@ function onSheetEdit(serving: ModelServing) {
   closeSheet();
   selectedModelServing.value = serving;
   editDialogOpen.value = true;
+}
+
+function onSheetDelete(serving: ModelServing) {
+  deleteConfirmServing.value = serving;
+  deleteConfirmOpen.value = true;
+}
+
+async function confirmDeleteServing() {
+  const serving = deleteConfirmServing.value;
+  if (!serving) return;
+  try {
+    await deleteModelServing(serving.isvc_name);
+    if (sheetServing.value?.isvc_name === serving.isvc_name) {
+      closeSheet();
+    }
+    deleteConfirmOpen.value = false;
+    deleteConfirmServing.value = null;
+    await fetchList();
+  } catch (e) {
+    console.error(e);
+    toaster.show('error', 'operation_failed');
+  }
 }
 
 function onEditSaved(payload?: {
@@ -698,7 +733,31 @@ onMounted(() => {
       v-model:open="sheetOpen"
       :serving="sheetServing"
       @edit="onSheetEdit"
+      @delete="onSheetDelete"
     />
+
+    <AlertDialog :open="deleteConfirmOpen" @update:open="deleteConfirmOpen = $event">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{{ t('title.are_you_sure') }}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {{ t('alert.delete_model_service', { name: deleteConfirmServing?.isvc_name ?? '' }) }}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel class="cursor-pointer">
+            {{ t('action.cancel') }}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            class="cursor-pointer"
+            @click="confirmDeleteServing"
+          >
+            {{ t('action.delete') }}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
 
     <ModelServingEditDialog
       :open="editDialogOpen"

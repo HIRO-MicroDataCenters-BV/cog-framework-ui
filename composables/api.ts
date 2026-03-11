@@ -349,6 +349,16 @@ export const useApi = () => {
     },
 
     /**
+     * Deletes a model serving by its inference service name
+     *
+     * @param {string} isvc_name - Inference service name to delete
+     * @returns {Promise<Object>} Standard response indicating successful deletion
+     */
+    deleteModelServing: async (isvc_name: string) => {
+      return request(`/models-serving?isvc_name=${encodeURIComponent(isvc_name)}`, 'DELETE');
+    },
+
+    /**
      * Retrieves all served models
      *
      * @param {Object} params - Query parameters for pagination and filtering

@@ -17,6 +17,7 @@ export default defineI18nConfig(() => ({
           dataset_deleted: 'Dataset deleted successfully',
           model_deleted: 'Model deleted successfully',
           pipeline_deleted: 'Pipeline deleted successfully',
+          model_serving_deleted: 'Model service deleted successfully',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
@@ -27,6 +28,7 @@ export default defineI18nConfig(() => ({
         },
         error: {
           unknown: 'An unknown error occurred',
+          operation_failed: 'Operation failed',
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
@@ -109,6 +111,8 @@ export default defineI18nConfig(() => ({
       alert: {
         delete_dataset:
           'Are you sure you want to delete this dataset "{name}"?',
+        delete_model_service:
+          'Are you sure you want to delete the model service "{name}"? This will undeploy the inference service.',
       },
       subtitle: {
         dataset_management: 'Datasets',
@@ -350,6 +354,7 @@ export default defineI18nConfig(() => ({
         download: 'Download',
         preview: 'Preview',
         delete_model: 'Delete Model',
+        delete_model_service: 'Delete model service',
         create_model_serving: 'Server Model',
         add_models: 'Add Model',
         'add_model-serving': 'Serve Model',
