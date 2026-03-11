@@ -22,7 +22,10 @@
           <h2 class="font-semibold text-foreground truncate">
             {{ serving.isvc_name }}
           </h2>
-          <Badge :class="statusBadgeClass" class="mt-0.5 text-[10px] font-medium">
+          <Badge
+            :class="statusBadgeClass"
+            class="mt-0.5 text-[10px] font-medium"
+          >
             {{ serving.status }}
           </Badge>
         </div>
@@ -124,7 +127,9 @@
               icon-left
               class="font-mono text-[10px] font-medium text-foreground text-right break-all min-w-0 gap-0 shrink-0"
             >
-              <span class="break-all">{{ serving.canary_model_id ?? '—' }}</span>
+              <span class="break-all">{{
+                serving.canary_model_id ?? '—'
+              }}</span>
             </CopyPaste>
           </div>
           <div class="flex justify-between gap-3 text-xs">
@@ -141,7 +146,10 @@
       <!-- Deployment -->
       <section class="space-y-1.5">
         <div class="flex items-center gap-1.5">
-          <Icon name="lucide:rocket" class="w-3.5 h-3.5 text-muted-foreground" />
+          <Icon
+            name="lucide:rocket"
+            class="w-3.5 h-3.5 text-muted-foreground"
+          />
           <h3
             class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
           >

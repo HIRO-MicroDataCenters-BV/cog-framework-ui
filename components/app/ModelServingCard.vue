@@ -44,7 +44,9 @@
                 {{ serving.status }}
               </Badge>
               <Button
-                v-if="serving.status && serving.status.toLowerCase() !== 'ready'"
+                v-if="
+                  serving.status && serving.status.toLowerCase() !== 'ready'
+                "
                 variant="ghost"
                 size="icon"
                 class="h-5 w-5 text-muted-foreground hover:text-foreground"
@@ -367,10 +369,13 @@ const { patchModelServing } = useApi();
 const toaster = useToaster();
 
 const isSaving = ref(false);
-const localCanaryPercent = ref(
+const initialCanaryPercent =
   props.serving.canary_traffic_percent ??
-    (props.serving.has_canary ? (props.serving.traffic_percentage ?? 0) : 0),
-);
+  (props.serving.has_canary && props.serving.stable_traffic_percent != null
+    ? 100 - props.serving.stable_traffic_percent
+    : 0);
+
+const localCanaryPercent = ref(initialCanaryPercent);
 
 const statusDotClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
@@ -400,10 +405,7 @@ const statusBadgeClass = computed(() => {
 });
 
 const hasChanges = computed(
-  () =>
-    localCanaryPercent.value !==
-    (props.serving.canary_traffic_percent ??
-      (props.serving.has_canary ? (props.serving.traffic_percentage ?? 0) : 0)),
+  () => localCanaryPercent.value !== initialCanaryPercent,
 );
 
 function formatAge(age: string | undefined): string {

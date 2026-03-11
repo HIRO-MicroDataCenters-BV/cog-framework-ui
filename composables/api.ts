@@ -152,7 +152,9 @@ export const useApi = () => {
 
       // Backend may return HTTP 200 with error in body (e.g. status_code 500 or detail with exception)
       const bodyIndicatesError =
-        (data && typeof data.status_code === 'number' && data.status_code >= 400) ||
+        (data &&
+          typeof data.status_code === 'number' &&
+          data.status_code >= 400) ||
         (typeof data?.detail === 'string' &&
           data.detail.length > 0 &&
           (data.detail.toLowerCase().includes('error') ||
@@ -370,7 +372,12 @@ export const useApi = () => {
      * @returns {Promise<Object>} Standard response indicating successful deletion
      */
     deleteModelServing: async (isvc_name: string) => {
-      return request(`/models-serving?isvc_name=${encodeURIComponent(isvc_name)}`, 'DELETE');
+      return request(
+        `/models-serving?isvc_name=${encodeURIComponent(isvc_name)}`,
+        'DELETE',
+        undefined,
+        { successMessage: 'model_serving_deleted' },
+      );
     },
 
     /**

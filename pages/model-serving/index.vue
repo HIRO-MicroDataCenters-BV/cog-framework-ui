@@ -736,12 +736,19 @@ onMounted(() => {
       @delete="onSheetDelete"
     />
 
-    <AlertDialog :open="deleteConfirmOpen" @update:open="deleteConfirmOpen = $event">
+    <AlertDialog
+      :open="deleteConfirmOpen"
+      @update:open="deleteConfirmOpen = $event"
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{{ t('title.are_you_sure') }}</AlertDialogTitle>
           <AlertDialogDescription>
-            {{ t('alert.delete_model_service', { name: deleteConfirmServing?.isvc_name ?? '' }) }}
+            {{
+              t('alert.delete_model_service', {
+                name: deleteConfirmServing?.isvc_name ?? '',
+              })
+            }}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

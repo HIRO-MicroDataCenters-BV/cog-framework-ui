@@ -242,7 +242,7 @@
                   type="range"
                   min="0"
                   max="100"
-                  step="5"
+                  step="1"
                   class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500"
                 />
                 <span
@@ -605,6 +605,15 @@ const isValid = computed(() => {
     isValidJson.value
   );
 });
+
+function stepCanary(delta: number) {
+  const current =
+    typeof form.canary_traffic_percent === 'number'
+      ? form.canary_traffic_percent
+      : Number(form.canary_traffic_percent) || 0;
+  const next = Math.min(100, Math.max(0, current + delta));
+  form.canary_traffic_percent = next;
+}
 
 watch(
   () => props.baseServing,

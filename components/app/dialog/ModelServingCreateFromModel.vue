@@ -313,9 +313,9 @@
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
-        <DialogFooter class="mt-2 border-t-0">
+      <DialogFooter class="mt-2 border-t-0">
         <div
           class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
         >
@@ -474,7 +474,7 @@ watch(
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
     // Initial service name must follow RFC 1123: lowercase, no underscores
-form.isvc_name = form.model_name
+    form.isvc_name = form.model_name
       ? `${form.model_name.replace(/_/g, '-').toLowerCase()}-serving`
       : '';
     if (form.model_id) {
