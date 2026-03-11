@@ -217,6 +217,57 @@
               disabled
             />
           </div>
+
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">Canary traffic</Label>
+            <div class="col-span-3 flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-6 w-6 shrink-0"
+                :class="
+                  form.canary_traffic_percent <= 0
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer'
+                "
+                :disabled="form.canary_traffic_percent <= 0"
+                :title="'-5'"
+                @click="stepCanary(-5)"
+              >
+                <Icon name="lucide:minus" class="h-3 w-3" />
+              </Button>
+              <div class="flex-1 flex items-center gap-1.5 min-w-0">
+                <input
+                  v-model.number="form.canary_traffic_percent"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  class="flex-1 min-w-0 h-1 rounded-full appearance-none bg-muted dark:bg-zinc-700 accent-amber-500"
+                />
+                <span
+                  class="text-[10px] font-medium tabular-nums w-8 text-right shrink-0"
+                >
+                  {{ form.canary_traffic_percent }}%
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-6 w-6 shrink-0"
+                :class="
+                  form.canary_traffic_percent >= 100
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer'
+                "
+                :disabled="form.canary_traffic_percent >= 100"
+                :title="'+5'"
+                @click="stepCanary(5)"
+              >
+                <Icon name="lucide:plus" class="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         <!-- Step 1: Optional / advanced -->
@@ -338,6 +389,14 @@
                 </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.dataset_id || '—' }}
+                </div>
+              </div>
+              <div class="col-span-4 space-y-1">
+                <div class="text-xs text-muted-foreground">
+                  Canary traffic percentage
+                </div>
+                <div class="text-sm">
+                  {{ form.canary_traffic_percent }}%
                 </div>
               </div>
               <div class="col-span-4 space-y-1">
@@ -494,6 +553,8 @@ const blankForm = () => ({
   transformer_image: '',
   transformer_parameters_json: '',
   enable_tag_routing: false,
+  // default 10% traffic to canary; user can adjust
+  canary_traffic_percent: 10,
 });
 
 const form = reactive(blankForm());
@@ -533,7 +594,18 @@ const isValid = computed(() => {
     !!form.model_version;
   const hasRequiredArtifact =
     !artifactPaths.value.length || !!selectedArtifactPath.value;
-  return hasRequiredBasics && hasRequiredArtifact && isValidJson.value;
+  const traffic =
+    typeof form.canary_traffic_percent === 'number'
+      ? form.canary_traffic_percent
+      : Number(form.canary_traffic_percent);
+  const hasValidTraffic =
+    !Number.isNaN(traffic) && traffic >= 0 && traffic <= 100;
+  return (
+    hasRequiredBasics &&
+    hasRequiredArtifact &&
+    hasValidTraffic &&
+    isValidJson.value
+  );
 });
 
 watch(
@@ -575,12 +647,19 @@ const canGoNext = computed(() => {
   if (currentStep.value === 0) {
     const hasRequiredArtifact =
       !artifactPaths.value.length || !!selectedArtifactPath.value;
+    const traffic =
+      typeof form.canary_traffic_percent === 'number'
+        ? form.canary_traffic_percent
+        : Number(form.canary_traffic_percent);
+    const hasValidTraffic =
+      !Number.isNaN(traffic) && traffic >= 0 && traffic <= 100;
     return (
       !!form.model_id &&
       !!form.isvc_name &&
       !!form.model_name &&
       !!form.model_version &&
-      hasRequiredArtifact
+      hasRequiredArtifact &&
+      hasValidTraffic
     );
   }
   if (currentStep.value === 1) {
@@ -626,6 +705,11 @@ const handleSubmit = async () => {
       }
     }
 
+    const traffic =
+      typeof form.canary_traffic_percent === 'number'
+        ? form.canary_traffic_percent
+        : Number(form.canary_traffic_percent);
+
     await patchModelServing({
       model_id: form.model_id,
       isvc_name: form.isvc_name,
@@ -636,6 +720,7 @@ const handleSubmit = async () => {
       transformer_image: form.transformer_image || undefined,
       transformer_parameters,
       enable_tag_routing: form.enable_tag_routing,
+      canary_traffic_percent: traffic,
     });
 
     toaster.show('success', 'canary_serving_created');
