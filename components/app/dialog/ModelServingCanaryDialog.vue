@@ -176,7 +176,7 @@
             v-if="selectedModelId && (loadingArtifacts || artifactPaths.length)"
             class="grid grid-cols-4 items-center gap-4"
           >
-            <Label class="text-right">Artifact</Label>
+            <Label class="text-right">Artifact *</Label>
             <div class="col-span-3">
               <div
                 v-if="loadingArtifacts"
@@ -244,8 +244,8 @@
           </div>
 
           <div class="grid grid-cols-4 items-start gap-4">
-            <Label class="text-right pt-2">Transformer parameters</Label>
-            <div class="col-span-3 relative">
+            <Label class="pt-2 text-left">Transformer parameters</Label>
+            <div class="col-span-3">
               <textarea
                 v-model="form.transformer_parameters_json"
                 :aria-invalid="
@@ -259,7 +259,7 @@
                 v-if="
                   !isValidJson && !!form.transformer_parameters_json?.trim()
                 "
-                class="absolute -bottom-5 left-0 text-xs text-destructive flex items-center gap-1"
+                class="mt-1 text-xs text-destructive flex items-center gap-1"
               >
                 <Icon name="lucide:alert-circle" class="w-3 h-3" />
                 Invalid JSON format
@@ -270,10 +270,7 @@
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">Tag routing</Label>
             <div class="col-span-3 flex items-center gap-3">
-              <Switch
-                :checked="form.enable_tag_routing"
-                @update:checked="form.enable_tag_routing = $event"
-              />
+              <Switch v-model="form.enable_tag_routing" />
               <span class="text-sm text-muted-foreground">
                 {{ form.enable_tag_routing ? 'Enabled' : 'Disabled' }}
               </span>
@@ -341,6 +338,12 @@
                 </div>
                 <div class="font-mono text-[11px] break-all">
                   {{ form.dataset_id || '—' }}
+                </div>
+              </div>
+              <div class="col-span-4 space-y-1">
+                <div class="text-xs text-muted-foreground">Tag routing</div>
+                <div class="text-sm">
+                  {{ form.enable_tag_routing ? 'Enabled' : 'Disabled' }}
                 </div>
               </div>
             </div>
@@ -522,14 +525,16 @@ const isValidJson = computed(() => {
   }
 });
 
-const isValid = computed(
-  () =>
+const isValid = computed(() => {
+  const hasRequiredBasics =
     !!form.model_id &&
     !!form.isvc_name &&
     !!form.model_name &&
-    !!form.model_version &&
-    isValidJson.value,
-);
+    !!form.model_version;
+  const hasRequiredArtifact =
+    !artifactPaths.value.length || !!selectedArtifactPath.value;
+  return hasRequiredBasics && hasRequiredArtifact && isValidJson.value;
+});
 
 watch(
   () => props.baseServing,
@@ -568,11 +573,14 @@ const resetState = () => {
 
 const canGoNext = computed(() => {
   if (currentStep.value === 0) {
+    const hasRequiredArtifact =
+      !artifactPaths.value.length || !!selectedArtifactPath.value;
     return (
       !!form.model_id &&
       !!form.isvc_name &&
       !!form.model_name &&
-      !!form.model_version
+      !!form.model_version &&
+      hasRequiredArtifact
     );
   }
   if (currentStep.value === 1) {
@@ -737,10 +745,6 @@ const fetchModelArtifacts = async (modelId: string) => {
         }
       });
       artifactPaths.value = Array.from(folders);
-      // Auto-select the first artifact path if available
-      if (artifactPaths.value.length > 0) {
-        selectedArtifactPath.value = artifactPaths.value[0];
-      }
     }
   } catch (error) {
     console.error('Failed to load model artifacts', error);
