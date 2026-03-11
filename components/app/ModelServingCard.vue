@@ -39,9 +39,25 @@
             </TooltipProvider>
           </div>
           <div class="flex items-center justify-between gap-2 mt-0.5">
-            <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
-              {{ serving.status }}
-            </Badge>
+            <div class="flex items-center gap-1.5">
+              <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
+                {{ serving.status }}
+              </Badge>
+              <Button
+                v-if="serving.status && serving.status.toLowerCase() !== 'ready'"
+                variant="ghost"
+                size="icon"
+                class="h-5 w-5 text-muted-foreground hover:text-foreground"
+                title="Refresh status"
+                :disabled="refreshing"
+                @click.stop="emit('refresh-status', serving.isvc_name)"
+              >
+                <Icon
+                  name="lucide:refresh-cw"
+                  :class="['h-3 w-3', refreshing && 'animate-spin']"
+                />
+              </Button>
+            </div>
             <span
               v-if="serving.age"
               class="text-[10px] text-muted-foreground tabular-nums shrink-0"
@@ -334,6 +350,7 @@ import type { ModelServing } from '~/types/model.types';
 
 const props = defineProps<{
   serving: ModelServing;
+  refreshing?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -343,6 +360,7 @@ const emit = defineEmits<{
   ): void;
   (e: 'select'): void;
   (e: 'create-canary', serving: ModelServing): void;
+  (e: 'refresh-status', isvcName: string): void;
 }>();
 
 const { patchModelServing } = useApi();

@@ -76,6 +76,7 @@ const canaryDialogOpen = ref(false);
 const canaryBaseServing = ref<ModelServing | null>(null);
 const sheetOpen = ref(false);
 const sheetServing = ref<ModelServing | null>(null);
+const refreshingStatusIsvcName = ref<string | null>(null);
 
 const sectionIcon = computed(
   () =>
@@ -413,6 +414,29 @@ function onCardUpdated(payload: {
   updateServingInList(payload);
 }
 
+async function onCardRefreshStatus(isvcName: string) {
+  refreshingStatusIsvcName.value = isvcName;
+  const original = list.value.slice();
+  try {
+    const res = await getModelsServing({
+      isvc_name: isvcName,
+      limit: 1,
+    } as unknown as Record<string, unknown>);
+    const updated = (res as any)?.data?.[0] as ModelServing | undefined;
+    if (!updated) return;
+    const idx = list.value.findIndex((s) => s.isvc_name === updated.isvc_name);
+    if (idx >= 0) {
+      list.value = list.value.map((s, i) => (i === idx ? updated : s));
+    }
+  } catch (error) {
+    console.error('Failed to refresh serving status', error);
+    // trigger re-render to stop spin even if status unchanged
+    list.value = original;
+  } finally {
+    refreshingStatusIsvcName.value = null;
+  }
+}
+
 function onServeModel() {
   // TODO: Open serve-model dialog or navigate to serve flow
 }
@@ -638,9 +662,11 @@ onMounted(() => {
                 v-for="item in list"
                 :key="item.isvc_name"
                 :serving="item"
+                :refreshing="refreshingStatusIsvcName === item.isvc_name"
                 @select="openSheet(item)"
                 @updated="onCardUpdated"
                 @create-canary="(serving) => openCanaryDialog(serving)"
+                @refresh-status="onCardRefreshStatus"
               />
             </div>
           </div>
