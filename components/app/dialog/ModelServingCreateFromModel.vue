@@ -72,14 +72,22 @@
             }}</span>
           </div>
 
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="isvc_name" class="text-right">Service name</Label>
-            <Input
-              id="isvc_name"
-              v-model="form.isvc_name"
-              class="col-span-3"
-              placeholder="e.g. my-model-serving"
-            />
+          <div class="grid grid-cols-4 items-start gap-4">
+            <Label for="isvc_name" class="text-right pt-2">Service name</Label>
+            <div class="col-span-3 space-y-1">
+              <Input
+                id="isvc_name"
+                v-model="form.isvc_name"
+                placeholder="e.g. my-model-serving"
+              />
+              <p
+                v-if="!isValidIsvcName && !!form.isvc_name"
+                class="text-[11px] text-destructive flex items-center gap-1"
+              >
+                <Icon name="lucide:alert-circle" class="w-3 h-3" />
+                Underscores (_) are not allowed in service name.
+              </p>
+            </div>
           </div>
 
           <div
@@ -423,10 +431,14 @@ const isValidJson = computed(() => {
   }
 });
 
+const isValidIsvcName = computed(
+  () => !!form.isvc_name && !form.isvc_name.includes('_'),
+);
+
 const isValid = computed(
   () =>
     !!form.model_id &&
-    !!form.isvc_name &&
+    isValidIsvcName.value &&
     !!form.model_name &&
     !!form.model_version &&
     !!form.protocol_version &&
@@ -444,7 +456,9 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    form.isvc_name = form.model_name ? `${form.model_name}-serving` : '';
+    form.isvc_name = form.model_name
+      ? `${form.model_name.replace(/_/g, '-')}-serving`
+      : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);
     }
@@ -474,7 +488,7 @@ const canGoNext = computed(() => {
   if (currentStep.value === 0) {
     return (
       !!form.model_id &&
-      !!form.isvc_name &&
+      isValidIsvcName.value &&
       !!form.model_name &&
       !!form.model_version &&
       (!artifactPaths.value.length || !!selectedArtifactPath.value)
