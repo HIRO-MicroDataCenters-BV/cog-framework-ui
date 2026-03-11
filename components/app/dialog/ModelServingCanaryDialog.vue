@@ -9,8 +9,12 @@
         </DialogDescription>
       </DialogHeader>
 
-      <!-- Step indicator (same style as dataset dialog) -->
-      <nav class="flex items-center mt-5 text-sm" aria-label="Progress">
+      <!-- Step indicator (same style as dataset dialog) - hidden when no versions available -->
+      <nav
+        v-if="!noVersionsAvailable || loadingModelDetails"
+        class="flex items-center mt-5 text-sm"
+        aria-label="Progress"
+      >
         <template v-for="(step, i) in steps" :key="step.id">
           <button
             type="button"
@@ -49,9 +53,44 @@
           />
         </template>
       </nav>
-      <Separator class="mt-3 mb-2" />
+      <Separator
+        v-if="!noVersionsAvailable || loadingModelDetails"
+        class="mt-3 mb-2"
+      />
 
-      <div class="grid gap-4 py-2">
+      <!-- Separator and warning when no versions available -->
+      <template v-if="noVersionsAvailable && !loadingModelDetails">
+        <Separator class="mt-5 mb-4" />
+        <div
+          class="rounded-md border border-amber-400/60 bg-amber-50 dark:bg-amber-950/30 px-4 py-4 flex items-start gap-3 my-4"
+        >
+          <Icon
+            name="lucide:alert-triangle"
+            class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+          />
+          <div class="text-sm">
+            <p class="font-medium text-amber-800 dark:text-amber-200">
+              {{
+                modelFetchError
+                  ? $t('message.warning.canary_fetch_error_title')
+                  : $t('message.warning.canary_no_versions_title')
+              }}
+            </p>
+            <p class="text-amber-700 dark:text-amber-300/80 text-xs mt-1">
+              {{
+                modelFetchError
+                  ? $t('message.warning.canary_fetch_error_description')
+                  : $t('message.warning.canary_no_versions_description')
+              }}
+            </p>
+          </div>
+        </div>
+      </template>
+
+      <div
+        v-if="!noVersionsAvailable || loadingModelDetails"
+        class="grid gap-4 py-2"
+      >
         <!-- Step 0: Required details -->
         <div v-if="currentStep === 0" class="space-y-4">
           <div
@@ -331,41 +370,55 @@
       </div>
 
       <DialogFooter class="mt-2">
-        <div
-          class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <Button variant="outline" @click="handleClose">Cancel</Button>
-          <div class="flex items-center gap-2">
-            <Button
-              v-if="currentStep > 0"
-              variant="ghost"
-              size="sm"
-              @click="previousStep"
-            >
-              Back
-            </Button>
-            <Button
-              v-if="currentStep < steps.length - 1"
-              size="sm"
-              :disabled="!canGoNext"
-              @click="nextStep"
-            >
-              Next
-            </Button>
-            <Button
-              v-else
-              :disabled="isSubmitting || !isValid"
-              @click="handleSubmit"
-            >
-              <Icon
-                v-if="isSubmitting"
-                name="lucide:loader-2"
-                class="mr-2 h-4 w-4 animate-spin"
-              />
-              Create
-            </Button>
+        <!-- Simple close button when no versions available -->
+        <template v-if="noVersionsAvailable && !loadingModelDetails">
+          <Button
+            variant="outline"
+            class="w-full sm:w-auto"
+            @click="handleClose"
+          >
+            Close
+          </Button>
+        </template>
+
+        <!-- Normal footer with navigation -->
+        <template v-else>
+          <div
+            class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <Button variant="outline" @click="handleClose">Cancel</Button>
+            <div class="flex items-center gap-2">
+              <Button
+                v-if="currentStep > 0"
+                variant="ghost"
+                size="sm"
+                @click="previousStep"
+              >
+                Back
+              </Button>
+              <Button
+                v-if="currentStep < steps.length - 1"
+                size="sm"
+                :disabled="!canGoNext"
+                @click="nextStep"
+              >
+                Next
+              </Button>
+              <Button
+                v-else
+                :disabled="isSubmitting || !isValid"
+                @click="handleSubmit"
+              >
+                <Icon
+                  v-if="isSubmitting"
+                  name="lucide:loader-2"
+                  class="mr-2 h-4 w-4 animate-spin"
+                />
+                Create
+              </Button>
+            </div>
           </div>
-        </div>
+        </template>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -439,6 +492,8 @@ type ModelSummary = {
 const availableVersions = ref<ModelSummary[]>([]);
 const loadingModelDetails = ref(false);
 const selectedModelId = ref('');
+const noVersionsAvailable = ref(false);
+const modelFetchError = ref(false);
 
 const isValid = computed(
   () =>
@@ -478,6 +533,8 @@ const resetState = () => {
   selectedModelId.value = '';
   currentStep.value = 0;
   isSubmitting.value = false;
+  noVersionsAvailable.value = false;
+  modelFetchError.value = false;
 };
 
 const canGoNext = computed(() => {
@@ -534,7 +591,7 @@ const handleSubmit = async () => {
       model_format: form.model_format,
     });
 
-    toaster.show('success', 'Canary serving created');
+    toaster.show('success', 'canary_serving_created');
     emit('created');
     resetState();
     emit('close');
@@ -558,9 +615,28 @@ interface ModelsApiResponse {
 
 const loadModelDetailsByName = async (name: string) => {
   loadingModelDetails.value = true;
+  noVersionsAvailable.value = false;
+  modelFetchError.value = false;
   try {
-    const res = (await getModels({ name })) as ModelsApiResponse | null;
+    const res = (await getModels(
+      { name },
+      { showToast: false },
+    )) as ModelsApiResponse | null;
     const items = res?.data ?? [];
+
+    // Check if we have any versions different from the current one
+    const currentVersion = props.baseServing?.model_version;
+    const differentVersions = items.filter(
+      (m) =>
+        m.version !== undefined &&
+        m.version !== null &&
+        String(m.version) !== String(currentVersion),
+    );
+
+    if (items.length === 0 || differentVersions.length === 0) {
+      noVersionsAvailable.value = true;
+    }
+
     if (items.length > 0) {
       const primary = items[0];
       form.model_id = String(primary.id ?? form.model_id);
@@ -588,6 +664,8 @@ const loadModelDetailsByName = async (name: string) => {
     }
   } catch (error) {
     console.error('Failed to load model details', error);
+    modelFetchError.value = true;
+    noVersionsAvailable.value = true;
   } finally {
     loadingModelDetails.value = false;
   }

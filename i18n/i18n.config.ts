@@ -23,6 +23,7 @@ export default defineI18nConfig(() => ({
           test_connection: 'Connection successful! Table found.',
           test_connection_no_table: 'Connection successful!',
           share_updated: 'Dataset shared successfully',
+          canary_serving_created: 'Canary serving created successfully',
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -69,6 +70,12 @@ export default defineI18nConfig(() => ({
         warning: {
           validation_error: 'Please check the form for errors',
           test_connection: 'Connection successful, but table not found',
+          canary_no_versions_title: 'Cannot create canary rollout',
+          canary_no_versions_description:
+            'No different model versions are available for canary deployment. Register a new version of this model to enable canary rollouts.',
+          canary_fetch_error_title: 'Unable to fetch model versions',
+          canary_fetch_error_description:
+            'Could not retrieve model information. Please try again later.',
         },
       },
       general: {

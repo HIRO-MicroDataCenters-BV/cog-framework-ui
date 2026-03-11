@@ -161,7 +161,9 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            toaster.show('error', 'not_found');
+            if (showToast) {
+              toaster.show('error', 'not_found');
+            }
             return null;
           case 422: {
             // Handle validation errors - detail might be an array or object
@@ -252,7 +254,10 @@ export const useApi = () => {
      * const paginatedModels = await api.getModels({ page: 1, limit: 10 });
      * ```
      */
-    getModels: async (params: ModelQueryParams = {}) => {
+    getModels: async (
+      params: ModelQueryParams = {},
+      options?: { showToast?: boolean },
+    ) => {
       if (mockEnabled) {
         return Promise.resolve(modelsData);
       }
@@ -265,7 +270,7 @@ export const useApi = () => {
       }
       const q = new URLSearchParams(mapped).toString();
 
-      return await request(`/models?${q}`);
+      return await request(`/models?${q}`, 'GET', undefined, options);
     },
 
     /**
