@@ -82,6 +82,41 @@
             />
           </div>
 
+          <div
+            v-if="loadingArtifacts || artifactPaths.length"
+            class="grid grid-cols-4 items-center gap-4"
+          >
+            <Label class="text-right">Artifact *</Label>
+            <div class="col-span-3">
+              <div
+                v-if="loadingArtifacts"
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <Icon name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                Loading artifacts...
+              </div>
+              <Select v-else v-model="selectedArtifactPath">
+                <SelectTrigger class="w-full">
+                  <span v-if="selectedArtifactPath" class="truncate">
+                    {{ selectedArtifactPath }}
+                  </span>
+                  <span v-else class="text-muted-foreground">
+                    Select artifact
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="path in artifactPaths"
+                    :key="path"
+                    :value="path"
+                  >
+                    {{ path }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div class="grid grid-cols-4 items-center gap-4">
             <Label for="model_format" class="text-right">Model format</Label>
             <div class="col-span-3">
@@ -105,18 +140,20 @@
           </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="protocol_version" class="text-right">
-              Protocol version
-            </Label>
-            <Select v-model="form.protocol_version">
-              <SelectTrigger id="protocol_version" class="col-span-3">
-                <SelectValue placeholder="Select version" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="v1">V1</SelectItem>
-                <SelectItem value="v2">V2</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label class="text-right">Protocol version</Label>
+            <RadioGroup
+              v-model="form.protocol_version"
+              class="col-span-3 flex flex-row gap-4"
+            >
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <RadioGroupItem id="protocol_v1" value="v1" />
+                <span>V1</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <RadioGroupItem id="protocol_v2" value="v2" />
+                <span>V2</span>
+              </label>
+            </RadioGroup>
           </div>
         </div>
 
@@ -145,14 +182,26 @@
           </div>
 
           <div class="grid grid-cols-4 items-start gap-4">
-            <Label class="text-right pt-2">Transformer parameters</Label>
+            <Label class="pt-2 text-left">Transformer parameters</Label>
             <div class="col-span-3">
               <textarea
                 v-model="form.transformer_parameters_json"
+                :aria-invalid="
+                  !isValidJson && !!form.transformer_parameters_json?.trim()
+                "
                 class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex min-h-24 w-full rounded-md border bg-transparent px-3 py-2 text-[13px] font-mono leading-snug shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                 rows="4"
                 placeholder="Optional"
               />
+              <p
+                v-if="
+                  !isValidJson && !!form.transformer_parameters_json?.trim()
+                "
+                class="mt-1 text-xs text-destructive flex items-center gap-1"
+              >
+                <Icon name="lucide:alert-circle" class="w-3 h-3" />
+                Invalid JSON format
+              </p>
             </div>
           </div>
         </div>
@@ -320,6 +369,8 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup } from '~/components/ui/radio-group';
+import RadioGroupItem from '~/components/ui/radio-group/RadioGroupItem.vue';
 
 const props = defineProps<{
   open: boolean;
@@ -331,7 +382,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing } = useApi();
+const { postModelServing, getModelArtifacts } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -351,11 +402,26 @@ const blankForm = () => ({
   dataset_id: '',
   transformer_image: '',
   transformer_parameters_json: '',
-  protocol_version: 'v1' as 'v1' | 'v2',
+  protocol_version: 'v2' as 'v1' | 'v2',
   model_format: '',
 });
 
 const form = reactive(blankForm());
+
+const artifactPaths = ref<string[]>([]);
+const selectedArtifactPath = ref('');
+const loadingArtifacts = ref(false);
+
+const isValidJson = computed(() => {
+  const json = form.transformer_parameters_json?.trim();
+  if (!json) return true; // Optional field; empty is allowed
+  try {
+    JSON.parse(json);
+    return true;
+  } catch {
+    return false;
+  }
+});
 
 const isValid = computed(
   () =>
@@ -364,7 +430,9 @@ const isValid = computed(
     !!form.model_name &&
     !!form.model_version &&
     !!form.protocol_version &&
-    !!form.model_format,
+    !!form.model_format &&
+    (!artifactPaths.value.length || !!selectedArtifactPath.value) &&
+    isValidJson.value,
 );
 
 watch(
@@ -377,8 +445,8 @@ watch(
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
     form.isvc_name = form.model_name ? `${form.model_name}-serving` : '';
-    if (m.type) {
-      form.model_format = String(m.type).toLowerCase();
+    if (form.model_id) {
+      fetchModelArtifacts(form.model_id);
     }
   },
   { immediate: true },
@@ -397,6 +465,9 @@ const resetState = () => {
   Object.assign(form, blankForm());
   currentStep.value = 0;
   isSubmitting.value = false;
+  artifactPaths.value = [];
+  selectedArtifactPath.value = '';
+  loadingArtifacts.value = false;
 };
 
 const canGoNext = computed(() => {
@@ -405,7 +476,8 @@ const canGoNext = computed(() => {
       !!form.model_id &&
       !!form.isvc_name &&
       !!form.model_name &&
-      !!form.model_version
+      !!form.model_version &&
+      (!artifactPaths.value.length || !!selectedArtifactPath.value)
     );
   }
   return true;
@@ -439,7 +511,14 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     const raw = form.transformer_parameters_json?.trim();
-    const transformer_parameters = raw ? (raw as unknown) : undefined;
+    let transformer_parameters: Record<string, unknown> | undefined;
+    if (raw) {
+      try {
+        transformer_parameters = JSON.parse(raw);
+      } catch {
+        transformer_parameters = undefined;
+      }
+    }
 
     await postModelServing({
       model_id: form.model_id,
@@ -451,6 +530,7 @@ const handleSubmit = async () => {
       transformer_parameters,
       protocol_version: form.protocol_version,
       model_format: form.model_format,
+      artifact_path: selectedArtifactPath.value || undefined,
     });
 
     toaster.show('success', 'Model serving created');
@@ -462,6 +542,33 @@ const handleSubmit = async () => {
     toaster.show('error', 'Failed to create model serving');
   } finally {
     isSubmitting.value = false;
+  }
+};
+
+const fetchModelArtifacts = async (modelId: string) => {
+  if (!modelId) return;
+  loadingArtifacts.value = true;
+  artifactPaths.value = [];
+  selectedArtifactPath.value = '';
+  try {
+    const res = await getModelArtifacts(modelId, { showToast: false });
+    if (res?.data?.length && res.data[0]?.artifacts?.model_files) {
+      const modelFiles = res.data[0].artifacts.model_files;
+      const folders = new Set<string>();
+      modelFiles.forEach((file: { artifact_path: string }) => {
+        const path = file.artifact_path;
+        const firstFolder = path.includes('/') ? path.split('/')[0] : path;
+        if (firstFolder) {
+          folders.add(firstFolder);
+        }
+      });
+      artifactPaths.value = Array.from(folders);
+    }
+  } catch (error) {
+    console.error('Failed to load model artifacts', error);
+    artifactPaths.value = [];
+  } finally {
+    loadingArtifacts.value = false;
   }
 };
 </script>

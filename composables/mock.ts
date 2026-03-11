@@ -799,6 +799,7 @@ export const useApiWithMock = () => {
       transformer_parameters?: unknown;
       protocol_version: string;
       model_format: string;
+      artifact_path?: string;
     }) => {
       if (mock.value.enabled) {
         await mockDelay();
