@@ -552,26 +552,27 @@ const handleSubmit = async () => {
       }
     }
 
-    await postModelServing({
-      model_id: form.model_id,
-      isvc_name: form.isvc_name,
-      model_name: form.model_name,
-      model_version: form.model_version,
-      dataset_id: form.dataset_id || undefined,
-      transformer_image: form.transformer_image || undefined,
-      transformer_parameters,
-      protocol_version: form.protocol_version,
-      model_format: form.model_format,
-      artifact_path: selectedArtifactPath.value || undefined,
-    });
-
-    toaster.show('success', 'Model serving created');
+    await postModelServing(
+      {
+        model_id: form.model_id,
+        isvc_name: form.isvc_name,
+        model_name: form.model_name,
+        model_version: form.model_version,
+        dataset_id: form.dataset_id || undefined,
+        transformer_image: form.transformer_image || undefined,
+        transformer_parameters,
+        protocol_version: form.protocol_version,
+        model_format: form.model_format,
+        artifact_path: selectedArtifactPath.value || undefined,
+      },
+      { successMessage: 'operation_completed' },
+    );
     emit('created');
     resetState();
     emit('close');
   } catch (error) {
     console.error('Failed to create model serving', error);
-    toaster.show('error', 'Failed to create model serving');
+    // Error toast comes from request() helper
   } finally {
     isSubmitting.value = false;
   }
