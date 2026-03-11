@@ -457,7 +457,8 @@ async function onCardRefreshStatus(isvcName: string) {
       isvc_name: isvcName,
       limit: 1,
     } as unknown as Record<string, unknown>);
-    const updated = (res as any)?.data?.[0] as ModelServing | undefined;
+    type ServingListResponse = { data: ModelServing[] } | null;
+    const updated = (res as ServingListResponse)?.data?.[0];
     if (!updated) return;
     const idx = list.value.findIndex((s) => s.isvc_name === updated.isvc_name);
     if (idx >= 0) {
