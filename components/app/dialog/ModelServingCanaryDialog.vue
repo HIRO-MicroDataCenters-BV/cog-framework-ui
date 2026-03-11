@@ -171,6 +171,42 @@
             </div>
           </div>
 
+          <!-- Artifact Path Selection -->
+          <div
+            v-if="selectedModelId && (loadingArtifacts || artifactPaths.length)"
+            class="grid grid-cols-4 items-center gap-4"
+          >
+            <Label class="text-right">Artifact</Label>
+            <div class="col-span-3">
+              <div
+                v-if="loadingArtifacts"
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <Icon name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                Loading artifacts...
+              </div>
+              <Select v-else v-model="selectedArtifactPath">
+                <SelectTrigger class="w-full">
+                  <span v-if="selectedArtifactPath" class="truncate">
+                    {{ selectedArtifactPath }}
+                  </span>
+                  <span v-else class="text-muted-foreground">
+                    Select artifact
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="path in artifactPaths"
+                    :key="path"
+                    :value="path"
+                  >
+                    {{ path }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div class="grid grid-cols-4 items-center gap-4">
             <Label for="isvc_name" class="text-right">Service name</Label>
             <Input
@@ -393,6 +429,10 @@ import {
 } from '~/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import type { ModelServing } from '~/types/model.types';
+import type {
+  ModelArtifactFile,
+  ModelArtifactsResponse,
+} from '~/types/api.types';
 
 const props = defineProps<{
   open: boolean;
@@ -404,7 +444,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing, getModels } = useApi();
+const { postModelServing, getModels, getModelArtifacts } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -440,6 +480,9 @@ const loadingModelDetails = ref(false);
 const selectedModelId = ref('');
 const noVersionsAvailable = ref(false);
 const modelFetchError = ref(false);
+const artifactPaths = ref<string[]>([]);
+const selectedArtifactPath = ref('');
+const loadingArtifacts = ref(false);
 
 const isValid = computed(
   () =>
@@ -479,6 +522,9 @@ const resetState = () => {
   isSubmitting.value = false;
   noVersionsAvailable.value = false;
   modelFetchError.value = false;
+  artifactPaths.value = [];
+  selectedArtifactPath.value = '';
+  loadingArtifacts.value = false;
 };
 
 const canGoNext = computed(() => {
@@ -620,11 +666,45 @@ const selectVersion = (opt: ModelSummary) => {
   }
 };
 
+const fetchModelArtifacts = async (modelId: string) => {
+  if (!modelId) return;
+  loadingArtifacts.value = true;
+  artifactPaths.value = [];
+  selectedArtifactPath.value = '';
+  try {
+    const res = await getModelArtifacts(modelId, { showToast: false });
+    if (res?.data?.length && res.data[0]?.artifacts?.model_files) {
+      const modelFiles = res.data[0].artifacts.model_files;
+      // Extract unique first-level folder paths (first segment before "/")
+      const folders = new Set<string>();
+      modelFiles.forEach((file: ModelArtifactFile) => {
+        const path = file.artifact_path;
+        // Get only the first-level folder (e.g., "model" from "model/artifacts/file.pkl")
+        const firstFolder = path.includes('/') ? path.split('/')[0] : path;
+        if (firstFolder) {
+          folders.add(firstFolder);
+        }
+      });
+      artifactPaths.value = Array.from(folders);
+      // Auto-select the first artifact path if available
+      if (artifactPaths.value.length > 0) {
+        selectedArtifactPath.value = artifactPaths.value[0];
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load model artifacts', error);
+    artifactPaths.value = [];
+  } finally {
+    loadingArtifacts.value = false;
+  }
+};
+
 watch(selectedModelId, (id) => {
   if (!id) return;
   const opt = availableVersions.value.find((m) => m.id === id);
   if (opt) {
     selectVersion(opt);
+    fetchModelArtifacts(id);
   }
 });
 </script>

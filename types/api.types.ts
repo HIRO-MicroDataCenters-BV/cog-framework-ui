@@ -256,3 +256,31 @@ export interface HeadersResponse {
   message: string;
   data: HeadersData;
 }
+
+/**
+ * Model artifact file
+ */
+export interface ModelArtifactFile {
+  name: string;
+  artifact_path: string;
+}
+
+/**
+ * Model artifacts data
+ */
+export interface ModelArtifactsData {
+  model_id: string;
+  artifacts: {
+    artifact_uri: string;
+    model_files: ModelArtifactFile[];
+  };
+}
+
+/**
+ * Model artifacts API response
+ */
+export interface ModelArtifactsResponse {
+  status_code: number;
+  message: string;
+  data: ModelArtifactsData[];
+}

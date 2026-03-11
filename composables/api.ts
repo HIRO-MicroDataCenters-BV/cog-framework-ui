@@ -6,6 +6,7 @@ import type {
   DatasetFileUploadParams,
   DatasetQueryParams,
   InferenceServiceParams,
+  ModelArtifactsResponse,
   ModelFileUploadParams,
   ModelQueryParams,
   ModelRecommendParams,
@@ -271,6 +272,33 @@ export const useApi = () => {
       const q = new URLSearchParams(mapped).toString();
 
       return await request(`/models?${q}`, 'GET', undefined, options);
+    },
+
+    /**
+     * Gets model artifacts by model ID
+     *
+     * Retrieves artifacts for a specific model.
+     *
+     * @param {string} modelId - The model ID
+     * @param {Object} [options] - Additional options
+     * @param {boolean} [options.showToast=true] - Whether to show error toasts
+     * @returns {Promise<Object>} Response containing model artifacts
+     *
+     * @example
+     * ```typescript
+     * const artifacts = await api.getModelArtifacts('768e05ea-d1f1-4ad2-8291-1d34c4065a6b');
+     * ```
+     */
+    getModelArtifacts: async (
+      modelId: string,
+      options?: { showToast?: boolean },
+    ): Promise<ModelArtifactsResponse | null> => {
+      return await request(
+        `/models/${modelId}/artifacts`,
+        'GET',
+        undefined,
+        options,
+      );
     },
 
     /**
