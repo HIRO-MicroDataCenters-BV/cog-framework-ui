@@ -314,7 +314,7 @@
           <Button
             size="sm"
             variant="secondary"
-            class="h-6 px-2 text-[10px] shrink-0 transition-opacity duration-200"
+            class="h-6 min-w-14 px-2 text-[10px] shrink-0 transition-opacity duration-200"
             :class="
               isSaving || !serving.has_canary
                 ? 'opacity-50 cursor-not-allowed'
