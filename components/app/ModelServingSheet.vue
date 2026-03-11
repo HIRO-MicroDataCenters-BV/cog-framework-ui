@@ -55,23 +55,27 @@
               {{ serving.model_version ? `v${serving.model_version}` : '—' }}
             </span>
           </div>
-          <div class="flex justify-between gap-3">
+          <div class="flex justify-between items-center gap-3">
             <span class="text-muted-foreground shrink-0">Model ID</span>
-            <span
-              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
-              :title="serving.model_id ?? undefined"
+            <CopyPaste
+              :has-copy="!!serving.model_id"
+              :copy-text="serving.model_id ?? ''"
+              icon-left
+              class="font-mono text-xs font-medium text-foreground text-right break-all min-w-0 gap-0 shrink-0"
             >
-              {{ serving.model_id ?? '—' }}
-            </span>
+              <span class="break-all">{{ serving.model_id ?? '—' }}</span>
+            </CopyPaste>
           </div>
-          <div class="flex justify-between gap-3">
+          <div class="flex justify-between items-center gap-3">
             <span class="text-muted-foreground shrink-0">Dataset ID</span>
-            <span
-              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
-              :title="serving.dataset_id ?? undefined"
+            <CopyPaste
+              :has-copy="!!serving.dataset_id"
+              :copy-text="serving.dataset_id ?? ''"
+              icon-left
+              class="font-mono text-xs font-medium text-foreground text-right break-all min-w-0 gap-0 shrink-0"
             >
-              {{ serving.dataset_id ?? '—' }}
-            </span>
+              <span class="break-all">{{ serving.dataset_id ?? '—' }}</span>
+            </CopyPaste>
           </div>
         </div>
       </section>
@@ -108,20 +112,21 @@
               }}
             </span>
           </div>
-          <div class="flex justify-between gap-3 text-xs">
+          <div class="flex justify-between items-center gap-3 text-xs">
             <span class="text-muted-foreground shrink-0">Canary model ID</span>
-            <span
-              class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]"
-              :title="serving.canary_model_id ?? undefined"
+            <CopyPaste
+              :has-copy="!!serving.canary_model_id"
+              :copy-text="serving.canary_model_id ?? ''"
+              icon-left
+              class="font-mono text-[10px] font-medium text-foreground text-right break-all min-w-0 gap-0 shrink-0"
             >
-              {{ serving.canary_model_id ?? '—' }}
-            </span>
+              <span class="break-all">{{ serving.canary_model_id ?? '—' }}</span>
+            </CopyPaste>
           </div>
           <div class="flex justify-between gap-3 text-xs">
             <span class="text-muted-foreground shrink-0">Canary revision</span>
             <span
-              class="font-mono text-[10px] font-medium text-foreground text-right truncate max-w-[200px]"
-              :title="serving.canary_revision ?? undefined"
+              class="font-mono text-[10px] font-medium text-foreground text-right break-all min-w-0"
             >
               {{ serving.canary_revision ?? '—' }}
             </span>
@@ -145,8 +150,7 @@
           <div class="flex justify-between gap-3">
             <span class="text-muted-foreground shrink-0">Latest revision</span>
             <span
-              class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
-              :title="serving.latest_ready_revision"
+              class="font-mono text-xs font-medium text-foreground text-right break-all min-w-0"
             >
               {{ serving.latest_ready_revision ?? '—' }}
             </span>
@@ -157,8 +161,7 @@
                 >Stable revision</span
               >
               <span
-                class="font-mono text-xs font-medium text-foreground text-right truncate max-w-[180px]"
-                :title="serving.stable_revision ?? undefined"
+                class="font-mono text-xs font-medium text-foreground text-right break-all min-w-0"
               >
                 {{ serving.stable_revision ?? '—' }}
               </span>
