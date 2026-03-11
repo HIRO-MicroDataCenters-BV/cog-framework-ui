@@ -145,7 +145,7 @@
                 />
               </template>
               <div
-                v-if="form.model_id || form.model_version || form.model_format"
+                v-if="form.model_id || form.model_version"
                 class="mt-1 rounded-md border border-amber-400/60 bg-amber-400/10 dark:bg-amber-400/15 px-2.5 py-1.5 text-[11px] flex flex-col gap-0.5"
               >
                 <div
@@ -159,18 +159,13 @@
                   </span>
                 </div>
                 <div
-                  v-if="form.model_version || form.model_format"
+                  v-if="form.model_version"
                   class="flex items-center gap-2 text-amber-900 dark:text-amber-50"
                 >
                   <span
                     class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0"
                   />
-                  <span v-if="form.model_version"
-                    >v{{ form.model_version }}</span
-                  >
-                  <span v-if="form.model_format"
-                    >({{ form.model_format }})</span
-                  >
+                  <span>v{{ form.model_version }}</span>
                 </div>
               </div>
             </div>
@@ -183,44 +178,8 @@
               v-model="form.isvc_name"
               class="col-span-3"
               placeholder="e.g. my-model-canary"
+              disabled
             />
-          </div>
-
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_format" class="text-right">Model format</Label>
-            <div class="col-span-3">
-              <Select v-model="form.model_format">
-                <SelectTrigger id="model_format" class="w-full">
-                  <SelectValue placeholder="Select model format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mlflow">mlflow</SelectItem>
-                  <SelectItem value="sklearn">sklearn</SelectItem>
-                  <SelectItem value="xgboost">xgboost</SelectItem>
-                  <SelectItem value="lightgbm">lightgbm</SelectItem>
-                  <SelectItem value="tensorflow">tensorflow</SelectItem>
-                  <SelectItem value="pytorch">pytorch</SelectItem>
-                  <SelectItem value="pmml">pmml</SelectItem>
-                  <SelectItem value="paddle">paddle</SelectItem>
-                  <SelectItem value="tensorrt">tensorrt</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="protocol_version" class="text-right">
-              Protocol version
-            </Label>
-            <Select v-model="form.protocol_version">
-              <SelectTrigger id="protocol_version" class="col-span-3">
-                <SelectValue placeholder="Select version" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="v1">V1</SelectItem>
-                <SelectItem value="v2">V2</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -286,14 +245,9 @@
                 </div>
               </div>
               <div class="col-span-2 space-y-1">
-                <div class="text-xs text-muted-foreground">
-                  Version / Format
-                </div>
+                <div class="text-xs text-muted-foreground">Version</div>
                 <div>
                   {{ form.model_version ? `v${form.model_version}` : '—' }}
-                  <span v-if="form.model_format">
-                    · {{ form.model_format }}
-                  </span>
                 </div>
               </div>
               <div class="col-span-4 space-y-1">
@@ -314,16 +268,10 @@
               Deployment
             </div>
             <div class="grid grid-cols-4 gap-3">
-              <div class="col-span-2 space-y-1">
+              <div class="col-span-4 space-y-1">
                 <div class="text-xs text-muted-foreground">Service name</div>
                 <div class="font-medium truncate">
                   {{ form.isvc_name || '—' }}
-                </div>
-              </div>
-              <div class="col-span-2 space-y-1">
-                <div class="text-xs text-muted-foreground">Protocol</div>
-                <div class="font-medium">
-                  {{ form.protocol_version?.toUpperCase() || '—' }}
                 </div>
               </div>
               <div class="col-span-4 space-y-1">
@@ -476,8 +424,6 @@ const blankForm = () => ({
   dataset_id: '',
   transformer_image: '',
   transformer_parameters_json: '',
-  protocol_version: 'v1' as 'v1' | 'v2',
-  model_format: '',
 });
 
 const form = reactive(blankForm());
@@ -500,9 +446,7 @@ const isValid = computed(
     !!form.model_id &&
     !!form.isvc_name &&
     !!form.model_name &&
-    !!form.model_version &&
-    !!form.protocol_version &&
-    !!form.model_format,
+    !!form.model_version,
 );
 
 watch(
@@ -587,8 +531,6 @@ const handleSubmit = async () => {
       dataset_id: form.dataset_id,
       transformer_image: form.transformer_image,
       transformer_parameters,
-      protocol_version: form.protocol_version,
-      model_format: form.model_format,
     });
 
     toaster.show('success', 'canary_serving_created');
@@ -644,9 +586,6 @@ const loadModelDetailsByName = async (name: string) => {
       if (primary.version !== undefined && primary.version !== null) {
         form.model_version = String(primary.version);
       }
-      if (primary.type && !form.model_format) {
-        form.model_format = String(primary.type);
-      }
     }
     availableVersions.value = items.map(
       (m: ModelsApiItem): ModelSummary => ({
@@ -678,9 +617,6 @@ const selectVersion = (opt: ModelSummary) => {
   form.model_id = opt.id;
   if (opt.name) {
     form.model_name = opt.name;
-  }
-  if (opt.type) {
-    form.model_format = opt.type;
   }
 };
 
