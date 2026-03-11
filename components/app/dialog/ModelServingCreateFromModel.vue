@@ -85,7 +85,7 @@
                 class="text-[11px] text-destructive flex items-center gap-1"
               >
                 <Icon name="lucide:alert-circle" class="w-3 h-3" />
-                Underscores (_) are not allowed in service name.
+                {{ isvcNameError }}
               </p>
             </div>
           </div>
@@ -431,9 +431,26 @@ const isValidJson = computed(() => {
   }
 });
 
-const isValidIsvcName = computed(
-  () => !!form.isvc_name && !form.isvc_name.includes('_'),
-);
+// Service name: lowercase letters, numbers, hyphens; must start and end with alphanumeric
+const ISVC_NAME_REGEX = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
+
+const isValidIsvcName = computed(() => {
+  const name = form.isvc_name?.trim() ?? '';
+  return name.length > 0 && ISVC_NAME_REGEX.test(name);
+});
+
+const isvcNameError = computed(() => {
+  const name = form.isvc_name?.trim() ?? '';
+  if (!name) return '';
+  if (ISVC_NAME_REGEX.test(name)) return '';
+  if (name !== name.toLowerCase() || /[^a-z0-9-]/.test(name)) {
+    return 'Service name must use only lowercase letters (a-z), numbers (0-9) and hyphens (-).';
+  }
+  if (!/^[a-z0-9]/.test(name) || !/[a-z0-9]$/.test(name)) {
+    return 'Service name must start and end with a letter or number.';
+  }
+  return 'Service name is invalid (e.g. my-model-serving).';
+});
 
 const isValid = computed(
   () =>
@@ -456,8 +473,9 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    form.isvc_name = form.model_name
-      ? `${form.model_name.replace(/_/g, '-')}-serving`
+    // Initial service name must follow RFC 1123: lowercase, no underscores
+form.isvc_name = form.model_name
+      ? `${form.model_name.replace(/_/g, '-').toLowerCase()}-serving`
       : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);

@@ -150,6 +150,21 @@ export const useApi = () => {
 
       const data = await res.json();
 
+      // Backend may return HTTP 200 with error in body (e.g. status_code 500 or detail with exception)
+      const bodyIndicatesError =
+        (data && typeof data.status_code === 'number' && data.status_code >= 400) ||
+        (typeof data?.detail === 'string' &&
+          data.detail.length > 0 &&
+          (data.detail.toLowerCase().includes('error') ||
+            data.detail.toLowerCase().includes('exception')));
+
+      if (bodyIndicatesError) {
+        if (showToast) {
+          toaster.show('error', 'server_error');
+        }
+        return null;
+      }
+
       if (!res.ok) {
         // Always show error toasts
         switch (res.status) {
