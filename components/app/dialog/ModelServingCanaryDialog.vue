@@ -245,13 +245,25 @@
 
           <div class="grid grid-cols-4 items-start gap-4">
             <Label class="text-right pt-2">Transformer parameters</Label>
-            <div class="col-span-3">
+            <div class="col-span-3 relative">
               <textarea
                 v-model="form.transformer_parameters_json"
+                :aria-invalid="
+                  !isValidJson && !!form.transformer_parameters_json?.trim()
+                "
                 class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex min-h-24 w-full rounded-md border bg-transparent px-3 py-2 text-[13px] font-mono leading-snug shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                 rows="4"
-                placeholder="Optional"
+                placeholder='Optional - e.g. {"key": "value"}'
               />
+              <p
+                v-if="
+                  !isValidJson && !!form.transformer_parameters_json?.trim()
+                "
+                class="absolute -bottom-5 left-0 text-xs text-destructive flex items-center gap-1"
+              >
+                <Icon name="lucide:alert-circle" class="w-3 h-3" />
+                Invalid JSON format
+              </p>
             </div>
           </div>
         </div>
@@ -484,12 +496,24 @@ const artifactPaths = ref<string[]>([]);
 const selectedArtifactPath = ref('');
 const loadingArtifacts = ref(false);
 
+const isValidJson = computed(() => {
+  const json = form.transformer_parameters_json?.trim();
+  if (!json) return true; // Empty is valid (optional field)
+  try {
+    JSON.parse(json);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
 const isValid = computed(
   () =>
     !!form.model_id &&
     !!form.isvc_name &&
     !!form.model_name &&
-    !!form.model_version,
+    !!form.model_version &&
+    isValidJson.value,
 );
 
 watch(
@@ -535,6 +559,9 @@ const canGoNext = computed(() => {
       !!form.model_name &&
       !!form.model_version
     );
+  }
+  if (currentStep.value === 1) {
+    return isValidJson.value;
   }
   return true;
 });
