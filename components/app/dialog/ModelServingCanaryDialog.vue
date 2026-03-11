@@ -89,7 +89,7 @@
 
       <div
         v-if="!noVersionsAvailable || loadingModelDetails"
-        class="grid gap-4 py-2"
+        class="grid gap-4 py-2 max-h-[60vh] overflow-y-auto pr-1"
       >
         <!-- Step 0: Required details -->
         <div v-if="currentStep === 0" class="space-y-4">
@@ -438,7 +438,7 @@
         </div>
       </div>
 
-      <DialogFooter class="mt-2">
+      <DialogFooter class="mt-2 border-t-0">
         <!-- Simple close button when no versions available -->
         <template v-if="noVersionsAvailable && !loadingModelDetails">
           <Button
