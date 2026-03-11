@@ -51,7 +51,7 @@
       </nav>
       <Separator class="mt-3 mb-2" />
 
-      <div class="grid gap-4 py-2">
+      <div class="grid gap-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
         <!-- Step 0: Required details -->
         <div v-if="currentStep === 0" class="space-y-4">
           <div class="grid grid-cols-4 items-center gap-4">
@@ -305,9 +305,9 @@
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
-      <DialogFooter class="mt-2">
+        <DialogFooter class="mt-2 border-t-0">
         <div
           class="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
         >
