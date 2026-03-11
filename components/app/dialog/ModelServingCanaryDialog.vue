@@ -535,7 +535,7 @@ watch(
   () => props.baseServing,
   (value) => {
     if (!value) return;
-    form.isvc_name = `${value.isvc_name}-canary`;
+    form.isvc_name = value.isvc_name ?? '';
     const name = value.model_name || value.isvc_name;
     if (name) {
       loadModelDetailsByName(name);
