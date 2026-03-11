@@ -266,6 +266,19 @@
               </p>
             </div>
           </div>
+
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">Tag routing</Label>
+            <div class="col-span-3 flex items-center gap-3">
+              <Switch
+                :checked="form.enable_tag_routing"
+                @update:checked="form.enable_tag_routing = $event"
+              />
+              <span class="text-sm text-muted-foreground">
+                {{ form.enable_tag_routing ? 'Enabled' : 'Disabled' }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <!-- Step 2: Review -->
@@ -440,6 +453,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import type { ModelServing } from '~/types/model.types';
 import type {
   ModelArtifactFile,
@@ -456,7 +470,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing, getModels, getModelArtifacts } = useApi();
+const { patchModelServing, getModels, getModelArtifacts } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -476,6 +490,7 @@ const blankForm = () => ({
   dataset_id: '',
   transformer_image: '',
   transformer_parameters_json: '',
+  enable_tag_routing: false,
 });
 
 const form = reactive(blankForm());
@@ -594,16 +609,25 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     const raw = form.transformer_parameters_json?.trim();
-    const transformer_parameters = raw ? (raw as unknown) : undefined;
+    let transformer_parameters: Record<string, unknown> | undefined;
+    if (raw) {
+      try {
+        transformer_parameters = JSON.parse(raw);
+      } catch {
+        transformer_parameters = undefined;
+      }
+    }
 
-    await postModelServing({
+    await patchModelServing({
       model_id: form.model_id,
       isvc_name: form.isvc_name,
       model_name: form.model_name,
       model_version: form.model_version,
-      dataset_id: form.dataset_id,
-      transformer_image: form.transformer_image,
+      artifact_path: selectedArtifactPath.value || undefined,
+      dataset_id: form.dataset_id || undefined,
+      transformer_image: form.transformer_image || undefined,
       transformer_parameters,
+      enable_tag_routing: form.enable_tag_routing,
     });
 
     toaster.show('success', 'canary_serving_created');
