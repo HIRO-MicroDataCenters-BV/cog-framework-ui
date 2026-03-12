@@ -14,9 +14,11 @@ const baseUrl = config.app.baseURL;
 const route = useRoute();
 const query = computed(() => route.query);
 
-const isActive = (url: string) => {
-  return route.path.startsWith(`/${url}`);
-};
+const isMainActive = (url: string) => route.path === `/${url}`;
+const isSubActive = (url: string) => route.path === `/${url}`;
+const isParentActive = (url: string, items: { url: string }[]) =>
+  route.path.startsWith(`/${url}`) ||
+  items.some((item) => route.path.startsWith(`/${item.url}`));
 
 const isIframe = useStorage(
   'is_iframe',
@@ -94,7 +96,7 @@ const toggleTheme = () => {
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
                 as-child
-                :is-active="isActive(item.url)"
+                :is-active="isMainActive(item.url)"
                 :tooltip="item.title"
               >
                 <NuxtLink :to="`/${item.url}`">
@@ -109,14 +111,13 @@ const toggleTheme = () => {
             <Collapsible
               v-else
               as-child
-              :default-open="isActive(item.url)"
+              :default-open="isParentActive(item.url, item.items)"
               class="group/collapsible"
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
                   <SidebarMenuButton
                     :tooltip="item.title"
-                    :is-active="isActive(item.url)"
                   >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
@@ -135,7 +136,10 @@ const toggleTheme = () => {
                       v-for="subItem in item.items"
                       :key="subItem.title"
                     >
-                      <SidebarMenuSubButton as-child>
+                      <SidebarMenuSubButton
+                        as-child
+                        :is-active="isSubActive(subItem.url)"
+                      >
                         <NuxtLink :to="`/${subItem.url}`">
                           <span>{{ subItem.title }}</span>
                         </NuxtLink>
@@ -187,6 +191,10 @@ const toggleTheme = () => {
 <style scoped>
 .icon-chevron {
   transition: transform 0.3s;
+}
+
+.group\/collapsible[data-state='open'] .icon-chevron {
+  transform: rotate(90deg);
 }
 
 .theme-icon-animate {
