@@ -225,12 +225,6 @@
         </div>
       </section>
 
-      <!-- Edit -->
-      <Button variant="outline" class="w-full" @click="emit('edit', serving)">
-        <Icon name="lucide:sliders-horizontal" class="w-4 h-4 mr-2" />
-        Edit traffic split
-      </Button>
-
       <!-- Delete -->
       <Button
         variant="outline"
