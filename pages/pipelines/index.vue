@@ -29,21 +29,57 @@ const tableRef = ref();
 const columns = [
   {
     id: 'run_name',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
+    cell: ({ row }: { row: TableRowType }) => {
+      const fullName =
+        (row.getValue<string>('run_name') as string | undefined) ||
+        (row.getValue<string>('run_id') as string);
+      const maxLength = 40;
+      const isTruncated = !!fullName && fullName.length > maxLength;
+      const displayName =
+        fullName && isTruncated
+          ? `${fullName.slice(0, maxLength - 3)}...`
+          : fullName;
+
+      const linkVNode = h(
         'a',
         {
           href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+          class: 'truncate max-w-[260px] inline-block align-middle',
         },
-        row.getValue('run_name') || row.getValue('run_id'),
-      ),
+        displayName,
+      );
+
+      if (!isTruncated) {
+        return linkVNode;
+      }
+
+      return h(
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(
+                resolveComponent('TooltipTrigger'),
+                { asChild: true },
+                () => linkVNode,
+              ),
+              h(
+                resolveComponent('TooltipContent'),
+                null,
+                () => fullName,
+              ),
+            ],
+          }),
+      );
+    },
   },
   {
     id: 'run_id',
     accessorFn: (row) => row.run_id,
-    size: 180,
-    minSize: 180,
-    maxSize: 180,
+    size: 220,
+    minSize: 200,
+    maxSize: 260,
     cell: ({ row }: { row: TableRowType }) => {
       const runIdValue = String(row.original.run_id);
       const shortenedId = shortenUuid(runIdValue);
@@ -66,6 +102,9 @@ const columns = [
   },
   {
     id: 'start_time',
+    size: 180,
+    minSize: 160,
+    maxSize: 220,
     cell: ({ row }: { row: TableRowType }) => {
       const startedOn = row.getValue<string>('start_time');
       return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
@@ -73,7 +112,29 @@ const columns = [
   },
   {
     id: 'experiment_id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('experiment_id'),
+    accessorFn: (row) => row.experiment_id,
+    size: 220,
+    minSize: 200,
+    maxSize: 260,
+    cell: ({ row }: { row: TableRowType }) => {
+      const experimentIdValue = String(row.original.experiment_id);
+      const shortenedId = shortenUuid(experimentIdValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: experimentIdValue,
+        },
+        {
+          default: () =>
+            h(
+              'span',
+              {},
+              shortenedId,
+            ),
+        },
+      );
+    },
   },
   {
     id: 'status',
