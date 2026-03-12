@@ -934,7 +934,8 @@ defineExpose({ fetchData, totalItems });
       </div>
       -->
     </div>
-    <div class="overflow-x-auto w-full flex-1 bg-sidebar-background">
+    <!-- Non-scrollable table header -->
+    <div class="overflow-x-auto w-full bg-sidebar-background">
       <table
         class="border-b w-full border-collapse table-fixed bg-sidebar-background"
       >
@@ -948,9 +949,7 @@ defineExpose({ fetchData, totalItems });
             }"
           />
         </colgroup>
-        <TableHeader
-          class="sticky top-0 border-b border-t border-border z-10 shadow-xs bg-sidebar"
-        >
+        <TableHeader class="border-b border-t border-border shadow-xs bg-sidebar">
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
@@ -973,6 +972,26 @@ defineExpose({ fetchData, totalItems });
             </TableHead>
           </TableRow>
         </TableHeader>
+      </table>
+    </div>
+
+    <!-- Scrollable table body -->
+    <div
+      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative"
+    >
+      <table
+        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+      >
+        <colgroup>
+          <col
+            v-for="header in visibleHeaders"
+            :key="header.id"
+            :style="{
+              width:
+                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+            }"
+          />
+        </colgroup>
         <TableBody>
           <template v-if="table.getFilteredRowModel().rows?.length">
             <template
