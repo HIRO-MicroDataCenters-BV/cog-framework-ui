@@ -461,7 +461,6 @@ async function saveTraffic() {
   try {
     await patchModelServing({
       isvc_name: props.serving.isvc_name,
-      model_id: props.serving.canary_model_id ?? undefined,
       canary_traffic_percent: localCanaryPercent.value,
     });
     emit('updated', {
