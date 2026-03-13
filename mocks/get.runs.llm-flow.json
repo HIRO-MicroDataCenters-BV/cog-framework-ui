@@ -1,0 +1,253 @@
+{
+  "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+  "run_id": "b3a1c6dd-038f-4190-857f-21bc18e6ad5f",
+  "display_name": "llm-serve-qwen25-coder",
+  "storage_state": "AVAILABLE",
+  "pipeline_spec": {
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "Workflow",
+    "metadata": {
+      "annotations": {
+        "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+        "pipelines.kubeflow.org/pipeline_compilation_time": "2026-03-10T09:24:34.977502",
+        "pipelines.kubeflow.org/pipeline_spec": "{\"description\": \"Downloads an LLM (with optional LoRA), stores everything in the CF artifact store, and serves via vLLM.\", \"inputs\": [{\"default\": \"Qwen/Qwen2.5-Coder-7B-Instruct\", \"name\": \"model_id\", \"optional\": true, \"type\": \"String\"}, {\"default\": \"qwen25-coder\", \"name\": \"registered_model_name\", \"optional\": true, \"type\": \"String\"}], \"name\": \"LLM Download, Register & Serve\"}"
+      },
+      "generateName": "llm-download-register-serve-",
+      "labels": {
+        "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22"
+      }
+    },
+    "spec": {
+      "arguments": {
+        "parameters": [
+          { "name": "model_id", "value": "Qwen/Qwen2.5-Coder-7B-Instruct" },
+          { "name": "registered_model_name", "value": "qwen25-coder" },
+          { "name": "lora_repo_id", "value": "" },
+          { "name": "merge_lora_adapter", "value": "false" },
+          { "name": "namespace", "value": "kubeflow-user" },
+          { "name": "gpu_count", "value": "1" },
+          { "name": "hf_token", "value": "" },
+          { "name": "service_name", "value": "qwen25-coder" }
+        ]
+      },
+      "entrypoint": "llm-download-register-serve",
+      "serviceAccountName": "pipeline-runner",
+      "templates": [
+        {
+          "name": "llm-download-register-serve",
+          "dag": {
+            "tasks": [
+              {
+                "name": "download-and-register-model",
+                "template": "download-and-register-model"
+              },
+              {
+                "name": "download-and-register-lora",
+                "template": "download-and-register-lora"
+              },
+              {
+                "name": "merge-lora-and-register",
+                "template": "merge-lora-and-register",
+                "dependencies": [
+                  "download-and-register-model",
+                  "download-and-register-lora"
+                ]
+              },
+              {
+                "name": "deploy-with-kserve",
+                "template": "deploy-with-kserve",
+                "dependencies": [
+                  "merge-lora-and-register"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "download-and-register-model",
+          "container": {
+            "image": "python:3.11-slim",
+            "args": [
+              "--model-id",
+              "{{inputs.parameters.model_id}}",
+              "--registered-model-name",
+              "{{inputs.parameters.registered_model_name}}"
+            ]
+          },
+          "inputs": {
+            "parameters": [
+              { "name": "model_id" },
+              { "name": "registered_model_name" }
+            ]
+          },
+          "outputs": {
+            "parameters": [
+              { "name": "download-and-register-model-run_id" }
+            ]
+          }
+        },
+        {
+          "name": "download-and-register-lora",
+          "container": {
+            "image": "python:3.11-slim",
+            "args": [
+              "--lora-repo-id",
+              "{{inputs.parameters.lora_repo_id}}"
+            ]
+          },
+          "inputs": {
+            "parameters": [
+              { "name": "lora_repo_id" }
+            ]
+          },
+          "outputs": {
+            "parameters": [
+              { "name": "download-and-register-lora-run_id" }
+            ]
+          }
+        },
+        {
+          "name": "merge-lora-and-register",
+          "container": {
+            "image": "hiroregistry/cogflow:latest",
+            "args": [
+              "--base-model-run-id",
+              "{{inputs.parameters.download-and-register-model-run_id}}",
+              "--lora-run-id",
+              "{{inputs.parameters.download-and-register-lora-run_id}}"
+            ]
+          },
+          "inputs": {
+            "parameters": [
+              { "name": "download-and-register-model-run_id" },
+              { "name": "download-and-register-lora-run_id" }
+            ]
+          },
+          "outputs": {
+            "parameters": [
+              { "name": "merge-lora-and-register-merged_source_uri" }
+            ]
+          }
+        },
+        {
+          "name": "deploy-with-kserve",
+          "container": {
+            "image": "hiroregistry/cogflow:latest",
+            "args": [
+              "--model-source-uri",
+              "{{inputs.parameters.merge-lora-and-register-merged_source_uri}}",
+              "--model-id",
+              "{{inputs.parameters.model_id}}",
+              "--registered-model-name",
+              "{{inputs.parameters.registered_model_name}}",
+              "--namespace",
+              "{{inputs.parameters.namespace}}",
+              "--gpu-count",
+              "{{inputs.parameters.gpu_count}}"
+            ]
+          },
+          "inputs": {
+            "parameters": [
+              { "name": "merge-lora-and-register-merged_source_uri" },
+              { "name": "model_id" },
+              { "name": "registered_model_name" },
+              { "name": "namespace" },
+              { "name": "gpu_count" }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "runtime_config": {
+    "parameters": {
+      "gpu_count": "1",
+      "hf_token": "",
+      "lora_repo_id": "",
+      "merge_lora_adapter": "false",
+      "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+      "namespace": "kubeflow-user",
+      "registered_model_name": "qwen25-coder",
+      "service_name": "qwen25-coder"
+    }
+  },
+  "service_account": "default-editor",
+  "created_at": "2026-03-10T09:24:34Z",
+  "scheduled_at": "2026-03-10T09:24:34Z",
+  "finished_at": "2026-03-10T09:30:24Z",
+  "state": "FAILED",
+  "run_details": {
+    "task_details": [
+      {
+        "run_id": "b3a1c6dd-038f-4190-857f-21bc18e6ad5f",
+        "task_id": "09cd54ef-5b3e-440c-97d0-8993a29075a8",
+        "display_name": "llm-download-register-serve-7ps6x",
+        "create_time": "2026-03-10T09:24:35Z",
+        "start_time": "2026-03-10T09:24:36Z",
+        "end_time": "2026-03-10T09:30:24Z",
+        "state": "FAILED",
+        "state_history": [
+          {
+            "update_time": "2026-03-10T09:24:35Z",
+            "state": "RUNNING"
+          },
+          {
+            "update_time": "2026-03-10T09:30:23Z",
+            "state": "FAILED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "llm-download-register-serve-7ps6x-4236254254"
+          }
+        ]
+      },
+      {
+        "run_id": "b3a1c6dd-038f-4190-857f-21bc18e6ad5f",
+        "task_id": "9dd23299-ffad-41a9-8867-da56961721a2",
+        "display_name": "download-and-register-model",
+        "create_time": "2026-03-10T09:24:35Z",
+        "start_time": "2026-03-10T09:24:36Z",
+        "end_time": "2026-03-10T09:29:39Z",
+        "state": "FAILED",
+        "state_history": [
+          {
+            "update_time": "2026-03-10T09:24:35Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-03-10T09:24:45Z",
+            "state": "RUNNING"
+          },
+          {
+            "update_time": "2026-03-10T09:30:23Z",
+            "state": "FAILED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "llm-download-register-serve-7ps6x-3551244850"
+          },
+          {
+            "pod_name": "llm-download-register-serve-7ps6x-2963097443"
+          }
+        ]
+      }
+    ]
+  },
+  "state_history": [
+    {
+      "update_time": "2026-03-10T09:24:34Z",
+      "state": "PENDING"
+    },
+    {
+      "update_time": "2026-03-10T09:24:35Z",
+      "state": "RUNNING"
+    },
+    {
+      "update_time": "2026-03-10T09:30:23Z",
+      "state": "FAILED"
+    }
+  ]
+}
+

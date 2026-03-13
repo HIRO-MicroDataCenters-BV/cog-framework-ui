@@ -1040,6 +1040,12 @@ export const useApiWithMock = () => {
           return Promise.resolve(federationPipeline);
         }
 
+        // LLM serve pipeline run (Qwen2.5 coder) – use detailed mock JSON
+        if (id === 'b3a1c6dd-038f-4190-857f-21bc18e6ad5f') {
+          const llmServeFlow = await import('~/mocks/get.runs.llm-flow.json');
+          return Promise.resolve(llmServeFlow);
+        }
+
         // Return detailed federation pipeline data from testdata.fed.json
         if (id === 'e3450222-f475-4062-953b-230836ca00c8') {
           console.log('Loading get.runs.fed.json for ID:', id);
