@@ -18,6 +18,27 @@ const isActive = (url: string) => {
   return route.path.startsWith(`/${url}`);
 };
 
+const isMainActive = (url: string, hasChildren: boolean) => {
+  // For menus with children (like Pipelines), don't highlight the parent,
+  // only the sub-items should show an active state.
+  if (hasChildren) return false;
+  return route.path.startsWith(`/${url}`);
+};
+
+const isSubActive = (subUrl: string) => {
+  const fullPath = route.path;
+
+  // Special handling for Pipelines "Runs" vs "Builder"
+  if (subUrl === 'pipelines') {
+    return (
+      fullPath.startsWith('/pipelines') &&
+      !fullPath.startsWith('/pipelines/builder')
+    );
+  }
+
+  return fullPath.startsWith(`/${subUrl}`);
+};
+
 const isIframe = useStorage(
   'is_iframe',
   query.value.is_iframe === '1',
@@ -94,7 +115,7 @@ const toggleTheme = () => {
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
                 as-child
-                :is-active="isActive(item.url)"
+                :is-active="isMainActive(item.url, false)"
                 :tooltip="item.title"
               >
                 <NuxtLink :to="`/${item.url}`">
@@ -116,7 +137,7 @@ const toggleTheme = () => {
                 <CollapsibleTrigger as-child>
                   <SidebarMenuButton
                     :tooltip="item.title"
-                    :is-active="isActive(item.url)"
+                    :is-active="isMainActive(item.url, item.items.length > 0)"
                   >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
@@ -125,7 +146,10 @@ const toggleTheme = () => {
                         </span>
                         <span>{{ item.title }}</span>
                       </div>
-                      <Icon class="icon-chevron" name="lucide:chevron-right" />
+                      <Icon
+                        class="icon-chevron group-data-[state=open]/collapsible:rotate-90"
+                        name="lucide:chevron-right"
+                      />
                     </div>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -135,7 +159,10 @@ const toggleTheme = () => {
                       v-for="subItem in item.items"
                       :key="subItem.title"
                     >
-                      <SidebarMenuSubButton as-child>
+                      <SidebarMenuSubButton
+                        as-child
+                        :is-active="isSubActive(subItem.url)"
+                      >
                         <NuxtLink :to="`/${subItem.url}`">
                           <span>{{ subItem.title }}</span>
                         </NuxtLink>

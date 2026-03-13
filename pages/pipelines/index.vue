@@ -36,12 +36,13 @@ const columns = [
         row.getValue<string>('run_id');
 
       const link = h(
-        'a',
+        resolveComponent('NuxtLink'),
         {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+          // Use app route path (Nuxt will prepend baseURL automatically)
+          to: `/${baseUrl}/${row.getValue('run_id')}`,
           class: 'block truncate max-w-[260px]',
         },
-        name,
+        () => name,
       );
 
       if (!name || name.length <= 32) {
@@ -81,9 +82,12 @@ const columns = [
         {
           default: () =>
             h(
-              'a',
-              { href: `${urlOrigin}${baseUrl}/${runIdValue}` },
-              shortenedId,
+              resolveComponent('NuxtLink'),
+              {
+                // Use app route path (Nuxt will prepend baseURL automatically)
+                to: `/${baseUrl}/${runIdValue}`,
+              },
+              () => shortenedId,
             ),
         },
       );

@@ -46,14 +46,6 @@ export const uselistMenus = () => {
           ],
           isActive: false,
         },
-        {
-          key: 'flowise',
-          title: 'Flowise',
-          url: 'flowise',
-          icon: 'lucide:messages-square',
-          items: [],
-          isActive: false,
-        },
       ],
       footer: [],
       user: [
