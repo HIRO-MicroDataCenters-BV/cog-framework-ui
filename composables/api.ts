@@ -3,15 +3,17 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type {
-  ModelRecommendParams,
-  ModelQueryParams,
-  DatasetQueryParams,
-  ModelFileUploadParams,
   DatasetFileUploadParams,
+  DatasetQueryParams,
+  InferenceServiceParams,
+  ModelArtifactsResponse,
+  ModelFileUploadParams,
+  ModelQueryParams,
+  ModelRecommendParams,
   PipelineComponentParams,
   PodParams,
-  InferenceServiceParams,
 } from '~/types/api.types';
+import type { ModelServingResponse } from '~/types/model.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -22,10 +24,10 @@ import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
-import runsData from '@/mocks/get.runs.json';
 import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
 import runsFlowData from '@/mocks/get.runs.flow.json';
+import modelsServingData from '@/mocks/get.models-serving.json';
 
 /**
  * @fileoverview Cognitive Framework API client
@@ -148,6 +150,23 @@ export const useApi = () => {
 
       const data = await res.json();
 
+      // Backend may return HTTP 200 with error in body (e.g. status_code 500 or detail with exception)
+      const bodyIndicatesError =
+        (data &&
+          typeof data.status_code === 'number' &&
+          data.status_code >= 400) ||
+        (typeof data?.detail === 'string' &&
+          data.detail.length > 0 &&
+          (data.detail.toLowerCase().includes('error') ||
+            data.detail.toLowerCase().includes('exception')));
+
+      if (bodyIndicatesError) {
+        if (showToast) {
+          toaster.show('error', 'server_error');
+        }
+        return null;
+      }
+
       if (!res.ok) {
         // Always show error toasts
         switch (res.status) {
@@ -160,7 +179,9 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            toaster.show('error', 'not_found');
+            if (showToast) {
+              toaster.show('error', 'not_found');
+            }
             return null;
           case 422: {
             // Handle validation errors - detail might be an array or object
@@ -251,16 +272,209 @@ export const useApi = () => {
      * const paginatedModels = await api.getModels({ page: 1, limit: 10 });
      * ```
      */
-    getModels: async (params: ModelQueryParams = {}) => {
+    getModels: async (
+      params: ModelQueryParams = {},
+      options?: { showToast?: boolean },
+    ) => {
       if (mockEnabled) {
         return Promise.resolve(modelsData);
+      }
+      // Backend expects `search` for free-text name queries.
+      const raw = params as Record<string, string>;
+      const mapped: Record<string, string> = { ...raw };
+      if (mapped.name) {
+        mapped.search = mapped.name;
+        delete mapped.name;
+      }
+      const q = new URLSearchParams(mapped).toString();
+
+      return await request(`/models?${q}`, 'GET', undefined, options);
+    },
+
+    /**
+     * Gets model artifacts by model ID
+     *
+     * Retrieves artifacts for a specific model.
+     *
+     * @param {string} modelId - The model ID
+     * @param {Object} [options] - Additional options
+     * @param {boolean} [options.showToast=true] - Whether to show error toasts
+     * @returns {Promise<Object>} Response containing model artifacts
+     *
+     * @example
+     * ```typescript
+     * const artifacts = await api.getModelArtifacts('768e05ea-d1f1-4ad2-8291-1d34c4065a6b');
+     * ```
+     */
+    getModelArtifacts: async (
+      modelId: string,
+      options?: { showToast?: boolean },
+    ): Promise<ModelArtifactsResponse | null> => {
+      return await request(
+        `/models/${modelId}/artifacts`,
+        'GET',
+        undefined,
+        options,
+      );
+    },
+
+    /**
+     * Creates a new model serving configuration
+     *
+     * @param {Object} data - Model serving create data
+     * @returns {Promise<Object>} Response containing created model serving data
+     */
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+      artifact_path?: string;
+    }) => {
+      return request(`/models-serving`, 'POST', data);
+    },
+
+    /**
+     * Updates a model serving configuration
+     *
+     * @param {Object} data - Model serving update data
+     * @returns {Promise<Object>} Response containing updated model serving data
+     */
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent?: number;
+        model_id?: string;
+        artifact_path?: string;
+        model_name?: string;
+        model_version?: string;
+        dataset_id?: string;
+        transformer_image?: string;
+        transformer_parameters?: Record<string, unknown>;
+        protocol_version?: string;
+        model_format?: string;
+        enable_tag_routing?: boolean;
+      },
+      options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      return request(`/models-serving`, 'PATCH', data, options);
+    },
+
+    /**
+     * Deletes a model serving by its inference service name
+     *
+     * @param {string} isvc_name - Inference service name to delete
+     * @returns {Promise<Object>} Standard response indicating successful deletion
+     */
+    deleteModelServing: async (isvc_name: string) => {
+      return request(
+        `/models-serving?isvc_name=${encodeURIComponent(isvc_name)}`,
+        'DELETE',
+        undefined,
+        { successMessage: 'model_serving_deleted' },
+      );
+    },
+
+    /**
+     * Retrieves all served models
+     *
+     * @param {Object} params - Query parameters for pagination and filtering
+     * @returns {Promise<ModelServingResponse>} Response containing served models data with pagination
+     */
+    getModelsServing: async (
+      params: Record<string, unknown> = {},
+    ): Promise<
+      | (ModelServingResponse & {
+          pagination: {
+            total_items: number;
+            page: number;
+            limit: number;
+            total_pages: number;
+          };
+        })
+      | null
+    > => {
+      if (mockEnabled) {
+        const data = modelsServingData as ModelServingResponse;
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...data.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) =>
+              item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        // Apply sort
+        const sortBy = searchParams.sort_by || 'creation_timestamp';
+        const sortOrder = (searchParams.sort_order || 'desc') as 'asc' | 'desc';
+        if (sortBy === 'creation_timestamp') {
+          filteredData = filteredData.sort((a, b) => {
+            const dateA = new Date(a.creation_timestamp || 0).getTime();
+            const dateB = new Date(b.creation_timestamp || 0).getTime();
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
+        return {
+          status_code: data.status_code,
+          message: data.message,
+          data: paginatedData,
+          pagination: {
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
+        };
       }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const res = await request(`/models?${q}`);
-      return res;
+      const res = (await request(
+        `/models-serving${q ? `?${q}` : ''}`,
+      )) as ModelServingResponse | null;
+      if (res && res.data) {
+        const page = parseInt((params.page as string) || '1');
+        const limit = parseInt((params.limit as string) || '10');
+        return {
+          ...res,
+          pagination: {
+            total_items: res.data.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(res.data.length / limit),
+          },
+        };
+      }
+      return null;
     },
+
     /**
      * Registers a new model
      *

@@ -101,6 +101,18 @@ const props = defineProps({
     type: String as PropType<string | null>,
     default: null,
   },
+  hideHeader: {
+    type: Boolean,
+    default: false,
+  },
+  externalSearch: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
+  },
+  searchPlaceholderKey: {
+    type: String,
+    default: 'placeholder.search_by_name_or_id',
+  },
 });
 
 const hasStats = ref(props.hasStats);
@@ -218,10 +230,15 @@ const fetchData = async () => {
     params.sort_by = route.query.sort_by as string;
   }
 
+  const effectiveSearch = props.externalSearch ?? searchValue.value;
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
-  } else if (searchValue.value && selectedFilterColumn.value) {
-    params[selectedFilterColumn.value as string] = searchValue.value;
+  } else if (effectiveSearch) {
+    const filterColumn =
+      (route.query.column as string) ||
+      selectedFilterColumn.value ||
+      getAutoColumn(effectiveSearch);
+    params[getFilterColumnName(filterColumn)] = effectiveSearch;
   }
 
   if (route.query.page) {
@@ -620,6 +637,15 @@ const table = useVueTable({
   },
 });
 
+const visibleHeaders = computed(() => {
+  const groups = table.getHeaderGroups();
+  if (!groups.length) return [];
+  return groups[0].headers.filter(
+    (h) =>
+      !(h.column.columnDef as { meta?: { hidden?: boolean } })?.meta?.hidden,
+  );
+});
+
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
@@ -805,12 +831,19 @@ watch(
   { deep: true },
 );
 
-defineExpose({ fetchData });
+watch(
+  () => props.externalSearch,
+  () => {
+    if (props.hideHeader) fetchData();
+  },
+);
+
+defineExpose({ fetchData, totalItems });
 </script>
 
 <template>
   <div :class="['w-full flex flex-col relative h-svh', props.class]">
-    <div class="pl-4 p-3">
+    <div v-if="!props.hideHeader" class="pl-4 p-3">
       <div>
         <div class="pb-2 flex justify-between gap-2">
           <div>
@@ -836,7 +869,7 @@ defineExpose({ fetchData });
                 v-model="searchValue"
                 class="w-64 pl-8"
                 type="search"
-                :placeholder="t('placeholder.search_by_name_or_id')"
+                :placeholder="t(props.searchPlaceholderKey)"
                 @update:model-value="applySearchFilter"
               />
               <Icon
@@ -846,6 +879,8 @@ defineExpose({ fetchData });
             </div>
 
             <div class="flex gap-2 items-center">
+              <slot name="header-actions" />
+
               <Button
                 variant="outline"
                 size="icon"
@@ -899,21 +934,32 @@ defineExpose({ fetchData });
       </div>
       -->
     </div>
-    <div class="overflow-x-auto w-full flex-1">
-      <table class="border-b w-full border-collapse table-fixed">
+    <div class="overflow-x-auto w-full flex-1 bg-sidebar-background">
+      <table
+        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+      >
+        <colgroup>
+          <col
+            v-for="header in visibleHeaders"
+            :key="header.id"
+            :style="{
+              width:
+                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+            }"
+          />
+        </colgroup>
         <TableHeader
-          class="sticky top-0 bg-muted/40 dark:bg-muted border-b border-t border-border z-10 shadow-xs"
+          class="sticky top-0 border-b border-t border-border z-10 shadow-xs bg-sidebar"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
+            class="h-10 min-h-10 border-0"
           >
             <TableHead
-              v-for="header in headerGroup.headers.filter(
-                (h) => !(h.column.columnDef as any).meta?.hidden,
-              )"
+              v-for="header in visibleHeaders"
               :key="header.id"
-              :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
+              :class="'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10'"
               :style="{
                 width:
                   header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
@@ -1059,7 +1105,7 @@ defineExpose({ fetchData });
     </div>
 
     <div
-      class="py-2 px-4 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+      class="py-1 px-4 border-t border-border bg-card absolute bottom-0 left-0 right-0"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">

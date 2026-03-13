@@ -63,3 +63,30 @@ export interface ModelSummary {
 }
 
 export type ModelOverviewContent = ModelDetail;
+
+export interface ModelServing {
+  isvc_name: string;
+  served_model_url: string;
+  status: 'ready' | 'pending' | 'failed' | string;
+  model_id: string | null;
+  model_name: string | null;
+  model_version: string | null;
+  dataset_id: string | null;
+  creation_timestamp: string;
+  age: string;
+  latest_ready_revision: string;
+  traffic_percentage: number;
+  has_canary: boolean;
+  stable_revision: string | null;
+  canary_revision: string | null;
+  stable_traffic_percent: number | null;
+  canary_traffic_percent: number | null;
+  canary_model_id?: string | null;
+  canary_model_version?: string | null;
+}
+
+export interface ModelServingResponse {
+  status_code: number;
+  message: string;
+  data: ModelServing[];
+}

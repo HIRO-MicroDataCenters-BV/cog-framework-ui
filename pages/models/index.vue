@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { TableRowType } from '@/types/row.types';
+import type { ModelSummary } from '@/types/model.types';
 import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { useSidebar } from '~/components/ui/sidebar';
 import { shortenUuid } from '~/utils';
 import { Badge } from '~/components/ui/badge';
 import DropdownAction from '@/components/app/menu/Actions.vue';
+import ModelServingCreateFromModel from '@/components/app/dialog/ModelServingCreateFromModel.vue';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
@@ -13,6 +15,18 @@ const { getModels, deleteModel } = useApi();
 const { setPage, page } = useApp();
 const { state: sidebarState } = useSidebar();
 const tableRef = ref();
+const createServingOpen = ref(false);
+const selectedModelForServing = ref<ModelSummary | null>(null);
+
+const openCreateServingFor = (model: ModelSummary) => {
+  selectedModelForServing.value = model;
+  createServingOpen.value = true;
+};
+
+const closeCreateServing = () => {
+  createServingOpen.value = false;
+  selectedModelForServing.value = null;
+};
 
 setPage({
   section: 'models',
@@ -160,6 +174,14 @@ const columns = [
         id,
         items: [
           {
+            key: 'create_model_serving',
+            label: 'create_model_serving',
+            icon: 'lucide:server',
+            action: async () => {
+              openCreateServingFor(row.original);
+            },
+          },
+          {
             key: 'delete_model',
             label: 'delete_model',
             hasConfirmation: true,
@@ -179,14 +201,23 @@ const tabs = uselistTabs().value.model_management;
 </script>
 
 <template>
-  <AppTable
-    ref="tableRef"
-    :columns="columns"
-    :data-source="getModels"
-    :tabs="tabs"
-    :sortable-columns="['register_date']"
-    :filterable-columns="['type']"
-    group-by="name"
-    class="grow"
-  />
+  <div class="flex flex-col h-full">
+    <AppTable
+      ref="tableRef"
+      :columns="columns"
+      :data-source="getModels"
+      :tabs="tabs"
+      :sortable-columns="['register_date']"
+      :filterable-columns="['type']"
+      group-by="name"
+      class="grow"
+    />
+
+    <ModelServingCreateFromModel
+      :open="createServingOpen"
+      :model="selectedModelForServing"
+      @close="closeCreateServing"
+      @created="tableRef?.fetchData?.()"
+    />
+  </div>
 </template>

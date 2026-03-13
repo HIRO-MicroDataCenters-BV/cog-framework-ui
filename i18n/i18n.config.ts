@@ -17,15 +17,18 @@ export default defineI18nConfig(() => ({
           dataset_deleted: 'Dataset deleted successfully',
           model_deleted: 'Model deleted successfully',
           pipeline_deleted: 'Pipeline deleted successfully',
+          model_serving_deleted: 'Model service deleted successfully',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
           test_connection: 'Connection successful! Table found.',
           test_connection_no_table: 'Connection successful!',
           share_updated: 'Dataset shared successfully',
+          canary_serving_created: 'Canary serving created successfully',
         },
         error: {
           unknown: 'An unknown error occurred',
+          operation_failed: 'Operation failed',
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
@@ -69,6 +72,12 @@ export default defineI18nConfig(() => ({
         warning: {
           validation_error: 'Please check the form for errors',
           test_connection: 'Connection successful, but table not found',
+          canary_no_versions_title: 'Cannot create canary rollout',
+          canary_no_versions_description:
+            'No different model versions are available for canary deployment. Register a new version of this model to enable canary rollouts.',
+          canary_fetch_error_title: 'Unable to fetch model versions',
+          canary_fetch_error_description:
+            'Could not retrieve model information. Please try again later.',
         },
       },
       general: {
@@ -78,15 +87,18 @@ export default defineI18nConfig(() => ({
       title: {
         datasets: 'Datasets',
         models: 'Models',
+        'model-serving': 'Model Serving',
         pipelines: 'Pipelines',
         platform: 'Platform',
         actions: 'Actions',
         dataset_actions: 'Dataset Actions',
         model_actions: 'Model Actions',
+        model_serving_actions: 'Model Serving Actions',
         pipeline_actions: 'Pipeline Actions',
         select_filter: 'Select Filter',
         add_dataset: 'Add Dataset',
         add_model: 'Add Model',
+        edit_model_serving: 'Edit Model Serving',
         upload_component: 'Upload components as .yaml',
         dataset_management: 'Datasets',
         training_builder: 'Training Builder',
@@ -99,6 +111,8 @@ export default defineI18nConfig(() => ({
       alert: {
         delete_dataset:
           'Are you sure you want to delete this dataset "{name}"?',
+        delete_model_service:
+          'Are you sure you want to delete the model service "{name}"? This will undeploy the inference service.',
       },
       subtitle: {
         dataset_management: 'Datasets',
@@ -115,6 +129,7 @@ export default defineI18nConfig(() => ({
       description: {
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
+        edit_model_serving: 'Update traffic percentage for {name}',
       },
       builder: {
         components: 'Components',
@@ -196,6 +211,7 @@ export default defineI18nConfig(() => ({
         name: 'Name',
         new: 'New',
         description: 'Description',
+        canary_traffic_percent: 'Traffic Percentage',
         connection_string: 'Connection String',
         filter_condition: 'Filter Condition',
         transform_expression: 'Transform Expression',
@@ -261,6 +277,7 @@ export default defineI18nConfig(() => ({
         version: 'Version',
         search: 'Search...',
         search_by_name_or_id: 'Search by name or ID...',
+        search_by_name: 'Search by name...',
         description: 'Enter a description',
         connection_string: 'Database connection string',
         filter_condition: 'WHERE condition',
@@ -337,7 +354,10 @@ export default defineI18nConfig(() => ({
         download: 'Download',
         preview: 'Preview',
         delete_model: 'Delete Model',
+        delete_model_service: 'Delete model service',
+        create_model_serving: 'Server Model',
         add_models: 'Add Model',
+        'add_model-serving': 'Serve Model',
         add_training_builder: 'Add Training Builder',
         add_runs: 'Add Runs',
         add_model_validation: 'Add Model Validation',
@@ -499,6 +519,12 @@ export default defineI18nConfig(() => ({
         user_id: 'Owner',
         register_user_id: 'Author',
         ownership: 'Ownership',
+        isvc_name: 'ISVC Name',
+        served_model_url: 'URL',
+        model_name: 'Model Name',
+        traffic_percentage: 'Traffic',
+        creation_timestamp: 'Created',
+        age: 'Age',
       },
       status: {
         completed: 'Completed',

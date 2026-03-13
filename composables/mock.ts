@@ -724,6 +724,115 @@ export const useApiWithMock = () => {
       return request(`/models?${q}`);
     },
 
+    getModelsServing: async (params: Record<string, unknown> = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const modelsServingJson = await import(
+          '~/mocks/get.models-serving.json'
+        );
+
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...modelsServingJson.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) =>
+              item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        // Apply sort
+        const sortBy = searchParams.sort_by || 'creation_timestamp';
+        const sortOrder = (searchParams.sort_order || 'desc') as 'asc' | 'desc';
+        if (sortBy === 'creation_timestamp') {
+          filteredData = filteredData.sort((a, b) => {
+            const dateA = new Date(a.creation_timestamp || 0).getTime();
+            const dateB = new Date(b.creation_timestamp || 0).getTime();
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
+        return Promise.resolve({
+          status_code: modelsServingJson.status_code,
+          message: modelsServingJson.message,
+          data: paginatedData,
+          pagination: {
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
+        });
+      }
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/models-serving${q ? `?${q}` : ''}`);
+    },
+
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+      artifact_path?: string;
+    }) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: 'Model serving created successfully',
+          data,
+        });
+      }
+      return request(`/models-serving`, 'POST', data, {
+        showToast: true,
+        successMessage: 'Model serving created successfully',
+      });
+    },
+
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent: number;
+      },
+      _options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Model serving updated successfully',
+          data: data,
+        });
+      }
+      return request(`/models-serving`, 'PATCH', data);
+    },
+
     getModelById: async (id: string) => {
       if (mock.value.enabled) {
         await mockDelay();

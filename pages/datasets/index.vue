@@ -110,9 +110,9 @@ const columns = [
   {
     id: 'id',
     accessorFn: (row) => row.id,
-    size: 250,
-    minSize: 250,
-    maxSize: 250,
+    size: 220,
+    minSize: 180,
+    maxSize: 400,
     cell: ({ row }: { row: TableRowType }) => {
       const idValue = String(row.original.id);
       const shortenedId = shortenUuid(idValue);
@@ -144,7 +144,7 @@ const columns = [
   },
   {
     id: 'data_source_type',
-    size: 140,
+    size: 120,
     cell: ({ row }: { row: TableRowType }) => {
       const value = parseInt(row.getValue<string>('data_source_type'));
       const typeName = getDataTypeFromValue(value);
@@ -200,15 +200,6 @@ const columns = [
     },
   },
   {
-    id: 'ownership',
-    size: 0,
-    minSize: 0,
-    maxSize: 0,
-    enableHiding: false,
-    meta: { hidden: true },
-    cell: () => null,
-  },
-  {
     id: 'actions',
     size: 56,
     enableHiding: false,
@@ -240,17 +231,14 @@ const columns = [
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col h-full">
     <AppTable
       ref="tableRef"
       :columns="columns"
       :data-source="getDatasets"
       :tabs="tabs"
       :sortable-columns="['register_date_time']"
-      :filterable-columns="[
-        'data_source_type',
-        { id: 'ownership', headerColumn: 'dataset_name' },
-      ]"
+      :filterable-columns="['data_source_type']"
       class="grow"
     />
 
