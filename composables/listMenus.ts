@@ -32,6 +32,25 @@ export const uselistMenus = () => {
           title: t('menu.pipelines'),
           url: 'pipelines',
           icon: 'lucide:route',
+          items: [
+            {
+              key: 'pipelines-runs',
+              title: t('menu.pipeline_runs') ?? 'Runs',
+              url: 'pipelines',
+            },
+            {
+              key: 'pipelines-builder',
+              title: 'Builder',
+              url: 'pipelines/builder',
+            },
+          ],
+          isActive: false,
+        },
+        {
+          key: 'flowise',
+          title: 'Flowise',
+          url: 'flowise',
+          icon: 'lucide:messages-square',
           items: [],
           isActive: false,
         },

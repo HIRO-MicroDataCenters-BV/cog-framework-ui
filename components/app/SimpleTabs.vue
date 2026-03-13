@@ -19,8 +19,8 @@ const selectTab = (key: string) => {
 </script>
 
 <template>
-  <div class="border-b border-gray-200 dark:border-gray-700">
-    <nav class="px-4 flex gap-6" aria-label="Tabs">
+  <div class="w-full border-b border-gray-200 dark:border-gray-700">
+    <nav class="w-full px-4 flex gap-6" aria-label="Tabs">
       <button
         v-for="tab in tabs"
         :key="tab.key"

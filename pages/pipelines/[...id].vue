@@ -10,16 +10,20 @@ import type {
 } from '~/types/builder.types';
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
+import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import Badge from '~/components/ui/badge/Badge.vue';
 
 const { setPage, page } = useApp();
 const { t } = useI18n();
 
 const pipelineData = ref<PipelineData | null>(null);
 
-const tabs = ref([
-  { label: 'flow', value: 'flow' },
-  { label: 'details', value: 'details' },
-]);
+const activeTab = ref<'flow' | 'details'>('flow');
+const tabs = [
+  { key: 'flow', label: 'Flow' },
+  { key: 'details', label: 'Details' },
+];
 
 const LAYOUT_CONFIG = {
   nodeWidth: 280,
@@ -566,65 +570,82 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-[calc(100svh-74px)]">
-    <Tabs default-value="flow" class="h-full">
-      <div class="w-full h-[52px] px-4 border-b border-gray-200">
-        <TabsList class="h-full rounded-none bg-transparent gap-4 py-0">
-          <TabsTrigger
-            v-for="tab in tabs"
-            :key="tab.value"
-            class="rounded-none px-0 cursor-pointer border-b border-transparent data-[state=active]:border-b-primary data-[state=active]:shadow-none"
-            :value="tab.value"
-            >{{ t(`tab.${tab.label}`) }}
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      <TabsContent value="flow" class="h-full">
+  <div class="h-[calc(100svh-74px)] w-full flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between flex-shrink-0 pr-4">
+      <SimpleTabs v-model="activeTab" :tabs="tabs" />
+    </div>
+
+    <div class="flex-1 overflow-hidden">
+      <div v-if="activeTab === 'flow'" class="h-full">
         <AppBuilder :readonly="true" />
-      </TabsContent>
-      <TabsContent value="details" class="h-full p-4">
-        <div v-if="runDetails" class="space-y-4">
-          <Table class="w-full">
-            <TableBody>
-              <TableRow
-                v-for="(value, key) in runDetails"
-                :key="key"
-                class="border-b-0"
-              >
-                <TableCell
-                  class="text-left py-3 pr-8 w-20 text-gray-500 font-medium flex items-center gap-2"
+      </div>
+
+      <div v-else class="h-full p-4 overflow-y-auto">
+        <div v-if="runDetails" class="max-w-4xl space-y-4">
+          <Card class="transition-all duration-200 hover:shadow-md">
+            <CardHeader class="py-3 px-4">
+              <CardTitle class="flex items-center gap-2 text-sm">
+                <div class="p-1 rounded bg-blue-100 dark:bg-blue-900/50">
+                  <Icon
+                    name="lucide:info"
+                    class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"
+                  />
+                </div>
+                {{ t('title.run_details') }}
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="px-4 pb-4 pt-0">
+              <!-- Two-column responsive grid like model metrics table -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+                <div
+                  v-for="(value, key) in runDetails"
+                  :key="key"
+                  class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
                 >
-                  <span class="size-4"><Icon :name="getKeyIcon(key)" /></span>
-                  <span>{{ t(`label.${key}`) }}</span>
-                </TableCell>
-                <TableCell class="text-left py-3">
                   <span
-                    v-if="
-                      typeof value === 'string' &&
-                      value.includes('T') &&
-                      value.includes('+')
-                    "
+                    class="text-muted-foreground text-xs flex items-center gap-1"
                   >
-                    {{ new Date(value).toLocaleString() }}
+                    <Icon :name="getKeyIcon(key)" class="w-3 h-3" />
+                    {{ t(`label.${key}`) }}
                   </span>
-                  <span v-else-if="key === 'status'">{{ value }}</span>
-                  <CopyPaste
-                    v-else-if="key === 'run_id' || key === 'experiment_id'"
-                    :has-copy="true"
-                    :copy-text="String(value)"
+                  <span
+                    class="text-xs font-medium text-right max-w-[55%] bg-muted px-1.5 py-0.5 rounded"
                   >
-                    {{ shortenUuid(String(value)) }}
-                  </CopyPaste>
-                  <span v-else>{{ value }}</span>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                    <span
+                      v-if="
+                        typeof value === 'string' &&
+                        value.includes('T') &&
+                        value.includes('+')
+                      "
+                    >
+                      {{ new Date(value).toLocaleString() }}
+                    </span>
+                    <Badge
+                      v-else-if="key === 'status'"
+                      :value="String(value).toLowerCase() || 'pending'"
+                      type="status"
+                      class="text-[11px]"
+                    />
+                    <CopyPaste
+                      v-else-if="key === 'run_id' || key === 'experiment_id'"
+                      :has-copy="true"
+                      :copy-text="String(value)"
+                    >
+                      <code class="text-[11px] font-mono">
+                        {{ shortenUuid(String(value)) }}
+                      </code>
+                    </CopyPaste>
+                    <span v-else>{{ value }}</span>
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <div v-else class="flex items-center justify-center h-64">
           <div class="text-gray-500">{{ t('hint.loading') }}</div>
         </div>
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   </div>
 </template>

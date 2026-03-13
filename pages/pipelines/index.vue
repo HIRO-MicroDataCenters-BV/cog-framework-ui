@@ -29,21 +29,46 @@ const tableRef = ref();
 const columns = [
   {
     id: 'run_name',
-    cell: ({ row }: { row: TableRowType }) =>
-      h(
+    size: 260,
+    cell: ({ row }: { row: TableRowType }) => {
+      const name =
+        (row.getValue<string>('run_name') as string | undefined) ||
+        row.getValue<string>('run_id');
+
+      const link = h(
         'a',
         {
           href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+          class: 'block truncate max-w-[260px]',
         },
-        row.getValue('run_name') || row.getValue('run_id'),
-      ),
+        name,
+      );
+
+      if (!name || name.length <= 32) {
+        return link;
+      }
+
+      // Wrap long names in a tooltip to show full text on hover
+      return h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
+        h(resolveComponent('Tooltip'), null, {
+          default: () => [
+            h(resolveComponent('TooltipTrigger'), { asChild: true }, () => link),
+            h(
+              resolveComponent('TooltipContent'),
+              { side: 'top' },
+              () => name as string,
+            ),
+          ],
+        }),
+      );
+    },
   },
   {
     id: 'run_id',
     accessorFn: (row) => row.run_id,
-    size: 180,
+    size: 200,
     minSize: 180,
-    maxSize: 180,
+    maxSize: 260,
     cell: ({ row }: { row: TableRowType }) => {
       const runIdValue = String(row.original.run_id);
       const shortenedId = shortenUuid(runIdValue);
@@ -66,6 +91,7 @@ const columns = [
   },
   {
     id: 'start_time',
+    size: 180,
     cell: ({ row }: { row: TableRowType }) => {
       const startedOn = row.getValue<string>('start_time');
       return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
@@ -73,20 +99,74 @@ const columns = [
   },
   {
     id: 'experiment_id',
-    cell: ({ row }: { row: TableRowType }) => row.getValue('experiment_id'),
+    accessorFn: (row) => row.experiment_id,
+    size: 220,
+    minSize: 200,
+    maxSize: 280,
+    cell: ({ row }: { row: TableRowType }) => {
+      const experimentIdValue = String(row.original.experiment_id ?? '');
+      if (!experimentIdValue) return '-';
+
+      const shortenedId = shortenUuid(experimentIdValue);
+
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: experimentIdValue,
+        },
+        {
+          default: () => shortenedId,
+        },
+      );
+    },
   },
   {
     id: 'status',
     size: 130,
     cell: ({ row }: { row: TableRowType }) => {
-      const status = row.getValue<string>('status');
+      const rawStatus = (row.getValue<string>('status') || '').toLowerCase();
+
+      const normalized =
+        rawStatus === 'succeeded' || rawStatus === 'completed'
+          ? 'succeeded'
+          : rawStatus === 'running'
+            ? 'running'
+            : rawStatus === 'failed'
+              ? 'failed'
+              : rawStatus === 'cancelled' || rawStatus === 'canceled'
+                ? 'cancelled'
+                : 'pending';
+
+      // Use same color style approach as dataset Type badges
+      const statusClasses: Record<string, string> = {
+        // Match xgboost model type badge
+        succeeded:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        running:
+          'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
+        // Match pytorch model type badge
+        failed:
+          'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        pending:
+          'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
+        cancelled:
+          'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100',
+      };
+
+      const classes =
+        statusClasses[normalized] || 'bg-muted text-muted-foreground';
+
+      const baseClass =
+        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
+
+      const label =
+        normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
       return h(
-        Badge,
-        {
-          value: status?.toLowerCase() || 'pending',
-          type: 'status',
-        },
-        () => [],
+        'span',
+        { class: `${baseClass} ${classes}` },
+        label,
       );
     },
   },
@@ -129,16 +209,6 @@ const tabs = [
     icon: null,
   },
 ];
-const data = mock.value.pipelineRuns;
-const mockDataSource = (params = {}) => {
-  return Promise.resolve({
-    data: data,
-    total: data.length,
-    page: 1,
-    pageSize: data.length,
-  });
-};
-console.log(data);
 </script>
 
 <template>
