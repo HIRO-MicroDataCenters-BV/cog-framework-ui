@@ -38,7 +38,7 @@ onUnmounted(async () => {
 <template>
   <div class="h-[calc(100svh-74px)] w-full bg-background">
     <iframe
-      src="https://dashboard.cog.hiro-develop.nl/flowise/canvas/a5f07387-3b39-4248-a1ae-12f5824cd68a?ns=admin"
+      src="https://dashboard.cog.hiro-develop.nl/flowise/"
       title="Flowise Canvas"
       class="w-full h-full border-0"
       referrerpolicy="no-referrer"
