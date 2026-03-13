@@ -20,8 +20,6 @@ setPage({
 });
 
 const baseUrl = page.value.section;
-const config = useRuntimeConfig();
-const urlOrigin = window.location.origin;
 
 const { getPipelineActions } = usePipelineActions();
 const tableRef = ref();
@@ -41,12 +39,12 @@ const columns = [
           : fullName;
 
       const linkVNode = h(
-        'a',
+        resolveComponent('NuxtLink'),
         {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('run_id')}`,
+          to: `/${baseUrl}/${row.getValue('run_id')}`,
           class: 'truncate max-w-[260px] inline-block align-middle',
         },
-        displayName,
+        () => displayName,
       );
 
       if (!isTruncated) {
@@ -92,9 +90,9 @@ const columns = [
         {
           default: () =>
             h(
-              'a',
-              { href: `${urlOrigin}${baseUrl}/${runIdValue}` },
-              shortenedId,
+              resolveComponent('NuxtLink'),
+              { to: `/${baseUrl}/${runIdValue}` },
+              () => shortenedId,
             ),
         },
       );
@@ -140,14 +138,46 @@ const columns = [
     id: 'status',
     size: 130,
     cell: ({ row }: { row: TableRowType }) => {
-      const status = row.getValue<string>('status');
+      const rawStatus = (row.getValue<string>('status') || '').toLowerCase();
+
+      const statusClasses: Record<string, string> = {
+        succeeded:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        running:
+          'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
+        failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        pending:
+          'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-100',
+        unknown:
+          'bg-muted text-muted-foreground dark:bg-muted/40 dark:text-muted-foreground',
+      };
+
+      const statusIcons: Record<string, string> = {
+        succeeded: 'lucide:check-circle-2',
+        running: 'lucide:loader-2',
+        failed: 'lucide:alert-circle',
+        pending: 'lucide:clock',
+        unknown: 'lucide:dot',
+      };
+
+      const normalized = rawStatus || 'unknown';
+      const baseClass =
+        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
+
       return h(
-        Badge,
+        'span',
         {
-          value: status?.toLowerCase() || 'pending',
-          type: 'status',
+          class: `${baseClass} ${
+            statusClasses[normalized] || statusClasses.unknown
+          }`,
         },
-        () => [],
+        [
+          h(resolveComponent('Icon'), {
+            name: statusIcons[normalized] || statusIcons.unknown,
+            class: 'size-3 shrink-0',
+          }),
+          normalized,
+        ],
       );
     },
   },

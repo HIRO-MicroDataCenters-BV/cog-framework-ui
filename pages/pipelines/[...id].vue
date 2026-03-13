@@ -10,16 +10,30 @@ import type {
 } from '~/types/builder.types';
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
 
 const { setPage, page } = useApp();
 const { t } = useI18n();
+const route = useRoute();
 
 const pipelineData = ref<PipelineData | null>(null);
 
-const tabs = ref([
-  { label: 'flow', value: 'flow' },
-  { label: 'details', value: 'details' },
-]);
+const activeTab = ref<'flow' | 'details'>('flow');
+const tabs = [
+  { key: 'flow', label: 'Flow' },
+  { key: 'details', label: 'Details' },
+];
+
+const initialRunId = computed(() =>
+  Array.isArray(route.params.id)
+    ? (route.params.id[0] as string)
+    : (route.params.id as string),
+);
+
+setPage({
+  section: 'pipelines',
+  title: initialRunId.value,
+});
 
 const LAYOUT_CONFIG = {
   nodeWidth: 280,
@@ -566,23 +580,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-[calc(100svh-74px)]">
-    <Tabs default-value="flow" class="h-full">
-      <div class="w-full h-[52px] px-4 border-b border-gray-200">
-        <TabsList class="h-full rounded-none bg-transparent gap-4 py-0">
-          <TabsTrigger
-            v-for="tab in tabs"
-            :key="tab.value"
-            class="rounded-none px-0 cursor-pointer border-b border-transparent data-[state=active]:border-b-primary data-[state=active]:shadow-none"
-            :value="tab.value"
-            >{{ t(`tab.${tab.label}`) }}
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      <TabsContent value="flow" class="h-full">
-        <AppBuilder :readonly="true" />
-      </TabsContent>
-      <TabsContent value="details" class="h-full p-4">
+  <div class="w-full h-full flex flex-col overflow-hidden">
+    <div class="flex-shrink-0">
+      <SimpleTabs v-model="activeTab" :tabs="tabs" />
+    </div>
+
+    <div class="flex-1 h-full">
+      <AppBuilder v-if="activeTab === 'flow'" :readonly="true" />
+
+      <div v-else-if="activeTab === 'details'" class="h-full p-4">
         <div v-if="runDetails" class="space-y-4">
           <Table class="w-full">
             <TableBody>
@@ -624,7 +630,7 @@ onMounted(async () => {
         <div v-else class="flex items-center justify-center h-64">
           <div class="text-gray-500">{{ t('hint.loading') }}</div>
         </div>
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   </div>
 </template>
