@@ -35,6 +35,14 @@ export const uselistMenus = () => {
           items: [],
           isActive: false,
         },
+        {
+          key: 'flowise',
+          title: 'Flowise',
+          url: 'flowise',
+          icon: 'lucide:sparkles',
+          items: [],
+          isActive: false,
+        },
       ],
       footer: [],
       user: [
