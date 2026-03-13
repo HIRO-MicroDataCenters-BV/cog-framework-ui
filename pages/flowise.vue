@@ -107,7 +107,9 @@ onUnmounted(async () => {
       class="flex items-center justify-between gap-2 px-4 py-2 border-b bg-card text-card-foreground"
     >
       <span class="text-sm font-medium">COG Assistant</span>
-      <span class="text-xs text-muted-foreground">Ask anything about your pipelines</span>
+      <span class="text-xs text-muted-foreground"
+        >Ask anything about your pipelines</span
+      >
     </div>
     <div class="flex-1">
       <flowise-fullchatbot class="h-full w-full" />
