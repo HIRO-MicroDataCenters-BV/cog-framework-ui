@@ -1041,7 +1041,7 @@ export const useApiWithMock = () => {
         }
 
         // LLM serve pipeline run (Qwen2.5 coder) – use detailed mock JSON
-        if (id === 'b3a1c6dd-038f-4190-857f-21bc18e6ad5f') {
+        if (id === '825bd04f-5114-4156-9a09-fa1c4c70b20a') {
           const llmServeFlow = await import('~/mocks/get.runs.llm-flow.json');
           return Promise.resolve(llmServeFlow);
         }
