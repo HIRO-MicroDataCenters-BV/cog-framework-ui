@@ -8,7 +8,7 @@ import {
  * Simulates realistic API response time for testing loading states
  * Set to 0 to disable delay
  */
-const MOCK_API_DELAY_MS = 2000;
+const MOCK_API_DELAY_MS = 2;
 
 export const useMock = () => {
   const { t } = useI18n();
@@ -1014,51 +1014,9 @@ export const useApiWithMock = () => {
       console.log('getPipelineRunFlow', id, mock.value.enabled);
       if (mock.value.enabled) {
         await mockDelay();
-        // Return LSTM pipeline mock data if ID matches
-        if (id === 'af31bfc5-0bb9-4520-86e3-30009ff7f805') {
-          const lstmPipeline = await import(
-            '~/mocks/get.runs.lstm-pipeline.json'
-          );
-          return Promise.resolve(lstmPipeline);
-        }
-
-        console.log('---->', id);
-
-        // Return wine pipeline mock data if ID matches
-        if (id === 'c4f73142-5412-4908-ba47-cd5654df9fb5') {
-          const winePipeline = await import(
-            '~/mocks/get.runs.wine-pipeline.json'
-          );
-          return Promise.resolve(winePipeline);
-        }
-
-        // Return federation pipeline mock data if ID matches
-        if (id === '1dd209cc-7952-4b1d-b4dd-90f8d891dc7d') {
-          const federationPipeline = await import(
-            '~/mocks/get.runs.federation.json'
-          );
-          return Promise.resolve(federationPipeline);
-        }
-
-        // Return detailed federation pipeline data from testdata.fed.json
-        if (id === 'e3450222-f475-4062-953b-230836ca00c8') {
-          console.log('Loading get.runs.fed.json for ID:', id);
-          const testdataFed = await import('~/mocks/get.runs.fed.json');
-          console.log('Loaded data:', testdataFed);
-          return Promise.resolve(testdataFed);
-        }
-
-        return Promise.resolve({
-          status_code: 200,
-          message: 'Mock pipeline run flow data',
-          data: {
-            run_id: id,
-            run_name: 'Mock Pipeline Run',
-            status: 'Succeeded',
-            nodes: [],
-            edges: [],
-          },
-        });
+        // Always return the LLM serve pipeline mock JSON for now
+        const llmFlow = await import('~/mocks/get.runs.llm-flow.json');
+        return Promise.resolve(llmFlow);
       }
       // This uses external API, not the base URL
       const config = useRuntimeConfig();
