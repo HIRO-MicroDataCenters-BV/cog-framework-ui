@@ -336,7 +336,8 @@ const run = computed(() => props.run);
 // Find the template matching the clicked node
 const selectedTemplate = computed(() => {
   if (!props.selectedNodeName || !run.value) return null;
-  const templates: PipelineTemplate[] = run.value?.pipeline_spec?.spec?.templates ?? [];
+  const templates: PipelineTemplate[] =
+    run.value?.pipeline_spec?.spec?.templates ?? [];
   return templates.find((t) => t.name === props.selectedNodeName) ?? null;
 });
 
@@ -350,7 +351,8 @@ const selectedTask = computed(() => {
 // Find the DAG entry for this template to resolve actual argument values
 const dagTask = computed(() => {
   if (!props.selectedNodeName || !run.value) return null;
-  const templates: PipelineTemplate[] = run.value?.pipeline_spec?.spec?.templates ?? [];
+  const templates: PipelineTemplate[] =
+    run.value?.pipeline_spec?.spec?.templates ?? [];
   for (const tpl of templates) {
     if (!tpl.dag?.tasks) continue;
     const found = tpl.dag.tasks.find(
@@ -433,11 +435,14 @@ const resolveParamValue = (rawValue: string): string => {
 // Fallback: pipeline-level runtime_config parameters
 const inputParameters = computed(() => {
   if (selectedTemplate.value) {
-    const paramDefs: PipelineParameter[] = selectedTemplate.value.inputs?.parameters ?? [];
+    const paramDefs: PipelineParameter[] =
+      selectedTemplate.value.inputs?.parameters ?? [];
     const dagArgMap = new Map<string, string>();
-    (dagTask.value?.arguments?.parameters ?? []).forEach((p: PipelineParameter) => {
-      if (p?.name) dagArgMap.set(p.name, p.value ?? '');
-    });
+    (dagTask.value?.arguments?.parameters ?? []).forEach(
+      (p: PipelineParameter) => {
+        if (p?.name) dagArgMap.set(p.name, p.value ?? '');
+      },
+    );
 
     return paramDefs.map((def: PipelineParameter) => ({
       name: def.name,
@@ -462,10 +467,12 @@ const inputParameters = computed(() => {
 // INPUT ARTIFACTS (from template inputs.artifacts)
 const inputArtifacts = computed(() => {
   if (!selectedTemplate.value) return [];
-  return (selectedTemplate.value.inputs?.artifacts ?? []).map((a: PipelineArtifact) => ({
-    name: a.name,
-    path: a.path ?? a.from ?? '—',
-  }));
+  return (selectedTemplate.value.inputs?.artifacts ?? []).map(
+    (a: PipelineArtifact) => ({
+      name: a.name,
+      path: a.path ?? a.from ?? '—',
+    }),
+  );
 });
 
 // OUTPUT PARAMETERS
@@ -476,18 +483,21 @@ const outputParameters = computed(() => {
     const outputValues: Record<string, string> =
       selectedTask.value?.output_values ?? {};
 
-    return (selectedTemplate.value.outputs?.parameters ?? []).map((p: PipelineOutputParameter) => {
-      // Prefer actual value from execution result, fall back to path
-      const actual = outputValues[p.name];
-      return {
-        name: p.name,
-        value: actual ?? p.valueFrom?.path ?? '—',
-      };
-    });
+    return (selectedTemplate.value.outputs?.parameters ?? []).map(
+      (p: PipelineOutputParameter) => {
+        // Prefer actual value from execution result, fall back to path
+        const actual = outputValues[p.name];
+        return {
+          name: p.name,
+          value: actual ?? p.valueFrom?.path ?? '—',
+        };
+      },
+    );
   }
 
   // Pipeline-level: collect all template output params
-  const templates: PipelineTemplate[] = run.value?.pipeline_spec?.spec?.templates ?? [];
+  const templates: PipelineTemplate[] =
+    run.value?.pipeline_spec?.spec?.templates ?? [];
   const all: Array<{ name: string; value: string }> = [];
   templates.forEach((tpl: PipelineTemplate) => {
     (tpl.outputs?.parameters ?? []).forEach((p: PipelineOutputParameter) => {
@@ -500,10 +510,12 @@ const outputParameters = computed(() => {
 // OUTPUT ARTIFACTS
 const outputArtifacts = computed(() => {
   if (selectedTemplate.value) {
-    return (selectedTemplate.value.outputs?.artifacts ?? []).map((a: PipelineOutputArtifact) => ({
-      name: a.name,
-      path: a.path ?? '—',
-    }));
+    return (selectedTemplate.value.outputs?.artifacts ?? []).map(
+      (a: PipelineOutputArtifact) => ({
+        name: a.name,
+        path: a.path ?? '—',
+      }),
+    );
   }
   return [];
 });

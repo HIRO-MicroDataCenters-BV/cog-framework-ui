@@ -556,7 +556,7 @@ const fetchRunDetails = async () => {
   const runId = route.params.id as string;
   const api = useApi();
 
-  const response = await api.getPipelineRunsList({ run_id: runId });
+  const response = await api.getPipelineRunsListV2({ run_id: runId });
   if (
     response &&
     'data' in response &&

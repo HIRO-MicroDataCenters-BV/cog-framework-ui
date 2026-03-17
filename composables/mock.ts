@@ -918,7 +918,10 @@ export const useApiWithMock = () => {
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
-        const paginatedData = filteredData.slice(startIndex, startIndex + limit);
+        const paginatedData = filteredData.slice(
+          startIndex,
+          startIndex + limit,
+        );
 
         return Promise.resolve({
           status_code: runsJson.status_code,
@@ -989,7 +992,10 @@ export const useApiWithMock = () => {
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
-        const paginatedRuns = filteredRuns.slice(startIndex, startIndex + limit);
+        const paginatedRuns = filteredRuns.slice(
+          startIndex,
+          startIndex + limit,
+        );
 
         const runs = paginatedRuns.map((run) => {
           const createdAt = run.created_at;
@@ -1032,7 +1038,11 @@ export const useApiWithMock = () => {
           },
         });
       }
-      return request(`/pipelines/runs`);
+      // Fallback should never be reached - mock wrapper only used when mockEnabled=true
+      // Real API uses direct fetch to KFP endpoint, not this fallback
+      throw new Error(
+        'Mock data not available. Please enable mock mode or check KFP endpoint configuration.',
+      );
     },
 
     deleteDatasetFile: async (id: number | string) => {

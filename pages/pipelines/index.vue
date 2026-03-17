@@ -10,7 +10,7 @@ import { shortenUuid } from '~/utils';
 const { t } = useI18n();
 
 const dayjs = useDayjs();
-const { getPipelineRunsList } = useApi();
+const { getPipelineRunsListV2 } = useApi();
 const mock = useMock();
 const { setPage, page } = useApp();
 
@@ -220,7 +220,7 @@ const tabs = [
   <AppTable
     ref="tableRef"
     :columns="columns"
-    :data-source="getPipelineRunsList"
+    :data-source="getPipelineRunsListV2"
     :tabs="tabs"
     :has-stats="false"
     :has-filters="false"
