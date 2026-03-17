@@ -11,6 +11,7 @@ import type {
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import SimpleTabs from '~/components/app/SimpleTabs.vue';
+import PipelineRunSheet from '~/components/app/PipelineRunSheet.vue';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 import Badge from '~/components/ui/badge/Badge.vue';
 
@@ -18,6 +19,8 @@ const { setPage, page } = useApp();
 const { t } = useI18n();
 
 const pipelineData = ref<PipelineData | null>(null);
+const isRunSheetOpen = ref(false);
+const selectedNodeName = ref<string | null>(null);
 
 const activeTab = ref<'flow' | 'details'>('flow');
 const tabs = [
@@ -577,7 +580,17 @@ onMounted(async () => {
 
     <div class="flex-1 overflow-hidden">
       <div v-if="activeTab === 'flow'" class="h-full">
-        <AppBuilder :readonly="true" />
+        <AppBuilder
+          :readonly="true"
+          @node-click="(node) => { isRunSheetOpen = !!node; selectedNodeName = node?.id || null; }"
+        />
+
+        <PipelineRunSheet
+          :open="isRunSheetOpen"
+          :run="pipelineData"
+          :selected-node-name="selectedNodeName"
+          @update:open="(v) => (isRunSheetOpen = v)"
+        />
       </div>
 
       <div v-else class="h-full p-4 overflow-y-auto">

@@ -105,6 +105,10 @@ import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
 import type { Node, Edge, ComponentInput } from '~/types/builder.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
 
+const emit = defineEmits<{
+  (e: 'node-click', node: VueFlowNode | null): void;
+}>();
+
 const props = withDefaults(
   defineProps<{
     readonly?: boolean;
@@ -156,8 +160,12 @@ const isSidebarOpen = ref({
   properties: true,
 });
 
-// Control sheet open state based on selectedNode
-const isSheetOpen = computed(() => selectedNode.value !== null);
+// Control sheet open state based on selectedNode.
+// In readonly mode (pipeline run view), keep the internal sheet closed and
+// let the parent handle its own sheets.
+const isSheetOpen = computed(
+  () => !readonly.value && selectedNode.value !== null,
+);
 
 const openUploadComponentDialog = ref(false);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
@@ -329,6 +337,13 @@ const onDragStart = (component: unknown) => {
 const onNodeClick = (node: VueFlowNode | null) => {
   // Store handles selection logic including null
   selectNode(node?.id || null);
+
+  // In readonly mode, bubble node click up so pages like pipeline run detail
+  // can open their own sheets (e.g. PipelineRunSheet) instead of the builder
+  // properties sheet.
+  if (readonly.value) {
+    emit('node-click', node);
+  }
 };
 
 const onConnect = (edge: VueFlowEdge) => {
