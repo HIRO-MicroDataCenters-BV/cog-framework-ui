@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex">
-    <Sheet>
+    <Sheet :open="isSheetOpen">
       <div
         v-if="!readonly && isSidebarOpen.library"
         class="w-80 flex-shrink-0 border-r"
@@ -155,6 +155,9 @@ const isSidebarOpen = ref({
   library: true,
   properties: true,
 });
+
+// Control sheet open state based on selectedNode
+const isSheetOpen = computed(() => selectedNode.value !== null);
 
 const openUploadComponentDialog = ref(false);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
