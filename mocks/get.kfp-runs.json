@@ -1,0 +1,419 @@
+{
+  "runs": [
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "b3a1c6dd-038f-4190-857f-21bc18e6ad5f",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "kubeflow-user",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T09:24:34Z",
+      "scheduled_at": "2026-03-10T09:24:34Z",
+      "finished_at": "2026-03-10T09:30:24Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "b3a1c6dd-038f-4190-857f-21bc18e6ad5f",
+            "task_id": "9dd23299-ffad-41a9-8867-da56961721a2",
+            "display_name": "download-and-register-model",
+            "create_time": "2026-03-10T09:24:35Z",
+            "start_time": "2026-03-10T09:24:36Z",
+            "end_time": "2026-03-10T09:29:39Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-03-10T09:24:35Z", "state": "PENDING" },
+              { "update_time": "2026-03-10T09:24:45Z", "state": "RUNNING" },
+              { "update_time": "2026-03-10T09:30:23Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T09:24:34Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T09:24:35Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T09:30:23Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "fb2a0bfd-bb85-45fc-bb1a-aaa481dd9a86",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "kubeflow-user",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T09:21:08Z",
+      "scheduled_at": "2026-03-10T09:21:08Z",
+      "finished_at": "2026-03-10T09:37:20Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "fb2a0bfd-bb85-45fc-bb1a-aaa481dd9a86",
+            "task_id": "c30e4a7e-8933-4f83-b0dc-a102a1156134",
+            "display_name": "download-and-register-model",
+            "create_time": "2026-03-10T09:21:09Z",
+            "start_time": "2026-03-10T09:21:10Z",
+            "end_time": "2026-03-10T09:37:20Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-03-10T09:21:09Z", "state": "PENDING" },
+              { "update_time": "2026-03-10T09:21:19Z", "state": "RUNNING" },
+              { "update_time": "2026-03-10T09:37:19Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T09:21:08Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T09:21:09Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T09:37:19Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "efbe24a0-fffb-4eed-a9dc-6f3eb34c60ca",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "kubeflow-user",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T08:58:11Z",
+      "scheduled_at": "2026-03-10T08:58:11Z",
+      "finished_at": "2026-03-10T09:00:43Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "efbe24a0-fffb-4eed-a9dc-6f3eb34c60ca",
+            "task_id": "19830aa4-7bf4-4bcb-ae25-13052d608e1d",
+            "display_name": "download-and-register-model",
+            "create_time": "2026-03-10T08:58:12Z",
+            "start_time": "2026-03-10T08:58:12Z",
+            "end_time": "2026-03-10T09:00:33Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-03-10T08:58:12Z", "state": "PENDING" },
+              { "update_time": "2026-03-10T08:58:22Z", "state": "RUNNING" },
+              { "update_time": "2026-03-10T09:00:42Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T08:58:11Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T08:58:12Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T09:00:42Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+      "display_name": "Dynamic Pipeline Compilation-run",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "number": "200"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-02-20T13:05:35Z",
+      "scheduled_at": "2026-02-20T13:05:35Z",
+      "finished_at": "2026-02-20T13:06:16Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+            "task_id": "0639c5e4-8f14-4f08-bce9-8b4a2b943b45",
+            "display_name": "add-ten",
+            "create_time": "2026-02-20T13:05:36Z",
+            "start_time": "2026-02-20T13:05:36Z",
+            "end_time": "2026-02-20T13:05:40Z",
+            "state": "SUCCEEDED",
+            "state_history": [
+              { "update_time": "2026-02-20T13:05:36Z", "state": "PENDING" },
+              { "update_time": "2026-02-20T13:05:46Z", "state": "SUCCEEDED" }
+            ]
+          },
+          {
+            "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+            "task_id": "01e43252-356f-4aaf-926f-bb78a666bed3",
+            "display_name": "final-sum-2",
+            "create_time": "2026-02-20T13:05:36Z",
+            "start_time": "2026-02-20T13:06:06Z",
+            "end_time": "2026-02-20T13:06:10Z",
+            "state": "SUCCEEDED",
+            "state_history": [
+              { "update_time": "2026-02-20T13:06:06Z", "state": "PENDING" },
+              { "update_time": "2026-02-20T13:06:16Z", "state": "SUCCEEDED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-02-20T13:05:35Z", "state": "PENDING" },
+        { "update_time": "2026-02-20T13:05:36Z", "state": "RUNNING" },
+        { "update_time": "2026-02-20T13:06:16Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "01cb4a4c-c654-4f8d-a289-218d696295a3",
+      "display_name": "lineage_test_pipeline 2026-02-24 11-58-10",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "dataset_id": "e72c7939-035f-4e9e-b8df-a28d75011c03"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-02-24T11:58:10Z",
+      "scheduled_at": "2026-02-24T11:58:10Z",
+      "finished_at": "2026-02-24T11:59:07Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "01cb4a4c-c654-4f8d-a289-218d696295a3",
+            "task_id": "85e7e875-d79b-4467-afcb-8392e7326180",
+            "display_name": "preprocess-data",
+            "create_time": "2026-02-24T11:58:10Z",
+            "start_time": "2026-02-24T11:58:11Z",
+            "end_time": "2026-02-24T11:58:57Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-02-24T11:58:11Z", "state": "PENDING" },
+              { "update_time": "2026-02-24T11:58:55Z", "state": "RUNNING" },
+              { "update_time": "2026-02-24T11:59:08Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-02-24T11:58:10Z", "state": "PENDING" },
+        { "update_time": "2026-02-24T11:58:11Z", "state": "RUNNING" },
+        { "update_time": "2026-02-24T11:59:07Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "50614024-ae77-4316-8e83-b06a3b6eb0cf",
+      "display_name": "lineage_test_pipeline 2026-02-24 10-44-30",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "dataset_id": "e72c7939-035f-4e9e-b8df-a28d75011c03"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-02-24T10:44:30Z",
+      "scheduled_at": "2026-02-24T10:44:30Z",
+      "finished_at": "2026-02-24T10:45:40Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "50614024-ae77-4316-8e83-b06a3b6eb0cf",
+            "task_id": "21341a23-7e7f-4266-8b4c-5fc6a540ff12",
+            "display_name": "preprocess-data",
+            "create_time": "2026-02-24T10:44:31Z",
+            "start_time": "2026-02-24T10:44:31Z",
+            "end_time": "2026-02-24T10:45:27Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-02-24T10:44:31Z", "state": "PENDING" },
+              { "update_time": "2026-02-24T10:45:30Z", "state": "RUNNING" },
+              { "update_time": "2026-02-24T10:45:40Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-02-24T10:44:30Z", "state": "PENDING" },
+        { "update_time": "2026-02-24T10:44:31Z", "state": "RUNNING" },
+        { "update_time": "2026-02-24T10:45:40Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "27734090-ffd1-428f-bf1a-566518d82761",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "kubeflow-user",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T05:24:28Z",
+      "scheduled_at": "2026-03-10T05:24:28Z",
+      "finished_at": "2026-03-10T05:35:19Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "27734090-ffd1-428f-bf1a-566518d82761",
+            "task_id": "a7a3163b-8d74-4db6-a21d-1a48cd4aa865",
+            "display_name": "download-and-register-model",
+            "create_time": "2026-03-10T05:24:30Z",
+            "start_time": "2026-03-10T05:24:30Z",
+            "end_time": "2026-03-10T05:34:26Z",
+            "state": "SUCCEEDED",
+            "state_history": [
+              { "update_time": "2026-03-10T05:24:30Z", "state": "PENDING" },
+              { "update_time": "2026-03-10T05:24:40Z", "state": "RUNNING" },
+              { "update_time": "2026-03-10T05:34:38Z", "state": "SUCCEEDED" }
+            ]
+          },
+          {
+            "run_id": "27734090-ffd1-428f-bf1a-566518d82761",
+            "task_id": "c9d5d295-f3d0-4e07-a0a8-1422149d3318",
+            "display_name": "deploy-with-kserve-3",
+            "create_time": "2026-03-10T05:24:30Z",
+            "start_time": "2026-03-10T05:34:38Z",
+            "end_time": "2026-03-10T05:35:08Z",
+            "state": "FAILED",
+            "state_history": [
+              { "update_time": "2026-03-10T05:34:38Z", "state": "PENDING" },
+              { "update_time": "2026-03-10T05:35:00Z", "state": "RUNNING" },
+              { "update_time": "2026-03-10T05:35:19Z", "state": "FAILED" }
+            ]
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T05:24:29Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T05:24:30Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T05:35:19Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "b22b0f57-9713-49b5-9dac-a70426a23005",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "admin",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T08:53:49Z",
+      "scheduled_at": "2026-03-10T08:53:49Z",
+      "finished_at": "2026-03-10T08:54:27Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T08:53:49Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T08:53:51Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T08:54:26Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "6dbfc426-cbd0-4f36-b033-bc997348045e",
+      "display_name": "llm-serve-qwen25-coder",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "gpu_count": "1",
+          "hf_token": "",
+          "lora_repo_id": "",
+          "merge_lora_adapter": "false",
+          "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "namespace": "admin",
+          "registered_model_name": "qwen25-coder",
+          "service_name": "qwen25-coder"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-03-10T08:40:27Z",
+      "scheduled_at": "2026-03-10T08:40:27Z",
+      "finished_at": "2026-03-10T08:41:21Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2026-03-10T08:40:27Z", "state": "PENDING" },
+        { "update_time": "2026-03-10T08:40:28Z", "state": "RUNNING" },
+        { "update_time": "2026-03-10T08:41:21Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "51ed2b06-4bc7-4b08-8a65-d5afce123695",
+      "display_name": "simple-two-step-run",
+      "storage_state": "AVAILABLE",
+      "runtime_config": {
+        "parameters": {
+          "number": "200"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2026-01-20T05:09:16Z",
+      "scheduled_at": "2026-01-20T05:09:16Z",
+      "finished_at": "2026-01-20T05:09:36Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2026-01-20T05:09:16Z", "state": "PENDING" },
+        { "update_time": "2026-01-20T05:09:16Z", "state": "RUNNING" },
+        { "update_time": "2026-01-20T05:09:36Z", "state": "SUCCEEDED" }
+      ]
+    }
+  ],
+  "total_size": 258,
+  "next_page_token": "eyJTb3J0QnlGaWVsZE5hbWUiOiJDcmVhdGVkQXRJblNlYyIsIlNvcnRCeUZpZWxkVmFsdWUiOjE3NzE1ODk2NTUsIlNvcnRCeUZpZWxkUHJlZml4IjoiIiwiS2V5RmllbGROYW1lIjoiVVVJRCIsIktleUZpZWxkVmFsdWUiOiIxZWQ1MmVlOC1kZjljLTQxMjEtOGFhMi1lMTllMTVkNjQ2NDciLCJLZXlGaWVsZFByZWZpeCI6IiIsIklzRGVzYyI6dHJ1ZSwiTW9kZWxOYW1lIjoiIiwiRmlsdGVyIjp7IkVRIjp7fSwiTkVRIjp7IlN0b3JhZ2VTdGF0ZSI6WyJBUkNISVZFRCJdfSwiR1QiOnt9LCJHVEUiOnt9LCJMVCI6e30sIkxURSI6e30sIklOIjp7fSwiU1VCU1RSSU5HIjp7fX19"
+}

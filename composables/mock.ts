@@ -887,47 +887,148 @@ export const useApiWithMock = () => {
     getPipelineRunsList: async (params = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
-        const pipelinesJson = await import('~/mocks/get.pipelines.json');
-
-        let filteredData = [...pipelinesJson.data];
-
-        // Apply search filters
+        const runsJson = await import('~/mocks/get.pipelines.json');
         const searchParams = params as Record<string, string>;
 
-        // Filter by ID
-        if (searchParams.id) {
-          filteredData = filteredData.filter((pipeline) =>
-            pipeline.run_id
-              .toLowerCase()
-              .includes(searchParams.id.toLowerCase()),
+        type PipelineRun = {
+          run_id: string;
+          run_name?: string;
+          status?: string;
+          duration?: string;
+          experiment_id?: string;
+          start_time?: string;
+        };
+
+        let filteredData: PipelineRun[] = [...(runsJson.data as PipelineRun[])];
+
+        if (searchParams.run_id) {
+          filteredData = filteredData.filter((r) =>
+            r.run_id.toLowerCase().includes(searchParams.run_id.toLowerCase()),
           );
         }
 
-        // Filter by name
-        if (searchParams.name) {
-          filteredData = filteredData.filter((pipeline) =>
-            pipeline.run_name
+        if (searchParams.run_name) {
+          filteredData = filteredData.filter((r) =>
+            (r.run_name || '')
               .toLowerCase()
-              .includes(searchParams.name.toLowerCase()),
+              .includes(searchParams.run_name.toLowerCase()),
           );
         }
 
-        // Handle pagination
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedData = filteredData.slice(startIndex, endIndex);
+        const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
         return Promise.resolve({
-          status_code: pipelinesJson.status_code,
-          message: pipelinesJson.message,
+          status_code: runsJson.status_code,
+          message: runsJson.message,
           data: paginatedData,
           pagination: {
             total: filteredData.length,
-            page: page,
-            limit: limit,
+            page,
+            limit,
             total_pages: Math.ceil(filteredData.length / limit),
+          },
+        });
+      }
+      return request(`/pipelines/runs`);
+    },
+
+    getPipelineRunsListV2: async (params = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const kfpJson = await import('~/mocks/get.kfp-runs.json');
+        const searchParams = params as Record<string, string>;
+
+        type KfpRun = {
+          run_id: string;
+          display_name?: string;
+          state?: string;
+          status?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          experiment_id?: string;
+          experiment?: { experiment_id?: string };
+        };
+
+        let filteredRuns: KfpRun[] = [...(kfpJson.runs as KfpRun[])];
+
+        if (searchParams.run_id) {
+          filteredRuns = filteredRuns.filter((r) =>
+            r.run_id.toLowerCase().includes(searchParams.run_id.toLowerCase()),
+          );
+        }
+
+        if (searchParams.run_name) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.display_name || '')
+              .toLowerCase()
+              .includes(searchParams.run_name.toLowerCase()),
+          );
+        }
+
+        const sortBy = searchParams.sort_by || 'created_at';
+        const sortOrder = searchParams.sort_order || 'desc';
+        filteredRuns = filteredRuns.sort((a, b) => {
+          const aVal = String(
+            sortBy === 'created_at'
+              ? (a.created_at ?? '')
+              : (a[sortBy as keyof KfpRun] ?? ''),
+          );
+          const bVal = String(
+            sortBy === 'created_at'
+              ? (b.created_at ?? '')
+              : (b[sortBy as keyof KfpRun] ?? ''),
+          );
+          return sortOrder === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const paginatedRuns = filteredRuns.slice(startIndex, startIndex + limit);
+
+        const runs = paginatedRuns.map((run) => {
+          const createdAt = run.created_at;
+          const finishedAt = run.finished_at;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          const experimentId =
+            run.experiment?.experiment_id ?? run.experiment_id ?? '';
+
+          return {
+            run_id: run.run_id,
+            run_name: run.display_name || run.run_id,
+            status: run.state || run.status || '',
+            start_time: createdAt || null,
+            experiment_id: experimentId,
+            duration,
+          };
+        });
+
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Pipeline runs',
+          data: runs,
+          pagination: {
+            total: filteredRuns.length,
+            page,
+            limit,
+            total_pages: Math.ceil(filteredRuns.length / limit),
+            next_page_token: null,
           },
         });
       }

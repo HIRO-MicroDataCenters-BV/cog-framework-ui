@@ -582,7 +582,12 @@ onMounted(async () => {
       <div v-if="activeTab === 'flow'" class="h-full">
         <AppBuilder
           :readonly="true"
-          @node-click="(node) => { isRunSheetOpen = !!node; selectedNodeName = node?.id || null; }"
+          @node-click="
+            (node) => {
+              isRunSheetOpen = !!node;
+              selectedNodeName = node?.id || null;
+            }
+          "
         />
 
         <PipelineRunSheet

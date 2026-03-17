@@ -50,17 +50,24 @@ const columns = [
       }
 
       // Wrap long names in a tooltip to show full text on hover
-      return h(resolveComponent('TooltipProvider'), { delayDuration: 200 }, () =>
-        h(resolveComponent('Tooltip'), null, {
-          default: () => [
-            h(resolveComponent('TooltipTrigger'), { asChild: true }, () => link),
-            h(
-              resolveComponent('TooltipContent'),
-              { side: 'top' },
-              () => name as string,
-            ),
-          ],
-        }),
+      return h(
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 200 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(
+                resolveComponent('TooltipTrigger'),
+                { asChild: true },
+                () => link,
+              ),
+              h(
+                resolveComponent('TooltipContent'),
+                { side: 'top' },
+                () => name as string,
+              ),
+            ],
+          }),
       );
     },
   },
@@ -150,8 +157,7 @@ const columns = [
         running:
           'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
         // Match pytorch model type badge
-        failed:
-          'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
         pending:
           'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
         cancelled:
@@ -164,14 +170,9 @@ const columns = [
       const baseClass =
         'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
 
-      const label =
-        normalized.charAt(0).toUpperCase() + normalized.slice(1);
+      const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
-      return h(
-        'span',
-        { class: `${baseClass} ${classes}` },
-        label,
-      );
+      return h('span', { class: `${baseClass} ${classes}` }, label);
     },
   },
   {
