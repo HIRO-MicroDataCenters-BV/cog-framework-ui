@@ -197,6 +197,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, watch } from 'vue';
 import type { CSSProperties } from 'vue';
 import {
   VueFlow,
@@ -262,7 +263,26 @@ const {
   zoomIn,
   zoomOut,
   fitView,
+  onNodesInitialized,
 } = useVueFlow();
+
+// Re-fit view whenever nodes are first loaded (async data)
+watch(
+  () => props.nodes,
+  (newNodes) => {
+    if (newNodes && newNodes.length > 0) {
+      nextTick(() => {
+        fitView({ padding: 0.35, duration: 300 });
+      });
+    }
+  },
+  { immediate: false },
+);
+
+// Also fit after VueFlow has measured & positioned nodes
+onNodesInitialized(() => {
+  fitView({ padding: 0.35, duration: 200 });
+});
 
 const { getTypeColor, getCategoryColor, getStatusConfig } = useBuilderColors();
 const { getTypeIcon } = useBuilderIcons();
