@@ -107,7 +107,7 @@
                 >
                   <span
                     class="text-sm flex-auto overflow-hidden font-medium truncate"
-                    >{{ data.label }}</span
+                    >{{ data.displayName || data.label }}</span
                   >
                   <Tooltip v-if="data.status">
                     <TooltipTrigger as-child>
@@ -122,8 +122,18 @@
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div v-if="data.category && data.category !== 'general'" class="px-4 py-3">
+                <div
+                  v-if="data.displayName || (data.category && data.category !== 'general')"
+                  class="px-4 py-3"
+                >
                   <p
+                    v-if="data.displayName"
+                    class="text-xs text-muted-foreground font-medium"
+                  >
+                    {{ data.label }}
+                  </p>
+                  <p
+                    v-else-if="data.category && data.category !== 'general'"
                     class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
                   >
                     <Icon name="lucide:folder" class="w-3 h-3" />

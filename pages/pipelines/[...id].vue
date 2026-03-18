@@ -250,6 +250,10 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       x: (index % 3) * 300 + 100,
       y: Math.floor(index / 3) * 200 + 100,
     };
+    const displayName =
+      template.metadata?.annotations?.[
+        'pipelines.kubeflow.org/task_display_name'
+      ];
 
     return {
       id: template.name,
@@ -259,6 +263,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       sourcePosition: Position.Bottom,
       data: {
         label: template.name,
+        displayName: displayName || null,
         status: getTaskStatus(taskDetail),
         category: getComponentCategory(template),
         component: {
