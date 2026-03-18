@@ -283,7 +283,7 @@ watch(activeTab, () => {
           @click="activeTab = 'active'"
         >
           <Icon
-            name="lucide:play-circle"
+            name="lucide:folder-open-dot"
             :class="[
               'h-4 w-4 transition-colors',
               activeTab === 'active' ? 'text-blue-500' : '',
@@ -301,10 +301,10 @@ watch(activeTab, () => {
           @click="activeTab = 'archived'"
         >
           <Icon
-            name="lucide:archive"
+            name="lucide:folder-archive"
             :class="[
               'h-4 w-4 transition-colors',
-              activeTab === 'archived' ? 'text-gray-500' : '',
+              activeTab === 'archived' ? 'text-orange-500' : '',
             ]"
           />
           <span>Archived</span>
