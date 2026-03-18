@@ -627,25 +627,6 @@
     "task_details": [
       {
         "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
-        "task_id": "01e43252-356f-4aaf-926f-bb78a666bed3",
-        "display_name": "final-sum-2",
-        "create_time": "2026-02-20T13:05:36Z",
-        "start_time": "2026-02-20T13:06:06Z",
-        "end_time": "2026-02-20T13:06:10Z",
-        "state": "SUCCEEDED",
-        "state_history": [
-          {
-            "update_time": "2026-02-20T13:06:06Z",
-            "state": "PENDING"
-          },
-          {
-            "update_time": "2026-02-20T13:06:16Z",
-            "state": "SUCCEEDED"
-          }
-        ]
-      },
-      {
-        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
         "task_id": "0639c5e4-8f14-4f08-bce9-8b4a2b943b45",
         "display_name": "add-ten",
         "create_time": "2026-02-20T13:05:36Z",
@@ -653,22 +634,33 @@
         "end_time": "2026-02-20T13:05:40Z",
         "state": "SUCCEEDED",
         "state_history": [
-          {
-            "update_time": "2026-02-20T13:05:36Z",
-            "state": "PENDING"
-          },
-          {
-            "update_time": "2026-02-20T13:05:46Z",
-            "state": "SUCCEEDED"
-          }
-        ],
-        "child_tasks": [
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-1483131525"
-          },
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-2517427838"
-          }
+          { "update_time": "2026-02-20T13:05:36Z", "state": "PENDING" },
+          { "update_time": "2026-02-20T13:05:46Z", "state": "SUCCEEDED" }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "8ef55cf5-bc82-46db-961c-4843e2727cbf",
+        "display_name": "multiply-by-two",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:46Z",
+        "end_time": null,
+        "state": "RUNNING",
+        "state_history": [
+          { "update_time": "2026-02-20T13:05:46Z", "state": "PENDING" },
+          { "update_time": "2026-02-20T13:05:50Z", "state": "RUNNING" }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "f4a7a76a-c30c-4393-9ba8-cb3069646b3a",
+        "display_name": "multiply-by-two-2",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": null,
+        "end_time": null,
+        "state": "PENDING",
+        "state_history": [
+          { "update_time": "2026-02-20T13:05:46Z", "state": "PENDING" }
         ]
       },
       {
@@ -678,93 +670,23 @@
         "create_time": "2026-02-20T13:05:36Z",
         "start_time": "2026-02-20T13:05:56Z",
         "end_time": "2026-02-20T13:05:59Z",
-        "state": "SUCCEEDED",
+        "state": "FAILED",
         "state_history": [
-          {
-            "update_time": "2026-02-20T13:05:56Z",
-            "state": "PENDING"
-          },
-          {
-            "update_time": "2026-02-20T13:06:06Z",
-            "state": "SUCCEEDED"
-          }
-        ],
-        "child_tasks": [
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-600714513"
-          }
+          { "update_time": "2026-02-20T13:05:56Z", "state": "PENDING" },
+          { "update_time": "2026-02-20T13:05:58Z", "state": "RUNNING" },
+          { "update_time": "2026-02-20T13:05:59Z", "state": "FAILED" }
         ]
       },
       {
         "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
-        "task_id": "57ab7321-9905-4f9f-b01d-1a2747741203",
-        "display_name": "dynamic-pipeline-compilation-cg545",
+        "task_id": "01e43252-356f-4aaf-926f-bb78a666bed3",
+        "display_name": "final-sum-2",
         "create_time": "2026-02-20T13:05:36Z",
-        "start_time": "2026-02-20T13:05:36Z",
-        "end_time": "2026-02-20T13:06:16Z",
-        "state": "SUCCEEDED",
+        "start_time": null,
+        "end_time": null,
+        "state": "PENDING",
         "state_history": [
-          {
-            "update_time": "2026-02-20T13:05:36Z",
-            "state": "RUNNING"
-          },
-          {
-            "update_time": "2026-02-20T13:06:16Z",
-            "state": "SUCCEEDED"
-          }
-        ],
-        "child_tasks": [
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-2205182877"
-          }
-        ]
-      },
-      {
-        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
-        "task_id": "8ef55cf5-bc82-46db-961c-4843e2727cbf",
-        "display_name": "multiply-by-two",
-        "create_time": "2026-02-20T13:05:36Z",
-        "start_time": "2026-02-20T13:05:46Z",
-        "end_time": "2026-02-20T13:05:50Z",
-        "state": "SUCCEEDED",
-        "state_history": [
-          {
-            "update_time": "2026-02-20T13:05:46Z",
-            "state": "PENDING"
-          },
-          {
-            "update_time": "2026-02-20T13:05:56Z",
-            "state": "SUCCEEDED"
-          }
-        ],
-        "child_tasks": [
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-1973390446"
-          }
-        ]
-      },
-      {
-        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
-        "task_id": "f4a7a76a-c30c-4393-9ba8-cb3069646b3a",
-        "display_name": "multiply-by-two-2",
-        "create_time": "2026-02-20T13:05:36Z",
-        "start_time": "2026-02-20T13:05:46Z",
-        "end_time": "2026-02-20T13:05:50Z",
-        "state": "SUCCEEDED",
-        "state_history": [
-          {
-            "update_time": "2026-02-20T13:05:46Z",
-            "state": "PENDING"
-          },
-          {
-            "update_time": "2026-02-20T13:05:56Z",
-            "state": "SUCCEEDED"
-          }
-        ],
-        "child_tasks": [
-          {
-            "pod_name": "dynamic-pipeline-compilation-cg545-1973390446"
-          }
+          { "update_time": "2026-02-20T13:06:06Z", "state": "PENDING" }
         ]
       }
     ]

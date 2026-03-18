@@ -1,6 +1,6 @@
 <template>
   <div
-    class="h-full bg-muted/20 relative"
+    class="h-full relative bg-muted/20"
     :class="{ readonly: props.readonly }"
   >
     <VueFlow
@@ -8,9 +8,9 @@
       :edges="props.edges"
       class="w-full h-full"
       fit-view
-      :nodes-draggable="!props.readonly"
-      :nodes-connectable="!props.readonly"
-      :edges-updatable="!props.readonly"
+      :nodes-draggable="!props.readonly && !isLocked"
+      :nodes-connectable="!props.readonly && !isLocked"
+      :edges-updatable="!props.readonly && !isLocked"
       :elements-selectable="!props.readonly"
       :delete-key-code="null"
       :multi-selection-key-code="null"
@@ -37,7 +37,8 @@
               props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
             :style="{
-              border: `2px solid ${getCategoryColor(data.category)}`,
+              border: '1px solid hsl(var(--border))',
+              borderLeft: `4px solid ${data.status ? getStatusConfig(data.status).color : getCategoryColor(data.category)}`,
               borderRadius: '0.75rem',
             }"
             :data-nodeid="data.id || data.component.id"
@@ -106,21 +107,38 @@
                 >
                   <span
                     class="text-sm flex-auto overflow-hidden font-medium truncate"
-                    >{{ data.label }}</span
+                    >{{ data.displayName || data.label }}</span
                   >
-                  <span
-                    v-if="data.status"
-                    class="text-xs px-2 py-0.5 rounded-md uppercase"
-                    :style="{
-                      backgroundColor: getStatusConfig(data.status).color,
-                      color: 'white',
-                    }"
-                  >
-                    {{ data.status }}
-                  </span>
+                  <Tooltip v-if="data.status">
+                    <TooltipTrigger as-child>
+                      <Icon
+                        :name="getStatusConfig(data.status).icon"
+                        class="w-4 h-4 shrink-0"
+                        :style="{ color: getStatusConfig(data.status).color }"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p class="capitalize text-xs">
+                        {{ data.status.toLowerCase() }}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <div v-if="data.category" class="px-4 py-3">
+                <div
+                  v-if="
+                    data.displayName ||
+                    (data.category && data.category !== 'general')
+                  "
+                  class="px-4 py-3"
+                >
                   <p
+                    v-if="data.displayName"
+                    class="text-xs text-muted-foreground font-medium"
+                  >
+                    {{ data.label }}
+                  </p>
+                  <p
+                    v-else-if="data.category && data.category !== 'general'"
                     class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
                   >
                     <Icon name="lucide:folder" class="w-3 h-3" />
@@ -191,15 +209,103 @@
           </div>
         </TooltipProvider>
       </template>
-      <Background pattern-color="#aaa" :gap="16" />
+      <Background v-if="showBackground" pattern-color="#aaa" :gap="16" />
+
+      <MiniMap
+        v-if="showMinimap"
+        :nodes-color="() => 'hsl(var(--primary))'"
+        :mask-color="'hsl(var(--muted) / 0.7)'"
+        pannable
+        zoomable
+      />
+
+      <!-- Floating Controls Toolbar -->
+      <Panel :position="PanelPosition.TopLeft">
+        <div
+          class="flex items-center gap-0.5 rounded-xl border border-border bg-background/90 backdrop-blur-sm shadow-lg px-1.5 py-1.5"
+        >
+          <!-- Zoom In -->
+          <button
+            type="button"
+            title="Zoom in"
+            class="canvas-ctrl-btn"
+            @click="zoomIn({ duration: 200 })"
+          >
+            <Icon name="lucide:plus" class="w-4 h-4" />
+          </button>
+
+          <!-- Zoom Out -->
+          <button
+            type="button"
+            title="Zoom out"
+            class="canvas-ctrl-btn"
+            @click="zoomOut({ duration: 200 })"
+          >
+            <Icon name="lucide:minus" class="w-4 h-4" />
+          </button>
+
+          <div class="w-px h-5 bg-border mx-0.5" />
+
+          <!-- Fit View -->
+          <button
+            type="button"
+            title="Fit view"
+            class="canvas-ctrl-btn"
+            @click="handleFitView"
+          >
+            <Icon name="lucide:maximize-2" class="w-4 h-4" />
+          </button>
+
+          <!-- Lock / Unlock -->
+          <button
+            type="button"
+            :title="isLocked ? 'Unlock nodes' : 'Lock nodes'"
+            class="canvas-ctrl-btn"
+            :class="{ 'text-primary': isLocked }"
+            @click="toggleLock"
+          >
+            <Icon
+              :name="isLocked ? 'lucide:lock' : 'lucide:lock-open'"
+              class="w-4 h-4"
+            />
+          </button>
+
+          <div class="w-px h-5 bg-border mx-0.5" />
+
+          <!-- Background dots toggle -->
+          <button
+            type="button"
+            :title="showBackground ? 'Hide background' : 'Show background'"
+            class="canvas-ctrl-btn"
+            :class="{ 'text-primary': !showBackground }"
+            @click="showBackground = !showBackground"
+          >
+            <Icon name="lucide:grid-2x2-x" class="w-4 h-4" />
+          </button>
+
+          <!-- Minimap Toggle -->
+          <button
+            type="button"
+            :title="showMinimap ? 'Hide minimap' : 'Show minimap'"
+            class="canvas-ctrl-btn"
+            :class="{ 'text-primary': showMinimap }"
+            @click="showMinimap = !showMinimap"
+          >
+            <Icon name="lucide:map" class="w-4 h-4" />
+          </button>
+        </div>
+      </Panel>
     </VueFlow>
   </div>
 </template>
 
 <script setup lang="ts">
+import { nextTick, watch, ref } from 'vue';
 import type { CSSProperties } from 'vue';
 import {
   VueFlow,
+  Panel,
+  PanelPosition,
   Position,
   Handle,
   MarkerType,
@@ -209,6 +315,8 @@ import {
   useVueFlow,
 } from '@vue-flow/core';
 import { Background } from '@vue-flow/background';
+import { MiniMap } from '@vue-flow/minimap';
+import '@vue-flow/minimap/dist/style.css';
 
 import '@vue-flow/core/dist/style.css';
 
@@ -262,7 +370,40 @@ const {
   zoomIn,
   zoomOut,
   fitView,
+  onNodesInitialized,
+  setNodes,
 } = useVueFlow();
+
+// Re-fit view whenever nodes are first loaded (async data)
+watch(
+  () => props.nodes,
+  (newNodes) => {
+    if (newNodes && newNodes.length > 0) {
+      nextTick(() => {
+        fitView({ padding: 0.15, duration: 300 });
+      });
+    }
+  },
+  { immediate: false },
+);
+
+// Also fit after VueFlow has measured & positioned nodes
+onNodesInitialized(() => {
+  fitView({ padding: 0.35, duration: 200 });
+});
+
+// Controls state
+const isLocked = ref(false);
+const showMinimap = ref(false);
+const showBackground = ref(true);
+
+const toggleLock = () => {
+  isLocked.value = !isLocked.value;
+};
+
+const handleFitView = () => {
+  fitView({ padding: 0.35, duration: 300 });
+};
 
 const { getTypeColor, getCategoryColor, getStatusConfig } = useBuilderColors();
 const { getTypeIcon } = useBuilderIcons();
@@ -540,6 +681,27 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 </script>
 
 <style scoped>
+.canvas-ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.canvas-ctrl-btn:hover {
+  background-color: hsl(var(--muted));
+}
+
+.canvas-ctrl-btn:active {
+  background-color: hsl(var(--muted) / 0.7);
+}
+
 .readonly .vue-flow__node {
   cursor: pointer !important;
 }

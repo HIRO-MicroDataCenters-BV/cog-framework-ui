@@ -88,7 +88,7 @@ export default defineI18nConfig(() => ({
         datasets: 'Datasets',
         models: 'Models',
         'model-serving': 'Model Serving',
-        pipelines: 'Pipelines',
+        pipelines: 'Flow',
         platform: 'Platform',
         actions: 'Actions',
         dataset_actions: 'Dataset Actions',
@@ -120,7 +120,7 @@ export default defineI18nConfig(() => ({
         runs: 'Runs',
         validation: 'Validation',
         serving: 'Serving',
-        pipelines: 'Pipelines',
+        pipelines: 'Flow',
       },
       dialog: {
         add_dataset_description:
@@ -469,8 +469,8 @@ export default defineI18nConfig(() => ({
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
-        pipelines: 'Pipelines',
-        pipelines_builder: 'Pipelines',
+        pipelines: 'Flow',
+        pipelines_builder: 'Flow',
         datasets: 'Datasets',
         models: 'Models',
       },
