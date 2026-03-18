@@ -14,9 +14,9 @@ const baseUrl = config.app.baseURL;
 const route = useRoute();
 const query = computed(() => route.query);
 
-const isActive = (url: string) => {
-  return route.path.startsWith(`/${url}`);
-};
+const isParentActive = (url: string, items: { url: string }[]) =>
+  route.path.startsWith(`/${url}`) ||
+  items.some((item) => route.path.startsWith(`/${item.url}`));
 
 const isMainActive = (url: string, hasChildren: boolean) => {
   // For menus with children (like Pipelines), don't highlight the parent,
@@ -130,7 +130,7 @@ const toggleTheme = () => {
             <Collapsible
               v-else
               as-child
-              :default-open="isActive(item.url)"
+              :default-open="isParentActive(item.url, item.items)"
               class="group/collapsible"
             >
               <SidebarMenuItem>
@@ -214,6 +214,10 @@ const toggleTheme = () => {
 <style scoped>
 .icon-chevron {
   transition: transform 0.3s;
+}
+
+.group\/collapsible[data-state='open'] .icon-chevron {
+  transform: rotate(90deg);
 }
 
 .theme-icon-animate {

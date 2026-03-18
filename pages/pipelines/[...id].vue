@@ -466,71 +466,22 @@ const getComponentCategory = (template: PipelineTemplate) => {
   return found?.category || 'general';
 };
 
-const extractTypesFromComponentSpec = (template: PipelineTemplate) => {
-  const typesMap = new Map<string, string>();
+const extractPaths = (
+  items: Array<{ name: string; type?: string }> | undefined,
+  defaultType: string,
+) =>
+  items?.map((item) => ({ name: item.name, type: item.type || defaultType })) ||
+  [];
 
-  try {
-    const componentSpecStr =
-      template.metadata?.annotations?.['pipelines.kubeflow.org/component_spec'];
-    if (!componentSpecStr) return typesMap;
+const getInputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.inputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.inputs?.parameters, 'String'),
+];
 
-    const componentSpec = JSON.parse(componentSpecStr);
-
-    // Extract input types
-    componentSpec.inputs?.forEach((input: { name: string; type: string }) => {
-      if (input.name && input.type) {
-        typesMap.set(`input:${input.name}`, input.type);
-      }
-    });
-
-    // Extract output types
-    componentSpec.outputs?.forEach((output: { name: string; type: string }) => {
-      if (output.name && output.type) {
-        typesMap.set(`output:${output.name}`, output.type);
-      }
-    });
-  } catch (error) {
-    console.warn('Failed to parse component_spec:', error);
-  }
-
-  return typesMap;
-};
-
-const getInputPaths = (template: PipelineTemplate) => {
-  const typesMap = extractTypesFromComponentSpec(template);
-
-  const artifacts =
-    template.inputs?.artifacts?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`input:${item.name}`) || 'Dataset',
-    })) || [];
-
-  const parameters =
-    template.inputs?.parameters?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`input:${item.name}`) || 'String',
-    })) || [];
-
-  return [...artifacts, ...parameters];
-};
-
-const getOutputPaths = (template: PipelineTemplate) => {
-  const typesMap = extractTypesFromComponentSpec(template);
-
-  const artifacts =
-    template.outputs?.artifacts?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`output:${item.name}`) || 'Dataset',
-    })) || [];
-
-  const parameters =
-    template.outputs?.parameters?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`output:${item.name}`) || 'String',
-    })) || [];
-
-  return [...artifacts, ...parameters];
-};
+const getOutputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.outputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.outputs?.parameters, 'String'),
+];
 
 const fetchPipelineData = async () => {
   const route = useRoute();
@@ -569,22 +520,11 @@ const fetchPipelineData = async () => {
 
   const title = pipelineData.value.display_name || 'Pipeline';
 
-  console.log('[Pipeline Viewer] Setting page with pipelineData:', {
-    pipelineData: pipelineData.value,
-    hasRuntimeConfig: !!pipelineData.value?.runtime_config,
-    parameters: pipelineData.value?.runtime_config?.parameters,
-  });
-
   setPage({
     section: 'pipelines',
     title,
     data: {
-      builder: {
-        name: title,
-        nodes,
-        edges,
-        pipelineData: pipelineData.value,
-      },
+      builder: { name: title, nodes, edges },
     },
   });
 };
@@ -616,7 +556,7 @@ const fetchRunDetails = async () => {
   const runId = route.params.id as string;
   const api = useApi();
 
-  const response = await api.getPipelineRunsListV2({ run_id: runId });
+  const response = await api.getPipelineRunsList({ run_id: runId });
   if (
     response &&
     'data' in response &&
