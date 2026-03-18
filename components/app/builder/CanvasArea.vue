@@ -37,7 +37,8 @@
               props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
             :style="{
-              border: `2px solid ${getCategoryColor(data.category)}`,
+              border: '1px solid hsl(var(--border))',
+              borderLeft: `4px solid ${data.status ? getStatusConfig(data.status).color : getCategoryColor(data.category)}`,
               borderRadius: '0.75rem',
             }"
             :data-nodeid="data.id || data.component.id"
@@ -108,16 +109,18 @@
                     class="text-sm flex-auto overflow-hidden font-medium truncate"
                     >{{ data.label }}</span
                   >
-                  <span
-                    v-if="data.status"
-                    class="text-xs px-2 py-0.5 rounded-md uppercase"
-                    :style="{
-                      backgroundColor: getStatusConfig(data.status).color,
-                      color: 'white',
-                    }"
-                  >
-                    {{ data.status }}
-                  </span>
+                  <Tooltip v-if="data.status">
+                    <TooltipTrigger as-child>
+                      <Icon
+                        :name="getStatusConfig(data.status).icon"
+                        class="w-4 h-4 shrink-0"
+                        :style="{ color: getStatusConfig(data.status).color }"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p class="capitalize text-xs">{{ data.status.toLowerCase() }}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div v-if="data.category" class="px-4 py-3">
                   <p
