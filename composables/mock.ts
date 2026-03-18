@@ -1014,9 +1014,9 @@ export const useApiWithMock = () => {
       console.log('getPipelineRunFlow', id, mock.value.enabled);
       if (mock.value.enabled) {
         await mockDelay();
-        // Always return the LLM serve pipeline mock JSON for now
-        const llmFlow = await import('~/mocks/get.runs.llm-flow.json');
-        return Promise.resolve(llmFlow);
+        // Always return the pipeline flow mock JSON for now
+        const flowData = await import('~/mocks/get.runs.flow.json');
+        return Promise.resolve(flowData);
       }
       // This uses external API, not the base URL
       const config = useRuntimeConfig();
