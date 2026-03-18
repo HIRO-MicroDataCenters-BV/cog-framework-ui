@@ -46,6 +46,7 @@
     "dayjs": "^1.11.13",
     "dayjs-nuxt": "2.1.11",
     "eslint": "^9.0.0",
+    "flowise-embed": "^3.0.5",
     "lucide-vue-next": "^0.487.0",
     "mdn-data": "^2.20.0",
     "mongodb": "^7.0.0",

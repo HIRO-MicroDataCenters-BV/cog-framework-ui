@@ -29,6 +29,9 @@ export const useApp = () => {
           name: value.data?.builder?.name || '',
           nodes: value.data?.builder?.nodes || [],
           edges: value.data?.builder?.edges || [],
+          input_path: value.data?.builder?.input_path,
+          output_path: value.data?.builder?.output_path,
+          pipelineData: value.data?.builder?.pipelineData,
         },
         // Preserve orderId for federated pipeline from dataspace
         orderId: value.data?.orderId,

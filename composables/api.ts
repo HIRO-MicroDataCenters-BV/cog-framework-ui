@@ -40,6 +40,27 @@ import modelsServingData from '@/mocks/get.models-serving.json';
  */
 
 /**
+ * Token cache for KFP pagination
+ * Structure: Map<cacheKey, Map<pageNumber, token>>
+ * cacheKey is derived from query parameters (namespace, filters, sort)
+ */
+const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
+
+/**
+ * Generate a cache key for pipeline runs pagination tokens
+ */
+function getPipelineRunsCacheKey(params: {
+  namespace?: string;
+  storage_state?: string;
+  status?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+}): string {
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+}
+
+/**
  * Main API composable for Cognitive Framework
  *
  * Provides a comprehensive set of methods for interacting with the Cognitive Framework API,
@@ -2356,8 +2377,6 @@ export const useApi = () => {
     /**
      * Gets pipeline runs list
      *
-     * Retrieves a list of pipeline runs with optional filtering, sorting and pagination.
-     *
      * @param {Object} [params={}] - Query parameters
      * @param {string} [params.run_id] - Run ID to filter by
      * @param {string} [params.run_name] - Run name to filter by
@@ -2371,8 +2390,6 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const runs = await api.getPipelineRunsList();
-     * const specificRun = await api.getPipelineRunsList({ run_id: 'dbe1d349-c117-46d5-9b6f-62ed8efafb2b' });
-     * const sortedRuns = await api.getPipelineRunsList({ sort_by: 'start_time', sort_order: 'asc' });
      * const paginatedRuns = await api.getPipelineRunsList({ page: 1, limit: 10 });
      * ```
      */
@@ -2386,13 +2403,215 @@ export const useApi = () => {
         limit?: number;
       } = {},
     ) => {
-      if (mockEnabled) {
-        return Promise.resolve(runsDetailsData);
-      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      return request(`/pipelines/runs?${q}`);
+      return request(`/pipelines/runs${q ? `?${q}` : ''}`);
+    },
+
+    /**
+     * Gets pipeline runs list directly from the KFP API
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API to retrieve a list of pipeline runs
+     * with optional filtering, sorting and pagination. Transforms the KFP response
+     * format to the internal format expected by the frontend table.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.run_id] - Run ID to filter by
+     * @param {string} [params.run_name] - Run name to filter by
+     * @param {string} [params.sort_by] - Attribute to sort by (mapped to KFP sort_by)
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
+     * @param {string} [params.page_token] - KFP cursor token for next page
+     * @param {string} [params.namespace] - Kubernetes namespace (defaults to 'admin')
+     *
+     * @returns {Promise<Object>} Normalised response containing list of pipeline runs
+     *
+     * @example
+     * ```typescript
+     * const runs = await api.getPipelineRunsListV2();
+     * const paginatedRuns = await api.getPipelineRunsListV2({ page: 1, limit: 10 });
+     * ```
+     */
+    getPipelineRunsListV2: async (
+      params: {
+        run_id?: string;
+        run_name?: string;
+        status?: string;
+        storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
+        search?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
+        page_token?: string;
+        namespace?: string;
+      } = {},
+    ) => {
+      const namespace = params.namespace || 'admin';
+      const pageSize = params.limit || 10;
+      const currentPage = params.page || 1;
+
+      const sortBy = params.sort_by
+        ? `${params.sort_by} ${params.sort_order || 'desc'}`
+        : 'created_at desc';
+
+      // Generate cache key for this query context
+      const cacheKey = getPipelineRunsCacheKey({
+        namespace,
+        storage_state: params.storage_state,
+        status: params.status,
+        search: params.search,
+        sort_by: params.sort_by,
+        sort_order: params.sort_order,
+      });
+
+      // Get or create page token cache for this query
+      if (!pipelineRunsTokenCache.has(cacheKey)) {
+        pipelineRunsTokenCache.set(cacheKey, new Map());
+      }
+      const pageTokens = pipelineRunsTokenCache.get(cacheKey)!;
+
+      // If page 1, clear cache and use empty token
+      // Otherwise, look up cached token for this page
+      let pageToken = '';
+      if (currentPage === 1) {
+        pageTokens.clear();
+      } else {
+        pageToken = pageTokens.get(currentPage) || '';
+      }
+
+      // Build filter predicates
+      const predicates: Array<{
+        key: string;
+        operation: string;
+        string_value: string;
+      }> = [];
+
+      // Add search filter if provided
+      if (params.search) {
+        predicates.push({
+          key: 'name',
+          operation: 'IS_SUBSTRING',
+          string_value: params.search,
+        });
+      }
+
+      // Add storage_state filter based on tab selection
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+      if (storageState === 'NOT_ARCHIVED') {
+        predicates.push({
+          key: 'storage_state',
+          operation: 'NOT_EQUALS',
+          string_value: 'ARCHIVED',
+        });
+      } else {
+        predicates.push({
+          key: 'storage_state',
+          operation: 'EQUALS',
+          string_value: 'ARCHIVED',
+        });
+      }
+
+      // Add status filter if provided
+      if (params.status) {
+        predicates.push({
+          key: 'state',
+          operation: 'EQUALS',
+          string_value: params.status.toUpperCase(),
+        });
+      }
+
+      const filter = JSON.stringify({ predicates });
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        page_token: pageToken,
+        page_size: String(pageSize),
+        sort_by: sortBy,
+        filter,
+      });
+
+      const url = `${apiRuns}/runs?${kfpParams.toString()}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        const kfpData = await response.json();
+        const kfpRuns: Record<string, unknown>[] = kfpData.runs || [];
+
+        const runs = kfpRuns.map((run) => {
+          const createdAt = run.created_at as string | undefined;
+          const finishedAt = run.finished_at as string | undefined;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          const experimentRef = run.experiment as
+            | Record<string, unknown>
+            | undefined;
+          const experimentId =
+            experimentRef?.experiment_id ??
+            (run.experiment_id as string | undefined) ??
+            '';
+
+          return {
+            run_id: run.run_id,
+            run_name: (run.display_name as string | undefined) || run.run_id,
+            status:
+              (run.state as string | undefined) ||
+              (run.status as string | undefined) ||
+              '',
+            start_time: createdAt || null,
+            experiment_id: experimentId,
+            duration,
+          };
+        });
+
+        const totalSize =
+          (kfpData.total_size as number | undefined) ?? runs.length;
+
+        // Cache the next_page_token for the next page
+        const nextPageToken =
+          (kfpData.next_page_token as string | undefined) || '';
+        if (nextPageToken) {
+          pageTokens.set(currentPage + 1, nextPageToken);
+        }
+
+        return {
+          status_code: 200,
+          message: 'Pipeline runs',
+          data: runs,
+          pagination: {
+            total_items: totalSize,
+            page: currentPage,
+            limit: pageSize,
+            total_pages: Math.ceil(totalSize / pageSize),
+            next_page_token: nextPageToken || null,
+          },
+        };
+      } catch (err) {
+        console.error('Error fetching pipeline runs from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
     },
     // ============================================================================
     // POD MANAGEMENT API

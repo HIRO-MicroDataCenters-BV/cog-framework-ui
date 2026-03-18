@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex">
-    <Sheet>
+    <Sheet :open="isSheetOpen">
       <div
         v-if="!readonly && isSidebarOpen.library"
         class="w-80 flex-shrink-0 border-r"
@@ -66,6 +66,7 @@
             :readonly="readonly"
             :selected-node="selectedNode"
             :all-nodes="enrichedNodes"
+            :pipeline-data="pipelineData"
             @update-node="onUpdateNode"
             @delete-node="onDeleteNode"
             @rename-component="onRenameComponent"
@@ -98,12 +99,26 @@
 import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
+import PipelineParametersPanel from './builder/PipelineParametersPanel.vue';
+import PipelineOutputsPanel from './builder/PipelineOutputsPanel.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
-import type { Node, Edge, ComponentInput } from '~/types/builder.types';
+import type {
+  Node,
+  Edge,
+  ComponentInput,
+  PipelineInputParam,
+  PipelineOutput,
+  PipelineBuilderData,
+  NodeUpdate,
+} from '~/types/builder.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
+
+const emit = defineEmits<{
+  (e: 'node-click', node: VueFlowNode | null): void;
+}>();
 
 const props = withDefaults(
   defineProps<{
@@ -156,7 +171,19 @@ const isSidebarOpen = ref({
   properties: true,
 });
 
+// Control sheet open state based on selectedNode.
+// In readonly mode (pipeline run view), keep the internal sheet closed and
+// let the parent handle its own sheets.
+const isSheetOpen = computed(
+  () => !readonly.value && selectedNode.value !== null,
+);
+
 const openUploadComponentDialog = ref(false);
+
+// Pipeline-level parameters and outputs
+const pipelineParameters = ref<PipelineInputParam[]>([]);
+const pipelineOutputs = ref<PipelineOutput[]>([]);
+const pipelineData = ref<unknown>(null);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
@@ -171,7 +198,23 @@ watch(
     const hasData = builderData?.nodes?.length || builderData?.edges?.length;
     const storeIsEmpty = nodes.value.length === 0 && edges.value.length === 0;
 
-    console.log('builderData', builderData);
+    console.log('[Builder] builderData:', builderData);
+    console.log(
+      '[Builder] builderData.pipelineData:',
+      builderData?.pipelineData,
+    );
+    console.log(
+      '[Builder] builderData.pipelineData.runtime_config:',
+      builderData?.pipelineData?.runtime_config,
+    );
+
+    // Extract pipelineData for readonly mode
+    if (builderData?.pipelineData) {
+      pipelineData.value = builderData.pipelineData;
+      console.log('[Builder] Set pipelineData.value:', pipelineData.value);
+    } else {
+      console.log('[Builder] No pipelineData found in builderData');
+    }
 
     // Case 1: builderData has data and store is empty -> initialize
     if (hasData && storeIsEmpty) {
@@ -219,10 +262,13 @@ watch(
     // Don't sync back to page in readonly mode (e.g., viewing pipeline details)
     if (readonly.value) return;
 
-    const currentBuilder = page.value.data?.builder || {
+    const currentBuilder: PipelineBuilderData = (page.value.data
+      ?.builder as PipelineBuilderData) || {
       name: '',
       nodes: [],
       edges: [],
+      input_path: [],
+      output_path: [],
     };
 
     // Check if data actually changed to prevent infinite loops
@@ -243,8 +289,10 @@ watch(
         ...page.value.data,
         builder: {
           ...currentBuilder,
+          name: currentBuilder.name || '',
           nodes: JSON.parse(JSON.stringify(nodes.value)), // Deep copy to detach
           edges: JSON.parse(JSON.stringify(edges.value)),
+          pipelineData: currentBuilder.pipelineData, // Preserve pipelineData
         },
       },
     });
@@ -326,6 +374,13 @@ const onDragStart = (component: unknown) => {
 const onNodeClick = (node: VueFlowNode | null) => {
   // Store handles selection logic including null
   selectNode(node?.id || null);
+
+  // In readonly mode, bubble node click up so pages like pipeline run detail
+  // can open their own sheets (e.g. PipelineRunSheet) instead of the builder
+  // properties sheet.
+  if (readonly.value) {
+    emit('node-click', node);
+  }
 };
 
 const onConnect = (edge: VueFlowEdge) => {
@@ -342,7 +397,7 @@ const onAddNode = (node: VueFlowNode) => {
   addNode(node as Node);
 };
 
-const onUpdateNode = (nodeId: string, updates: Partial<Node>) => {
+const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
   if (readonly.value) return;
 
   if (updates.position) {
@@ -427,16 +482,69 @@ const onRenameComponent = (
   newName: string,
 ) => {
   if (readonly.value) return;
+
+  // 1. Update the component itself
   const node = nodes.value.find((n) => n.id === nodeId);
   if (node && node.data.component) {
-    const updatedComponent = {
-      ...node.data.component,
-      name: newName,
-    };
     updateNodeData(nodeId, {
       label: newName,
-      component: updatedComponent,
+      component: { ...node.data.component, name: newName },
     });
+  }
+
+  // 2. Update ALL other components that reference this component
+  let updatedCount = 0;
+  nodes.value.forEach((otherNode) => {
+    if (otherNode.id === nodeId) return; // Skip self
+
+    const inputs = otherNode.data?.component?.inputs || [];
+    let hasChanges = false;
+
+    const updatedInputs = inputs.map((input: ComponentInput) => {
+      if (
+        input.value_source_type === 'component_output' &&
+        input.source.startsWith(oldName + '.')
+      ) {
+        hasChanges = true;
+        updatedCount++;
+        const [, outputName] = input.source.split('.', 2);
+        return { ...input, source: `${newName}.${outputName}` };
+      }
+      return input;
+    });
+
+    // Only update if inputs changed
+    if (hasChanges) {
+      updateNodeData(otherNode.id, {
+        component: {
+          ...otherNode.data.component,
+          inputs: updatedInputs,
+        },
+      });
+    }
+  });
+
+  // 3. Show success toast
+  if (updatedCount > 0) {
+    toaster.show(
+      'success',
+      t('builder.component_renamed_with_updates', {
+        oldName,
+        newName,
+        count: updatedCount,
+      }),
+      {
+        duration: 4000,
+      },
+    );
+  } else {
+    toaster.show(
+      'success',
+      t('builder.component_renamed', { oldName, newName }),
+      {
+        duration: 3000,
+      },
+    );
   }
 };
 
@@ -446,6 +554,60 @@ const onError = (errorKey: string, data?: Record<string, unknown>) => {
   toaster.show('error', errorMessage, {
     duration: 5000,
     ...data,
+  });
+};
+
+// Pipeline Parameters handlers
+const onUpdateParameters = (newParams: PipelineInputParam[]) => {
+  pipelineParameters.value = newParams;
+
+  // Sync to page.data.builder
+  const currentBuilder: PipelineBuilderData = (page.value.data
+    ?.builder as PipelineBuilderData) || {
+    name: '',
+    nodes: [],
+    edges: [],
+    input_path: [],
+    output_path: [],
+  };
+
+  setPage({
+    ...page.value,
+    data: {
+      ...page.value.data,
+      builder: {
+        ...currentBuilder,
+        name: currentBuilder.name || '',
+        input_path: newParams,
+      },
+    },
+  });
+};
+
+// Pipeline Outputs handlers
+const onUpdateOutputs = (newOutputs: PipelineOutput[]) => {
+  pipelineOutputs.value = newOutputs;
+
+  // Sync to page.data.builder
+  const currentBuilder: PipelineBuilderData = (page.value.data
+    ?.builder as PipelineBuilderData) || {
+    name: '',
+    nodes: [],
+    edges: [],
+    input_path: [],
+    output_path: [],
+  };
+
+  setPage({
+    ...page.value,
+    data: {
+      ...page.value.data,
+      builder: {
+        ...currentBuilder,
+        name: currentBuilder.name || '',
+        output_path: newOutputs,
+      },
+    },
   });
 };
 </script>

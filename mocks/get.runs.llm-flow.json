@@ -1,0 +1,786 @@
+{
+  "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+  "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+  "display_name": "Dynamic Pipeline Compilation-run",
+  "storage_state": "AVAILABLE",
+  "pipeline_spec": {
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "Workflow",
+    "metadata": {
+      "annotations": {
+        "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+        "pipelines.kubeflow.org/pipeline_compilation_time": "2026-02-20T13:05:36.094652",
+        "pipelines.kubeflow.org/pipeline_spec": "{\"inputs\": [{\"default\": \"200\", \"name\": \"number\", \"optional\": true}], \"name\": \"Dynamic Pipeline Compilation\"}"
+      },
+      "generateName": "dynamic-pipeline-compilation-",
+      "labels": {
+        "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22"
+      }
+    },
+    "spec": {
+      "arguments": {
+        "parameters": [
+          {
+            "name": "number",
+            "value": "200"
+          }
+        ]
+      },
+      "entrypoint": "dynamic-pipeline-compilation",
+      "serviceAccountName": "pipeline-runner",
+      "templates": [
+        {
+          "container": {
+            "args": [
+              "--number10",
+              "{{inputs.parameters.number}}",
+              "----output-paths",
+              "/tmp/outputs/Output/data"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" \u003e \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def add_ten(number10):\n    result = number10 + 10\n    print(f\"After adding 10: {result}\")\n    return result\n\ndef _serialize_int(int_value: int) -\u003e str:\n    if isinstance(int_value, str):\n        return int_value\n    if not isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(\n            str(int_value), str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Add ten', description='')\n_parser.add_argument(\"--number10\", dest=\"number10\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = add_ten(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "env": [
+              {
+                "name": "DB_HOST",
+                "value": "postgresql-k8s-dev-primary.kubeflow.svc.cluster.local"
+              },
+              {
+                "name": "DB_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "DB_USER",
+                "value": "relation_id_72"
+              },
+              {
+                "name": "DB_PASSWORD",
+                "value": "dd3gZlRFzylsfUFB"
+              },
+              {
+                "name": "DB_NAME",
+                "value": "cognitivedb"
+              },
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "value": "minio"
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "value": "E8KQNKH0EPEUQYAFTD7SFJ20LYU6WM"
+              },
+              {
+                "name": "MINIO_BUCKET_NAME",
+                "value": "mlflow"
+              },
+              {
+                "name": "API_PATH",
+                "value": "http://cog-api-dev.kubeflow/apidev"
+              },
+              {
+                "name": "MLFLOW_TRACKING_URI",
+                "value": "http://mlflow-server.kubeflow:5000"
+              },
+              {
+                "name": "MLFLOW_S3_ENDPOINT_URL",
+                "value": "http://mlflow-minio.kubeflow:9000"
+              }
+            ],
+            "image": "hiroregistry/cogflowfltorch:1.11.24-base"
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "number"
+              }
+            ]
+          },
+          "metadata": {
+            "annotations": {
+              "pipelines.kubeflow.org/arguments.parameters": "{\"number10\": \"{{inputs.parameters.number}}\"}",
+              "pipelines.kubeflow.org/component_ref": "{\"digest\": \"1931dbe74f44b093e3d578685c426e200b4f05b32711068e47f4608b2f48decd\"}",
+              "pipelines.kubeflow.org/component_spec": "{\"implementation\": {\"container\": {\"args\": [\"--number10\", {\"inputValue\": \"number10\"}, \"----output-paths\", {\"outputPath\": \"Output\"}], \"command\": [\"sh\", \"-ec\", \"program_path=$(mktemp)\\nprintf \\\"%s\\\" \\\"$0\\\" \u003e \\\"$program_path\\\"\\npython3 -u \\\"$program_path\\\" \\\"$@\\\"\\n\", \"def add_ten(number10):\\n    result = number10 + 10\\n    print(f\\\"After adding 10: {result}\\\")\\n    return result\\n\\ndef _serialize_int(int_value: int) -\u003e str:\\n    if isinstance(int_value, str):\\n        return int_value\\n    if not isinstance(int_value, int):\\n        raise TypeError('Value \\\"{}\\\" has type \\\"{}\\\" instead of int.'.format(\\n            str(int_value), str(type(int_value))))\\n    return str(int_value)\\n\\nimport argparse\\n_parser = argparse.ArgumentParser(prog='Add ten', description='')\\n_parser.add_argument(\\\"--number10\\\", dest=\\\"number10\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"----output-paths\\\", dest=\\\"_output_paths\\\", type=str, nargs=1)\\n_parsed_args = vars(_parser.parse_args())\\n_output_files = _parsed_args.pop(\\\"_output_paths\\\", [])\\n\\n_outputs = add_ten(**_parsed_args)\\n\\n_outputs = [_outputs]\\n\\n_output_serializers = [\\n    _serialize_int,\\n\\n]\\n\\nimport os\\nfor idx, output_file in enumerate(_output_files):\\n    try:\\n        os.makedirs(os.path.dirname(output_file))\\n    except OSError:\\n        pass\\n    with open(output_file, 'w') as f:\\n        f.write(_output_serializers[idx](_outputs[idx]))\\n\"], \"image\": \"hiroregistry/cogflowfltorch:1.11.24-base\"}}, \"inputs\": [{\"name\": \"number10\", \"type\": \"int\"}], \"name\": \"Add ten\", \"outputs\": [{\"name\": \"Output\", \"type\": \"int\"}]}",
+              "pipelines.kubeflow.org/task_display_name": "Preprocess"
+            },
+            "labels": {
+              "pipelines.kubeflow.org/enable_caching": "true",
+              "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+              "pipelines.kubeflow.org/pipeline-sdk-type": "kfp"
+            }
+          },
+          "name": "add-ten",
+          "outputs": {
+            "artifacts": [
+              {
+                "name": "add-ten-Output",
+                "path": "/tmp/outputs/Output/data"
+              }
+            ],
+            "parameters": [
+              {
+                "name": "add-ten-Output",
+                "valueFrom": {
+                  "path": "/tmp/outputs/Output/data"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "dag": {
+            "tasks": [
+              {
+                "arguments": {
+                  "parameters": [
+                    {
+                      "name": "number",
+                      "value": "{{inputs.parameters.number}}"
+                    }
+                  ]
+                },
+                "name": "add-ten",
+                "template": "add-ten"
+              },
+              {
+                "arguments": {
+                  "parameters": [
+                    {
+                      "name": "multiply-by-two-2-Output",
+                      "value": "{{tasks.multiply-by-two-2.outputs.parameters.multiply-by-two-2-Output}}"
+                    },
+                    {
+                      "name": "multiply-by-two-Output",
+                      "value": "{{tasks.multiply-by-two.outputs.parameters.multiply-by-two-Output}}"
+                    }
+                  ]
+                },
+                "dependencies": ["multiply-by-two", "multiply-by-two-2"],
+                "name": "final-sum",
+                "template": "final-sum"
+              },
+              {
+                "arguments": {
+                  "parameters": [
+                    {
+                      "name": "final-sum-Output",
+                      "value": "{{tasks.final-sum.outputs.parameters.final-sum-Output}}"
+                    }
+                  ]
+                },
+                "dependencies": ["final-sum"],
+                "name": "final-sum-2",
+                "template": "final-sum-2"
+              },
+              {
+                "arguments": {
+                  "parameters": [
+                    {
+                      "name": "add-ten-Output",
+                      "value": "{{tasks.add-ten.outputs.parameters.add-ten-Output}}"
+                    }
+                  ]
+                },
+                "dependencies": ["add-ten"],
+                "name": "multiply-by-two",
+                "template": "multiply-by-two"
+              },
+              {
+                "arguments": {
+                  "parameters": [
+                    {
+                      "name": "add-ten-Output",
+                      "value": "{{tasks.add-ten.outputs.parameters.add-ten-Output}}"
+                    }
+                  ]
+                },
+                "dependencies": ["add-ten"],
+                "name": "multiply-by-two-2",
+                "template": "multiply-by-two-2"
+              }
+            ]
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "number"
+              }
+            ]
+          },
+          "name": "dynamic-pipeline-compilation"
+        },
+        {
+          "container": {
+            "args": [
+              "--number1",
+              "{{inputs.parameters.multiply-by-two-2-Output}}",
+              "--number2",
+              "{{inputs.parameters.multiply-by-two-Output}}",
+              "----output-paths",
+              "/tmp/outputs/Output/data"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" \u003e \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def final_sum(number1, number2):\n    result = number1 + number2\n    print(f\"After adding: {result}\")\n    return result\n\ndef _serialize_int(int_value: int) -\u003e str:\n    if isinstance(int_value, str):\n        return int_value\n    if not isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(\n            str(int_value), str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Final sum', description='')\n_parser.add_argument(\"--number1\", dest=\"number1\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--number2\", dest=\"number2\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = final_sum(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "env": [
+              {
+                "name": "DB_HOST",
+                "value": "postgresql-k8s-dev-primary.kubeflow.svc.cluster.local"
+              },
+              {
+                "name": "DB_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "DB_USER",
+                "value": "relation_id_72"
+              },
+              {
+                "name": "DB_PASSWORD",
+                "value": "dd3gZlRFzylsfUFB"
+              },
+              {
+                "name": "DB_NAME",
+                "value": "cognitivedb"
+              },
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "value": "minio"
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "value": "E8KQNKH0EPEUQYAFTD7SFJ20LYU6WM"
+              },
+              {
+                "name": "MINIO_BUCKET_NAME",
+                "value": "mlflow"
+              },
+              {
+                "name": "API_PATH",
+                "value": "http://cog-api-dev.kubeflow/apidev"
+              },
+              {
+                "name": "MLFLOW_TRACKING_URI",
+                "value": "http://mlflow-server.kubeflow:5000"
+              },
+              {
+                "name": "MLFLOW_S3_ENDPOINT_URL",
+                "value": "http://mlflow-minio.kubeflow:9000"
+              }
+            ],
+            "image": "hiroregistry/cogflowfltorch:1.11.24-base"
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "multiply-by-two-2-Output"
+              },
+              {
+                "name": "multiply-by-two-Output"
+              }
+            ]
+          },
+          "metadata": {
+            "annotations": {
+              "pipelines.kubeflow.org/arguments.parameters": "{\"number1\": \"{{inputs.parameters.multiply-by-two-2-Output}}\", \"number2\": \"{{inputs.parameters.multiply-by-two-Output}}\"}",
+              "pipelines.kubeflow.org/component_ref": "{\"digest\": \"da90bea15c04f6184dac2abe1ae52ea544fd3a9721422e7ad327eeee837792ad\"}",
+              "pipelines.kubeflow.org/component_spec": "{\"implementation\": {\"container\": {\"args\": [\"--number1\", {\"inputValue\": \"number1\"}, \"--number2\", {\"inputValue\": \"number2\"}, \"----output-paths\", {\"outputPath\": \"Output\"}], \"command\": [\"sh\", \"-ec\", \"program_path=$(mktemp)\\nprintf \\\"%s\\\" \\\"$0\\\" \u003e \\\"$program_path\\\"\\npython3 -u \\\"$program_path\\\" \\\"$@\\\"\\n\", \"def final_sum(number1, number2):\\n    result = number1 + number2\\n    print(f\\\"After adding: {result}\\\")\\n    return result\\n\\ndef _serialize_int(int_value: int) -\u003e str:\\n    if isinstance(int_value, str):\\n        return int_value\\n    if not isinstance(int_value, int):\\n        raise TypeError('Value \\\"{}\\\" has type \\\"{}\\\" instead of int.'.format(\\n            str(int_value), str(type(int_value))))\\n    return str(int_value)\\n\\nimport argparse\\n_parser = argparse.ArgumentParser(prog='Final sum', description='')\\n_parser.add_argument(\\\"--number1\\\", dest=\\\"number1\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"--number2\\\", dest=\\\"number2\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"----output-paths\\\", dest=\\\"_output_paths\\\", type=str, nargs=1)\\n_parsed_args = vars(_parser.parse_args())\\n_output_files = _parsed_args.pop(\\\"_output_paths\\\", [])\\n\\n_outputs = final_sum(**_parsed_args)\\n\\n_outputs = [_outputs]\\n\\n_output_serializers = [\\n    _serialize_int,\\n\\n]\\n\\nimport os\\nfor idx, output_file in enumerate(_output_files):\\n    try:\\n        os.makedirs(os.path.dirname(output_file))\\n    except OSError:\\n        pass\\n    with open(output_file, 'w') as f:\\n        f.write(_output_serializers[idx](_outputs[idx]))\\n\"], \"image\": \"hiroregistry/cogflowfltorch:1.11.24-base\"}}, \"inputs\": [{\"name\": \"number1\", \"type\": \"int\"}, {\"name\": \"number2\", \"type\": \"int\"}], \"name\": \"Final sum\", \"outputs\": [{\"name\": \"Output\", \"type\": \"int\"}]}",
+              "pipelines.kubeflow.org/task_display_name": "Evaluation"
+            },
+            "labels": {
+              "pipelines.kubeflow.org/enable_caching": "true",
+              "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+              "pipelines.kubeflow.org/pipeline-sdk-type": "kfp"
+            }
+          },
+          "name": "final-sum",
+          "outputs": {
+            "artifacts": [
+              {
+                "name": "final-sum-Output",
+                "path": "/tmp/outputs/Output/data"
+              }
+            ],
+            "parameters": [
+              {
+                "name": "final-sum-Output",
+                "valueFrom": {
+                  "path": "/tmp/outputs/Output/data"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "container": {
+            "args": [
+              "--number1",
+              "{{inputs.parameters.final-sum-Output}}",
+              "--number2",
+              "{{inputs.parameters.final-sum-Output}}",
+              "----output-paths",
+              "/tmp/outputs/Output/data"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" \u003e \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def final_sum(number1, number2):\n    result = number1 + number2\n    print(f\"After adding: {result}\")\n    return result\n\ndef _serialize_int(int_value: int) -\u003e str:\n    if isinstance(int_value, str):\n        return int_value\n    if not isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(\n            str(int_value), str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Final sum', description='')\n_parser.add_argument(\"--number1\", dest=\"number1\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--number2\", dest=\"number2\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = final_sum(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "env": [
+              {
+                "name": "DB_HOST",
+                "value": "postgresql-k8s-dev-primary.kubeflow.svc.cluster.local"
+              },
+              {
+                "name": "DB_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "DB_USER",
+                "value": "relation_id_72"
+              },
+              {
+                "name": "DB_PASSWORD",
+                "value": "dd3gZlRFzylsfUFB"
+              },
+              {
+                "name": "DB_NAME",
+                "value": "cognitivedb"
+              },
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "value": "minio"
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "value": "E8KQNKH0EPEUQYAFTD7SFJ20LYU6WM"
+              },
+              {
+                "name": "MINIO_BUCKET_NAME",
+                "value": "mlflow"
+              },
+              {
+                "name": "API_PATH",
+                "value": "http://cog-api-dev.kubeflow/apidev"
+              },
+              {
+                "name": "MLFLOW_TRACKING_URI",
+                "value": "http://mlflow-server.kubeflow:5000"
+              },
+              {
+                "name": "MLFLOW_S3_ENDPOINT_URL",
+                "value": "http://mlflow-minio.kubeflow:9000"
+              }
+            ],
+            "image": "hiroregistry/cogflowfltorch:1.11.24-base"
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "final-sum-Output"
+              }
+            ]
+          },
+          "metadata": {
+            "annotations": {
+              "pipelines.kubeflow.org/arguments.parameters": "{\"number1\": \"{{inputs.parameters.final-sum-Output}}\", \"number2\": \"{{inputs.parameters.final-sum-Output}}\"}",
+              "pipelines.kubeflow.org/component_ref": "{\"digest\": \"da90bea15c04f6184dac2abe1ae52ea544fd3a9721422e7ad327eeee837792ad\"}",
+              "pipelines.kubeflow.org/component_spec": "{\"implementation\": {\"container\": {\"args\": [\"--number1\", {\"inputValue\": \"number1\"}, \"--number2\", {\"inputValue\": \"number2\"}, \"----output-paths\", {\"outputPath\": \"Output\"}], \"command\": [\"sh\", \"-ec\", \"program_path=$(mktemp)\\nprintf \\\"%s\\\" \\\"$0\\\" \u003e \\\"$program_path\\\"\\npython3 -u \\\"$program_path\\\" \\\"$@\\\"\\n\", \"def final_sum(number1, number2):\\n    result = number1 + number2\\n    print(f\\\"After adding: {result}\\\")\\n    return result\\n\\ndef _serialize_int(int_value: int) -\u003e str:\\n    if isinstance(int_value, str):\\n        return int_value\\n    if not isinstance(int_value, int):\\n        raise TypeError('Value \\\"{}\\\" has type \\\"{}\\\" instead of int.'.format(\\n            str(int_value), str(type(int_value))))\\n    return str(int_value)\\n\\nimport argparse\\n_parser = argparse.ArgumentParser(prog='Final sum', description='')\\n_parser.add_argument(\\\"--number1\\\", dest=\\\"number1\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"--number2\\\", dest=\\\"number2\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"----output-paths\\\", dest=\\\"_output_paths\\\", type=str, nargs=1)\\n_parsed_args = vars(_parser.parse_args())\\n_output_files = _parsed_args.pop(\\\"_output_paths\\\", [])\\n\\n_outputs = final_sum(**_parsed_args)\\n\\n_outputs = [_outputs]\\n\\n_output_serializers = [\\n    _serialize_int,\\n\\n]\\n\\nimport os\\nfor idx, output_file in enumerate(_output_files):\\n    try:\\n        os.makedirs(os.path.dirname(output_file))\\n    except OSError:\\n        pass\\n    with open(output_file, 'w') as f:\\n        f.write(_output_serializers[idx](_outputs[idx]))\\n\"], \"image\": \"hiroregistry/cogflowfltorch:1.11.24-base\"}}, \"inputs\": [{\"name\": \"number1\", \"type\": \"int\"}, {\"name\": \"number2\", \"type\": \"int\"}], \"name\": \"Final sum\", \"outputs\": [{\"name\": \"Output\", \"type\": \"int\"}]}",
+              "pipelines.kubeflow.org/task_display_name": "Best selection"
+            },
+            "labels": {
+              "pipelines.kubeflow.org/enable_caching": "true",
+              "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+              "pipelines.kubeflow.org/pipeline-sdk-type": "kfp"
+            }
+          },
+          "name": "final-sum-2",
+          "outputs": {
+            "artifacts": [
+              {
+                "name": "final-sum-2-Output",
+                "path": "/tmp/outputs/Output/data"
+              }
+            ]
+          }
+        },
+        {
+          "container": {
+            "args": [
+              "--number2",
+              "{{inputs.parameters.add-ten-Output}}",
+              "----output-paths",
+              "/tmp/outputs/Output/data"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" \u003e \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def multiply_by_two(number2):\n    result = number2 * 2\n    print(f\"After multiplying by 2: {result}\")\n    return result\n\ndef _serialize_int(int_value: int) -\u003e str:\n    if isinstance(int_value, str):\n        return int_value\n    if not isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(\n            str(int_value), str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Multiply by two', description='')\n_parser.add_argument(\"--number2\", dest=\"number2\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = multiply_by_two(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "env": [
+              {
+                "name": "DB_HOST",
+                "value": "postgresql-k8s-dev-primary.kubeflow.svc.cluster.local"
+              },
+              {
+                "name": "DB_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "DB_USER",
+                "value": "relation_id_72"
+              },
+              {
+                "name": "DB_PASSWORD",
+                "value": "dd3gZlRFzylsfUFB"
+              },
+              {
+                "name": "DB_NAME",
+                "value": "cognitivedb"
+              },
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "value": "minio"
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "value": "E8KQNKH0EPEUQYAFTD7SFJ20LYU6WM"
+              },
+              {
+                "name": "MINIO_BUCKET_NAME",
+                "value": "mlflow"
+              },
+              {
+                "name": "API_PATH",
+                "value": "http://cog-api-dev.kubeflow/apidev"
+              },
+              {
+                "name": "MLFLOW_TRACKING_URI",
+                "value": "http://mlflow-server.kubeflow:5000"
+              },
+              {
+                "name": "MLFLOW_S3_ENDPOINT_URL",
+                "value": "http://mlflow-minio.kubeflow:9000"
+              }
+            ],
+            "image": "hiroregistry/cogflowfltorch:1.11.24-base"
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "add-ten-Output"
+              }
+            ]
+          },
+          "metadata": {
+            "annotations": {
+              "pipelines.kubeflow.org/arguments.parameters": "{\"number2\": \"{{inputs.parameters.add-ten-Output}}\"}",
+              "pipelines.kubeflow.org/component_ref": "{\"digest\": \"55f87f81fd1da16a1e9745ab934e179555a2e676a2e0704c8e37a501c876448b\"}",
+              "pipelines.kubeflow.org/component_spec": "{\"implementation\": {\"container\": {\"args\": [\"--number2\", {\"inputValue\": \"number2\"}, \"----output-paths\", {\"outputPath\": \"Output\"}], \"command\": [\"sh\", \"-ec\", \"program_path=$(mktemp)\\nprintf \\\"%s\\\" \\\"$0\\\" \u003e \\\"$program_path\\\"\\npython3 -u \\\"$program_path\\\" \\\"$@\\\"\\n\", \"def multiply_by_two(number2):\\n    result = number2 * 2\\n    print(f\\\"After multiplying by 2: {result}\\\")\\n    return result\\n\\ndef _serialize_int(int_value: int) -\u003e str:\\n    if isinstance(int_value, str):\\n        return int_value\\n    if not isinstance(int_value, int):\\n        raise TypeError('Value \\\"{}\\\" has type \\\"{}\\\" instead of int.'.format(\\n            str(int_value), str(type(int_value))))\\n    return str(int_value)\\n\\nimport argparse\\n_parser = argparse.ArgumentParser(prog='Multiply by two', description='')\\n_parser.add_argument(\\\"--number2\\\", dest=\\\"number2\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"----output-paths\\\", dest=\\\"_output_paths\\\", type=str, nargs=1)\\n_parsed_args = vars(_parser.parse_args())\\n_output_files = _parsed_args.pop(\\\"_output_paths\\\", [])\\n\\n_outputs = multiply_by_two(**_parsed_args)\\n\\n_outputs = [_outputs]\\n\\n_output_serializers = [\\n    _serialize_int,\\n\\n]\\n\\nimport os\\nfor idx, output_file in enumerate(_output_files):\\n    try:\\n        os.makedirs(os.path.dirname(output_file))\\n    except OSError:\\n        pass\\n    with open(output_file, 'w') as f:\\n        f.write(_output_serializers[idx](_outputs[idx]))\\n\"], \"image\": \"hiroregistry/cogflowfltorch:1.11.24-base\"}}, \"inputs\": [{\"name\": \"number2\", \"type\": \"int\"}], \"name\": \"Multiply by two\", \"outputs\": [{\"name\": \"Output\", \"type\": \"int\"}]}",
+              "pipelines.kubeflow.org/task_display_name": "Training2"
+            },
+            "labels": {
+              "pipelines.kubeflow.org/enable_caching": "true",
+              "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+              "pipelines.kubeflow.org/pipeline-sdk-type": "kfp"
+            }
+          },
+          "name": "multiply-by-two",
+          "outputs": {
+            "artifacts": [
+              {
+                "name": "multiply-by-two-Output",
+                "path": "/tmp/outputs/Output/data"
+              }
+            ],
+            "parameters": [
+              {
+                "name": "multiply-by-two-Output",
+                "valueFrom": {
+                  "path": "/tmp/outputs/Output/data"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "container": {
+            "args": [
+              "--number2",
+              "{{inputs.parameters.add-ten-Output}}",
+              "----output-paths",
+              "/tmp/outputs/Output/data"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" \u003e \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def multiply_by_two(number2):\n    result = number2 * 2\n    print(f\"After multiplying by 2: {result}\")\n    return result\n\ndef _serialize_int(int_value: int) -\u003e str:\n    if isinstance(int_value, str):\n        return int_value\n    if not isinstance(int_value, int):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(\n            str(int_value), str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Multiply by two', description='')\n_parser.add_argument(\"--number2\", dest=\"number2\", type=int, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = multiply_by_two(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_int,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "env": [
+              {
+                "name": "DB_HOST",
+                "value": "postgresql-k8s-dev-primary.kubeflow.svc.cluster.local"
+              },
+              {
+                "name": "DB_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "DB_USER",
+                "value": "relation_id_72"
+              },
+              {
+                "name": "DB_PASSWORD",
+                "value": "dd3gZlRFzylsfUFB"
+              },
+              {
+                "name": "DB_NAME",
+                "value": "cognitivedb"
+              },
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "value": "minio"
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "value": "E8KQNKH0EPEUQYAFTD7SFJ20LYU6WM"
+              },
+              {
+                "name": "MINIO_BUCKET_NAME",
+                "value": "mlflow"
+              },
+              {
+                "name": "API_PATH",
+                "value": "http://cog-api-dev.kubeflow/apidev"
+              },
+              {
+                "name": "MLFLOW_TRACKING_URI",
+                "value": "http://mlflow-server.kubeflow:5000"
+              },
+              {
+                "name": "MLFLOW_S3_ENDPOINT_URL",
+                "value": "http://mlflow-minio.kubeflow:9000"
+              }
+            ],
+            "image": "hiroregistry/cogflowfltorch:1.11.24-base"
+          },
+          "inputs": {
+            "parameters": [
+              {
+                "name": "add-ten-Output"
+              }
+            ]
+          },
+          "metadata": {
+            "annotations": {
+              "pipelines.kubeflow.org/arguments.parameters": "{\"number2\": \"{{inputs.parameters.add-ten-Output}}\"}",
+              "pipelines.kubeflow.org/component_ref": "{\"digest\": \"55f87f81fd1da16a1e9745ab934e179555a2e676a2e0704c8e37a501c876448b\"}",
+              "pipelines.kubeflow.org/component_spec": "{\"implementation\": {\"container\": {\"args\": [\"--number2\", {\"inputValue\": \"number2\"}, \"----output-paths\", {\"outputPath\": \"Output\"}], \"command\": [\"sh\", \"-ec\", \"program_path=$(mktemp)\\nprintf \\\"%s\\\" \\\"$0\\\" \u003e \\\"$program_path\\\"\\npython3 -u \\\"$program_path\\\" \\\"$@\\\"\\n\", \"def multiply_by_two(number2):\\n    result = number2 * 2\\n    print(f\\\"After multiplying by 2: {result}\\\")\\n    return result\\n\\ndef _serialize_int(int_value: int) -\u003e str:\\n    if isinstance(int_value, str):\\n        return int_value\\n    if not isinstance(int_value, int):\\n        raise TypeError('Value \\\"{}\\\" has type \\\"{}\\\" instead of int.'.format(\\n            str(int_value), str(type(int_value))))\\n    return str(int_value)\\n\\nimport argparse\\n_parser = argparse.ArgumentParser(prog='Multiply by two', description='')\\n_parser.add_argument(\\\"--number2\\\", dest=\\\"number2\\\", type=int, required=True, default=argparse.SUPPRESS)\\n_parser.add_argument(\\\"----output-paths\\\", dest=\\\"_output_paths\\\", type=str, nargs=1)\\n_parsed_args = vars(_parser.parse_args())\\n_output_files = _parsed_args.pop(\\\"_output_paths\\\", [])\\n\\n_outputs = multiply_by_two(**_parsed_args)\\n\\n_outputs = [_outputs]\\n\\n_output_serializers = [\\n    _serialize_int,\\n\\n]\\n\\nimport os\\nfor idx, output_file in enumerate(_output_files):\\n    try:\\n        os.makedirs(os.path.dirname(output_file))\\n    except OSError:\\n        pass\\n    with open(output_file, 'w') as f:\\n        f.write(_output_serializers[idx](_outputs[idx]))\\n\"], \"image\": \"hiroregistry/cogflowfltorch:1.11.24-base\"}}, \"inputs\": [{\"name\": \"number2\", \"type\": \"int\"}], \"name\": \"Multiply by two\", \"outputs\": [{\"name\": \"Output\", \"type\": \"int\"}]}",
+              "pipelines.kubeflow.org/task_display_name": "Training1"
+            },
+            "labels": {
+              "pipelines.kubeflow.org/enable_caching": "true",
+              "pipelines.kubeflow.org/kfp_sdk_version": "1.8.22",
+              "pipelines.kubeflow.org/pipeline-sdk-type": "kfp"
+            }
+          },
+          "name": "multiply-by-two-2",
+          "outputs": {
+            "artifacts": [
+              {
+                "name": "multiply-by-two-2-Output",
+                "path": "/tmp/outputs/Output/data"
+              }
+            ],
+            "parameters": [
+              {
+                "name": "multiply-by-two-2-Output",
+                "valueFrom": {
+                  "path": "/tmp/outputs/Output/data"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "runtime_config": {
+    "parameters": {
+      "number": "200"
+    }
+  },
+  "service_account": "default-editor",
+  "created_at": "2026-02-20T13:05:35Z",
+  "scheduled_at": "2026-02-20T13:05:35Z",
+  "finished_at": "2026-02-20T13:06:16Z",
+  "state": "SUCCEEDED",
+  "run_details": {
+    "task_details": [
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "01e43252-356f-4aaf-926f-bb78a666bed3",
+        "display_name": "final-sum-2",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:06:06Z",
+        "end_time": "2026-02-20T13:06:10Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:06:06Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-02-20T13:06:16Z",
+            "state": "SUCCEEDED"
+          }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "0639c5e4-8f14-4f08-bce9-8b4a2b943b45",
+        "display_name": "add-ten",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:36Z",
+        "end_time": "2026-02-20T13:05:40Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:05:36Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-02-20T13:05:46Z",
+            "state": "SUCCEEDED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-1483131525"
+          },
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-2517427838"
+          }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "2db23d45-c3c6-4ff3-bbd0-9f480640d624",
+        "display_name": "final-sum",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:56Z",
+        "end_time": "2026-02-20T13:05:59Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:05:56Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-02-20T13:06:06Z",
+            "state": "SUCCEEDED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-600714513"
+          }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "57ab7321-9905-4f9f-b01d-1a2747741203",
+        "display_name": "dynamic-pipeline-compilation-cg545",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:36Z",
+        "end_time": "2026-02-20T13:06:16Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:05:36Z",
+            "state": "RUNNING"
+          },
+          {
+            "update_time": "2026-02-20T13:06:16Z",
+            "state": "SUCCEEDED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-2205182877"
+          }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "8ef55cf5-bc82-46db-961c-4843e2727cbf",
+        "display_name": "multiply-by-two",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:46Z",
+        "end_time": "2026-02-20T13:05:50Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:05:46Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-02-20T13:05:56Z",
+            "state": "SUCCEEDED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-1973390446"
+          }
+        ]
+      },
+      {
+        "run_id": "28e0a392-856e-42da-93b1-50e811b73ef3",
+        "task_id": "f4a7a76a-c30c-4393-9ba8-cb3069646b3a",
+        "display_name": "multiply-by-two-2",
+        "create_time": "2026-02-20T13:05:36Z",
+        "start_time": "2026-02-20T13:05:46Z",
+        "end_time": "2026-02-20T13:05:50Z",
+        "state": "SUCCEEDED",
+        "state_history": [
+          {
+            "update_time": "2026-02-20T13:05:46Z",
+            "state": "PENDING"
+          },
+          {
+            "update_time": "2026-02-20T13:05:56Z",
+            "state": "SUCCEEDED"
+          }
+        ],
+        "child_tasks": [
+          {
+            "pod_name": "dynamic-pipeline-compilation-cg545-1973390446"
+          }
+        ]
+      }
+    ]
+  },
+  "state_history": [
+    {
+      "update_time": "2026-02-20T13:05:35Z",
+      "state": "PENDING"
+    },
+    {
+      "update_time": "2026-02-20T13:05:36Z",
+      "state": "RUNNING"
+    },
+    {
+      "update_time": "2026-02-20T13:06:16Z",
+      "state": "SUCCEEDED"
+    }
+  ]
+}

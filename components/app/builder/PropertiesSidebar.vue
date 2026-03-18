@@ -133,29 +133,33 @@ import type {
   ComponentPath,
   PipelineInputParam,
   Node,
+  NodeUpdate,
 } from '~/types/builder.types';
 import { validateComponentInput } from '~/utils/builder-validation';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const { t } = useI18n();
+const { page } = useApp();
 const { getCategoryColor } = useBuilderColors();
 
 interface Props {
   selectedNode?: Node | null;
   allNodes?: Node[];
   readonly?: boolean;
+  pipelineData?: unknown;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedNode: null,
   allNodes: () => [],
   readonly: false,
+  pipelineData: undefined,
 });
 
 const readonly = computed(() => props.readonly);
 
 const emit = defineEmits<{
-  updateNode: [nodeId: string, updates: Partial<Node>];
+  updateNode: [nodeId: string, updates: NodeUpdate];
   deleteNode: [nodeId: string, componentName: string];
   renameComponent: [nodeId: string, oldName: string, newName: string];
 }>();
@@ -272,10 +276,45 @@ const hasValidationErrors = computed(() => {
   });
 });
 
-// Pipeline parameters (empty for now, will be implemented later)
+// Helper function to infer type from value
+function inferTypeFromValue(value: unknown): string {
+  if (typeof value === 'string') {
+    // Check if it's a number
+    if (!isNaN(Number(value))) {
+      return value.includes('.') ? 'Float' : 'Integer';
+    }
+    // Check if it's a boolean
+    if (value === 'true' || value === 'false') return 'Boolean';
+  }
+  return 'String';
+}
+
+// Pipeline parameters from runtime_config
 const pipelineParameters = computed((): PipelineInputParam[] => {
-  // TODO: Get from builder state when pipeline parameters UI is implemented
-  return [];
+  console.log('[PropertiesSidebar] pipelineData:', props.pipelineData);
+
+  // Type guard for pipelineData
+  const data = props.pipelineData as
+    | {
+        runtime_config?: { parameters?: Record<string, unknown> };
+      }
+    | null
+    | undefined;
+
+  console.log('[PropertiesSidebar] runtime_config:', data?.runtime_config);
+
+  if (!data?.runtime_config?.parameters) return [];
+
+  const params = Object.entries(data.runtime_config.parameters).map(
+    ([name, value]) => ({
+      name,
+      default: value as string,
+      type: inferTypeFromValue(value),
+    }),
+  );
+
+  console.log('[PropertiesSidebar] pipelineParameters:', params);
+  return params;
 });
 
 // Handle input update
@@ -305,12 +344,12 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
         inputs,
       },
     },
-  } as Partial<Node>);
+  });
 }
 
 function updateNode() {
   if (props.selectedNode) {
-    const updates = {
+    const updates: NodeUpdate = {
       data: {
         label: formData.nodeName,
         description: formData.nodeDescription,
@@ -319,7 +358,7 @@ function updateNode() {
         transformExpression: formData.transformExpression,
       },
     };
-    emit('updateNode', props.selectedNode.id, updates as Partial<Node>);
+    emit('updateNode', props.selectedNode.id, updates);
   }
 }
 
@@ -448,7 +487,7 @@ watch(
       data: {
         status: newStatus,
       },
-    } as Partial<Node>);
+    });
   },
   { immediate: true },
 );

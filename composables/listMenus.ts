@@ -34,16 +34,24 @@ export const uselistMenus = () => {
           icon: 'lucide:route',
           items: [
             {
-              key: 'pipelines_builder',
-              title: 'Builder',
-              url: 'pipelines/builder/new',
-            },
-            {
-              key: 'runs',
-              title: t('menu.runs'),
+              key: 'pipelines-runs',
+              title: t('menu.pipeline_runs') ?? 'Runs',
               url: 'pipelines',
             },
+            {
+              key: 'pipelines-builder',
+              title: 'Builder',
+              url: 'pipelines/builder',
+            },
           ],
+          isActive: false,
+        },
+        {
+          key: 'flowise',
+          title: 'Flowise',
+          url: 'flowise',
+          icon: 'lucide:sparkles',
+          items: [],
           isActive: false,
         },
       ],

@@ -14,11 +14,30 @@ const baseUrl = config.app.baseURL;
 const route = useRoute();
 const query = computed(() => route.query);
 
-const isMainActive = (url: string) => route.path === `/${url}`;
-const isSubActive = (url: string) => route.path === `/${url}`;
 const isParentActive = (url: string, items: { url: string }[]) =>
   route.path.startsWith(`/${url}`) ||
   items.some((item) => route.path.startsWith(`/${item.url}`));
+
+const isMainActive = (url: string, hasChildren: boolean) => {
+  // For menus with children (like Pipelines), don't highlight the parent,
+  // only the sub-items should show an active state.
+  if (hasChildren) return false;
+  return route.path.startsWith(`/${url}`);
+};
+
+const isSubActive = (subUrl: string) => {
+  const fullPath = route.path;
+
+  // Special handling for Pipelines "Runs" vs "Builder"
+  if (subUrl === 'pipelines') {
+    return (
+      fullPath.startsWith('/pipelines') &&
+      !fullPath.startsWith('/pipelines/builder')
+    );
+  }
+
+  return fullPath.startsWith(`/${subUrl}`);
+};
 
 const isIframe = useStorage(
   'is_iframe',
@@ -96,7 +115,7 @@ const toggleTheme = () => {
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
                 as-child
-                :is-active="isMainActive(item.url)"
+                :is-active="isMainActive(item.url, false)"
                 :tooltip="item.title"
               >
                 <NuxtLink :to="`/${item.url}`">
@@ -118,6 +137,7 @@ const toggleTheme = () => {
                 <CollapsibleTrigger as-child>
                   <SidebarMenuButton
                     :tooltip="item.title"
+                    :is-active="isMainActive(item.url, item.items.length > 0)"
                   >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
@@ -126,7 +146,10 @@ const toggleTheme = () => {
                         </span>
                         <span>{{ item.title }}</span>
                       </div>
-                      <Icon class="icon-chevron" name="lucide:chevron-right" />
+                      <Icon
+                        class="icon-chevron group-data-[state=open]/collapsible:rotate-90"
+                        name="lucide:chevron-right"
+                      />
                     </div>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
