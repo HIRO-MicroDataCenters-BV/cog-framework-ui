@@ -40,9 +40,15 @@ const tabs = [
 const activeCounts = ref({ active: 0, archived: 0 });
 
 // Wrapper function that adds storage_state filter based on active tab
-const getPipelineRunsWithFilter = async (params: Record<string, unknown> = {}) => {
-  const storageState = activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
-  const result = await getPipelineRunsListV2({ ...params, storage_state: storageState });
+const getPipelineRunsWithFilter = async (
+  params: Record<string, unknown> = {},
+) => {
+  const storageState =
+    activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
+  const result = await getPipelineRunsListV2({
+    ...params,
+    storage_state: storageState,
+  });
 
   // Update count for current tab
   if (result?.pagination?.total_items !== undefined) {
@@ -258,7 +264,8 @@ watch(activeTab, () => {
     // Refresh counts when tab changes
     fetchBothCounts();
   }
-});</script>
+});
+</script>
 
 <template>
   <AppTable
@@ -272,7 +279,9 @@ watch(activeTab, () => {
   >
     <template #header-actions>
       <!-- Segmented Control for Active/Archived -->
-      <div class="relative inline-flex items-center bg-muted rounded-lg p-1 gap-1">
+      <div
+        class="relative inline-flex items-center bg-muted rounded-lg p-1 gap-1"
+      >
         <!-- Animated sliding background -->
         <div
           :class="[
