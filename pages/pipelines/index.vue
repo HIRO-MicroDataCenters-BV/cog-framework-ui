@@ -272,12 +272,23 @@ watch(activeTab, () => {
   >
     <template #header-actions>
       <!-- Segmented Control for Active/Archived -->
-      <div class="inline-flex items-center bg-muted rounded-lg p-1 gap-1">
+      <div class="relative inline-flex items-center bg-muted rounded-lg p-1 gap-1">
+        <!-- Animated sliding background -->
+        <div
+          :class="[
+            'absolute top-1 bottom-1 bg-background rounded-md shadow-sm transition-all duration-300 ease-in-out',
+            activeTab === 'active' ? 'left-1' : 'left-[calc(50%)]',
+          ]"
+          :style="{
+            width: 'calc(50% - 0.25rem)',
+          }"
+        />
+
         <button
           :class="[
-            'inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+            'relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors duration-200',
             activeTab === 'active'
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'text-foreground'
               : 'text-muted-foreground hover:text-foreground',
           ]"
           @click="activeTab = 'active'"
@@ -285,7 +296,7 @@ watch(activeTab, () => {
           <Icon
             name="lucide:folder-open-dot"
             :class="[
-              'h-4 w-4 transition-colors',
+              'h-4 w-4 transition-colors duration-300',
               activeTab === 'active' ? 'text-blue-500' : '',
             ]"
           />
@@ -293,9 +304,9 @@ watch(activeTab, () => {
         </button>
         <button
           :class="[
-            'inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+            'relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors duration-200',
             activeTab === 'archived'
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'text-foreground'
               : 'text-muted-foreground hover:text-foreground',
           ]"
           @click="activeTab = 'archived'"
@@ -303,7 +314,7 @@ watch(activeTab, () => {
           <Icon
             name="lucide:folder-archive"
             :class="[
-              'h-4 w-4 transition-colors',
+              'h-4 w-4 transition-colors duration-300',
               activeTab === 'archived' ? 'text-orange-500' : '',
             ]"
           />
