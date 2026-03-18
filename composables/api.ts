@@ -40,6 +40,26 @@ import modelsServingData from '@/mocks/get.models-serving.json';
  */
 
 /**
+ * Token cache for KFP pagination
+ * Structure: Map<cacheKey, Map<pageNumber, token>>
+ * cacheKey is derived from query parameters (namespace, filters, sort)
+ */
+const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
+
+/**
+ * Generate a cache key for pipeline runs pagination tokens
+ */
+function getPipelineRunsCacheKey(params: {
+  namespace?: string;
+  storage_state?: string;
+  status?: string;
+  sort_by?: string;
+  sort_order?: string;
+}): string {
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+}
+
+/**
  * Main API composable for Cognitive Framework
  *
  * Provides a comprehensive set of methods for interacting with the Cognitive Framework API,
@@ -2429,11 +2449,35 @@ export const useApi = () => {
     ) => {
       const namespace = params.namespace || 'admin';
       const pageSize = params.limit || 10;
-      const pageToken = params.page_token || '';
+      const currentPage = params.page || 1;
 
       const sortBy = params.sort_by
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
         : 'created_at desc';
+
+      // Generate cache key for this query context
+      const cacheKey = getPipelineRunsCacheKey({
+        namespace,
+        storage_state: params.storage_state,
+        status: params.status,
+        sort_by: params.sort_by,
+        sort_order: params.sort_order,
+      });
+
+      // Get or create page token cache for this query
+      if (!pipelineRunsTokenCache.has(cacheKey)) {
+        pipelineRunsTokenCache.set(cacheKey, new Map());
+      }
+      const pageTokens = pipelineRunsTokenCache.get(cacheKey)!;
+
+      // If page 1, clear cache and use empty token
+      // Otherwise, look up cached token for this page
+      let pageToken = '';
+      if (currentPage === 1) {
+        pageTokens.clear();
+      } else {
+        pageToken = pageTokens.get(currentPage) || '';
+      }
 
       // Build filter predicates
       const predicates: Array<{
@@ -2530,17 +2574,23 @@ export const useApi = () => {
         const totalSize =
           (kfpData.total_size as number | undefined) ?? runs.length;
 
+        // Cache the next_page_token for the next page
+        const nextPageToken =
+          (kfpData.next_page_token as string | undefined) || '';
+        if (nextPageToken) {
+          pageTokens.set(currentPage + 1, nextPageToken);
+        }
+
         return {
           status_code: 200,
           message: 'Pipeline runs',
           data: runs,
           pagination: {
             total_items: totalSize,
-            page: params.page || 1,
+            page: currentPage,
             limit: pageSize,
             total_pages: Math.ceil(totalSize / pageSize),
-            next_page_token:
-              (kfpData.next_page_token as string | undefined) || null,
+            next_page_token: nextPageToken || null,
           },
         };
       } catch (err) {
