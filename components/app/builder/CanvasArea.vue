@@ -194,7 +194,7 @@
           </div>
         </TooltipProvider>
       </template>
-      <Background pattern-color="#aaa" :gap="16" />
+      <Background v-if="showBackground" pattern-color="#aaa" :gap="16" />
 
       <MiniMap
         v-if="showMinimap"
@@ -256,6 +256,17 @@
           </button>
 
           <div class="w-px h-5 bg-border mx-0.5" />
+
+          <!-- Background dots toggle -->
+          <button
+            type="button"
+            :title="showBackground ? 'Hide background' : 'Show background'"
+            class="canvas-ctrl-btn"
+            :class="{ 'text-primary': !showBackground }"
+            @click="showBackground = !showBackground"
+          >
+            <Icon name="lucide:grid-2x2-x" class="w-4 h-4" />
+          </button>
 
           <!-- Minimap Toggle -->
           <button
@@ -370,6 +381,7 @@ onNodesInitialized(() => {
 // Controls state
 const isLocked = ref(false);
 const showMinimap = ref(false);
+const showBackground = ref(true);
 
 const toggleLock = () => {
   isLocked.value = !isLocked.value;
