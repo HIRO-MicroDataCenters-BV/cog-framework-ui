@@ -1,6 +1,6 @@
 <template>
   <div
-    class="h-full bg-muted/20 relative"
+    class="h-full relative bg-muted/20"
     :class="{ readonly: props.readonly }"
   >
     <VueFlow
@@ -265,20 +265,6 @@
             <Icon name="lucide:map" class="w-4 h-4" />
           </button>
 
-          <!-- Dark Mode Toggle -->
-          <button
-            type="button"
-            :title="colorMode.value === 'dark' ? 'Light mode' : 'Dark mode'"
-            class="canvas-ctrl-btn"
-            @click="toggleColorMode"
-          >
-            <Icon
-              :name="
-                colorMode.value === 'dark' ? 'lucide:sun' : 'lucide:moon'
-              "
-              class="w-4 h-4"
-            />
-          </button>
         </div>
       </Panel>
     </VueFlow>
@@ -381,14 +367,9 @@ onNodesInitialized(() => {
 // Controls state
 const isLocked = ref(false);
 const showMinimap = ref(false);
-const colorMode = useColorMode();
 
 const toggleLock = () => {
   isLocked.value = !isLocked.value;
-};
-
-const toggleColorMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
 };
 
 const handleFitView = () => {
