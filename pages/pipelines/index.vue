@@ -36,11 +36,41 @@ const tabs = [
   { key: 'archived', label: 'Archived' },
 ];
 
+// Store counts for both tabs
+const activeCounts = ref({ active: 0, archived: 0 });
+
 // Wrapper function that adds storage_state filter based on active tab
 const getPipelineRunsWithFilter = async (params: Record<string, unknown> = {}) => {
   const storageState = activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
-  return getPipelineRunsListV2({ ...params, storage_state: storageState });
+  const result = await getPipelineRunsListV2({ ...params, storage_state: storageState });
+
+  // Update count for current tab
+  if (result?.pagination?.total_items !== undefined) {
+    activeCounts.value[activeTab.value] = result.pagination.total_items;
+  }
+
+  return result;
 };
+
+// Fetch counts for both tabs on mount
+const fetchBothCounts = async () => {
+  try {
+    const [activeResult, archivedResult] = await Promise.all([
+      getPipelineRunsListV2({ storage_state: 'NOT_ARCHIVED', limit: 1 }),
+      getPipelineRunsListV2({ storage_state: 'ARCHIVED', limit: 1 }),
+    ]);
+
+    activeCounts.value.active = activeResult?.pagination?.total_items || 0;
+    activeCounts.value.archived = archivedResult?.pagination?.total_items || 0;
+  } catch (error) {
+    console.error('Error fetching counts:', error);
+  }
+};
+
+// Fetch counts on mount
+onMounted(() => {
+  fetchBothCounts();
+});
 
 const columns = [
   {
@@ -225,6 +255,8 @@ const columns = [
 watch(activeTab, () => {
   if (tableRef.value) {
     tableRef.value.fetchData();
+    // Refresh counts when tab changes
+    fetchBothCounts();
   }
 });</script>
 
@@ -238,9 +270,45 @@ watch(activeTab, () => {
     :selectable="false"
     :filterable-columns="['status']"
   >
-    <template #header-tabs>
-      <div class="pt-2">
-        <SimpleTabs v-model="activeTab" :tabs="tabs" />
+    <template #header-actions>
+      <!-- Segmented Control for Active/Archived -->
+      <div class="inline-flex items-center bg-muted rounded-lg p-1 gap-1">
+        <button
+          :class="[
+            'inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+            activeTab === 'active'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          ]"
+          @click="activeTab = 'active'"
+        >
+          <Icon
+            name="lucide:play-circle"
+            :class="[
+              'h-4 w-4 transition-colors',
+              activeTab === 'active' ? 'text-blue-500' : '',
+            ]"
+          />
+          <span>Active</span>
+        </button>
+        <button
+          :class="[
+            'inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
+            activeTab === 'archived'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          ]"
+          @click="activeTab = 'archived'"
+        >
+          <Icon
+            name="lucide:archive"
+            :class="[
+              'h-4 w-4 transition-colors',
+              activeTab === 'archived' ? 'text-gray-500' : '',
+            ]"
+          />
+          <span>Archived</span>
+        </button>
       </div>
     </template>
   </AppTable>
