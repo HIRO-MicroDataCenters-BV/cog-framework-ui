@@ -2417,6 +2417,7 @@ export const useApi = () => {
       params: {
         run_id?: string;
         run_name?: string;
+        status?: string;
         sort_by?: string;
         sort_order?: 'asc' | 'desc';
         page?: number;
@@ -2433,16 +2434,29 @@ export const useApi = () => {
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
         : 'created_at desc';
 
-      // Exclude archived runs by default
-      const filter = JSON.stringify({
-        predicates: [
-          {
-            key: 'storage_state',
-            operation: 'NOT_EQUALS',
-            string_value: 'ARCHIVED',
-          },
-        ],
-      });
+      // Build filter predicates
+      const predicates: Array<{
+        key: string;
+        operation: string;
+        string_value: string;
+      }> = [
+        {
+          key: 'storage_state',
+          operation: 'NOT_EQUALS',
+          string_value: 'ARCHIVED',
+        },
+      ];
+
+      // Add status filter if provided
+      if (params.status) {
+        predicates.push({
+          key: 'state',
+          operation: 'EQUALS',
+          string_value: params.status.toUpperCase(),
+        });
+      }
+
+      const filter = JSON.stringify({ predicates });
 
       const kfpParams = new URLSearchParams({
         namespace,
@@ -2510,7 +2524,7 @@ export const useApi = () => {
           message: 'Pipeline runs',
           data: runs,
           pagination: {
-            total: totalSize,
+            total_items: totalSize,
             page: params.page || 1,
             limit: pageSize,
             total_pages: Math.ceil(totalSize / pageSize),

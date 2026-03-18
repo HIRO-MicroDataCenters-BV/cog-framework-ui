@@ -222,8 +222,9 @@ const tabs = [
     :columns="columns"
     :data-source="getPipelineRunsListV2"
     :tabs="tabs"
-    :has-stats="false"
+    :has-stats="true"
     :has-filters="false"
     :selectable="false"
+    :filterable-columns="['status']"
   />
 </template>

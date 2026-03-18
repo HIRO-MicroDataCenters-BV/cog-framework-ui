@@ -928,7 +928,7 @@ export const useApiWithMock = () => {
           message: runsJson.message,
           data: paginatedData,
           pagination: {
-            total: filteredData.length,
+            total_items: filteredData.length,
             page,
             limit,
             total_pages: Math.ceil(filteredData.length / limit),
@@ -968,6 +968,14 @@ export const useApiWithMock = () => {
             (r.display_name || '')
               .toLowerCase()
               .includes(searchParams.run_name.toLowerCase()),
+          );
+        }
+
+        if (searchParams.status) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.state || r.status || '')
+              .toLowerCase()
+              .includes(searchParams.status.toLowerCase()),
           );
         }
 
@@ -1030,7 +1038,7 @@ export const useApiWithMock = () => {
           message: 'Pipeline runs',
           data: runs,
           pagination: {
-            total: filteredRuns.length,
+            total_items: filteredRuns.length,
             page,
             limit,
             total_pages: Math.ceil(filteredRuns.length / limit),

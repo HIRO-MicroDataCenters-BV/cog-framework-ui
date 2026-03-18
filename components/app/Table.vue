@@ -378,6 +378,11 @@ const getValueLabel = (columnId: string, value: string | number): string => {
   if (columnId === 'ownership' && typeof value === 'string') {
     return t(`label.${value}`);
   }
+  if (columnId === 'status' && typeof value === 'string') {
+    // Normalize status value and capitalize first letter
+    const normalized = value.toLowerCase();
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
   return String(value);
 };
 
