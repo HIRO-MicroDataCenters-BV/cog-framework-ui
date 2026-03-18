@@ -995,6 +995,15 @@ export const useApiWithMock = () => {
           );
         }
 
+        // Add search filter (matches display_name)
+        if (searchParams.search) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.display_name || r.run_id || '')
+              .toLowerCase()
+              .includes(searchParams.search.toLowerCase()),
+          );
+        }
+
         const sortBy = searchParams.sort_by || 'created_at';
         const sortOrder = searchParams.sort_order || 'desc';
         filteredRuns = filteredRuns.sort((a, b) => {

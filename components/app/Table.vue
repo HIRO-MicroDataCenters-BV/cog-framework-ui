@@ -18,6 +18,7 @@ import {
   ref,
   watch,
   onMounted,
+  onUnmounted,
   computed,
   h,
   resolveComponent,
@@ -655,6 +656,9 @@ const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
+// Debounce timer for search input
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 const applySearchFilter = () => {
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
@@ -673,6 +677,18 @@ const applySearchFilter = () => {
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
+};
+
+const debouncedApplySearchFilter = () => {
+  // Clear existing timer
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+
+  // Set new timer with 400ms delay
+  searchDebounceTimer = setTimeout(() => {
+    applySearchFilter();
+  }, 400);
 };
 
 const updateUrlParams = () => {
@@ -815,6 +831,13 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  // Clear search debounce timer on component unmount
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+});
+
 watch(
   () => data.value.length,
   () => {
@@ -875,7 +898,7 @@ defineExpose({ fetchData, totalItems });
                 class="w-64 pl-8"
                 type="search"
                 :placeholder="t(props.searchPlaceholderKey)"
-                @update:model-value="applySearchFilter"
+                @update:model-value="debouncedApplySearchFilter"
               />
               <Icon
                 name="lucide:search"

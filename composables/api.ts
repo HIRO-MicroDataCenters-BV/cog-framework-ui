@@ -53,10 +53,11 @@ function getPipelineRunsCacheKey(params: {
   namespace?: string;
   storage_state?: string;
   status?: string;
+  search?: string;
   sort_by?: string;
   sort_order?: string;
 }): string {
-  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
 }
 
 /**
@@ -2439,6 +2440,7 @@ export const useApi = () => {
         run_name?: string;
         status?: string;
         storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
+        search?: string;
         sort_by?: string;
         sort_order?: 'asc' | 'desc';
         page?: number;
@@ -2460,6 +2462,7 @@ export const useApi = () => {
         namespace,
         storage_state: params.storage_state,
         status: params.status,
+        search: params.search,
         sort_by: params.sort_by,
         sort_order: params.sort_order,
       });
@@ -2485,6 +2488,15 @@ export const useApi = () => {
         operation: string;
         string_value: string;
       }> = [];
+
+      // Add search filter if provided
+      if (params.search) {
+        predicates.push({
+          key: 'name',
+          operation: 'IS_SUBSTRING',
+          string_value: params.search,
+        });
+      }
 
       // Add storage_state filter based on tab selection
       const storageState = params.storage_state || 'NOT_ARCHIVED';
