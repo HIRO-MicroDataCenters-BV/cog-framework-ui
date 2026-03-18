@@ -12,6 +12,11 @@
       :nodes-connectable="!props.readonly && !isLocked"
       :edges-updatable="!props.readonly && !isLocked"
       :elements-selectable="!props.readonly"
+      :zoom-on-scroll="!isLocked"
+      :zoom-on-pinch="!isLocked"
+      :zoom-on-double-click="!isLocked"
+      :pan-on-drag="!isLocked"
+      :pan-on-scroll="!isLocked"
       :delete-key-code="null"
       :multi-selection-key-code="null"
       :default-edge-options="{
@@ -231,8 +236,10 @@
           <!-- Zoom In -->
           <button
             type="button"
-            title="Zoom in"
+            :title="isLocked ? 'Unlock to zoom' : 'Zoom in'"
             class="canvas-ctrl-btn"
+            :disabled="isLocked"
+            :class="{ 'opacity-50 cursor-not-allowed': isLocked }"
             @click="zoomIn({ duration: 200 })"
           >
             <Icon name="lucide:plus" class="w-4 h-4" />
@@ -241,8 +248,10 @@
           <!-- Zoom Out -->
           <button
             type="button"
-            title="Zoom out"
+            :title="isLocked ? 'Unlock to zoom' : 'Zoom out'"
             class="canvas-ctrl-btn"
+            :disabled="isLocked"
+            :class="{ 'opacity-50 cursor-not-allowed': isLocked }"
             @click="zoomOut({ duration: 200 })"
           >
             <Icon name="lucide:minus" class="w-4 h-4" />
@@ -253,8 +262,10 @@
           <!-- Fit View -->
           <button
             type="button"
-            title="Fit view"
+            :title="isLocked ? 'Unlock to fit view' : 'Fit view'"
             class="canvas-ctrl-btn"
+            :disabled="isLocked"
+            :class="{ 'opacity-50 cursor-not-allowed': isLocked }"
             @click="handleFitView"
           >
             <Icon name="lucide:maximize-2" class="w-4 h-4" />
@@ -263,7 +274,7 @@
           <!-- Lock / Unlock -->
           <button
             type="button"
-            :title="isLocked ? 'Unlock nodes' : 'Lock nodes'"
+            :title="isLocked ? 'Unlock canvas' : 'Lock canvas'"
             class="canvas-ctrl-btn"
             :class="{ 'text-primary': isLocked }"
             @click="toggleLock"
