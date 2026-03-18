@@ -153,14 +153,6 @@ const columns = [
     },
   },
   {
-    id: 'start_time',
-    size: 180,
-    cell: ({ row }: { row: TableRowType }) => {
-      const startedOn = row.getValue<string>('start_time');
-      return startedOn ? dayjs(startedOn).format('DD.MM.YYYY HH:mm') : '-';
-    },
-  },
-  {
     id: 'experiment_id',
     accessorFn: (row) => row.experiment_id,
     size: 220,
@@ -225,6 +217,22 @@ const columns = [
       const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
       return h('span', { class: `${baseClass} ${classes}` }, label);
+    },
+  },
+  {
+    id: 'start_time',
+    size: 115,
+    cell: ({ row }: { row: TableRowType }) => {
+      const startedOn = row.getValue<string>('start_time');
+      if (!startedOn) return '-';
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(startedOn).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(startedOn).format('HH:mm:ss'),
+        ),
+      ]);
     },
   },
   {

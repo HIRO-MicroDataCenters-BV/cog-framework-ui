@@ -147,7 +147,7 @@ const toggleTheme = () => {
                         <span>{{ item.title }}</span>
                       </div>
                       <Icon
-                        class="icon-chevron group-data-[state=open]/collapsible:rotate-90"
+                        class="icon-chevron"
                         name="lucide:chevron-right"
                       />
                     </div>
