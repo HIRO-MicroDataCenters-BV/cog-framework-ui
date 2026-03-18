@@ -51,95 +51,96 @@
       </div>
 
       <!-- Input / Output -->
-      <div v-if="activeTab === 'io'" class="space-y-6">
-        <!-- Input parameters -->
-        <section>
-          <h3 class="text-sm font-semibold text-foreground mb-3">
-            Input parameters
-          </h3>
-          <div v-if="inputParameters.length" class="divide-y border-t border-b">
-            <div
-              v-for="param in inputParameters"
-              :key="param.name"
-              class="flex items-center justify-between gap-4 py-2.5 text-sm"
-            >
-              <span class="font-semibold text-foreground shrink-0">
-                {{ param.name }}
-              </span>
-              <span class="text-sm text-muted-foreground text-right break-all">
-                {{ param.value }}
-              </span>
-            </div>
-          </div>
-        </section>
+      <div v-if="activeTab === 'io'" class="space-y-3">
 
-        <!-- Input artifacts -->
-        <section>
-          <h3 class="text-sm font-semibold text-foreground mb-3">
-            Input artifacts
-          </h3>
-          <div v-if="inputArtifacts.length" class="divide-y border-t border-b">
-            <div
-              v-for="artifact in inputArtifacts"
-              :key="artifact.name"
-              class="flex items-center justify-between gap-4 py-2.5 text-sm"
-            >
-              <span class="font-semibold text-foreground shrink-0">
-                {{ artifact.name }}
-              </span>
-              <span class="text-sm text-muted-foreground text-right break-all">
-                {{ artifact.path }}
-              </span>
-            </div>
+        <!-- INPUT block -->
+        <div class="rounded-lg border border-border overflow-hidden">
+          <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Input</span>
           </div>
-        </section>
 
-        <!-- Output parameters -->
-        <section>
-          <h3 class="text-sm font-semibold text-foreground mb-3">
-            Output parameters
-          </h3>
-          <div
-            v-if="outputParameters.length"
-            class="divide-y border-t border-b"
-          >
-            <div
-              v-for="param in outputParameters"
-              :key="param.name"
-              class="flex items-center justify-between gap-4 py-2.5 text-sm"
-            >
-              <span class="font-semibold text-foreground shrink-0">
-                {{ param.name }}
-              </span>
-              <span class="text-sm text-muted-foreground text-right break-all">
-                {{ param.value || '—' }}
-              </span>
+          <!-- Input Parameters -->
+          <div class="border-b border-border/60">
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Parameters</p>
             </div>
-          </div>
-        </section>
-
-        <!-- Output artifacts -->
-        <section>
-          <h3 class="text-sm font-semibold text-foreground mb-3">
-            Output artifacts
-          </h3>
-          <div v-if="outputArtifacts.length" class="divide-y border-t border-b">
-            <div
-              v-for="artifact in outputArtifacts"
-              :key="artifact.name"
-              class="flex items-center justify-between gap-4 py-2.5 text-sm"
-            >
-              <span class="font-semibold text-foreground shrink-0">
-                {{ artifact.name }}
-              </span>
-              <span
-                class="text-xs text-muted-foreground text-right break-all font-mono"
+            <div v-if="inputParameters.length" class="divide-y divide-border/50">
+              <div
+                v-for="param in inputParameters"
+                :key="param.name"
+                class="flex items-center justify-between gap-4 px-3 py-2"
               >
-                {{ artifact.path }}
-              </span>
+                <span class="text-xs font-medium text-foreground shrink-0">{{ param.name }}</span>
+                <span class="text-xs text-muted-foreground text-right break-all">{{ param.value || '—' }}</span>
+              </div>
             </div>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
           </div>
-        </section>
+
+          <!-- Input Artifacts -->
+          <div>
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Artifacts</p>
+            </div>
+            <div v-if="inputArtifacts.length" class="divide-y divide-border/50">
+              <div
+                v-for="artifact in inputArtifacts"
+                :key="artifact.name"
+                class="flex items-center justify-between gap-4 px-3 py-2"
+              >
+                <span class="text-xs font-medium text-foreground shrink-0">{{ artifact.name }}</span>
+                <span class="text-xs text-muted-foreground text-right break-all font-mono">{{ artifact.path || '—' }}</span>
+              </div>
+            </div>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+          </div>
+        </div>
+
+        <!-- OUTPUT block -->
+        <div class="rounded-lg border border-border overflow-hidden">
+          <div class="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/30 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">Output</span>
+          </div>
+
+          <!-- Output Parameters -->
+          <div class="border-b border-border/60">
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Parameters</p>
+            </div>
+            <div v-if="outputParameters.length" class="divide-y divide-border/50">
+              <div
+                v-for="param in outputParameters"
+                :key="param.name"
+                class="flex items-center justify-between gap-4 px-3 py-2"
+              >
+                <span class="text-xs font-medium text-foreground shrink-0">{{ param.name }}</span>
+                <span class="text-xs text-muted-foreground text-right break-all">{{ param.value || '—' }}</span>
+              </div>
+            </div>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+          </div>
+
+          <!-- Output Artifacts -->
+          <div>
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Artifacts</p>
+            </div>
+            <div v-if="outputArtifacts.length" class="divide-y divide-border/50">
+              <div
+                v-for="artifact in outputArtifacts"
+                :key="artifact.name"
+                class="flex items-center justify-between gap-4 px-3 py-2"
+              >
+                <span class="text-xs font-medium text-foreground shrink-0">{{ artifact.name }}</span>
+                <span class="text-xs text-muted-foreground text-right break-all font-mono">{{ artifact.path || '—' }}</span>
+              </div>
+            </div>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+          </div>
+        </div>
+
       </div>
 
       <!-- Details -->
@@ -149,7 +150,7 @@
             class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
           >
             <span class="text-muted-foreground shrink-0">Run ID</span>
-            <CopyPaste :has-copy="true" :copy-text="run.run_id">
+            <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.run_id">
               <span class="font-mono text-xs break-all">{{ run.run_id }}</span>
             </CopyPaste>
           </div>
@@ -157,7 +158,7 @@
             class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
           >
             <span class="text-muted-foreground shrink-0">Experiment ID</span>
-            <CopyPaste :has-copy="true" :copy-text="run.experiment_id">
+            <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.experiment_id">
               <span class="font-mono text-xs break-all">
                 {{ run.experiment_id }}
               </span>

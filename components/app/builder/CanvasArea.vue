@@ -122,7 +122,7 @@
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div v-if="data.category" class="px-4 py-3">
+                <div v-if="data.category && data.category !== 'general'" class="px-4 py-3">
                   <p
                     class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
                   >
