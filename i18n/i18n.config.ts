@@ -465,6 +465,7 @@ export default defineI18nConfig(() => ({
         dataset_management: 'Dataset Management',
         training_builder: 'Training Builder',
         runs: 'Runs',
+        pipeline_runs: 'Runs',
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',

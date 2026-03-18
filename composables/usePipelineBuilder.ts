@@ -104,6 +104,11 @@ export const usePipelineBuilder = () => {
       selectedNode.value = null;
       return;
     }
+    // Toggle selection: if clicking the same node, deselect it
+    if (selectedNode.value?.id === nodeId) {
+      selectedNode.value = null;
+      return;
+    }
     const node = nodes.value.find((n) => n.id === nodeId);
     if (node) {
       selectedNode.value = node;

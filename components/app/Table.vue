@@ -18,6 +18,7 @@ import {
   ref,
   watch,
   onMounted,
+  onUnmounted,
   computed,
   h,
   resolveComponent,
@@ -378,6 +379,11 @@ const getValueLabel = (columnId: string, value: string | number): string => {
   if (columnId === 'ownership' && typeof value === 'string') {
     return t(`label.${value}`);
   }
+  if (columnId === 'status' && typeof value === 'string') {
+    // Normalize status value and capitalize first letter
+    const normalized = value.toLowerCase();
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
   return String(value);
 };
 
@@ -650,6 +656,9 @@ const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
 
+// Debounce timer for search input
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 const applySearchFilter = () => {
   columnFilters.value = columnFilters.value.filter(
     (filter) => filter.id !== 'search',
@@ -668,6 +677,18 @@ const applySearchFilter = () => {
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
+};
+
+const debouncedApplySearchFilter = () => {
+  // Clear existing timer
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+
+  // Set new timer with 400ms delay
+  searchDebounceTimer = setTimeout(() => {
+    applySearchFilter();
+  }, 400);
 };
 
 const updateUrlParams = () => {
@@ -810,6 +831,13 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  // Clear search debounce timer on component unmount
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+});
+
 watch(
   () => data.value.length,
   () => {
@@ -870,7 +898,7 @@ defineExpose({ fetchData, totalItems });
                 class="w-64 pl-8"
                 type="search"
                 :placeholder="t(props.searchPlaceholderKey)"
-                @update:model-value="applySearchFilter"
+                @update:model-value="debouncedApplySearchFilter"
               />
               <Icon
                 name="lucide:search"
@@ -907,32 +935,8 @@ defineExpose({ fetchData, totalItems });
         </div>
       </div>
 
-      <!-- 
-      <div>
-        <div class="flex gap-2 items-center py-4">
-          <div v-if="validTabs.length > 0" class="flex gap-2">
-            <Tabs default-value="all">
-              <TabsList class="flex">
-                <TabsTrigger
-                  v-for="item in validTabs"
-                  :key="item.key"
-                  :value="item.value"
-                >
-                  <div class="flex items-center">
-                    <Icon
-                      v-if="item.icon"
-                      :name="item.icon"
-                      class="h-4 w-4 mr-2"
-                    />
-                    <span>{{ item.title }}</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-      -->
+      <!-- Slot for custom tabs or additional header content -->
+      <slot name="header-tabs" />
     </div>
     <div class="overflow-x-auto w-full flex-1 bg-sidebar-background">
       <table
