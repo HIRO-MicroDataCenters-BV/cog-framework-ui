@@ -3,7 +3,7 @@
     :open="open"
     :title="sheetTitle"
     side="right"
-    content-class="w-full sm:max-w-xl"
+    content-class="w-full sm:max-w-2xl"
     header-class="sr-only"
     @update:open="(v) => emit('update:open', v)"
   >
@@ -21,10 +21,7 @@
           </p>
         </div>
         <span
-          :class="[
-            statusBadgeClass,
-            'text-[10px] font-medium px-2 py-0.5 rounded shrink-0',
-          ]"
+          :class="[statusBadgeClass, 'inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0']"
         >
           {{ currentStatus }}
         </span>
@@ -145,70 +142,76 @@
 
       <!-- Details -->
       <div v-else-if="activeTab === 'details'" class="space-y-3">
-        <div class="rounded-lg border border-border/60 bg-card divide-y">
-          <div
-            class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <span class="text-muted-foreground shrink-0">Run ID</span>
-            <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.run_id">
-              <span class="font-mono text-xs break-all">{{ run.run_id }}</span>
-            </CopyPaste>
+
+        <!-- Run info block -->
+        <div class="rounded-lg border border-border overflow-hidden">
+          <div class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Run info</span>
           </div>
-          <div
-            class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <span class="text-muted-foreground shrink-0">Experiment ID</span>
-            <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.experiment_id">
-              <span class="font-mono text-xs break-all">
-                {{ run.experiment_id }}
-              </span>
-            </CopyPaste>
+
+          <!-- IDs -->
+          <div class="border-b border-border/60">
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Identifiers</p>
+            </div>
+            <div class="divide-y divide-border/50">
+              <div class="flex items-center justify-between gap-3 px-3 py-2">
+                <span class="text-xs text-muted-foreground shrink-0">Run ID</span>
+                <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.run_id">
+                  <span class="font-mono text-xs break-all">{{ run.run_id }}</span>
+                </CopyPaste>
+              </div>
+              <div class="flex items-center justify-between gap-3 px-3 py-2">
+                <span class="text-xs text-muted-foreground shrink-0">Experiment ID</span>
+                <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.experiment_id">
+                  <span class="font-mono text-xs break-all">{{ run.experiment_id }}</span>
+                </CopyPaste>
+              </div>
+            </div>
           </div>
-          <div
-            class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <span class="text-muted-foreground shrink-0">Service account</span>
-            <span class="text-xs font-medium">
-              {{ run.service_account || '—' }}
-            </span>
-          </div>
-          <div
-            class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <span class="text-muted-foreground shrink-0">Created</span>
-            <span class="text-xs font-medium">{{
-              formatDate(run.created_at)
-            }}</span>
-          </div>
-          <div
-            class="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <span class="text-muted-foreground shrink-0">Finished</span>
-            <span class="text-xs font-medium">
-              {{ formatDate(run.finished_at) }}
-            </span>
+
+          <!-- Metadata -->
+          <div>
+            <div class="px-3 py-1.5 bg-muted/30">
+              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Metadata</p>
+            </div>
+            <div class="divide-y divide-border/50">
+              <div class="flex items-center justify-between gap-3 px-3 py-2">
+                <span class="text-xs text-muted-foreground shrink-0">Service account</span>
+                <span class="text-xs font-medium">{{ run.service_account || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between gap-3 px-3 py-2">
+                <span class="text-xs text-muted-foreground shrink-0">Created</span>
+                <span class="text-xs font-medium">{{ formatDate(run.created_at) }}</span>
+              </div>
+              <div class="flex items-center justify-between gap-3 px-3 py-2">
+                <span class="text-xs text-muted-foreground shrink-0">Finished</span>
+                <span class="text-xs font-medium">{{ formatDate(run.finished_at) }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <section v-if="stateHistory.length" class="space-y-1.5">
-          <h3
-            class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-          >
-            State history
-          </h3>
-          <div class="rounded-lg border border-border/60 bg-card divide-y">
+        <!-- State history block -->
+        <div class="rounded-lg border border-border overflow-hidden">
+          <div class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">State history</span>
+          </div>
+          <div v-if="stateHistory.length" class="divide-y divide-border/50">
             <div
               v-for="item in stateHistory"
               :key="item.update_time + item.state"
-              class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
+              class="flex items-center justify-between gap-3 px-3 py-2"
             >
-              <span class="text-muted-foreground">
-                {{ formatDate(item.update_time) }}
-              </span>
-              <span class="font-medium">{{ item.state }}</span>
+              <span class="text-xs text-muted-foreground">{{ formatDate(item.update_time) }}</span>
+              <span class="text-xs font-medium">{{ item.state }}</span>
             </div>
           </div>
-        </section>
+          <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+        </div>
+
       </div>
 
       <!-- Logs (placeholder) -->
@@ -225,9 +228,11 @@
 
 <script setup lang="ts">
 import AppSheet from '@/components/app/AppSheet.vue';
+import { useBuilderColors } from '@/composables/useBuilderColors';
 import CopyPaste from '@/components/app/CopyPaste.vue';
 
 const { t } = useI18n();
+const { getStatusConfig } = useBuilderColors();
 
 interface PipelineParameter {
   name: string;
@@ -399,12 +404,16 @@ const formatDate = (value?: string | null) => {
 
 const statusBadgeClass = computed(() => {
   const state = currentStatus.value.toLowerCase();
-  if (state === 'succeeded')
+  if (state === 'succeeded' || state === 'completed')
     return 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100';
-  if (state === 'failed')
-    return 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100';
   if (state === 'running')
     return 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100';
+  if (state === 'failed')
+    return 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100';
+  if (state === 'pending')
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100';
+  if (state === 'cancelled' || state === 'canceled')
+    return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100';
   return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100';
 });
 
