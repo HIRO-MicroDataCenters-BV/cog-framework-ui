@@ -912,32 +912,8 @@ defineExpose({ fetchData, totalItems });
         </div>
       </div>
 
-      <!-- 
-      <div>
-        <div class="flex gap-2 items-center py-4">
-          <div v-if="validTabs.length > 0" class="flex gap-2">
-            <Tabs default-value="all">
-              <TabsList class="flex">
-                <TabsTrigger
-                  v-for="item in validTabs"
-                  :key="item.key"
-                  :value="item.value"
-                >
-                  <div class="flex items-center">
-                    <Icon
-                      v-if="item.icon"
-                      :name="item.icon"
-                      class="h-4 w-4 mr-2"
-                    />
-                    <span>{{ item.title }}</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-      -->
+      <!-- Slot for custom tabs or additional header content -->
+      <slot name="header-tabs" />
     </div>
     <div class="overflow-x-auto w-full flex-1 bg-sidebar-background">
       <table

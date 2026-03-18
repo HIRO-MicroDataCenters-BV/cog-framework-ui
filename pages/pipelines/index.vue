@@ -6,6 +6,7 @@ import { useApi } from '@/composables/api';
 import { usePipelineActions } from '@/composables/usePipelineActions';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
 
 const { t } = useI18n();
 
@@ -13,6 +14,9 @@ const dayjs = useDayjs();
 const { getPipelineRunsListV2 } = useApi();
 const mock = useMock();
 const { setPage, page } = useApp();
+
+// Active tab state: 'active' or 'archived'
+const activeTab = ref<'active' | 'archived'>('active');
 
 setPage({
   section: 'pipelines',
@@ -25,6 +29,18 @@ const urlOrigin = window.location.origin;
 
 const { getPipelineActions } = usePipelineActions();
 const tableRef = ref();
+
+// Tabs definition
+const tabs = [
+  { key: 'active', label: 'Active' },
+  { key: 'archived', label: 'Archived' },
+];
+
+// Wrapper function that adds storage_state filter based on active tab
+const getPipelineRunsWithFilter = async (params: Record<string, unknown> = {}) => {
+  const storageState = activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
+  return getPipelineRunsListV2({ ...params, storage_state: storageState });
+};
 
 const columns = [
   {
@@ -205,26 +221,27 @@ const columns = [
   },
 ];
 
-const tabs = [
-  {
-    key: 'all',
-    value: 'all',
-    title: 'All Runs',
-    url: '',
-    icon: null,
-  },
-];
-</script>
+// Watch active tab changes and refetch data
+watch(activeTab, () => {
+  if (tableRef.value) {
+    tableRef.value.fetchData();
+  }
+});</script>
 
 <template>
   <AppTable
     ref="tableRef"
     :columns="columns"
-    :data-source="getPipelineRunsListV2"
-    :tabs="tabs"
+    :data-source="getPipelineRunsWithFilter"
     :has-stats="true"
     :has-filters="false"
     :selectable="false"
     :filterable-columns="['status']"
-  />
+  >
+    <template #header-tabs>
+      <div class="pt-2">
+        <SimpleTabs v-model="activeTab" :tabs="tabs" />
+      </div>
+    </template>
+  </AppTable>
 </template>

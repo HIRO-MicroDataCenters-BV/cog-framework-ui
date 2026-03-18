@@ -949,6 +949,7 @@ export const useApiWithMock = () => {
           display_name?: string;
           state?: string;
           status?: string;
+          storage_state?: string;
           created_at?: string;
           finished_at?: string | null;
           experiment_id?: string;
@@ -956,6 +957,21 @@ export const useApiWithMock = () => {
         };
 
         let filteredRuns: KfpRun[] = [...(kfpJson.runs as KfpRun[])];
+
+        // Filter by storage_state (archived/active)
+        if (searchParams.storage_state) {
+          if (searchParams.storage_state === 'NOT_ARCHIVED') {
+            filteredRuns = filteredRuns.filter(
+              (r) =>
+                !r.storage_state ||
+                r.storage_state.toUpperCase() !== 'ARCHIVED',
+            );
+          } else if (searchParams.storage_state === 'ARCHIVED') {
+            filteredRuns = filteredRuns.filter(
+              (r) => r.storage_state?.toUpperCase() === 'ARCHIVED',
+            );
+          }
+        }
 
         if (searchParams.run_id) {
           filteredRuns = filteredRuns.filter((r) =>

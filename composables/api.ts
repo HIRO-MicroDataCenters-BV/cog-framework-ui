@@ -2418,6 +2418,7 @@ export const useApi = () => {
         run_id?: string;
         run_name?: string;
         status?: string;
+        storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
         sort_by?: string;
         sort_order?: 'asc' | 'desc';
         page?: number;
@@ -2439,13 +2440,23 @@ export const useApi = () => {
         key: string;
         operation: string;
         string_value: string;
-      }> = [
-        {
+      }> = [];
+
+      // Add storage_state filter based on tab selection
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+      if (storageState === 'NOT_ARCHIVED') {
+        predicates.push({
           key: 'storage_state',
           operation: 'NOT_EQUALS',
           string_value: 'ARCHIVED',
-        },
-      ];
+        });
+      } else {
+        predicates.push({
+          key: 'storage_state',
+          operation: 'EQUALS',
+          string_value: 'ARCHIVED',
+        });
+      }
 
       // Add status filter if provided
       if (params.status) {

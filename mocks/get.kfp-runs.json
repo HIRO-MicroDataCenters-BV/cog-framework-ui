@@ -412,6 +412,598 @@
         { "update_time": "2026-01-20T05:09:16Z", "state": "RUNNING" },
         { "update_time": "2026-01-20T05:09:36Z", "state": "SUCCEEDED" }
       ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-001-hyperparameter-tuning",
+      "display_name": "Hyperparameter Tuning - Dec 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "learning_rate": "0.001",
+          "batch_size": "32",
+          "epochs": "50"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-12-15T10:00:00Z",
+      "scheduled_at": "2025-12-15T10:00:00Z",
+      "finished_at": "2025-12-15T11:23:45Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "archived-001-hyperparameter-tuning",
+            "task_id": "task-arch-001-1",
+            "display_name": "data-preprocessing",
+            "create_time": "2025-12-15T10:00:01Z",
+            "start_time": "2025-12-15T10:00:05Z",
+            "end_time": "2025-12-15T10:15:30Z",
+            "state": "SUCCEEDED"
+          },
+          {
+            "run_id": "archived-001-hyperparameter-tuning",
+            "task_id": "task-arch-001-2",
+            "display_name": "model-training",
+            "create_time": "2025-12-15T10:15:30Z",
+            "start_time": "2025-12-15T10:15:35Z",
+            "end_time": "2025-12-15T11:23:40Z",
+            "state": "SUCCEEDED"
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2025-12-15T10:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-12-15T10:00:05Z", "state": "RUNNING" },
+        { "update_time": "2025-12-15T11:23:45Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-002-data-preprocessing",
+      "display_name": "Data Preprocessing Pipeline - Dec 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "dataset_id": "dataset-2025-12-10",
+          "normalize": "true",
+          "remove_outliers": "true"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-12-10T14:30:00Z",
+      "scheduled_at": "2025-12-10T14:30:00Z",
+      "finished_at": "2025-12-10T14:45:15Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-12-10T14:30:00Z", "state": "PENDING" },
+        { "update_time": "2025-12-10T14:30:10Z", "state": "RUNNING" },
+        { "update_time": "2025-12-10T14:45:15Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-003-llm-finetuning",
+      "display_name": "LLM Fine-tuning - Llama 2 7B",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "model_id": "llama-2-7b",
+          "epochs": "3",
+          "learning_rate": "0.0001",
+          "lora_rank": "16"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-11-20T08:15:00Z",
+      "scheduled_at": "2025-11-20T08:15:00Z",
+      "finished_at": "2025-11-20T12:45:20Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "archived-003-llm-finetuning",
+            "task_id": "task-arch-003-1",
+            "display_name": "download-model",
+            "create_time": "2025-11-20T08:15:01Z",
+            "start_time": "2025-11-20T08:15:05Z",
+            "end_time": "2025-11-20T08:45:10Z",
+            "state": "SUCCEEDED"
+          },
+          {
+            "run_id": "archived-003-llm-finetuning",
+            "task_id": "task-arch-003-2",
+            "display_name": "finetune-model",
+            "create_time": "2025-11-20T08:45:10Z",
+            "start_time": "2025-11-20T08:45:15Z",
+            "end_time": "2025-11-20T12:45:15Z",
+            "state": "SUCCEEDED"
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2025-11-20T08:15:00Z", "state": "PENDING" },
+        { "update_time": "2025-11-20T08:15:15Z", "state": "RUNNING" },
+        { "update_time": "2025-11-20T12:45:20Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-004-model-evaluation",
+      "display_name": "Model Evaluation Pipeline - Nov 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "model_version": "v2.3",
+          "test_dataset": "test-dataset-nov"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-11-15T16:20:00Z",
+      "scheduled_at": "2025-11-15T16:20:00Z",
+      "finished_at": "2025-11-15T16:35:40Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "archived-004-model-evaluation",
+            "task_id": "task-arch-004-1",
+            "display_name": "load-model",
+            "create_time": "2025-11-15T16:20:01Z",
+            "start_time": "2025-11-15T16:20:05Z",
+            "end_time": "2025-11-15T16:22:30Z",
+            "state": "SUCCEEDED"
+          },
+          {
+            "run_id": "archived-004-model-evaluation",
+            "task_id": "task-arch-004-2",
+            "display_name": "run-evaluation",
+            "create_time": "2025-11-15T16:22:30Z",
+            "start_time": "2025-11-15T16:22:35Z",
+            "end_time": "2025-11-15T16:35:35Z",
+            "state": "FAILED"
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2025-11-15T16:20:00Z", "state": "PENDING" },
+        { "update_time": "2025-11-15T16:20:05Z", "state": "RUNNING" },
+        { "update_time": "2025-11-15T16:35:40Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-005-batch-inference",
+      "display_name": "Batch Inference Pipeline - Oct 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "input_data": "s3://data/oct-batch",
+          "model_endpoint": "model-v3",
+          "batch_size": "128"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-10-28T09:00:00Z",
+      "scheduled_at": "2025-10-28T09:00:00Z",
+      "finished_at": "2025-10-28T10:15:30Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-10-28T09:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-10-28T09:00:10Z", "state": "RUNNING" },
+        { "update_time": "2025-10-28T10:15:30Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-006-feature-engineering",
+      "display_name": "Feature Engineering - Time Series",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "window_size": "30",
+          "features": "rolling_mean,rolling_std,lag_features"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-10-20T11:30:00Z",
+      "scheduled_at": "2025-10-20T11:30:00Z",
+      "finished_at": "2025-10-20T11:48:22Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-10-20T11:30:00Z", "state": "PENDING" },
+        { "update_time": "2025-10-20T11:30:08Z", "state": "RUNNING" },
+        { "update_time": "2025-10-20T11:48:22Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-007-xgboost-training",
+      "display_name": "XGBoost Training - Classification",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "max_depth": "6",
+          "n_estimators": "100",
+          "learning_rate": "0.1"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-10-10T14:00:00Z",
+      "scheduled_at": "2025-10-10T14:00:00Z",
+      "finished_at": "2025-10-10T14:12:45Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-10-10T14:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-10-10T14:00:05Z", "state": "RUNNING" },
+        { "update_time": "2025-10-10T14:12:45Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-008-neural-network",
+      "display_name": "Neural Network Training - Regression",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "layers": "128,64,32",
+          "activation": "relu",
+          "optimizer": "adam"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-09-25T10:15:00Z",
+      "scheduled_at": "2025-09-25T10:15:00Z",
+      "finished_at": "2025-09-25T11:20:30Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-09-25T10:15:00Z", "state": "PENDING" },
+        { "update_time": "2025-09-25T10:15:10Z", "state": "RUNNING" },
+        { "update_time": "2025-09-25T11:20:30Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-009-data-validation",
+      "display_name": "Data Validation Pipeline - Sept 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "schema_version": "v1.5",
+          "validation_rules": "completeness,consistency"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-09-15T13:45:00Z",
+      "scheduled_at": "2025-09-15T13:45:00Z",
+      "finished_at": "2025-09-15T13:50:20Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-09-15T13:45:00Z", "state": "PENDING" },
+        { "update_time": "2025-09-15T13:45:05Z", "state": "RUNNING" },
+        { "update_time": "2025-09-15T13:50:20Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-010-automl",
+      "display_name": "AutoML Pipeline - Aug 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "time_budget": "3600",
+          "metric": "accuracy",
+          "algorithms": "rf,xgb,lgbm"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-08-20T08:00:00Z",
+      "scheduled_at": "2025-08-20T08:00:00Z",
+      "finished_at": "2025-08-20T09:05:45Z",
+      "state": "CANCELLED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-08-20T08:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-08-20T08:00:10Z", "state": "RUNNING" },
+        { "update_time": "2025-08-20T09:05:45Z", "state": "CANCELLED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-011-model-comparison",
+      "display_name": "Model Comparison - Multiple Algorithms",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "models": "logistic,svm,rf,xgb",
+          "cv_folds": "5"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-08-10T15:30:00Z",
+      "scheduled_at": "2025-08-10T15:30:00Z",
+      "finished_at": "2025-08-10T16:15:30Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-08-10T15:30:00Z", "state": "PENDING" },
+        { "update_time": "2025-08-10T15:30:15Z", "state": "RUNNING" },
+        { "update_time": "2025-08-10T16:15:30Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-012-distributed-training",
+      "display_name": "Distributed Training - 4 GPUs",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "num_gpus": "4",
+          "strategy": "ddp",
+          "batch_size_per_gpu": "32"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-07-28T10:00:00Z",
+      "scheduled_at": "2025-07-28T10:00:00Z",
+      "finished_at": "2025-07-28T13:45:20Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": [
+          {
+            "run_id": "archived-012-distributed-training",
+            "task_id": "task-arch-012-1",
+            "display_name": "setup-distributed",
+            "create_time": "2025-07-28T10:00:01Z",
+            "start_time": "2025-07-28T10:00:05Z",
+            "end_time": "2025-07-28T10:05:10Z",
+            "state": "SUCCEEDED"
+          },
+          {
+            "run_id": "archived-012-distributed-training",
+            "task_id": "task-arch-012-2",
+            "display_name": "train-model",
+            "create_time": "2025-07-28T10:05:10Z",
+            "start_time": "2025-07-28T10:05:15Z",
+            "end_time": "2025-07-28T13:45:15Z",
+            "state": "SUCCEEDED"
+          }
+        ]
+      },
+      "state_history": [
+        { "update_time": "2025-07-28T10:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-07-28T10:00:05Z", "state": "RUNNING" },
+        { "update_time": "2025-07-28T13:45:20Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-013-anomaly-detection",
+      "display_name": "Anomaly Detection Pipeline - July 2025",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "algorithm": "isolation_forest",
+          "contamination": "0.1"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-07-15T14:20:00Z",
+      "scheduled_at": "2025-07-15T14:20:00Z",
+      "finished_at": "2025-07-15T14:35:45Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-07-15T14:20:00Z", "state": "PENDING" },
+        { "update_time": "2025-07-15T14:20:08Z", "state": "RUNNING" },
+        { "update_time": "2025-07-15T14:35:45Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-014-nlp-sentiment",
+      "display_name": "NLP Sentiment Analysis - BERT",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "model": "bert-base-uncased",
+          "max_length": "128",
+          "num_labels": "3"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-07-05T09:15:00Z",
+      "scheduled_at": "2025-07-05T09:15:00Z",
+      "finished_at": "2025-07-05T10:45:30Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-07-05T09:15:00Z", "state": "PENDING" },
+        { "update_time": "2025-07-05T09:15:10Z", "state": "RUNNING" },
+        { "update_time": "2025-07-05T10:45:30Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-015-computer-vision",
+      "display_name": "Computer Vision - Object Detection",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "model": "yolov8",
+          "image_size": "640",
+          "epochs": "100"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-06-20T11:00:00Z",
+      "scheduled_at": "2025-06-20T11:00:00Z",
+      "finished_at": "2025-06-20T15:30:45Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-06-20T11:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-06-20T11:00:15Z", "state": "RUNNING" },
+        { "update_time": "2025-06-20T15:30:45Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-016-reinforcement-learning",
+      "display_name": "RL Training - PPO Algorithm",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "algorithm": "ppo",
+          "timesteps": "1000000",
+          "gamma": "0.99"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-06-10T08:30:00Z",
+      "scheduled_at": "2025-06-10T08:30:00Z",
+      "finished_at": "2025-06-10T12:15:20Z",
+      "state": "CANCELLED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-06-10T08:30:00Z", "state": "PENDING" },
+        { "update_time": "2025-06-10T08:30:10Z", "state": "RUNNING" },
+        { "update_time": "2025-06-10T12:15:20Z", "state": "CANCELLED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-017-recommendation-system",
+      "display_name": "Recommendation System - Collaborative Filtering",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "method": "matrix_factorization",
+          "factors": "50",
+          "iterations": "20"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-06-01T13:00:00Z",
+      "scheduled_at": "2025-06-01T13:00:00Z",
+      "finished_at": "2025-06-01T13:45:15Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-06-01T13:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-06-01T13:00:08Z", "state": "RUNNING" },
+        { "update_time": "2025-06-01T13:45:15Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "cbe0a08f-213c-4216-bcc5-96580631ec3a",
+      "run_id": "archived-018-time-series-forecasting",
+      "display_name": "Time Series Forecasting - LSTM",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "sequence_length": "60",
+          "forecast_horizon": "30",
+          "lstm_units": "128"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-05-20T10:30:00Z",
+      "scheduled_at": "2025-05-20T10:30:00Z",
+      "finished_at": "2025-05-20T11:50:30Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-05-20T10:30:00Z", "state": "PENDING" },
+        { "update_time": "2025-05-20T10:30:10Z", "state": "RUNNING" },
+        { "update_time": "2025-05-20T11:50:30Z", "state": "SUCCEEDED" }
+      ]
+    },
+    {
+      "experiment_id": "810d69fa-ff80-483d-a5a6-8c1004c94c9b",
+      "run_id": "archived-019-text-classification",
+      "display_name": "Text Classification - News Categories",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "vectorizer": "tfidf",
+          "classifier": "multinomial_nb",
+          "max_features": "5000"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-05-10T14:15:00Z",
+      "scheduled_at": "2025-05-10T14:15:00Z",
+      "finished_at": "2025-05-10T14:28:45Z",
+      "state": "FAILED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-05-10T14:15:00Z", "state": "PENDING" },
+        { "update_time": "2025-05-10T14:15:05Z", "state": "RUNNING" },
+        { "update_time": "2025-05-10T14:28:45Z", "state": "FAILED" }
+      ]
+    },
+    {
+      "experiment_id": "b1d31e28-c134-4503-a636-95a174351e86",
+      "run_id": "archived-020-graph-neural-network",
+      "display_name": "Graph Neural Network - Node Classification",
+      "storage_state": "ARCHIVED",
+      "runtime_config": {
+        "parameters": {
+          "model": "gcn",
+          "layers": "3",
+          "hidden_dim": "64"
+        }
+      },
+      "service_account": "default-editor",
+      "created_at": "2025-05-01T09:00:00Z",
+      "scheduled_at": "2025-05-01T09:00:00Z",
+      "finished_at": "2025-05-01T10:15:20Z",
+      "state": "SUCCEEDED",
+      "run_details": {
+        "task_details": []
+      },
+      "state_history": [
+        { "update_time": "2025-05-01T09:00:00Z", "state": "PENDING" },
+        { "update_time": "2025-05-01T09:00:10Z", "state": "RUNNING" },
+        { "update_time": "2025-05-01T10:15:20Z", "state": "SUCCEEDED" }
+      ]
     }
   ],
   "total_size": 258,
