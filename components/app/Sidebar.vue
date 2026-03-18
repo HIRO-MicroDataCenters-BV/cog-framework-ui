@@ -146,10 +146,7 @@ const toggleTheme = () => {
                         </span>
                         <span>{{ item.title }}</span>
                       </div>
-                      <Icon
-                        class="icon-chevron"
-                        name="lucide:chevron-right"
-                      />
+                      <Icon class="icon-chevron" name="lucide:chevron-right" />
                     </div>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>

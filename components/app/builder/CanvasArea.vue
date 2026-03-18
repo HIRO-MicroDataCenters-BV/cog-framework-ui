@@ -118,12 +118,17 @@
                       />
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      <p class="capitalize text-xs">{{ data.status.toLowerCase() }}</p>
+                      <p class="capitalize text-xs">
+                        {{ data.status.toLowerCase() }}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <div
-                  v-if="data.displayName || (data.category && data.category !== 'general')"
+                  v-if="
+                    data.displayName ||
+                    (data.category && data.category !== 'general')
+                  "
                   class="px-4 py-3"
                 >
                   <p
@@ -288,7 +293,6 @@
           >
             <Icon name="lucide:map" class="w-4 h-4" />
           </button>
-
         </div>
       </Panel>
     </VueFlow>
@@ -685,7 +689,9 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   height: 2rem;
   border-radius: 0.5rem;
   color: hsl(var(--foreground));
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .canvas-ctrl-btn:hover {

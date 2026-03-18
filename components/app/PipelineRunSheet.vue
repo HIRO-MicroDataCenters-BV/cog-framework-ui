@@ -21,7 +21,10 @@
           </p>
         </div>
         <span
-          :class="[statusBadgeClass, 'inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0']"
+          :class="[
+            statusBadgeClass,
+            'inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0',
+          ]"
         >
           {{ currentStatus }}
         </span>
@@ -49,36 +52,58 @@
 
       <!-- Input / Output -->
       <div v-if="activeTab === 'io'" class="space-y-3">
-
         <!-- INPUT block -->
         <div class="rounded-lg border border-border overflow-hidden">
-          <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-border">
+          <div
+            class="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-border"
+          >
             <div class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Input</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400"
+              >Input</span
+            >
           </div>
 
           <!-- Input Parameters -->
           <div class="border-b border-border/60">
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Parameters</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Parameters
+              </p>
             </div>
-            <div v-if="inputParameters.length" class="divide-y divide-border/50">
+            <div
+              v-if="inputParameters.length"
+              class="divide-y divide-border/50"
+            >
               <div
                 v-for="param in inputParameters"
                 :key="param.name"
                 class="flex items-center justify-between gap-4 px-3 py-2"
               >
-                <span class="text-xs font-medium text-foreground shrink-0">{{ param.name }}</span>
-                <span class="text-xs text-muted-foreground text-right break-all">{{ param.value || '—' }}</span>
+                <span class="text-xs font-medium text-foreground shrink-0">{{
+                  param.name
+                }}</span>
+                <span
+                  class="text-xs text-muted-foreground text-right break-all"
+                  >{{ param.value || '—' }}</span
+                >
               </div>
             </div>
-            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              None
+            </p>
           </div>
 
           <!-- Input Artifacts -->
           <div>
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Artifacts</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Artifacts
+              </p>
             </div>
             <div v-if="inputArtifacts.length" class="divide-y divide-border/50">
               <div
@@ -86,86 +111,149 @@
                 :key="artifact.name"
                 class="flex items-center justify-between gap-4 px-3 py-2"
               >
-                <span class="text-xs font-medium text-foreground shrink-0">{{ artifact.name }}</span>
-                <span class="text-xs text-muted-foreground text-right break-all font-mono">{{ artifact.path || '—' }}</span>
+                <span class="text-xs font-medium text-foreground shrink-0">{{
+                  artifact.name
+                }}</span>
+                <span
+                  class="text-xs text-muted-foreground text-right break-all font-mono"
+                  >{{ artifact.path || '—' }}</span
+                >
               </div>
             </div>
-            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              None
+            </p>
           </div>
         </div>
 
         <!-- OUTPUT block -->
         <div class="rounded-lg border border-border overflow-hidden">
-          <div class="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/30 border-b border-border">
+          <div
+            class="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/30 border-b border-border"
+          >
             <div class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">Output</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400"
+              >Output</span
+            >
           </div>
 
           <!-- Output Parameters -->
           <div class="border-b border-border/60">
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Parameters</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Parameters
+              </p>
             </div>
-            <div v-if="outputParameters.length" class="divide-y divide-border/50">
+            <div
+              v-if="outputParameters.length"
+              class="divide-y divide-border/50"
+            >
               <div
                 v-for="param in outputParameters"
                 :key="param.name"
                 class="flex items-center justify-between gap-4 px-3 py-2"
               >
-                <span class="text-xs font-medium text-foreground shrink-0">{{ param.name }}</span>
-                <span class="text-xs text-muted-foreground text-right break-all">{{ param.value || '—' }}</span>
+                <span class="text-xs font-medium text-foreground shrink-0">{{
+                  param.name
+                }}</span>
+                <span
+                  class="text-xs text-muted-foreground text-right break-all"
+                  >{{ param.value || '—' }}</span
+                >
               </div>
             </div>
-            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              None
+            </p>
           </div>
 
           <!-- Output Artifacts -->
           <div>
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Artifacts</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Artifacts
+              </p>
             </div>
-            <div v-if="outputArtifacts.length" class="divide-y divide-border/50">
+            <div
+              v-if="outputArtifacts.length"
+              class="divide-y divide-border/50"
+            >
               <div
                 v-for="artifact in outputArtifacts"
                 :key="artifact.name"
                 class="flex items-center justify-between gap-4 px-3 py-2"
               >
-                <span class="text-xs font-medium text-foreground shrink-0">{{ artifact.name }}</span>
-                <span class="text-xs text-muted-foreground text-right break-all font-mono">{{ artifact.path || '—' }}</span>
+                <span class="text-xs font-medium text-foreground shrink-0">{{
+                  artifact.name
+                }}</span>
+                <span
+                  class="text-xs text-muted-foreground text-right break-all font-mono"
+                  >{{ artifact.path || '—' }}</span
+                >
               </div>
             </div>
-            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+            <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              None
+            </p>
           </div>
         </div>
-
       </div>
 
       <!-- Details -->
       <div v-else-if="activeTab === 'details'" class="space-y-3">
-
         <!-- Run info block -->
         <div class="rounded-lg border border-border overflow-hidden">
-          <div class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
+          <div
+            class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+          >
             <div class="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Run info</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+              >Run info</span
+            >
           </div>
 
           <!-- IDs -->
           <div class="border-b border-border/60">
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Identifiers</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Identifiers
+              </p>
             </div>
             <div class="divide-y divide-border/50">
               <div class="flex items-center justify-between gap-3 px-3 py-2">
-                <span class="text-xs text-muted-foreground shrink-0">Run ID</span>
-                <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.run_id">
-                  <span class="font-mono text-xs break-all">{{ run.run_id }}</span>
+                <span class="text-xs text-muted-foreground shrink-0"
+                  >Run ID</span
+                >
+                <CopyPaste
+                  :has-copy="true"
+                  :icon-left="true"
+                  :copy-text="run.run_id"
+                >
+                  <span class="font-mono text-xs break-all">{{
+                    run.run_id
+                  }}</span>
                 </CopyPaste>
               </div>
               <div class="flex items-center justify-between gap-3 px-3 py-2">
-                <span class="text-xs text-muted-foreground shrink-0">Experiment ID</span>
-                <CopyPaste :has-copy="true" :icon-left="true" :copy-text="run.experiment_id">
-                  <span class="font-mono text-xs break-all">{{ run.experiment_id }}</span>
+                <span class="text-xs text-muted-foreground shrink-0"
+                  >Experiment ID</span
+                >
+                <CopyPaste
+                  :has-copy="true"
+                  :icon-left="true"
+                  :copy-text="run.experiment_id"
+                >
+                  <span class="font-mono text-xs break-all">{{
+                    run.experiment_id
+                  }}</span>
                 </CopyPaste>
               </div>
             </div>
@@ -174,20 +262,36 @@
           <!-- Metadata -->
           <div>
             <div class="px-3 py-1.5 bg-muted/30">
-              <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Metadata</p>
+              <p
+                class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
+              >
+                Metadata
+              </p>
             </div>
             <div class="divide-y divide-border/50">
               <div class="flex items-center justify-between gap-3 px-3 py-2">
-                <span class="text-xs text-muted-foreground shrink-0">Service account</span>
-                <span class="text-xs font-medium">{{ run.service_account || '—' }}</span>
+                <span class="text-xs text-muted-foreground shrink-0"
+                  >Service account</span
+                >
+                <span class="text-xs font-medium">{{
+                  run.service_account || '—'
+                }}</span>
               </div>
               <div class="flex items-center justify-between gap-3 px-3 py-2">
-                <span class="text-xs text-muted-foreground shrink-0">Created</span>
-                <span class="text-xs font-medium">{{ formatDate(run.created_at) }}</span>
+                <span class="text-xs text-muted-foreground shrink-0"
+                  >Created</span
+                >
+                <span class="text-xs font-medium">{{
+                  formatDate(run.created_at)
+                }}</span>
               </div>
               <div class="flex items-center justify-between gap-3 px-3 py-2">
-                <span class="text-xs text-muted-foreground shrink-0">Finished</span>
-                <span class="text-xs font-medium">{{ formatDate(run.finished_at) }}</span>
+                <span class="text-xs text-muted-foreground shrink-0"
+                  >Finished</span
+                >
+                <span class="text-xs font-medium">{{
+                  formatDate(run.finished_at)
+                }}</span>
               </div>
             </div>
           </div>
@@ -195,9 +299,14 @@
 
         <!-- State history block -->
         <div class="rounded-lg border border-border overflow-hidden">
-          <div class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
+          <div
+            class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+          >
             <div class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">State history</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+              >State history</span
+            >
           </div>
           <div v-if="stateHistory.length" class="divide-y divide-border/50">
             <div
@@ -205,13 +314,16 @@
               :key="item.update_time + item.state"
               class="flex items-center justify-between gap-3 px-3 py-2"
             >
-              <span class="text-xs text-muted-foreground">{{ formatDate(item.update_time) }}</span>
+              <span class="text-xs text-muted-foreground">{{
+                formatDate(item.update_time)
+              }}</span>
               <span class="text-xs font-medium">{{ item.state }}</span>
             </div>
           </div>
-          <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">None</p>
+          <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+            None
+          </p>
         </div>
-
       </div>
 
       <!-- Logs (placeholder) -->
