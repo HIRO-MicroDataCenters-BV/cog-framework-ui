@@ -113,7 +113,11 @@
                     <TooltipTrigger as-child>
                       <Icon
                         :name="getStatusConfig(data.status).icon"
-                        class="w-4 h-4 shrink-0"
+                        :class="[
+                          'w-4 h-4 shrink-0',
+                          data.status?.toLowerCase() === 'running' &&
+                            'animate-[spin_2s_linear_infinite]',
+                        ]"
                         :style="{ color: getStatusConfig(data.status).color }"
                       />
                     </TooltipTrigger>
