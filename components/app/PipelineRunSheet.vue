@@ -364,7 +364,9 @@
                     @click="fetchPodLogs"
                   >
                     <Icon
-                      :name="logsLoading ? 'lucide:loader-2' : 'lucide:refresh-cw'"
+                      :name="
+                        logsLoading ? 'lucide:loader-2' : 'lucide:refresh-cw'
+                      "
                       class="h-3.5 w-3.5"
                       :class="{ 'animate-spin': logsLoading }"
                     />
@@ -386,7 +388,9 @@
               <span class="text-destructive">{{ logsError }}</span>
             </template>
             <template v-else-if="podLogs">
-              <pre class="m-0 p-0 whitespace-pre block min-w-max">{{ podLogs }}</pre>
+              <pre class="m-0 p-0 whitespace-pre block min-w-max">{{
+                podLogs
+              }}</pre>
             </template>
             <template v-else>
               <span class="text-muted-foreground">No logs</span>
@@ -772,7 +776,8 @@ const fetchPodLogs = async () => {
         null;
     }
   } catch (err) {
-    logsError.value = err instanceof Error ? err.message : 'Failed to load logs';
+    logsError.value =
+      err instanceof Error ? err.message : 'Failed to load logs';
   } finally {
     logsLoading.value = false;
   }

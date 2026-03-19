@@ -1198,7 +1198,9 @@ export const useApiWithMock = () => {
         ) {
           const testdataFed = await import('~/mocks/get.runs.fed.json');
           const data =
-            testdataFed && typeof testdataFed === 'object' && 'default' in testdataFed
+            testdataFed &&
+            typeof testdataFed === 'object' &&
+            'default' in testdataFed
               ? (testdataFed as { default: unknown }).default
               : testdataFed;
           return Promise.resolve(

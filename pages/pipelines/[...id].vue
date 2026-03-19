@@ -180,9 +180,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
-  const onExitTemplateName = (
-    pipelineSpec as { onExit?: string }
-  )?.onExit;
+  const onExitTemplateName = (pipelineSpec as { onExit?: string })?.onExit;
 
   const findTaskDetailForTemplate = (templateName: string) => {
     const exact = taskDetails.find((t) => t.display_name === templateName);
@@ -487,7 +485,10 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     });
 
     // Get all descendants (recursive)
-    const getAllDescendants = (nodeId: string, seen = new Set<string>()): Set<string> => {
+    const getAllDescendants = (
+      nodeId: string,
+      seen = new Set<string>(),
+    ): Set<string> => {
       if (seen.has(nodeId)) return new Set();
       seen.add(nodeId);
 
@@ -536,13 +537,17 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     const visibleNodes = allNodes.filter((node) => !nodesToHide.has(node.id));
     const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
     const visibleEdges = allEdges.filter(
-      (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
+      (edge) =>
+        visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
     );
 
     return { nodes: visibleNodes, edges: visibleEdges };
   };
 
-  const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByStatus(nodes, edgesArray);
+  const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByStatus(
+    nodes,
+    edgesArray,
+  );
 
   return { nodes: filteredNodes, edges: filteredEdges };
 };
