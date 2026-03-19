@@ -180,6 +180,16 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
+  const onExitTemplateName = (pipelineSpec as { onExit?: string })?.onExit;
+
+  const findTaskDetailForTemplate = (templateName: string) => {
+    const exact = taskDetails.find((t) => t.display_name === templateName);
+    if (exact) return exact;
+    if (templateName === onExitTemplateName) {
+      return taskDetails.find((t) => t.display_name?.endsWith('.onExit'));
+    }
+    return undefined;
+  };
 
   const resolveInputs = (
     template: PipelineTemplate,
@@ -243,9 +253,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   };
 
   const createNode = (template: PipelineTemplate, index: number): Node => {
-    const taskDetail = taskDetails.find(
-      (task) => task.display_name === template.name,
-    );
+    const taskDetail = findTaskDetailForTemplate(template.name);
     const fallbackPosition = {
       x: (index % 3) * 300 + 100,
       y: Math.floor(index / 3) * 200 + 100,
@@ -409,6 +417,14 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       });
     });
 
+  // onExit handler runs after main DAG completes: add edges from all leaf nodes to it
+  if (onExitTemplateName && entrypoint) {
+    const mainDagLeaves = getLeafContainersForTemplate(entrypoint);
+    mainDagLeaves.forEach((leaf) =>
+      edgePairs.add(`${leaf}=>${onExitTemplateName}`),
+    );
+  }
+
   // Get node IDs for layout calculation
   const nodeIdsForLayout = templates.filter((t) => !t.dag).map((t) => t.name);
 
@@ -452,7 +468,88 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     n.position = nodePositions[n.id] || n.position;
   });
 
-  return { nodes, edges: edgesArray };
+  // Filter nodes based on status to implement progressive disclosure
+  const filterNodesByStatus = (
+    allNodes: Node[],
+    allEdges: Edge[],
+  ): { nodes: Node[]; edges: Edge[] } => {
+    // Build parent -> children map
+    const childrenMap = new Map<string, Set<string>>();
+    allNodes.forEach((node) => childrenMap.set(node.id, new Set()));
+
+    allEdges.forEach((edge) => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, new Set());
+      }
+      childrenMap.get(edge.source)!.add(edge.target);
+    });
+
+    // Get all descendants (recursive)
+    const getAllDescendants = (
+      nodeId: string,
+      seen = new Set<string>(),
+    ): Set<string> => {
+      if (seen.has(nodeId)) return new Set();
+      seen.add(nodeId);
+
+      const descendants = new Set<string>();
+      const children = childrenMap.get(nodeId) || new Set();
+
+      children.forEach((child) => {
+        descendants.add(child);
+        const childDescendants = getAllDescendants(child, seen);
+        childDescendants.forEach((d) => descendants.add(d));
+      });
+
+      return descendants;
+    };
+
+    // Get direct children only
+    const getDirectChildren = (nodeId: string): Set<string> => {
+      return childrenMap.get(nodeId) || new Set();
+    };
+
+    // Determine which nodes to hide
+    const nodesToHide = new Set<string>();
+
+    allNodes.forEach((node) => {
+      const status = node.data?.status;
+
+      if (status === 'pending') {
+        // Pending: hide all descendants
+        const descendants = getAllDescendants(node.id);
+        descendants.forEach((d) => nodesToHide.add(d));
+      } else if (status === 'running') {
+        // Running: hide all descendants except direct children
+        const allDescendants = getAllDescendants(node.id);
+        const directChildren = getDirectChildren(node.id);
+
+        allDescendants.forEach((d) => {
+          if (!directChildren.has(d)) {
+            nodesToHide.add(d);
+          }
+        });
+      }
+      // succeeded/failed: show all (don't hide anything)
+    });
+
+    // Filter nodes and edges
+    const visibleNodes = allNodes.filter((node) => !nodesToHide.has(node.id));
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+    const visibleEdges = allEdges.filter(
+      (edge) =>
+        visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
+    );
+
+    return { nodes: visibleNodes, edges: visibleEdges };
+  };
+
+  const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByStatus(
+    nodes,
+    edgesArray,
+  );
+
+  return { nodes: filteredNodes, edges: filteredEdges };
 };
 
 const getTaskStatus = (taskDetail: TaskDetail | undefined) => {

@@ -7,7 +7,7 @@
     header-class="sr-only"
     @update:open="(v) => emit('update:open', v)"
   >
-    <div v-if="run" class="flex flex-col gap-4">
+    <div v-if="run" class="flex flex-col gap-4 min-h-full">
       <!-- Header -->
       <div
         class="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/60 dark:bg-muted/30 -mx-1"
@@ -326,13 +326,77 @@
         </div>
       </div>
 
-      <!-- Logs (placeholder) -->
-      <div
-        v-else
-        class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground"
-      >
-        <Icon name="lucide:file-text" class="w-8 h-8 opacity-40" />
-        <p class="text-sm">Logs will be available here</p>
+      <!-- Logs -->
+      <div v-else class="flex min-h-0 flex-1 flex-col gap-2">
+        <div
+          v-if="!selectedNodeName"
+          class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground"
+        >
+          <Icon name="lucide:mouse-pointer-click" class="w-8 h-8 opacity-40" />
+          <p class="text-sm">Select a task from the graph to view its logs</p>
+        </div>
+        <div
+          v-else-if="!logPodName"
+          class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground"
+        >
+          <Icon name="lucide:file-question" class="w-8 h-8 opacity-40" />
+          <p class="text-sm">Logs not available for this task</p>
+          <p class="text-xs">No pod information</p>
+        </div>
+        <div
+          v-else
+          class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border"
+        >
+          <div
+            class="flex shrink-0 items-center justify-between gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+          >
+            <span class="text-xs font-mono truncate" :title="logPodName">{{
+              logPodName
+            }}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-7 w-7 shrink-0"
+                    :disabled="logsLoading"
+                    @click="fetchPodLogs"
+                  >
+                    <Icon
+                      :name="
+                        logsLoading ? 'lucide:loader-2' : 'lucide:refresh-cw'
+                      "
+                      class="h-3.5 w-3.5"
+                      :class="{ 'animate-spin': logsLoading }"
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="text-xs">
+                  Refresh logs
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div
+            class="min-h-0 flex-1 overflow-x-auto overflow-y-auto bg-black/5 dark:bg-black/30 p-3 font-mono text-xs whitespace-pre"
+          >
+            <template v-if="logsLoading">
+              <span class="text-muted-foreground">Loading logs…</span>
+            </template>
+            <template v-else-if="logsError">
+              <span class="text-destructive">{{ logsError }}</span>
+            </template>
+            <template v-else-if="podLogs">
+              <pre class="m-0 p-0 whitespace-pre block min-w-max">{{
+                podLogs
+              }}</pre>
+            </template>
+            <template v-else>
+              <span class="text-muted-foreground">No logs</span>
+            </template>
+          </div>
+        </div>
       </div>
     </div>
   </AppSheet>
@@ -340,10 +404,19 @@
 
 <script setup lang="ts">
 import AppSheet from '@/components/app/AppSheet.vue';
-import { useBuilderColors } from '@/composables/useBuilderColors';
 import CopyPaste from '@/components/app/CopyPaste.vue';
+import Button from '@/components/ui/button/Button.vue';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useApi } from '@/composables/api';
+import { useBuilderColors } from '@/composables/useBuilderColors';
 
 const { t } = useI18n();
+const api = useApi();
 const { getStatusConfig } = useBuilderColors();
 
 interface PipelineParameter {
@@ -391,6 +464,10 @@ interface StateHistoryEntry {
   state: string;
 }
 
+interface ChildTask {
+  pod_name: string;
+}
+
 interface TaskDetail {
   run_id: string;
   task_id: string;
@@ -401,6 +478,7 @@ interface TaskDetail {
   state?: string;
   output_values?: Record<string, string>;
   state_history?: StateHistoryEntry[];
+  child_tasks?: ChildTask[];
 }
 
 interface PipelineRun {
@@ -419,6 +497,7 @@ interface PipelineRun {
     spec?: {
       templates?: PipelineTemplate[];
       arguments?: { parameters?: PipelineParameter[] };
+      onExit?: string;
     };
   };
 }
@@ -459,11 +538,19 @@ const selectedTemplate = computed(() => {
   return templates.find((t) => t.name === props.selectedNodeName) ?? null;
 });
 
-// Find the task_detail for this node
+// Find the task_detail for this node (matches pipeline page findTaskDetailForTemplate)
 const selectedTask = computed(() => {
   if (!props.selectedNodeName || !run.value) return null;
   const tasks: TaskDetail[] = run.value?.run_details?.task_details ?? [];
-  return tasks.find((t) => t.display_name === props.selectedNodeName) ?? null;
+  const onExitTemplateName = (
+    run.value?.pipeline_spec?.spec as { onExit?: string } | undefined
+  )?.onExit;
+  const exact = tasks.find((t) => t.display_name === props.selectedNodeName);
+  if (exact) return exact;
+  if (props.selectedNodeName === onExitTemplateName) {
+    return tasks.find((t) => t.display_name?.endsWith('.onExit')) ?? null;
+  }
+  return null;
 });
 
 // Find the DAG entry for this template to resolve actual argument values
@@ -644,6 +731,68 @@ const outputArtifacts = computed(() => {
 
 const stateHistory = computed<StateHistoryEntry[]>(
   () => run.value?.state_history ?? [],
+);
+
+// Pod name for logs (first child pod of selected task)
+const logPodName = computed(() => {
+  const task = selectedTask.value;
+  return task?.child_tasks?.[0]?.pod_name ?? null;
+});
+
+const logsLoading = ref(false);
+const logsError = ref<string | null>(null);
+const podLogs = ref<string | null>(null);
+
+const POD_NAMESPACE = 'admin';
+
+const fetchPodLogs = async () => {
+  const podname = logPodName.value;
+  const runId = run.value?.run_id;
+  if (!podname || !runId) return;
+
+  logsLoading.value = true;
+  logsError.value = null;
+  podLogs.value = null;
+
+  try {
+    const data = await api.getPipelinePodLogs({
+      podname,
+      runid: runId,
+      podnamespace: POD_NAMESPACE,
+    });
+    if (data == null) {
+      logsError.value = 'Failed to load logs';
+      return;
+    }
+    // Handle various response shapes: { content }, { logs }, or plain string
+    if (typeof data === 'string') {
+      podLogs.value = data;
+    } else if (data && typeof data === 'object') {
+      const d = data as Record<string, unknown>;
+      podLogs.value =
+        (d.content as string) ??
+        (d.logs as string) ??
+        (d.data as string) ??
+        null;
+    }
+  } catch (err) {
+    logsError.value =
+      err instanceof Error ? err.message : 'Failed to load logs';
+  } finally {
+    logsLoading.value = false;
+  }
+};
+
+watch(
+  () => [activeTab.value, logPodName.value, run.value?.run_id] as const,
+  ([tab, pod, runId]) => {
+    if (tab === 'logs' && pod && runId) {
+      fetchPodLogs();
+    } else {
+      logsError.value = null;
+      podLogs.value = null;
+    }
+  },
 );
 </script>
 
