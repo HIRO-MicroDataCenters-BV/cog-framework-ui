@@ -452,7 +452,81 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     n.position = nodePositions[n.id] || n.position;
   });
 
-  return { nodes, edges: edgesArray };
+  // Filter nodes based on status to implement progressive disclosure
+  const filterNodesByStatus = (
+    allNodes: Node[],
+    allEdges: Edge[],
+  ): { nodes: Node[]; edges: Edge[] } => {
+    // Build parent -> children map
+    const childrenMap = new Map<string, Set<string>>();
+    allNodes.forEach((node) => childrenMap.set(node.id, new Set()));
+
+    allEdges.forEach((edge) => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, new Set());
+      }
+      childrenMap.get(edge.source)!.add(edge.target);
+    });
+
+    // Get all descendants (recursive)
+    const getAllDescendants = (nodeId: string, seen = new Set<string>()): Set<string> => {
+      if (seen.has(nodeId)) return new Set();
+      seen.add(nodeId);
+
+      const descendants = new Set<string>();
+      const children = childrenMap.get(nodeId) || new Set();
+
+      children.forEach((child) => {
+        descendants.add(child);
+        const childDescendants = getAllDescendants(child, seen);
+        childDescendants.forEach((d) => descendants.add(d));
+      });
+
+      return descendants;
+    };
+
+    // Get direct children only
+    const getDirectChildren = (nodeId: string): Set<string> => {
+      return childrenMap.get(nodeId) || new Set();
+    };
+
+    // Determine which nodes to hide
+    const nodesToHide = new Set<string>();
+
+    allNodes.forEach((node) => {
+      const status = node.data?.status;
+
+      if (status === 'pending') {
+        // Pending: hide all descendants
+        const descendants = getAllDescendants(node.id);
+        descendants.forEach((d) => nodesToHide.add(d));
+      } else if (status === 'running') {
+        // Running: hide all descendants except direct children
+        const allDescendants = getAllDescendants(node.id);
+        const directChildren = getDirectChildren(node.id);
+
+        allDescendants.forEach((d) => {
+          if (!directChildren.has(d)) {
+            nodesToHide.add(d);
+          }
+        });
+      }
+      // succeeded/failed: show all (don't hide anything)
+    });
+
+    // Filter nodes and edges
+    const visibleNodes = allNodes.filter((node) => !nodesToHide.has(node.id));
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+    const visibleEdges = allEdges.filter(
+      (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
+    );
+
+    return { nodes: visibleNodes, edges: visibleEdges };
+  };
+
+  const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByStatus(nodes, edgesArray);
+
+  return { nodes: filteredNodes, edges: filteredEdges };
 };
 
 const getTaskStatus = (taskDetail: TaskDetail | undefined) => {
