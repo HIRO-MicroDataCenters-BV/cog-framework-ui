@@ -180,6 +180,18 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
+  const onExitTemplateName = (
+    pipelineSpec as { onExit?: string }
+  )?.onExit;
+
+  const findTaskDetailForTemplate = (templateName: string) => {
+    const exact = taskDetails.find((t) => t.display_name === templateName);
+    if (exact) return exact;
+    if (templateName === onExitTemplateName) {
+      return taskDetails.find((t) => t.display_name?.endsWith('.onExit'));
+    }
+    return undefined;
+  };
 
   const resolveInputs = (
     template: PipelineTemplate,
@@ -243,9 +255,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   };
 
   const createNode = (template: PipelineTemplate, index: number): Node => {
-    const taskDetail = taskDetails.find(
-      (task) => task.display_name === template.name,
-    );
+    const taskDetail = findTaskDetailForTemplate(template.name);
     const fallbackPosition = {
       x: (index % 3) * 300 + 100,
       y: Math.floor(index / 3) * 200 + 100,
@@ -408,6 +418,14 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
         }
       });
     });
+
+  // onExit handler runs after main DAG completes: add edges from all leaf nodes to it
+  if (onExitTemplateName && entrypoint) {
+    const mainDagLeaves = getLeafContainersForTemplate(entrypoint);
+    mainDagLeaves.forEach((leaf) =>
+      edgePairs.add(`${leaf}=>${onExitTemplateName}`),
+    );
+  }
 
   // Get node IDs for layout calculation
   const nodeIdsForLayout = templates.filter((t) => !t.dag).map((t) => t.name);

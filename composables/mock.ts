@@ -1191,11 +1191,21 @@ export const useApiWithMock = () => {
         }
 
         // Return detailed federation pipeline data from testdata.fed.json
-        if (id === 'e3450222-f475-4062-953b-230836ca00c8') {
-          console.log('Loading get.runs.fed.json for ID:', id);
+        // Supports both common FL run IDs (fed has onExit: release-links-func)
+        if (
+          id === 'e3450222-f475-4062-953b-230836ca00c8' ||
+          id === '8764b495-7c17-4a3d-90f7-8e9f36817fc4'
+        ) {
           const testdataFed = await import('~/mocks/get.runs.fed.json');
-          console.log('Loaded data:', testdataFed);
-          return Promise.resolve(testdataFed);
+          const data =
+            testdataFed && typeof testdataFed === 'object' && 'default' in testdataFed
+              ? (testdataFed as { default: unknown }).default
+              : testdataFed;
+          return Promise.resolve(
+            typeof data === 'object' && data && 'run_id' in data
+              ? data
+              : { ...data, run_id: id },
+          );
         }
 
         return Promise.resolve({
