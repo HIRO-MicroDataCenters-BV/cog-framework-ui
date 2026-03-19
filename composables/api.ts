@@ -2646,6 +2646,49 @@ export const useApi = () => {
     },
 
     /**
+     * Gets pipeline pod logs from K8s
+     *
+     * Calls /pipeline/k8s/pod/logs with podname, runid, podnamespace.
+     * Uses the pipeline API base (derived from apiRuns).
+     *
+     * @param {Object} params - Log parameters
+     * @param {string} params.podname - Name of the pod
+     * @param {string} params.runid - Run ID
+     * @param {string} [params.podnamespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Object>} Response containing pod logs
+     */
+    getPipelinePodLogs: async (params: {
+      podname: string;
+      runid: string;
+      podnamespace?: string;
+    }) => {
+      const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
+      const q = new URLSearchParams({
+        podname: params.podname,
+        runid: params.runid,
+        podnamespace: params.podnamespace || 'admin',
+      }).toString();
+      const url = `${base}/k8s/pod/logs?${q}`;
+      try {
+        const res = await fetch(url, { headers: getHeaders() });
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `HTTP ${res.status}`);
+        }
+        const contentType = res.headers.get('Content-Type') ?? '';
+        if (contentType.includes('application/json')) {
+          return (await res.json()) as string | Record<string, unknown>;
+        }
+        return (await res.text()) as string;
+      } catch (err) {
+        console.error('Error fetching pipeline pod logs:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      }
+    },
+
+    /**
      * Gets pod events
      *
      * Retrieves events for a Kubernetes pod.
