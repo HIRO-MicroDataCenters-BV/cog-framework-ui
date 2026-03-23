@@ -30,6 +30,17 @@ const urlOrigin = window.location.origin;
 const { getPipelineActions } = usePipelineActions();
 const tableRef = ref();
 
+/** After archive: one list refetch updates active total; avoid duplicate count API calls. */
+function afterArchiveSuccess() {
+  if (tableRef.value) {
+    void tableRef.value.fetchData();
+  }
+  if (activeTab.value === 'active') {
+    const prev = activeCounts.value.archived ?? 0;
+    activeCounts.value.archived = prev + 1;
+  }
+}
+
 // Tabs definition
 const tabs = [
   { key: 'active', label: 'Active' },
@@ -249,11 +260,13 @@ const columns = [
       const name =
         row.getValue<string>('run_name') || row.getValue<string>('run_id');
 
-      const items = getPipelineActions(id, name, () => {
-        if (tableRef.value) {
-          tableRef.value.fetchData();
-        }
+      const items = getPipelineActions(id, name, afterArchiveSuccess, {
+        showArchive: activeTab.value === 'active',
       });
+
+      if (items.length === 0) {
+        return h('span', { class: 'text-muted-foreground text-xs' }, '—');
+      }
 
       return h(DropdownAction, {
         title: name,

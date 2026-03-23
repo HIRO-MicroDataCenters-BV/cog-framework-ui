@@ -604,8 +604,7 @@ const fetchPipelineData = async () => {
   const finishedAt = run.finished_at as string | undefined;
   let duration: string = '-';
   if (createdAt && finishedAt) {
-    const ms =
-      new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+    const ms = new Date(finishedAt).getTime() - new Date(createdAt).getTime();
     const totalSec = Math.max(0, Math.floor(ms / 1000));
     const h = Math.floor(totalSec / 3600);
     const m = Math.floor((totalSec % 3600) / 60);
@@ -621,7 +620,9 @@ const fetchPipelineData = async () => {
     run_id: run.run_id,
     experiment_id: experimentId,
     status:
-      (run.state as string | undefined) || (run.status as string | undefined) || '',
+      (run.state as string | undefined) ||
+      (run.status as string | undefined) ||
+      '',
     start_time: createdAt ?? null,
     duration,
   };

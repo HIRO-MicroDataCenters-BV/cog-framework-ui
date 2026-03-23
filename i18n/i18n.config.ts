@@ -107,10 +107,16 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
         are_you_sure: 'Are you sure?',
         run_details: 'Run Details',
+        archive_run: 'Archive run',
       },
       alert: {
         delete_dataset:
           'Are you sure you want to delete this dataset "{name}"?',
+        archive_run_p1:
+          'Are you sure you want to archive this run? It will be moved to the Archive section, where you can still view its details.',
+        archive_run_note_label: 'Note',
+        archive_run_p2:
+          "The run will not be stopped if it's running when it's archived. Use the Restore action to restore the run to its original location.",
         delete_model_service:
           'Are you sure you want to delete the model service "{name}"? This will undeploy the inference service.',
       },
@@ -348,6 +354,8 @@ export default defineI18nConfig(() => ({
         confirm_add: 'Confirm & Add',
         submit: 'Submit',
         delete_pipeline: 'Delete Pipeline',
+        archive: 'Archive',
+        archive_run: 'Archive',
         delete_topic: 'Delete Topic',
         delete_broker: 'Delete Broker',
         add_datasets: 'Add Dataset',

@@ -3,38 +3,47 @@ interface ActionItem {
   label: string;
   action: () => void | Promise<void>;
   hasConfirmation?: boolean;
+  icon?: string;
 }
 
 export const usePipelineActions = () => {
   const api = useApi();
+  const toaster = useToaster();
 
-  const handlePipelineDelete = async (
-    pipelineId: string,
-    onSuccess?: () => void,
-  ) => {
-    await api.deleteTrainingBuilderPipeline(pipelineId);
-    onSuccess?.();
+  const handleArchiveRun = async (runId: string, onSuccess?: () => void) => {
+    try {
+      await api.archivePipelineRun(runId);
+      toaster.show('success', 'operation_completed');
+      onSuccess?.();
+    } catch (err) {
+      console.error('archivePipelineRun failed:', err);
+      toaster.show('error', 'operation_failed');
+    }
   };
 
   const getPipelineActions = (
-    pipelineId: string,
-    pipelineName: string,
+    runId: string,
+    runName: string,
     onSuccess?: () => void,
+    options?: { showArchive?: boolean },
   ): ActionItem[] => {
-    const items: ActionItem[] = [
+    if (options?.showArchive === false) {
+      return [];
+    }
+
+    return [
       {
-        key: 'delete_pipeline',
-        label: 'delete_pipeline',
+        key: 'archive_run',
+        label: 'archive_run',
+        icon: 'lucide:archive',
         hasConfirmation: true,
-        action: () => handlePipelineDelete(pipelineId, onSuccess),
+        action: () => handleArchiveRun(runId, onSuccess),
       },
     ];
-
-    return items;
   };
 
   return {
     getPipelineActions,
-    handlePipelineDelete,
+    handleArchiveRun,
   };
 };
