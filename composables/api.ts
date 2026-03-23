@@ -3226,6 +3226,40 @@ export const useApi = () => {
     },
 
     /**
+     * Restores an archived pipeline run (KFP v2beta1).
+     * POST `{apiRuns}/runs/{id}:unarchive`
+     */
+    unarchivePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}:unarchive`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'POST', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
+     * Permanently deletes a pipeline run (KFP v2beta1).
+     * DELETE `{apiRuns}/runs/{id}`
+     */
+    deletePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'DELETE', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
      * Gets pipeline version by pipeline ID and version ID
      *
      * Retrieves a specific pipeline version including its pipeline_spec.

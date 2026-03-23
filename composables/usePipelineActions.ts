@@ -6,6 +6,15 @@ interface ActionItem {
   icon?: string;
 }
 
+export type PipelineRunsTab = 'active' | 'archived';
+
+export interface GetPipelineActionsOptions {
+  tab: PipelineRunsTab;
+  onArchiveSuccess?: () => void;
+  onRestoreSuccess?: () => void;
+  onDeleteSuccess?: () => void;
+}
+
 export const usePipelineActions = () => {
   const api = useApi();
   const toaster = useToaster();
@@ -21,23 +30,62 @@ export const usePipelineActions = () => {
     }
   };
 
+  const handleRestoreRun = async (runId: string, onSuccess?: () => void) => {
+    try {
+      await api.unarchivePipelineRun(runId);
+      toaster.show('success', 'operation_completed');
+      onSuccess?.();
+    } catch (err) {
+      console.error('unarchivePipelineRun failed:', err);
+      toaster.show('error', 'operation_failed');
+    }
+  };
+
+  const handleDeleteRun = async (runId: string, onSuccess?: () => void) => {
+    try {
+      await api.deletePipelineRun(runId);
+      toaster.show('success', 'operation_completed');
+      onSuccess?.();
+    } catch (err) {
+      console.error('deletePipelineRun failed:', err);
+      toaster.show('error', 'operation_failed');
+    }
+  };
+
   const getPipelineActions = (
     runId: string,
     runName: string,
-    onSuccess?: () => void,
-    options?: { showArchive?: boolean },
+    options: GetPipelineActionsOptions,
   ): ActionItem[] => {
-    if (options?.showArchive === false) {
-      return [];
+    const { tab, onArchiveSuccess, onRestoreSuccess, onDeleteSuccess } =
+      options;
+
+    if (tab === 'active') {
+      return [
+        {
+          key: 'archive_run',
+          label: 'archive_run',
+          icon: 'lucide:archive',
+          hasConfirmation: true,
+          action: () => handleArchiveRun(runId, onArchiveSuccess),
+        },
+      ];
     }
 
     return [
       {
-        key: 'archive_run',
-        label: 'archive_run',
-        icon: 'lucide:archive',
+        key: 'restore_run',
+        label: 'restore_run',
+        icon: 'lucide:rotate-ccw',
         hasConfirmation: true,
-        action: () => handleArchiveRun(runId, onSuccess),
+        action: () => handleRestoreRun(runId, onRestoreSuccess),
+      },
+      {
+        key: 'delete_run',
+        label: 'delete_run',
+        icon: 'lucide:trash-2',
+        hasConfirmation: true,
+        action: () => handleDeleteRun(runId, onDeleteSuccess),
       },
     ];
   };
@@ -45,5 +93,7 @@ export const usePipelineActions = () => {
   return {
     getPipelineActions,
     handleArchiveRun,
+    handleRestoreRun,
+    handleDeleteRun,
   };
 };

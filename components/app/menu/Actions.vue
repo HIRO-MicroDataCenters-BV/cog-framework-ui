@@ -15,6 +15,7 @@ const actionIcons: Record<string, string> = {
   preview: 'lucide:eye',
   delete: 'lucide:trash-2',
   archive: 'lucide:archive',
+  restore: 'lucide:rotate-ccw',
   edit: 'lucide:pencil',
   copy: 'lucide:copy',
   view: 'lucide:eye',
@@ -131,14 +132,16 @@ function onActionMenuItemClick(item: Item) {
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>
-          {{
-            pendingAction?.key?.includes('archive')
-              ? $t('title.archive_run')
-              : $t('title.are_you_sure')
-          }}
+          <template v-if="pendingAction?.key === 'archive_run'">{{
+            $t('title.archive_run')
+          }}</template>
+          <template v-else-if="pendingAction?.key === 'restore_run'">{{
+            $t('title.restore_run')
+          }}</template>
+          <template v-else>{{ $t('title.are_you_sure') }}</template>
         </AlertDialogTitle>
         <AlertDialogDescription
-          v-if="pendingAction?.key?.includes('archive')"
+          v-if="pendingAction?.key === 'archive_run'"
           class="space-y-3"
         >
           <p class="m-0">{{ t('alert.archive_run_p1') }}</p>
@@ -151,7 +154,19 @@ function onActionMenuItemClick(item: Item) {
             {{ t('alert.archive_run_p2') }}
           </p>
         </AlertDialogDescription>
-        <AlertDialogDescription v-else>
+        <AlertDialogDescription
+          v-else-if="pendingAction?.key === 'restore_run'"
+          class="m-0"
+        >
+          {{ t('alert.restore_run', { name: props.title }) }}
+        </AlertDialogDescription>
+        <AlertDialogDescription
+          v-else-if="pendingAction?.key === 'delete_run'"
+          class="m-0"
+        >
+          {{ t('alert.delete_pipeline_run', { name: props.title }) }}
+        </AlertDialogDescription>
+        <AlertDialogDescription v-else class="m-0">
           {{ t('alert.delete_dataset', { name: props.title }) }}
         </AlertDialogDescription>
       </AlertDialogHeader>
@@ -163,17 +178,22 @@ function onActionMenuItemClick(item: Item) {
         >
         <AlertDialogAction
           :variant="
-            pendingAction?.key?.includes('archive') ? 'default' : 'destructive'
+            pendingAction?.key === 'archive_run' ||
+            pendingAction?.key === 'restore_run'
+              ? 'default'
+              : 'destructive'
           "
           class="cursor-pointer"
           :disabled="confirmInFlight"
           @click.prevent="onConfirmDialogAction"
         >
-          {{
-            pendingAction?.key?.includes('archive')
-              ? $t('action.archive')
-              : $t('action.delete')
-          }}
+          <template v-if="pendingAction?.key === 'archive_run'">{{
+            $t('action.archive')
+          }}</template>
+          <template v-else-if="pendingAction?.key === 'restore_run'">{{
+            $t('action.restore_run')
+          }}</template>
+          <template v-else>{{ $t('action.delete') }}</template>
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
