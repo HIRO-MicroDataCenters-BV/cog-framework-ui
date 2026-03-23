@@ -6,7 +6,6 @@ import type {
   DatasetFileUploadParams,
   DatasetQueryParams,
   InferenceServiceParams,
-  ModelArtifactsResponse,
   ModelFileUploadParams,
   ModelQueryParams,
   ModelRecommendParams,
@@ -24,7 +23,6 @@ import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
-import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
 import runsFlowData from '@/mocks/get.runs.flow.json';
 import modelsServingData from '@/mocks/get.models-serving.json';
@@ -310,33 +308,6 @@ export const useApi = () => {
       const q = new URLSearchParams(mapped).toString();
 
       return await request(`/models?${q}`, 'GET', undefined, options);
-    },
-
-    /**
-     * Gets model artifacts by model ID
-     *
-     * Retrieves artifacts for a specific model.
-     *
-     * @param {string} modelId - The model ID
-     * @param {Object} [options] - Additional options
-     * @param {boolean} [options.showToast=true] - Whether to show error toasts
-     * @returns {Promise<Object>} Response containing model artifacts
-     *
-     * @example
-     * ```typescript
-     * const artifacts = await api.getModelArtifacts('768e05ea-d1f1-4ad2-8291-1d34c4065a6b');
-     * ```
-     */
-    getModelArtifacts: async (
-      modelId: string,
-      options?: { showToast?: boolean },
-    ): Promise<ModelArtifactsResponse | null> => {
-      return await request(
-        `/models/${modelId}/artifacts`,
-        'GET',
-        undefined,
-        options,
-      );
     },
 
     /**
@@ -3231,6 +3202,60 @@ export const useApi = () => {
       } catch (error) {
         console.error('Error fetching pipeline run flow:', error);
         throw error;
+      }
+    },
+
+    /**
+     * Archives a pipeline run (KFP v2beta1).
+     * POST `{apiRuns}/runs/{id}:archive`
+     * e.g. `https://localhost:1443/pipeline/apis/v2beta1/runs/<run-id>:archive`
+     *
+     * @param {string} id - Run ID (UUID)
+     */
+    archivePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}:archive`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'POST', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
+     * Restores an archived pipeline run (KFP v2beta1).
+     * POST `{apiRuns}/runs/{id}:unarchive`
+     */
+    unarchivePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}:unarchive`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'POST', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
+     * Permanently deletes a pipeline run (KFP v2beta1).
+     * DELETE `{apiRuns}/runs/{id}`
+     */
+    deletePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'DELETE', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
       }
     },
 

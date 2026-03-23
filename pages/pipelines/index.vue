@@ -30,6 +30,41 @@ const urlOrigin = window.location.origin;
 const { getPipelineActions } = usePipelineActions();
 const tableRef = ref();
 
+/** After archive: one list refetch updates active total; avoid duplicate count API calls. */
+function afterArchiveSuccess() {
+  if (tableRef.value) {
+    void tableRef.value.fetchData();
+  }
+  if (activeTab.value === 'active') {
+    const prev = activeCounts.value.archived ?? 0;
+    activeCounts.value.archived = prev + 1;
+  }
+}
+
+function afterArchivedListMutation() {
+  if (tableRef.value) {
+    void tableRef.value.fetchData();
+  }
+}
+
+function afterRestoreSuccess() {
+  afterArchivedListMutation();
+  if (activeTab.value === 'archived') {
+    const ar = activeCounts.value.archived ?? 1;
+    activeCounts.value.archived = Math.max(0, ar - 1);
+    const ac = activeCounts.value.active ?? 0;
+    activeCounts.value.active = ac + 1;
+  }
+}
+
+function afterDeleteRunSuccess() {
+  afterArchivedListMutation();
+  if (activeTab.value === 'archived') {
+    const ar = activeCounts.value.archived ?? 1;
+    activeCounts.value.archived = Math.max(0, ar - 1);
+  }
+}
+
 // Tabs definition
 const tabs = [
   { key: 'active', label: 'Active' },
@@ -58,25 +93,8 @@ const getPipelineRunsWithFilter = async (
   return result;
 };
 
-// Fetch counts for both tabs on mount
-const fetchBothCounts = async () => {
-  try {
-    const [activeResult, archivedResult] = await Promise.all([
-      getPipelineRunsListV2({ storage_state: 'NOT_ARCHIVED', limit: 1 }),
-      getPipelineRunsListV2({ storage_state: 'ARCHIVED', limit: 1 }),
-    ]);
-
-    activeCounts.value.active = activeResult?.pagination?.total_items || 0;
-    activeCounts.value.archived = archivedResult?.pagination?.total_items || 0;
-  } catch (error) {
-    console.error('Error fetching counts:', error);
-  }
-};
-
-// Fetch counts on mount
-onMounted(() => {
-  fetchBothCounts();
-});
+// Counts are updated automatically from table data via getPipelineRunsWithFilter
+// No need to fetch counts separately on mount - saves unnecessary API calls
 
 const columns = [
   {
@@ -249,10 +267,11 @@ const columns = [
       const name =
         row.getValue<string>('run_name') || row.getValue<string>('run_id');
 
-      const items = getPipelineActions(id, name, () => {
-        if (tableRef.value) {
-          tableRef.value.fetchData();
-        }
+      const items = getPipelineActions(id, name, {
+        tab: activeTab.value === 'archived' ? 'archived' : 'active',
+        onArchiveSuccess: afterArchiveSuccess,
+        onRestoreSuccess: afterRestoreSuccess,
+        onDeleteSuccess: afterDeleteRunSuccess,
       });
 
       return h(DropdownAction, {
@@ -268,9 +287,8 @@ const columns = [
 // Watch active tab changes and refetch data
 watch(activeTab, () => {
   if (tableRef.value) {
+    // Table fetch will update the count via getPipelineRunsWithFilter
     tableRef.value.fetchData();
-    // Refresh counts when tab changes
-    fetchBothCounts();
   }
 });
 </script>
