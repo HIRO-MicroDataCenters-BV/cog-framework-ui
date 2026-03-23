@@ -18,6 +18,33 @@ export interface GetPipelineActionsOptions {
 export const usePipelineActions = () => {
   const api = useApi();
   const toaster = useToaster();
+  const { t } = useI18n();
+
+  /**
+   * Extract error message from API error response
+   */
+  const getErrorMessage = (err: unknown): string => {
+    if (typeof err === 'string') return err;
+
+    const error = err as Record<string, unknown>;
+
+    // If error.message exists, try to parse it as JSON
+    if (error?.message && typeof error.message === 'string') {
+      try {
+        // Try to parse the message as JSON (API returns JSON string in Error.message)
+        const parsed = JSON.parse(error.message);
+        if (parsed?.message && typeof parsed.message === 'string') {
+          return parsed.message;
+        }
+      } catch {
+        // If parsing fails, return the message as-is
+        return error.message;
+      }
+    }
+
+    // Fallback to generic error message
+    return t('message.error.operation_failed');
+  };
 
   const handleArchiveRun = async (runId: string, onSuccess?: () => void) => {
     try {
@@ -26,7 +53,8 @@ export const usePipelineActions = () => {
       onSuccess?.();
     } catch (err) {
       console.error('archivePipelineRun failed:', err);
-      toaster.show('error', 'operation_failed');
+      const { toast } = await import('vue-sonner');
+      toast.error(getErrorMessage(err), { duration: 5000 });
     }
   };
 
@@ -37,7 +65,8 @@ export const usePipelineActions = () => {
       onSuccess?.();
     } catch (err) {
       console.error('unarchivePipelineRun failed:', err);
-      toaster.show('error', 'operation_failed');
+      const { toast } = await import('vue-sonner');
+      toast.error(getErrorMessage(err), { duration: 5000 });
     }
   };
 
@@ -48,7 +77,8 @@ export const usePipelineActions = () => {
       onSuccess?.();
     } catch (err) {
       console.error('deletePipelineRun failed:', err);
-      toaster.show('error', 'operation_failed');
+      const { toast } = await import('vue-sonner');
+      toast.error(getErrorMessage(err), { duration: 5000 });
     }
   };
 
