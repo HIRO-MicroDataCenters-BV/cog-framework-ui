@@ -597,6 +597,34 @@ const fetchPipelineData = async () => {
   if (!data) return;
 
   pipelineData.value = data as PipelineData;
+  const run = data as Record<string, unknown>;
+
+  // Derive run details from KFP v2beta1 run (same shape as Details tab expects)
+  const createdAt = run.created_at as string | undefined;
+  const finishedAt = run.finished_at as string | undefined;
+  let duration: string = '-';
+  if (createdAt && finishedAt) {
+    const ms =
+      new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+  const experimentRef = run.experiment as Record<string, unknown> | undefined;
+  const experimentId =
+    experimentRef?.experiment_id ??
+    (run.experiment_id as string | undefined) ??
+    '';
+  runDetails.value = {
+    run_id: run.run_id,
+    experiment_id: experimentId,
+    status:
+      (run.state as string | undefined) || (run.status as string | undefined) || '',
+    start_time: createdAt ?? null,
+    duration,
+  };
 
   // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
   if (
@@ -653,24 +681,8 @@ const getKeyIcon = (key: string) => {
   return 'lucide:text';
 };
 
-const fetchRunDetails = async () => {
-  const route = useRoute();
-  const runId = route.params.id as string;
-  const api = useApi();
-
-  const response = await api.getPipelineRunsList({ run_id: runId });
-  if (
-    response &&
-    'data' in response &&
-    Array.isArray(response.data) &&
-    response.data.length > 0
-  ) {
-    runDetails.value = response.data[0];
-  }
-};
-
 onMounted(async () => {
-  await Promise.all([fetchPipelineData(), fetchRunDetails()]);
+  await fetchPipelineData();
 });
 </script>
 
