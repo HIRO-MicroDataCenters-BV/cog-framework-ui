@@ -7,7 +7,7 @@
       :nodes="props.nodes"
       :edges="props.edges"
       class="w-full h-full"
-      fit-view
+      :fit-view-on-init="props.readonly"
       :nodes-draggable="!props.readonly && !isLocked"
       :nodes-connectable="!props.readonly && !isLocked"
       :edges-updatable="!props.readonly && !isLocked"
@@ -389,10 +389,12 @@ const {
   setNodes,
 } = useVueFlow();
 
-// Re-fit view whenever nodes are first loaded (async data)
+// Re-fit view when pipeline run data loads (readonly). In the builder, auto-fit on
+// every node change (e.g. drag from library) is jarring; users can use Fit view.
 watch(
   () => props.nodes,
   (newNodes) => {
+    if (!props.readonly) return;
     if (newNodes && newNodes.length > 0) {
       nextTick(() => {
         fitView({ padding: 0.15, duration: 300 });
@@ -402,8 +404,8 @@ watch(
   { immediate: false },
 );
 
-// Also fit after VueFlow has measured & positioned nodes
 onNodesInitialized(() => {
+  if (!props.readonly) return;
   fitView({ padding: 0.35, duration: 200 });
 });
 
