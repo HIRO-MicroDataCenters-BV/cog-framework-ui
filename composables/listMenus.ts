@@ -36,7 +36,7 @@ export const uselistMenus = () => {
             {
               key: 'pipelines-runs',
               title: t('menu.pipeline_runs') ?? 'Runs',
-              url: 'pipelines',
+              url: 'pipelines/run',
             },
             {
               key: 'pipelines-builder',

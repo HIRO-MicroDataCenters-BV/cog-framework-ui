@@ -8,7 +8,7 @@
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
               <NuxtLink
-                :to="`/${page.section == 'pipelines_builder' ? 'pipelines' : page.section}`"
+                :to="`/${page.section == 'pipelines_builder' ? 'pipelines/run' : page.section}`"
               >
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>

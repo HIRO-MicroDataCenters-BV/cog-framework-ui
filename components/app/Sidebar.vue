@@ -29,10 +29,12 @@ const isSubActive = (subUrl: string) => {
   const fullPath = route.path;
 
   // Special handling for Pipelines "Runs" vs "Builder"
-  if (subUrl === 'pipelines') {
+  if (subUrl === 'pipelines/run') {
     return (
-      fullPath.startsWith('/pipelines') &&
-      !fullPath.startsWith('/pipelines/builder')
+      fullPath.startsWith('/pipelines/run') ||
+      (fullPath.startsWith('/pipelines') &&
+        !fullPath.startsWith('/pipelines/builder') &&
+        !fullPath.startsWith('/pipelines/run'))
     );
   }
 
