@@ -660,9 +660,9 @@ const fetchPipelineData = async (expectedRunId: string) => {
 
     const title = pipelineData.value.display_name || 'Pipeline';
 
-    setPage({
-      section: 'pipelines',
-      title,
+  setPage({
+    section: 'pipeline_runs',
+    title,
       data: {
         builder: {
           name: title,

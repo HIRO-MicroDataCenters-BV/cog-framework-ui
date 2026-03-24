@@ -7,9 +7,7 @@
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem class="hidden md:block">
-              <NuxtLink
-                :to="`/${page.section == 'pipelines_builder' ? 'pipelines/run' : page.section}`"
-              >
+              <NuxtLink :to="breadcrumbSectionTo">
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
@@ -90,6 +88,17 @@ import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 
 const { page } = useApp();
 const { t } = useI18n();
+
+/** `page.section` keys do not always match URL paths (e.g. runs list is `/pipelines/run`). */
+const breadcrumbSectionTo = computed(() => {
+  const section = page.value.section;
+  if (section === 'pipelines_builder') return '/pipelines/run';
+  if (section === 'pipeline_runs' || section === 'pipelines') {
+    return '/pipelines/run';
+  }
+  if (!section) return '/';
+  return `/${section}`;
+});
 const api = useApi();
 const config = useRuntimeConfig();
 const baseUrl = config.app.baseURL;
