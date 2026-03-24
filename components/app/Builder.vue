@@ -177,6 +177,10 @@ const externalBuilderUrl = ref(
   'https://dashboard.cog.hiro-develop.nl/_/jupyter/?ns=admin',
 );
 
+// Pipeline run URL: /…/pipelines/<runId> (not the bare /pipelines list).
+const isPipelineRunDetailPath = (path: string) =>
+  /\/pipelines\/[^/?#]+/.test(path);
+
 // Initialize store from page data
 // We watch page.data.builder to handle initial load or external resets
 watch(
@@ -185,33 +189,22 @@ watch(
     const hasData = builderData?.nodes?.length || builderData?.edges?.length;
     const storeIsEmpty = nodes.value.length === 0 && edges.value.length === 0;
 
-    console.log('[Builder] builderData:', builderData);
-    console.log(
-      '[Builder] builderData.pipelineData:',
-      builderData?.pipelineData,
-    );
-    console.log(
-      '[Builder] builderData.pipelineData.runtime_config:',
-      builderData?.pipelineData?.runtime_config,
-    );
-
     // Extract pipelineData for readonly mode
     if (builderData?.pipelineData) {
       pipelineData.value = builderData.pipelineData;
-      console.log('[Builder] Set pipelineData.value:', pipelineData.value);
-    } else {
-      console.log('[Builder] No pipelineData found in builderData');
     }
 
-    // Case 1: builderData has data and store is empty -> initialize
-    if (hasData && storeIsEmpty) {
+    // Edit mode: only hydrate when store is empty (avoid clobbering in-progress edits).
+    // Readonly (pipeline run): always sync canvas from page when builder payload updates,
+    // so switching runs replaces the graph even though global builder state is non-empty.
+    if (hasData && (storeIsEmpty || readonly.value)) {
       initialize(
         (builderData.nodes as Node[]) || [],
         (builderData.edges as Edge[]) || [],
       );
     }
 
-    // Case 2: builderData is empty/undefined and store has data -> clear store
+    // Case: builderData is empty/undefined and store has data -> clear store
     // This happens when navigating from readonly view to new pipeline creation
     if (!hasData && !storeIsEmpty) {
       initialize([], []);
@@ -220,21 +213,17 @@ watch(
   { deep: true },
 );
 
-// Clear store when navigating away from a pipeline view
-// This ensures clean state when going from readonly view to new pipeline creation
+// Clear store when navigating away from builder-relevant views.
+// Do not clear when switching between two pipeline *run* URLs — that would race with
+// setPage and could leave an empty graph; the builder watch applies the new run instead.
 watch(
   () => useRoute().fullPath,
   (newPath, oldPath) => {
-    // If we had data and now navigating to a different route, clear store
-    if (
-      oldPath &&
-      newPath !== oldPath &&
-      (nodes.value.length > 0 || edges.value.length > 0)
-    ) {
-      console.log('[Builder] Route changed, clearing store', {
-        from: oldPath,
-        to: newPath,
-      });
+    if (!oldPath || newPath === oldPath) return;
+    if (isPipelineRunDetailPath(oldPath) && isPipelineRunDetailPath(newPath)) {
+      return;
+    }
+    if (nodes.value.length > 0 || edges.value.length > 0) {
       initialize([], []);
     }
   },

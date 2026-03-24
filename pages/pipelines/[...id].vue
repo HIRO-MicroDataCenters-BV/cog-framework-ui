@@ -14,13 +14,22 @@ import SimpleTabs from '~/components/app/SimpleTabs.vue';
 import PipelineRunSheet from '~/components/app/PipelineRunSheet.vue';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 import Badge from '~/components/ui/badge/Badge.vue';
+import { Spinner } from '~/components/ui/spinner';
 
-const { setPage, page } = useApp();
+const { setPage } = useApp();
+const { initialize: resetBuilderGraph } = usePipelineBuilder();
 const { t } = useI18n();
+const route = useRoute();
+
+const pipelineRunRouteId = computed(() => {
+  const id = route.params.id;
+  return Array.isArray(id) ? id[0] : (id as string);
+});
 
 const pipelineData = ref<PipelineData | null>(null);
 const isRunSheetOpen = ref(false);
 const selectedNodeName = ref<string | null>(null);
+const isPipelineFlowLoading = ref(false);
 
 const activeTab = ref<'flow' | 'details'>('flow');
 const tabs = [
@@ -585,82 +594,109 @@ const getOutputPaths = (template: PipelineTemplate) => [
   ...extractPaths(template.outputs?.parameters, 'String'),
 ];
 
-const fetchPipelineData = async () => {
-  const route = useRoute();
-  // route.params.id is an array because of [...id].vue catch-all route
-  const runId = Array.isArray(route.params.id)
-    ? route.params.id[0]
-    : (route.params.id as string);
+const fetchPipelineData = async (expectedRunId: string) => {
   const api = useApi();
 
-  const data = await api.getPipelineRunFlow(runId);
-  if (!data) return;
+  const isStale = () => pipelineRunRouteId.value !== expectedRunId;
 
-  pipelineData.value = data as PipelineData;
-  const run = data as Record<string, unknown>;
+  try {
+    const data = await api.getPipelineRunFlow(expectedRunId);
+    if (isStale()) return;
+    if (!data) return;
 
-  // Derive run details from KFP v2beta1 run (same shape as Details tab expects)
-  const createdAt = run.created_at as string | undefined;
-  const finishedAt = run.finished_at as string | undefined;
-  let duration: string = '-';
-  if (createdAt && finishedAt) {
-    const ms = new Date(finishedAt).getTime() - new Date(createdAt).getTime();
-    const totalSec = Math.max(0, Math.floor(ms / 1000));
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
-  const experimentRef = run.experiment as Record<string, unknown> | undefined;
-  const experimentId =
-    experimentRef?.experiment_id ??
-    (run.experiment_id as string | undefined) ??
-    '';
-  runDetails.value = {
-    run_id: run.run_id,
-    experiment_id: experimentId,
-    status:
-      (run.state as string | undefined) ||
-      (run.status as string | undefined) ||
-      '',
-    start_time: createdAt ?? null,
-    duration,
-  };
+    pipelineData.value = data as PipelineData;
+    const run = data as Record<string, unknown>;
 
-  // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
-  if (
-    pipelineData.value.pipeline_version_reference &&
-    !pipelineData.value.pipeline_spec
-  ) {
-    const { pipeline_id, pipeline_version_id } =
-      pipelineData.value.pipeline_version_reference;
+    // Derive run details from KFP v2beta1 run (same shape as Details tab expects)
+    const createdAt = run.created_at as string | undefined;
+    const finishedAt = run.finished_at as string | undefined;
+    let duration: string = '-';
+    if (createdAt && finishedAt) {
+      const ms = new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+    const experimentRef = run.experiment as Record<string, unknown> | undefined;
+    const experimentId =
+      experimentRef?.experiment_id ??
+      (run.experiment_id as string | undefined) ??
+      '';
+    runDetails.value = {
+      run_id: run.run_id,
+      experiment_id: experimentId,
+      status:
+        (run.state as string | undefined) ||
+        (run.status as string | undefined) ||
+        '',
+      start_time: createdAt ?? null,
+      duration,
+    };
 
-    const versionData = await api.getPipelineVersion(
-      pipeline_id,
-      pipeline_version_id,
-    );
-    if (versionData && 'data' in versionData && versionData.data) {
-      // Inject the pipeline_spec from version into pipelineData
-      pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
+    // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
+    if (
+      pipelineData.value.pipeline_version_reference &&
+      !pipelineData.value.pipeline_spec
+    ) {
+      const { pipeline_id, pipeline_version_id } =
+        pipelineData.value.pipeline_version_reference;
+
+      const versionData = await api.getPipelineVersion(
+        pipeline_id,
+        pipeline_version_id,
+      );
+      if (isStale()) return;
+      if (versionData && 'data' in versionData && versionData.data) {
+        // Inject the pipeline_spec from version into pipelineData
+        pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
+      }
+    }
+
+    if (isStale()) return;
+
+    const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
+
+    const title = pipelineData.value.display_name || 'Pipeline';
+
+    setPage({
+      section: 'pipelines',
+      title,
+      data: {
+        builder: {
+          name: title,
+          nodes,
+          edges,
+          pipelineData: pipelineData.value,
+        },
+      },
+    });
+  } finally {
+    if (pipelineRunRouteId.value === expectedRunId) {
+      isPipelineFlowLoading.value = false;
     }
   }
-
-  const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
-
-  console.log('edges', edges);
-
-  const title = pipelineData.value.display_name || 'Pipeline';
-
-  setPage({
-    section: 'pipelines',
-    title,
-    data: {
-      builder: { name: title, nodes, edges },
-    },
-  });
 };
 
 const runDetails = ref<Record<string, unknown> | null>(null);
+
+watch(
+  pipelineRunRouteId,
+  async (runId, prevRunId) => {
+    if (!runId || runId === prevRunId) return;
+
+    isRunSheetOpen.value = false;
+    selectedNodeName.value = null;
+    isPipelineFlowLoading.value = true;
+    pipelineData.value = null;
+    runDetails.value = null;
+    resetBuilderGraph([], []);
+
+    await fetchPipelineData(runId);
+  },
+  { immediate: true },
+);
 
 const getKeyIcon = (key: string) => {
   const iconMap: Record<string, string> = {
@@ -681,10 +717,6 @@ const getKeyIcon = (key: string) => {
 
   return 'lucide:text';
 };
-
-onMounted(async () => {
-  await fetchPipelineData();
-});
 </script>
 
 <template>
@@ -694,8 +726,9 @@ onMounted(async () => {
     </div>
 
     <div class="flex-1 overflow-hidden">
-      <div v-if="activeTab === 'flow'" class="h-full">
+      <div v-if="activeTab === 'flow'" class="relative h-full">
         <AppBuilder
+          :key="String(pipelineRunRouteId ?? '')"
           :readonly="true"
           @node-click="
             (node) => {
@@ -704,6 +737,15 @@ onMounted(async () => {
             }
           "
         />
+
+        <div
+          v-if="isPipelineFlowLoading"
+          class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]"
+          aria-busy="true"
+          aria-live="polite"
+        >
+          <Spinner class="w-8 h-8 text-muted-foreground" />
+        </div>
 
         <PipelineRunSheet
           :open="isRunSheetOpen"
