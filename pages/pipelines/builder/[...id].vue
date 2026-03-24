@@ -8,7 +8,7 @@
 const { setPage, page } = useApp();
 
 setPage({
-  section: 'pipelines',
+  section: 'pipelines_builder',
 });
 </script>
 

@@ -22,16 +22,16 @@
       </div>
       <div
         v-if="!readonly && !isSidebarOpen.library"
-        class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
+        class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-background z-50 pointer-events-none"
       >
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-medium text-gray-500 flex-1">
+          <h3 class="text-sm font-medium text-muted-foreground flex-1">
             {{ $t('builder.components') }}
           </h3>
           <button
             v-for="action in menuActions"
             :key="action.key"
-            class="p-1 rounded hover:bg-muted"
+            class="p-1 rounded hover:bg-muted pointer-events-auto"
             :title="$t(action.titleKey)"
             @click="action.action"
           >
