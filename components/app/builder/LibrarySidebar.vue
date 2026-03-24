@@ -35,15 +35,23 @@
                 <div
                   v-for="component in category.components"
                   :key="component.id"
-                  class="cursor-all-scroll flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors hover:bg-muted active:bg-muted/80"
+                  class="group cursor-all-scroll flex items-center gap-2 px-2 py-1.5 rounded-md transition-all duration-200 hover:bg-muted hover:shadow-sm hover:scale-[1.02] active:scale-100 border border-transparent hover:border-border"
                   draggable="true"
                   @dragstart="onDragStart($event, component)"
                 >
                   <Icon
+                    name="lucide:grip-vertical"
+                    class="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 -ml-1"
+                  />
+                  <Icon
                     name="lucide:box"
                     class="w-4 h-4 text-muted-foreground"
                   />
-                  <span class="text-sm">{{ component.name }}</span>
+                  <span class="text-sm flex-1">{{ component.name }}</span>
+                  <Icon
+                    name="lucide:arrow-right"
+                    class="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-50 transition-opacity duration-200"
+                  />
                 </div>
               </div>
             </CollapsibleContent>
