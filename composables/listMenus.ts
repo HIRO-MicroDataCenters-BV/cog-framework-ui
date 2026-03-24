@@ -37,11 +37,13 @@ export const uselistMenus = () => {
               key: 'pipelines-runs',
               title: t('menu.pipeline_runs') ?? 'Runs',
               url: 'pipelines/run',
+              icon: 'lucide:gauge',
             },
             {
               key: 'pipelines-builder',
               title: 'Builder',
               url: 'pipelines/builder',
+              icon: 'lucide:workflow',
             },
           ],
           isActive: false,
