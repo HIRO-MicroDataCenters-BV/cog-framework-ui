@@ -29,7 +29,8 @@
         }
       "
     >
-      <div>
+      <SheetTitle class="sr-only">Properties</SheetTitle>
+      <div v-if="selectedNode" class="pt-4">
         <PropertiesSidebar
           :readonly="readonly"
           :selected-node="selectedNode"
@@ -45,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
 import type { Node, NodeUpdate } from '~/types/builder.types';
 

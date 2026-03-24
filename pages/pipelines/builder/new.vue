@@ -3,20 +3,15 @@
     <AppBuilder
       ref="builderRef"
       :readonly="false"
-      @node-click="
-        (node) => {
-          isPropertiesSheetOpen = !!node;
-        }
-      "
     />
 
     <PipelineBuilderSheet
-      :open="isPropertiesSheetOpen"
+      :open="!!selectedNode"
       :readonly="false"
       :selected-node="selectedNode"
       :all-nodes="enrichedNodes"
       :pipeline-data="pipelineData"
-      @update:open="(v) => (isPropertiesSheetOpen = v)"
+      @update:open="(v) => !v && selectNode(null)"
       @update-node="
         (id, updates) => {
           builderRef?.onUpdateNode(id, updates);
@@ -39,14 +34,14 @@
 <script lang="ts" setup>
 import type { Node } from '~/types/builder.types';
 import { useNodeValidation } from '~/composables/useNodeValidation';
+import PipelineBuilderSheet from '~/components/app/PipelineBuilderSheet.vue';
 
 const route = useRoute();
 const { setPage, page } = useApp();
-const { nodes, selectedNode } = usePipelineBuilder();
+const { nodes, selectedNode, selectNode } = usePipelineBuilder();
 const { getValidationStatus } = useNodeValidation();
 
 const builderRef = ref();
-const isPropertiesSheetOpen = ref(false);
 
 // Enrich nodes with validation status
 const enrichedNodes = computed(() => {

@@ -105,8 +105,7 @@
             </div>
 
             <!-- Header & Content -->
-            <SheetTrigger as-child>
-              <div class="cursor-pointer">
+            <div class="cursor-pointer">
                 <div
                   class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
                 >
@@ -154,8 +153,7 @@
                     {{ data.category }}
                   </p>
                 </div>
-              </div>
-            </SheetTrigger>
+            </div>
 
             <!-- Output Handles (Bottom) -->
             <div
