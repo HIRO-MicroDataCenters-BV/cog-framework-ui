@@ -35,7 +35,7 @@
                 <div
                   v-for="component in category.components"
                   :key="component.id"
-                  class="cursor-grab flex items-center gap-2 px-2 py-1.5 active:cursor-grabbing"
+                  class="cursor-all-scroll flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors hover:bg-muted active:bg-muted/80"
                   draggable="true"
                   @dragstart="onDragStart($event, component)"
                 >
