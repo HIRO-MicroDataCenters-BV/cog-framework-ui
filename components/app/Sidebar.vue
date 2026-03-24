@@ -163,7 +163,11 @@ const toggleTheme = () => {
                         :is-active="isSubActive(subItem.url)"
                       >
                         <NuxtLink :to="`/${subItem.url}`">
-                          <Icon v-if="subItem.icon" :name="subItem.icon" class="w-4 h-4 mr-2" />
+                          <Icon
+                            v-if="subItem.icon"
+                            :name="subItem.icon"
+                            class="w-4 h-4 mr-2"
+                          />
                           <span>{{ subItem.title }}</span>
                         </NuxtLink>
                       </SidebarMenuSubButton>
