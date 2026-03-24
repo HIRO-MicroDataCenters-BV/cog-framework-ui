@@ -1,6 +1,5 @@
 <template>
   <div class="h-full flex">
-    <Sheet :open="isSheetOpen">
       <div
         v-if="!readonly && isSidebarOpen.library"
         class="w-80 flex-shrink-0 border-r"
@@ -59,21 +58,6 @@
           />
         </div>
       </div>
-
-      <SheetContent :show-overlay="false" :show-close-button="false">
-        <div>
-          <PropertiesSidebar
-            :readonly="readonly"
-            :selected-node="selectedNode"
-            :all-nodes="enrichedNodes"
-            :pipeline-data="pipelineData"
-            @update-node="onUpdateNode"
-            @delete-node="onDeleteNode"
-            @rename-component="onRenameComponent"
-          />
-        </div>
-      </SheetContent>
-    </Sheet>
   </div>
 
   <DeleteConfirmationDialog
@@ -88,9 +72,6 @@
 <script setup lang="ts">
 import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
-import PropertiesSidebar from './builder/PropertiesSidebar.vue';
-import PipelineParametersPanel from './builder/PipelineParametersPanel.vue';
-import PipelineOutputsPanel from './builder/PipelineOutputsPanel.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
@@ -107,6 +88,9 @@ import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
 
 const emit = defineEmits<{
   (e: 'node-click', node: VueFlowNode | null): void;
+  (e: 'update-node', id: string, updates: NodeUpdate): void;
+  (e: 'delete-node', id: string): void;
+  (e: 'rename-component', id: string, oldName: string, newName: string): void;
 }>();
 
 const props = withDefaults(
@@ -159,13 +143,6 @@ const isSidebarOpen = ref({
   library: true,
   properties: true,
 });
-
-// Control sheet open state based on selectedNode.
-// In readonly mode (pipeline run view), keep the internal sheet closed and
-// let the parent handle its own sheets.
-const isSheetOpen = computed(
-  () => !readonly.value && selectedNode.value !== null,
-);
 
 // Pipeline-level parameters and outputs
 const pipelineParameters = ref<PipelineInputParam[]>([]);
@@ -340,15 +317,11 @@ const onDragStart = (component: unknown) => {
 // --- Event Handlers (Using Store Actions) ---
 
 const onNodeClick = (node: VueFlowNode | null) => {
-  // Store handles selection logic including null
+  // Store handles selection logic including null (for toggle behavior)
   selectNode(node?.id || null);
 
-  // In readonly mode, bubble node click up so pages like pipeline run detail
-  // can open their own sheets (e.g. PipelineRunSheet) instead of the builder
-  // properties sheet.
-  if (readonly.value) {
-    emit('node-click', node);
-  }
+  // Always emit node-click so parent can control the sheet
+  emit('node-click', node);
 };
 
 const onConnect = (edge: VueFlowEdge) => {
@@ -578,4 +551,11 @@ const onUpdateOutputs = (newOutputs: PipelineOutput[]) => {
     },
   });
 };
+
+// Expose methods for parent components to call
+defineExpose({
+  onUpdateNode,
+  onDeleteNode,
+  onRenameComponent,
+});
 </script>
