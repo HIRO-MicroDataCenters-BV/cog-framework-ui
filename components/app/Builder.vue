@@ -83,16 +83,6 @@
     @cancel="deleteConfirmation = null"
     @confirm="confirmDelete"
   />
-
-  <AppDialogPipelineComponent
-    :open="openUploadComponentDialog"
-    @on-close="
-      () => {
-        openUploadComponentDialog = false;
-        fetchComponents();
-      }
-    "
-  />
 </template>
 
 <script setup lang="ts">
@@ -103,7 +93,6 @@ import PipelineParametersPanel from './builder/PipelineParametersPanel.vue';
 import PipelineOutputsPanel from './builder/PipelineOutputsPanel.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
-import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
 import type {
   Node,
@@ -178,8 +167,6 @@ const isSheetOpen = computed(
   () => !readonly.value && selectedNode.value !== null,
 );
 
-const openUploadComponentDialog = ref(false);
-
 // Pipeline-level parameters and outputs
 const pipelineParameters = ref<PipelineInputParam[]>([]);
 const pipelineOutputs = ref<PipelineOutput[]>([]);
@@ -187,7 +174,7 @@ const pipelineData = ref<unknown>(null);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
-  'https://dashboard.cog.hiro-develop.nl/notebook/admin/sai/lab/workspaces/auto-3/tree/register_component.ipynb',
+  'https://dashboard.cog.hiro-develop.nl/_/jupyter/?ns=admin',
 );
 
 // Initialize store from page data
@@ -316,14 +303,6 @@ interface MenuAction {
 }
 
 const menuActions = computed<MenuAction[]>(() => [
-  {
-    key: 'upload',
-    icon: 'lucide:upload',
-    titleKey: 'menu.upload',
-    action: () => {
-      openUploadComponentDialog.value = true;
-    },
-  },
   {
     key: 'jupyter',
     icon: 'lucide:file-code',
