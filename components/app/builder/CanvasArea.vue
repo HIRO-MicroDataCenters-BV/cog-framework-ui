@@ -229,7 +229,7 @@
       />
 
       <!-- Floating Controls Toolbar -->
-      <Panel :position="PanelPosition.TopLeft">
+      <Panel :position="PanelPosition.BottomLeft">
         <div
           class="flex items-center gap-0.5 rounded-xl border border-border bg-background/90 backdrop-blur-sm shadow-lg px-1.5 py-1.5"
         >
