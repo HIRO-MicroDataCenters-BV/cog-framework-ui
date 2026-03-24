@@ -815,6 +815,7 @@ const add = () => {
       openAddModel.value = true;
       break;
     case 'pipelines':
+    case 'pipeline_runs':
       navigateTo('/pipelines/builder/new');
       break;
   }
@@ -930,7 +931,11 @@ defineExpose({ fetchData, totalItems });
 
               <Button class="cursor-pointer" @click="() => add()">
                 <Icon name="lucide:plus" />
-                {{ t(`action.add_${page.section}`) }}
+                {{
+                  t(
+                    `action.add_${page.section === 'pipeline_runs' ? 'pipelines' : page.section}`,
+                  )
+                }}
               </Button>
             </div>
           </div>
