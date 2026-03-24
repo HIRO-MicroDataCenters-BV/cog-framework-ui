@@ -19,11 +19,11 @@ const { setPage, page } = useApp();
 const activeTab = ref<'active' | 'archived'>('active');
 
 setPage({
-  section: 'pipelines',
+  section: 'pipeline_runs',
   description: t('description.pipelines'),
 });
 
-const baseUrl = page.value.section;
+const baseUrl = 'pipelines';
 const config = useRuntimeConfig();
 const urlOrigin = window.location.origin;
 
