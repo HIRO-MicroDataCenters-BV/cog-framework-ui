@@ -389,9 +389,11 @@ const getValueLabel = (columnId: string, value: string | number): string => {
 
 const getSectionIcon = (section: string | undefined) => {
   if (!section) return null;
-  // Map pipeline_runs to pipelines for icon lookup
-  const menuKey = section === 'pipeline_runs' ? 'pipelines' : section;
-  return menu.value.main.find((item) => item.key === menuKey)?.icon;
+  // Use specific icon for pipeline_runs
+  if (section === 'pipeline_runs') {
+    return 'lucide:gauge';
+  }
+  return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
 const getColumns = (list: TableColumn[]) => {
