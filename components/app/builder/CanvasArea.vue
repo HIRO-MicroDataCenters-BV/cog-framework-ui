@@ -523,9 +523,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
-  console.log('CanvasArea mounted');
-  console.log('CanvasArea nodes:', props.nodes);
-  console.log('CanvasArea edges:', props.edges);
 });
 
 onUnmounted(() => {
