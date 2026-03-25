@@ -153,11 +153,12 @@
             </div>
           </div>
 
+          <!-- Same surface as DeleteConfirmationDialog "Delete Anyway" (default + destructive utilities; avoids Button destructive variant dark:bg-destructive/60) -->
           <Button
             v-if="!readonly"
-            variant="destructive"
+            variant="default"
             size="sm"
-            class="w-full mt-4"
+            class="w-full mt-4 bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90"
             @click="onDelete"
           >
             <Icon name="lucide:trash-2" class="w-4 h-4 mr-2" />
