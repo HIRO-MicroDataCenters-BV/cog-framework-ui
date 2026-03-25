@@ -1,70 +1,136 @@
 <template>
   <header
-    class="border-b w-full flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
+    class="group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 flex h-16 w-full shrink-0 items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur-sm transition-[width,height] ease-linear"
   >
-    <div class="flex items-center gap-2 px-4 justify-between w-full">
-      <div class="flex items-center gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem class="hidden md:block">
-              <NuxtLink :to="breadcrumbSectionTo">
+    <div class="flex w-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-4">
+      <!-- Builder: breadcrumb | name (compact) | CTA grouped with tight gap -->
+      <template v-if="page.section === 'pipelines_builder'">
+        <Breadcrumb class="shrink-0">
+          <BreadcrumbList class="flex-wrap gap-x-1">
+            <BreadcrumbItem class="hidden sm:block">
+              <NuxtLink
+                :to="breadcrumbSectionTo"
+                class="text-muted-foreground transition-colors hover:text-foreground"
+              >
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
             <template v-if="page.title !== ''">
-              <BreadcrumbSeparator />
-              <BreadcrumbItem class="hidden md:block">{{
-                page.title
-              }}</BreadcrumbItem>
-            </template>
-            <template v-if="page.section == 'pipelines_builder'">
-              <BreadcrumbItem class="hidden md:block relative">
-                <Form :validation-schema="pipelineNameSchema">
-                  <FormField
-                    v-slot="{ componentField }"
-                    type="text"
-                    name="pipeline_name"
-                  >
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          v-bind="componentField"
-                          v-model="pipelineName"
-                          type="text"
-                          :placeholder="$t('placeholder.pipeline_name')"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </FormField>
-                </Form>
+              <BreadcrumbSeparator class="hidden sm:block" />
+              <BreadcrumbItem
+                class="hidden max-w-40 truncate text-sm text-muted-foreground md:block"
+              >
+                {{ page.title }}
               </BreadcrumbItem>
             </template>
           </BreadcrumbList>
         </Breadcrumb>
-      </div>
-      <div class="flex items-center gap-2 ml-auto">
-        <div v-if="page.section == 'pipelines_builder'">
-          <TooltipProvider>
+
+        <div
+          class="mx-0.5 hidden h-7 w-px shrink-0 bg-border/80 sm:block"
+          aria-hidden="true"
+        />
+
+        <Form
+          :validation-schema="pipelineNameSchema"
+          class="w-full min-w-0 max-w-52 shrink-0 sm:max-w-60"
+        >
+          <FormField
+            v-slot="{ componentField }"
+            type="text"
+            name="pipeline_name"
+          >
+            <FormItem class="space-y-0">
+              <FormControl>
+                <div class="relative">
+                  <Icon
+                    name="lucide:workflow"
+                    class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    v-bind="componentField"
+                    v-model="pipelineName"
+                    type="text"
+                    :placeholder="$t('placeholder.pipeline_name')"
+                    class="h-9 border-border/80 bg-muted/30 pl-9 text-sm font-medium shadow-sm transition-[box-shadow,background-color] placeholder:text-muted-foreground/70 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/25"
+                  />
+                </div>
+              </FormControl>
+            </FormItem>
+          </FormField>
+        </Form>
+
+        <div class="flex shrink-0 items-center">
+          <TooltipProvider :delay-duration="200">
             <Tooltip>
               <TooltipTrigger as-child>
-                <Button :disabled="!canSave" @click="runPipeline">
-                  <Icon name="lucide:save" class="w-4 h-4" />
-                  <span>{{ $t('action.save_and_run') }}</span>
-                </Button>
+                <!-- Wrapper: disabled buttons don’t receive hover; tooltip still explains validation -->
+                <span
+                  class="inline-flex rounded-lg"
+                  :class="{ 'cursor-not-allowed': !canSave }"
+                >
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    :disabled="!canSave"
+                    class="group h-9 gap-2 px-4 font-medium shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
+                    @click="runPipeline"
+                  >
+                    <Icon
+                      name="lucide:play"
+                      class="size-3.5 opacity-90 group-disabled:opacity-55"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t('action.save_and_run') }}</span>
+                  </Button>
+                </span>
               </TooltipTrigger>
-              <TooltipContent v-if="!canSave" class="max-w-xs">
-                <div class="text-sm">
-                  <ul class="list-disc list-inside space-y-1">
-                    <li v-for="error in validationErrors" :key="error">
-                      {{ error }}
-                    </li>
-                  </ul>
-                </div>
+              <TooltipContent
+                v-if="!canSave"
+                side="bottom"
+                align="center"
+                :side-offset="6"
+                :avoid-collisions="false"
+                class="max-w-sm p-3"
+              >
+                <p class="mb-2 text-xs font-semibold">
+                  {{ $t('builder.header_run_tooltip_title') }}
+                </p>
+                <ul class="list-inside list-disc space-y-1.5 text-xs text-background/80">
+                  <li v-for="error in validationErrors" :key="error">
+                    {{ error }}
+                  </li>
+                </ul>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-      </div>
+
+        <div class="min-w-0 flex-1" aria-hidden="true" />
+      </template>
+
+      <!-- Default header (non–pipeline builder) -->
+      <template v-else>
+        <div class="flex w-full min-w-0 items-center gap-2">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem class="hidden md:block">
+                <NuxtLink :to="breadcrumbSectionTo">
+                  {{ $t(`menu.${page.section}`) }}
+                </NuxtLink>
+              </BreadcrumbItem>
+              <template v-if="page.title !== ''">
+                <BreadcrumbSeparator />
+                <BreadcrumbItem class="hidden md:block">{{
+                  page.title
+                }}</BreadcrumbItem>
+              </template>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </template>
     </div>
   </header>
 </template>

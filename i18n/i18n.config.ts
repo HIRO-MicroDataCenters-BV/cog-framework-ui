@@ -152,6 +152,7 @@ export default defineI18nConfig(() => ({
         components: 'Components',
         properties: 'Properties',
         properties_subtitle: 'Configure selected component',
+        header_run_tooltip_title: 'Finish setup to run',
         empty_selection: 'Select a component to view its properties',
         category: 'Category',
         component_renamed: 'Component "{oldName}" renamed to "{newName}"',
