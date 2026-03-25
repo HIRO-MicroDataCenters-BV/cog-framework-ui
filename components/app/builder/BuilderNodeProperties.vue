@@ -26,7 +26,7 @@
             class="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
             :disabled="!hasNameChanged || !isComponentNameValid"
             :title="$t('action.save')"
-            @click="onSaveCoponentName"
+            @click="onSaveComponentName"
           >
             <Icon
               name="lucide:check"
