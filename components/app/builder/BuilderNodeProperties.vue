@@ -7,7 +7,7 @@
 
     <div v-else class="space-y-4 px-2">
       <!-- HUD Container -->
-      <div class="bg-card overflow-hidden">
+      <div class="overflow-hidden">
         <div class="px-4 py-3">
           <Input
             v-if="!readonly"
@@ -22,7 +22,7 @@
           </div>
         </div>
 
-        <div class="p-4 overflow-y-auto max-h-[calc(100vh-140px)]">
+        <div class="p-4 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
           <!-- Validation Error -->
           <div
             v-if="componentNameError && !readonly"
@@ -31,39 +31,81 @@
             {{ componentNameError }}
           </div>
 
-          <!-- Editable Input Parameters -->
-          <div class="mb-6">
-            <h3
-              class="mb-2 text-xs uppercase text-muted-foreground flex items-center gap-2"
+          <!-- INPUT block -->
+          <div class="rounded-lg border border-border overflow-hidden">
+            <div
+              class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
             >
-              <Icon name="lucide:arrow-right-to-line" class="w-3 h-3" />
-              {{ $t('label.input_path') }}
-            </h3>
-            <div class="space-y-2">
-              <InputParameterEditor
-                v-for="inputDef in inputDefinitions"
-                :key="inputDef.name"
-                :input-definition="inputDef"
-                :input="getInputForDefinition(inputDef)"
-                :available-components="availableUpstreamComponents"
-                :pipeline-params="pipelineParameters"
-                :readonly="readonly"
-                @update="
-                  (updatedInput) => onInputUpdate(inputDef, updatedInput)
-                "
-              />
-              <div
-                v-if="inputDefinitions.length === 0"
-                class="text-sm text-muted-foreground italic text-center"
+              <span
+                class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                >Input Parameters</span
               >
-                No inputs configured
+            </div>
+
+            <!-- Input Parameters -->
+            <div>
+              <div
+                v-if="inputDefinitions.length"
+                class="divide-y divide-border/50"
+              >
+                <div
+                  v-for="inputDef in inputDefinitions"
+                  :key="inputDef.name"
+                  class="px-3 py-3"
+                >
+                  <InputParameterEditor
+                    :input-definition="inputDef"
+                    :input="getInputForDefinition(inputDef)"
+                    :available-components="availableUpstreamComponents"
+                    :pipeline-params="pipelineParameters"
+                    :readonly="readonly"
+                    @update="
+                      (updatedInput) => onInputUpdate(inputDef, updatedInput)
+                    "
+                  />
+                </div>
               </div>
+              <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+                None
+              </p>
             </div>
           </div>
 
-          <PathSection :title="$t('label.output_path')" :paths="outputPaths" />
+          <!-- OUTPUT block -->
+          <div class="rounded-lg border border-border overflow-hidden">
+            <div
+              class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+            >
+              <span
+                class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                >Output Parameters</span
+              >
+            </div>
 
-          <div class="mb-4 mt-6">
+            <!-- Output Parameters -->
+            <div>
+              <div v-if="outputPaths.length" class="divide-y divide-border/50">
+                <div
+                  v-for="path in outputPaths"
+                  :key="path.key"
+                  class="flex items-center justify-between gap-4 px-3 py-2"
+                >
+                  <span class="text-xs font-medium text-foreground shrink-0">{{
+                    path.name
+                  }}</span>
+                  <span
+                    class="text-xs text-muted-foreground text-right break-all"
+                    >{{ path.type }}</span
+                  >
+                </div>
+              </div>
+              <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+                None
+              </p>
+            </div>
+          </div>
+
+          <div class="mb-4">
             <h3
               class="mb-2 text-xs uppercase text-muted-foreground flex items-center gap-2"
             >
@@ -116,7 +158,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, nextTick } from 'vue';
-import PathSection from './PathSection.vue';
 import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
 import { SheetTitle } from '~/components/ui/sheet';
