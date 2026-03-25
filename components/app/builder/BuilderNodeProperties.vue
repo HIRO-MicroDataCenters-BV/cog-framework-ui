@@ -25,6 +25,18 @@
               variant="outline"
               size="sm"
               class="h-8 px-2.5 shrink-0"
+              :disabled="!hasNameChanged"
+              :title="$t('action.cancel')"
+              @click="onCancelComponentName"
+            >
+              <Icon name="lucide:x" class="size-4 shrink-0" />
+            </Button>
+            <Button
+              v-if="!readonly"
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-8 px-2.5 shrink-0"
               :disabled="!hasNameChanged || !isComponentNameValid"
               :title="$t('action.save')"
               @click="onSaveComponentName"
@@ -464,6 +476,11 @@ const hasNameChanged = computed(() => {
     formData.nodeName.trim() !== ''
   );
 });
+
+const onCancelComponentName = () => {
+  if (!props.selectedNode || !hasNameChanged.value) return;
+  formData.nodeName = previousNodeName.value;
+};
 
 const onSaveComponentName = () => {
   if (!props.selectedNode || !isComponentNameValid.value) return;
