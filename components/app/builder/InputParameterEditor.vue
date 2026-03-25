@@ -38,7 +38,11 @@
             v-model="localInput.value_source_type"
             @update:model-value="onSourceTypeChange"
           >
-            <SelectTrigger size="sm" class="w-full text-xs">
+            <SelectTrigger
+              size="sm"
+              class="w-full text-xs"
+              @blur="markTouched"
+            >
               <SelectValue
                 :placeholder="$t('placeholder.select_source_type')"
               />
@@ -65,7 +69,11 @@
               v-model="selectedComponentOutput"
               @update:model-value="onComponentOutputChange"
             >
-              <SelectTrigger size="sm" class="w-full text-xs font-mono">
+              <SelectTrigger
+                size="sm"
+                class="w-full text-xs font-mono"
+                @blur="markTouched"
+              >
                 <SelectValue
                   :placeholder="$t('placeholder.select_component_output')"
                 />
@@ -89,7 +97,11 @@
               v-model="localInput.source"
               @update:model-value="emitUpdate"
             >
-              <SelectTrigger size="sm" class="w-full text-xs font-mono">
+              <SelectTrigger
+                size="sm"
+                class="w-full text-xs font-mono"
+                @blur="markTouched"
+              >
                 <SelectValue
                   :placeholder="$t('placeholder.select_parameter')"
                 />
@@ -121,17 +133,24 @@
               :placeholder="getConstantPlaceholder()"
               class="h-8 text-xs font-mono"
               @update:model-value="emitUpdate"
+              @blur="markTouched"
             />
           </div>
         </div>
       </div>
 
+      <!-- Reserve height so showing/hiding validation does not shift the sheet layout -->
       <div
-        v-if="validationError && !readonly"
-        class="text-[10px] text-red-500 flex items-center gap-1 px-0.5"
+        v-if="!readonly"
+        class="flex min-h-4 items-start gap-1 px-0.5 text-[10px] leading-snug text-red-500"
       >
-        <Icon name="lucide:alert-circle" class="w-3 h-3 shrink-0" />
-        {{ $t(validationError) }}
+        <template v-if="displayValidationError">
+          <Icon
+            name="lucide:alert-circle"
+            class="w-3 h-3 shrink-0 translate-y-px"
+          />
+          <span>{{ $t(displayValidationError) }}</span>
+        </template>
       </div>
     </div>
   </div>
@@ -219,7 +238,7 @@ const resolvedValue = computed(() => {
   return localInput.value.source;
 });
 
-// Validation
+// Validation (always computed for canvas/header); inline message only after user touches field
 const validationError = computed(() => {
   return validateComponentInput(
     localInput.value,
@@ -227,6 +246,17 @@ const validationError = computed(() => {
     props.availableComponents,
     props.pipelineParams,
   );
+});
+
+const fieldTouched = ref(false);
+
+function markTouched() {
+  fieldTouched.value = true;
+}
+
+const displayValidationError = computed(() => {
+  if (!fieldTouched.value) return null;
+  return validationError.value;
 });
 
 // Get placeholder for constant input based on type
@@ -269,6 +299,7 @@ function onComponentOutputChange(value: unknown) {
 
 // Emit update to parent
 function emitUpdate() {
+  markTouched();
   emit('update', { ...localInput.value });
 }
 
@@ -287,12 +318,14 @@ watch(
         return;
       }
 
+      fieldTouched.value = false;
       localInput.value = { ...newInput };
       if (newInput.value_source_type === 'component_output') {
         selectedComponentOutput.value = newInput.source;
       }
     } else {
       // Reset local state when input is undefined/null
+      fieldTouched.value = false;
       localInput.value = {
         destination: props.inputDefinition.name,
         value_source_type: 'constant',

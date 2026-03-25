@@ -36,12 +36,14 @@
         </div>
 
         <div class="px-2 py-3 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
-          <!-- Validation Error -->
-          <div
-            v-if="componentNameError && !readonly"
-            class="text-red-500 text-xs mb-3 px-0 font-medium"
-          >
-            {{ componentNameError }}
+          <!-- Reserve height so name validation does not shift content when it appears -->
+          <div v-if="!readonly" class="mb-3 min-h-4 px-0">
+            <div
+              v-if="componentNameError"
+              class="text-xs font-medium text-red-500"
+            >
+              {{ componentNameError }}
+            </div>
           </div>
 
           <!-- INPUT block -->
