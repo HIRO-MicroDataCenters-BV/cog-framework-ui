@@ -8,15 +8,31 @@
     <div v-else class="space-y-4 px-2">
       <!-- HUD Container -->
       <div class="overflow-hidden">
-        <div class="px-4 py-3">
+        <div class="px-4 py-3 flex gap-2 items-center">
           <Input
             v-if="!readonly"
             v-model="nodeName"
             type="text"
             :placeholder="$t('placeholder.component_name')"
-            class="h-8 font-semibold bg-transparent"
+            class="h-8 font-semibold bg-transparent flex-1"
             :class="{ 'text-red-500': !isComponentNameValid }"
+            @keydown.enter="onSaveComponentName"
           />
+          <Button
+            v-if="!readonly"
+            type="button"
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+            :disabled="!hasNameChanged || !isComponentNameValid"
+            :title="$t('action.save')"
+            @click="onSaveCoponentName"
+          >
+            <Icon
+              name="lucide:check"
+              class="size-6 shrink-0 builder-name-save-check"
+            />
+          </Button>
           <div v-else class="font-semibold px-3">
             {{ selectedNode.data?.label }}
           </div>
@@ -160,6 +176,7 @@
 import { ref, reactive, watch, computed, nextTick } from 'vue';
 import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { SheetTitle } from '~/components/ui/sheet';
 import type {
   ComponentInput,
@@ -438,6 +455,25 @@ const isComponentNameValid = computed(() => {
   return componentNameError.value === null;
 });
 
+const hasNameChanged = computed(() => {
+  return (
+    formData.nodeName !== previousNodeName.value &&
+    formData.nodeName.trim() !== ''
+  );
+});
+
+const onSaveComponentName = () => {
+  if (!props.selectedNode || !isComponentNameValid.value) return;
+
+  const oldName = previousNodeName.value;
+  const newName = formData.nodeName;
+
+  if (oldName !== newName && newName && oldName) {
+    emit('renameComponent', props.selectedNode.id, oldName, newName);
+    previousNodeName.value = newName;
+  }
+};
+
 watch(
   () => props.selectedNode,
   (newNode, oldNode) => {
@@ -466,28 +502,12 @@ watch(
 
 // Watch for specific field changes to update the node
 // We avoid a deep watcher on formData to prevent unnecessary full-object syncs
+// Component name is now saved manually via save button, not auto-saved
 watch(
   () => formData.nodeName,
   (newName) => {
     if (!props.selectedNode) return;
-
     selectedNodeLabel.value = newName;
-
-    if (!previousNodeName.value) {
-      previousNodeName.value = (props.selectedNode.data?.label as string) || '';
-    }
-
-    const oldName = previousNodeName.value;
-
-    if (
-      oldName !== newName &&
-      newName &&
-      oldName &&
-      isComponentNameValid.value
-    ) {
-      emit('renameComponent', props.selectedNode.id, oldName, newName);
-      previousNodeName.value = newName;
-    }
   },
 );
 
@@ -525,3 +545,10 @@ watch(
   { immediate: true },
 );
 </script>
+
+<style scoped>
+/* Lucide default stroke is 2; bump for a bolder check next to the name field */
+.builder-name-save-check :deep(svg) {
+  stroke-width: 2.75px;
+}
+</style>
