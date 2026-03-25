@@ -48,7 +48,7 @@
             </div>
           </div>
           <!-- Error sits under the name row; min-h keeps layout stable when it appears -->
-          <div v-if="!readonly" class="mt-1 min-h-4.5" aria-live="polite">
+          <div v-if="!readonly" class="mt-1 min-h-1.5" aria-live="polite">
             <p
               v-if="componentNameError"
               class="text-xs font-medium text-red-500 leading-tight"
@@ -81,7 +81,7 @@
                 <div
                   v-for="inputDef in inputDefinitions"
                   :key="inputDef.name"
-                  class="px-2 py-2.5"
+                  class="px-2 pt-2.5 pb-0.5"
                 >
                   <InputParameterEditor
                     :input-definition="inputDef"
