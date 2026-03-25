@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-3">
-    <div class="flex items-center justify-between mb-2">
+  <div class="space-y-2">
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <div
           class="w-6 h-6 flex items-center justify-center text-muted-foreground"
@@ -26,109 +26,116 @@
       </div>
     </div>
 
-    <!-- Edit View -->
-    <div v-else class="grid grid-cols-[150px_1fr] gap-3 items-start">
-      <!-- Value Source Type Selector -->
-      <div>
-        <Select
-          v-model="localInput.value_source_type"
-          @update:model-value="onSourceTypeChange"
-        >
-          <SelectTrigger size="sm" class="w-full text-xs">
-            <SelectValue :placeholder="$t('placeholder.select_source_type')" />
-          </SelectTrigger>
-          <SelectContent align="start" side="bottom">
-            <SelectItem value="component_output" class="text-xs">
-              {{ $t('label.component_output') }}
-            </SelectItem>
-            <SelectItem value="pipeline_inputparam" class="text-xs">
-              {{ $t('label.pipeline_parameter') }}
-            </SelectItem>
-            <SelectItem value="constant" class="text-xs">
-              {{ $t('label.constant_value') }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <!-- Source Value Input (Dynamic based on type) -->
-      <div class="relative">
-        <!-- Component Output Selector -->
-        <div v-if="localInput.value_source_type === 'component_output'">
+    <!-- Edit View: grid + error grouped so validation sits tight under the row -->
+    <div v-else class="flex flex-col gap-1">
+      <div class="grid grid-cols-[150px_1fr] gap-3 items-start">
+        <!-- Value Source Type Selector -->
+        <div>
           <Select
-            v-model="selectedComponentOutput"
-            @update:model-value="onComponentOutputChange"
+            v-model="localInput.value_source_type"
+            @update:model-value="onSourceTypeChange"
           >
-            <SelectTrigger size="sm" class="w-full text-xs font-mono">
+            <SelectTrigger size="sm" class="w-full text-xs">
               <SelectValue
-                :placeholder="$t('placeholder.select_component_output')"
+                :placeholder="$t('placeholder.select_source_type')"
               />
             </SelectTrigger>
             <SelectContent align="start" side="bottom">
-              <SelectItem
-                v-for="option in componentOutputOptions"
-                :key="option.value"
-                :value="option.value"
-                class="text-xs font-mono"
-              >
-                {{ option.label }}
+              <SelectItem value="component_output" class="text-xs">
+                {{ $t('label.component_output') }}
+              </SelectItem>
+              <SelectItem value="pipeline_inputparam" class="text-xs">
+                {{ $t('label.pipeline_parameter') }}
+              </SelectItem>
+              <SelectItem value="constant" class="text-xs">
+                {{ $t('label.constant_value') }}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <!-- Pipeline Parameter Selector -->
-        <div v-if="localInput.value_source_type === 'pipeline_inputparam'">
-          <Select v-model="localInput.source" @update:model-value="emitUpdate">
-            <SelectTrigger size="sm" class="w-full text-xs font-mono">
-              <SelectValue :placeholder="$t('placeholder.select_parameter')" />
-            </SelectTrigger>
-            <SelectContent align="start" side="bottom">
-              <SelectItem
-                v-for="param in pipelineParams"
-                :key="param.name"
-                :value="param.name"
-                class="text-xs font-mono"
-              >
-                {{ param.name }}
-                <span
-                  v-if="param.default"
-                  class="text-[10px] text-muted-foreground ml-2"
+        <!-- Source Value Input (Dynamic based on type) -->
+        <div class="relative">
+          <!-- Component Output Selector -->
+          <div v-if="localInput.value_source_type === 'component_output'">
+            <Select
+              v-model="selectedComponentOutput"
+              @update:model-value="onComponentOutputChange"
+            >
+              <SelectTrigger size="sm" class="w-full text-xs font-mono">
+                <SelectValue
+                  :placeholder="$t('placeholder.select_component_output')"
+                />
+              </SelectTrigger>
+              <SelectContent align="start" side="bottom">
+                <SelectItem
+                  v-for="option in componentOutputOptions"
+                  :key="option.value"
+                  :value="option.value"
+                  class="text-xs font-mono"
                 >
-                  (default: {{ param.default }})
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <!-- Constant Value Input -->
-        <div v-if="localInput.value_source_type === 'constant'">
-          <Input
-            v-model="localInput.source"
-            type="text"
-            :placeholder="getConstantPlaceholder()"
-            class="h-8 text-xs font-mono"
-            @update:model-value="emitUpdate"
-          />
+          <!-- Pipeline Parameter Selector -->
+          <div v-if="localInput.value_source_type === 'pipeline_inputparam'">
+            <Select
+              v-model="localInput.source"
+              @update:model-value="emitUpdate"
+            >
+              <SelectTrigger size="sm" class="w-full text-xs font-mono">
+                <SelectValue
+                  :placeholder="$t('placeholder.select_parameter')"
+                />
+              </SelectTrigger>
+              <SelectContent align="start" side="bottom">
+                <SelectItem
+                  v-for="param in pipelineParams"
+                  :key="param.name"
+                  :value="param.name"
+                  class="text-xs font-mono"
+                >
+                  {{ param.name }}
+                  <span
+                    v-if="param.default"
+                    class="text-[10px] text-muted-foreground ml-2"
+                  >
+                    (default: {{ param.default }})
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <!-- Constant Value Input -->
+          <div v-if="localInput.value_source_type === 'constant'">
+            <Input
+              v-model="localInput.source"
+              type="text"
+              :placeholder="getConstantPlaceholder()"
+              class="h-8 text-xs font-mono"
+              @update:model-value="emitUpdate"
+            />
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Validation Error -->
-    <div
-      v-if="validationError && !readonly"
-      class="text-[10px] text-red-500 flex items-center gap-1 mt-1 p-1"
-    >
-      <Icon name="lucide:alert-circle" class="w-3 h-3" />
-      {{ $t(validationError) }}
+      <div
+        v-if="validationError && !readonly"
+        class="text-[10px] text-red-500 flex items-center gap-1 px-0.5"
+      >
+        <Icon name="lucide:alert-circle" class="w-3 h-3 shrink-0" />
+        {{ $t(validationError) }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import {
   Select,

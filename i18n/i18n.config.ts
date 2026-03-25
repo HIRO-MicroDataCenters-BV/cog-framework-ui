@@ -25,6 +25,11 @@ export default defineI18nConfig(() => ({
           test_connection_no_table: 'Connection successful!',
           share_updated: 'Dataset shared successfully',
           canary_serving_created: 'Canary serving created successfully',
+          builder: {
+            component_renamed: 'Component "{oldName}" renamed to "{newName}"',
+            component_renamed_with_updates:
+              'Component "{oldName}" renamed to "{newName}" and {count} reference(s) updated',
+          },
         },
         error: {
           unknown: 'An unknown error occurred',
@@ -149,6 +154,9 @@ export default defineI18nConfig(() => ({
         properties_subtitle: 'Configure selected component',
         empty_selection: 'Select a component to view its properties',
         category: 'Category',
+        component_renamed: 'Component "{oldName}" renamed to "{newName}"',
+        component_renamed_with_updates:
+          'Component "{oldName}" renamed to "{newName}" and {count} reference(s) updated',
         delete_component_title: 'Delete Component?',
         delete_component_warning:
           'Component "{name}" is used by {count} other component(s):',

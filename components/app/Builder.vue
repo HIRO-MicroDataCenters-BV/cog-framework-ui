@@ -467,25 +467,18 @@ const onRenameComponent = (
 
   // 3. Show success toast
   if (updatedCount > 0) {
-    toaster.show(
-      'success',
-      t('builder.component_renamed_with_updates', {
-        oldName,
-        newName,
-        count: updatedCount,
-      }),
-      {
-        duration: 4000,
-      },
-    );
+    toaster.show('success', 'builder.component_renamed_with_updates', {
+      oldName,
+      newName,
+      count: updatedCount,
+      duration: 4000,
+    });
   } else {
-    toaster.show(
-      'success',
-      t('builder.component_renamed', { oldName, newName }),
-      {
-        duration: 3000,
-      },
-    );
+    toaster.show('success', 'builder.component_renamed', {
+      oldName,
+      newName,
+      duration: 3000,
+    });
   }
 };
 
