@@ -8,26 +8,18 @@
     <div v-else class="space-y-4 px-2">
       <!-- HUD Container -->
       <div class="bg-card overflow-hidden">
-        <div class="px-4 py-3 flex justify-between items-center">
-          <div class="flex-1 mr-4">
-            <Input
-              v-if="!readonly"
-              v-model="nodeName"
-              type="text"
-              :placeholder="$t('placeholder.component_name')"
-              class="h-8 font-semibold bg-transparent"
-              :class="{ 'text-red-500': !isComponentNameValid }"
-            />
-            <div v-else class="font-semibold px-3">
-              {{ selectedNode.data?.label }}
-            </div>
+        <div class="px-4 py-3">
+          <Input
+            v-if="!readonly"
+            v-model="nodeName"
+            type="text"
+            :placeholder="$t('placeholder.component_name')"
+            class="h-8 font-semibold bg-transparent"
+            :class="{ 'text-red-500': !isComponentNameValid }"
+          />
+          <div v-else class="font-semibold px-3">
+            {{ selectedNode.data?.label }}
           </div>
-          <DialogClose
-            class="h-6 w-6 flex items-center justify-center cursor-pointer"
-          >
-            <Icon name="lucide:x" class="size-4" />
-            <span class="sr-only">Close</span>
-          </DialogClose>
         </div>
 
         <div class="p-4 overflow-y-auto max-h-[calc(100vh-140px)]">
@@ -291,7 +283,7 @@ function inferTypeFromValue(value: unknown): string {
 
 // Pipeline parameters from runtime_config
 const pipelineParameters = computed((): PipelineInputParam[] => {
-  console.log('[PropertiesSidebar] pipelineData:', props.pipelineData);
+  console.log('[BuilderNodeProperties] pipelineData:', props.pipelineData);
 
   // Type guard for pipelineData
   const data = props.pipelineData as
@@ -301,7 +293,7 @@ const pipelineParameters = computed((): PipelineInputParam[] => {
     | null
     | undefined;
 
-  console.log('[PropertiesSidebar] runtime_config:', data?.runtime_config);
+  console.log('[BuilderNodeProperties] runtime_config:', data?.runtime_config);
 
   if (!data?.runtime_config?.parameters) return [];
 
@@ -313,7 +305,7 @@ const pipelineParameters = computed((): PipelineInputParam[] => {
     }),
   );
 
-  console.log('[PropertiesSidebar] pipelineParameters:', params);
+  console.log('[BuilderNodeProperties] pipelineParameters:', params);
   return params;
 });
 

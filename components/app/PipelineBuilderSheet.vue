@@ -1,8 +1,9 @@
 <template>
   <Sheet :open="open" @update:open="(v) => emit('update:open', v)">
     <SheetContent
+      class="sm:max-w-lg"
       :show-overlay="false"
-      :show-close-button="true"
+      :show-close-button="false"
       :disable-outside-pointer-events="false"
       @pointer-down-outside="
         (event) => {
@@ -30,8 +31,19 @@
       "
     >
       <SheetTitle class="sr-only">Properties</SheetTitle>
-      <div v-if="selectedNode" class="pt-4">
-        <PropertiesSidebar
+
+      <!-- Separate top section with close button -->
+      <div class="flex items-center justify-end px-4 py-3 border-b">
+        <DialogClose
+          class="h-6 w-6 flex items-center justify-center cursor-pointer hover:bg-accent rounded-sm transition-colors"
+        >
+          <Icon name="lucide:x" class="size-4" />
+          <span class="sr-only">Close</span>
+        </DialogClose>
+      </div>
+
+      <div v-if="selectedNode">
+        <BuilderNodeProperties
           :readonly="readonly"
           :selected-node="selectedNode"
           :all-nodes="allNodes"
@@ -49,8 +61,9 @@
 </template>
 
 <script setup lang="ts">
-import PropertiesSidebar from './builder/PropertiesSidebar.vue';
+import BuilderNodeProperties from './builder/BuilderNodeProperties.vue';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { DialogClose } from '@/components/ui/dialog';
 import type { Node, NodeUpdate } from '~/types/builder.types';
 
 defineProps<{
