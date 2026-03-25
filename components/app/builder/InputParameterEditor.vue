@@ -27,17 +27,17 @@
     </div>
 
     <!-- Edit View -->
-    <div v-else class="grid grid-cols-[130px_1fr] gap-2 items-start">
+    <div v-else class="grid grid-cols-[150px_1fr] gap-3 items-start">
       <!-- Value Source Type Selector -->
       <div>
         <Select
           v-model="localInput.value_source_type"
           @update:model-value="onSourceTypeChange"
         >
-          <SelectTrigger class="h-8 text-xs">
+          <SelectTrigger size="sm" class="w-full text-xs">
             <SelectValue :placeholder="$t('placeholder.select_source_type')" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="start" side="bottom">
             <SelectItem value="component_output" class="text-xs">
               {{ $t('label.component_output') }}
             </SelectItem>
@@ -52,19 +52,19 @@
       </div>
 
       <!-- Source Value Input (Dynamic based on type) -->
-      <div>
+      <div class="relative">
         <!-- Component Output Selector -->
         <div v-if="localInput.value_source_type === 'component_output'">
           <Select
             v-model="selectedComponentOutput"
             @update:model-value="onComponentOutputChange"
           >
-            <SelectTrigger class="h-8 text-xs font-mono">
+            <SelectTrigger size="sm" class="w-full text-xs font-mono">
               <SelectValue
                 :placeholder="$t('placeholder.select_component_output')"
               />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="start" side="bottom">
               <SelectItem
                 v-for="option in componentOutputOptions"
                 :key="option.value"
@@ -80,10 +80,10 @@
         <!-- Pipeline Parameter Selector -->
         <div v-if="localInput.value_source_type === 'pipeline_inputparam'">
           <Select v-model="localInput.source" @update:model-value="emitUpdate">
-            <SelectTrigger class="h-8 text-xs font-mono">
+            <SelectTrigger size="sm" class="w-full text-xs font-mono">
               <SelectValue :placeholder="$t('placeholder.select_parameter')" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="start" side="bottom">
               <SelectItem
                 v-for="param in pipelineParams"
                 :key="param.name"
