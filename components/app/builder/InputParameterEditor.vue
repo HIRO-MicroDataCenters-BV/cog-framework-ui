@@ -279,12 +279,12 @@ function getConstantPlaceholder(): string {
   }
 }
 
-// Handle source type change
+// Handle source type change — always reset bound value; formats are not interchangeable
+// (e.g. "Node.output" is invalid as a constant or pipeline param name).
 function onSourceTypeChange(newType: unknown) {
   if (!newType || typeof newType !== 'string') return;
-  // We no longer clear source when changing type to improve UX
-  // localInput.value.source = '';
-  // selectedComponentOutput.value = '';
+  localInput.value.source = '';
+  selectedComponentOutput.value = '';
   emitUpdate();
 }
 
