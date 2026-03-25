@@ -8,44 +8,51 @@
     <div v-else class="space-y-4 px-0">
       <!-- HUD Container -->
       <div class="overflow-hidden">
-        <div class="px-2 py-2.5 flex gap-2 items-center">
-          <Input
+        <div class="px-2 pt-1 pb-0">
+          <div class="flex gap-2 items-center">
+            <Input
+              v-if="!readonly"
+              v-model="nodeName"
+              type="text"
+              :placeholder="$t('placeholder.component_name')"
+              class="h-8 font-semibold bg-transparent flex-1"
+              :class="{ 'text-red-500': !isComponentNameValid }"
+              @keydown.enter="onSaveComponentName"
+            />
+            <Button
+              v-if="!readonly"
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-8 px-2.5 shrink-0"
+              :disabled="!hasNameChanged || !isComponentNameValid"
+              :title="$t('action.save')"
+              @click="onSaveComponentName"
+            >
+              <Icon name="lucide:check" class="size-4 shrink-0" />
+            </Button>
+            <div v-else class="font-semibold px-2">
+              {{ selectedNode.data?.label }}
+            </div>
+          </div>
+          <!-- Error sits under the name row; min-h keeps layout stable when it appears -->
+          <div
             v-if="!readonly"
-            v-model="nodeName"
-            type="text"
-            :placeholder="$t('placeholder.component_name')"
-            class="h-8 font-semibold bg-transparent flex-1"
-            :class="{ 'text-red-500': !isComponentNameValid }"
-            @keydown.enter="onSaveComponentName"
-          />
-          <Button
-            v-if="!readonly"
-            type="button"
-            variant="outline"
-            size="sm"
-            class="h-8 px-2.5 shrink-0"
-            :disabled="!hasNameChanged || !isComponentNameValid"
-            :title="$t('action.save')"
-            @click="onSaveComponentName"
+            class="mt-1 min-h-4.5"
+            aria-live="polite"
           >
-            <Icon name="lucide:check" class="size-4 shrink-0" />
-          </Button>
-          <div v-else class="font-semibold px-2">
-            {{ selectedNode.data?.label }}
+            <p
+              v-if="componentNameError"
+              class="text-xs font-medium text-red-500 leading-tight"
+            >
+              {{ componentNameError }}
+            </p>
           </div>
         </div>
 
-        <div class="px-2 py-3 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
-          <!-- Reserve height so name validation does not shift content when it appears -->
-          <div v-if="!readonly" class="mb-3 min-h-4 px-0">
-            <div
-              v-if="componentNameError"
-              class="text-xs font-medium text-red-500"
-            >
-              {{ componentNameError }}
-            </div>
-          </div>
-
+        <div
+          class="px-2 pt-1.5 pb-3 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3"
+        >
           <!-- INPUT block -->
           <div class="rounded-lg border border-border overflow-hidden">
             <div
