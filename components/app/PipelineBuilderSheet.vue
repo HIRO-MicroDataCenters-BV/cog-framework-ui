@@ -38,7 +38,10 @@
           :pipeline-data="pipelineData"
           @update-node="(id, updates) => emit('update-node', id, updates)"
           @delete-node="(id) => emit('delete-node', id)"
-          @rename-component="(id, oldName, newName) => emit('rename-component', id, oldName, newName)"
+          @rename-component="
+            (id, oldName, newName) =>
+              emit('rename-component', id, oldName, newName)
+          "
         />
       </div>
     </SheetContent>
@@ -46,8 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import PropertiesSidebar from './builder/PropertiesSidebar.vue';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import type { Node, NodeUpdate } from '~/types/builder.types';
 
 defineProps<{

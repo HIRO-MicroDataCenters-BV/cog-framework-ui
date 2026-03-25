@@ -106,53 +106,53 @@
 
             <!-- Header & Content -->
             <div class="cursor-pointer">
-                <div
-                  class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
+              <div
+                class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
+              >
+                <span
+                  class="text-sm flex-auto overflow-hidden font-medium truncate"
+                  >{{ data.displayName || data.label }}</span
                 >
-                  <span
-                    class="text-sm flex-auto overflow-hidden font-medium truncate"
-                    >{{ data.displayName || data.label }}</span
-                  >
-                  <Tooltip v-if="data.status">
-                    <TooltipTrigger as-child>
-                      <Icon
-                        :name="getStatusConfig(data.status).icon"
-                        :class="[
-                          'w-4 h-4 shrink-0',
-                          data.status?.toLowerCase() === 'running' &&
-                            'animate-[spin_2s_linear_infinite]',
-                        ]"
-                        :style="{ color: getStatusConfig(data.status).color }"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p class="capitalize text-xs">
-                        {{ data.status.toLowerCase() }}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div
-                  v-if="
-                    data.displayName ||
-                    (data.category && data.category !== 'general')
-                  "
-                  class="px-4 py-3"
+                <Tooltip v-if="data.status">
+                  <TooltipTrigger as-child>
+                    <Icon
+                      :name="getStatusConfig(data.status).icon"
+                      :class="[
+                        'w-4 h-4 shrink-0',
+                        data.status?.toLowerCase() === 'running' &&
+                          'animate-[spin_2s_linear_infinite]',
+                      ]"
+                      :style="{ color: getStatusConfig(data.status).color }"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p class="capitalize text-xs">
+                      {{ data.status.toLowerCase() }}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div
+                v-if="
+                  data.displayName ||
+                  (data.category && data.category !== 'general')
+                "
+                class="px-4 py-3"
+              >
+                <p
+                  v-if="data.displayName"
+                  class="text-xs text-muted-foreground font-medium"
                 >
-                  <p
-                    v-if="data.displayName"
-                    class="text-xs text-muted-foreground font-medium"
-                  >
-                    {{ data.label }}
-                  </p>
-                  <p
-                    v-else-if="data.category && data.category !== 'general'"
-                    class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
-                  >
-                    <Icon name="lucide:folder" class="w-3 h-3" />
-                    {{ data.category }}
-                  </p>
-                </div>
+                  {{ data.label }}
+                </p>
+                <p
+                  v-else-if="data.category && data.category !== 'general'"
+                  class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
+                >
+                  <Icon name="lucide:folder" class="w-3 h-3" />
+                  {{ data.category }}
+                </p>
+              </div>
             </div>
 
             <!-- Output Handles (Bottom) -->

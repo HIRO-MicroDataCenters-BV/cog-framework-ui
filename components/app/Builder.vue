@@ -1,63 +1,63 @@
 <template>
   <div class="h-full flex">
-      <div
-        v-if="!readonly && isSidebarOpen.library"
-        class="w-80 flex-shrink-0 border-r"
-      >
-        <AppPanel :title="$t('builder.components')">
-          <template #actions>
-            <button
-              v-for="action in menuActions"
-              :key="action.key"
-              class="p-1 rounded hover:bg-muted"
-              :title="$t(action.titleKey)"
-              @click="action.action"
-            >
-              <Icon :name="action.icon" class="w-4 h-4" />
-            </button>
-          </template>
-          <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
-        </AppPanel>
-      </div>
-      <div
-        v-if="!readonly && !isSidebarOpen.library"
-        class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-background z-50 pointer-events-none"
-      >
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-medium text-muted-foreground flex-1">
-            {{ $t('builder.components') }}
-          </h3>
+    <div
+      v-if="!readonly && isSidebarOpen.library"
+      class="w-80 flex-shrink-0 border-r"
+    >
+      <AppPanel :title="$t('builder.components')">
+        <template #actions>
           <button
             v-for="action in menuActions"
             :key="action.key"
-            class="p-1 rounded hover:bg-muted pointer-events-auto"
+            class="p-1 rounded hover:bg-muted"
             :title="$t(action.titleKey)"
             @click="action.action"
           >
             <Icon :name="action.icon" class="w-4 h-4" />
           </button>
-        </div>
+        </template>
+        <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
+      </AppPanel>
+    </div>
+    <div
+      v-if="!readonly && !isSidebarOpen.library"
+      class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-background z-50 pointer-events-none"
+    >
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-medium text-muted-foreground flex-1">
+          {{ $t('builder.components') }}
+        </h3>
+        <button
+          v-for="action in menuActions"
+          :key="action.key"
+          class="p-1 rounded hover:bg-muted pointer-events-auto"
+          :title="$t(action.titleKey)"
+          @click="action.action"
+        >
+          <Icon :name="action.icon" class="w-4 h-4" />
+        </button>
       </div>
+    </div>
 
-      <div class="flex-1 flex flex-col">
-        <div class="flex-1">
-          <CanvasArea
-            v-if="!readonly || nodes.length > 0 || edges.length > 0"
-            :key="`canvas-${nodes.length}-${edges.length}`"
-            :nodes="enrichedNodes"
-            :edges="edges"
-            :readonly="readonly"
-            @node-click="onNodeClick"
-            @connect="onConnect"
-            @edge-update="onEdgeUpdate"
-            @update="onUpdate"
-            @add-node="onAddNode"
-            @update-node="onUpdateNode"
-            @error="onError"
-            @request-delete="onRequestDelete"
-          />
-        </div>
+    <div class="flex-1 flex flex-col">
+      <div class="flex-1">
+        <CanvasArea
+          v-if="!readonly || nodes.length > 0 || edges.length > 0"
+          :key="`canvas-${nodes.length}-${edges.length}`"
+          :nodes="enrichedNodes"
+          :edges="edges"
+          :readonly="readonly"
+          @node-click="onNodeClick"
+          @connect="onConnect"
+          @edge-update="onEdgeUpdate"
+          @update="onUpdate"
+          @add-node="onAddNode"
+          @update-node="onUpdateNode"
+          @error="onError"
+          @request-delete="onRequestDelete"
+        />
       </div>
+    </div>
   </div>
 
   <DeleteConfirmationDialog

@@ -1,9 +1,6 @@
 <template>
   <div class="h-[calc(100svh-64px)]">
-    <AppBuilder
-      ref="builderRef"
-      :readonly="false"
-    />
+    <AppBuilder ref="builderRef" :readonly="false" />
 
     <PipelineBuilderSheet
       :open="!!selectedNode"
@@ -53,7 +50,9 @@ const enrichedNodes = computed(() => {
   }));
 });
 
-const pipelineData = computed(() => page.value.data?.builder?.pipelineData || null);
+const pipelineData = computed(
+  () => page.value.data?.builder?.pipelineData || null,
+);
 
 setPage({
   section: 'pipelines_builder',
