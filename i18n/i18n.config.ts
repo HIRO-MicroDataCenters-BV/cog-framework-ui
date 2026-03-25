@@ -155,6 +155,7 @@ export default defineI18nConfig(() => ({
         header_run_tooltip_title: 'Finish setup to run',
         save_run_dialog_title: 'Save and run pipeline',
         save_run_dialog_description: 'Pick how to run this pipeline.',
+        save_run_pipeline_label: 'Pipeline name',
         save_run_mode_standard: 'Non-federated',
         save_run_mode_standard_desc: 'Regular training run.',
         save_run_mode_federated: 'Federated',

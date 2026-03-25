@@ -124,6 +124,22 @@
               <AlertDialogDescription>
                 {{ $t('builder.save_run_dialog_description') }}
               </AlertDialogDescription>
+              <div
+                class="mt-4 border-l-2 border-primary/50 pl-3"
+                role="status"
+              >
+                <p
+                  class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {{ $t('builder.save_run_pipeline_label') }}
+                </p>
+                <p
+                  class="truncate text-base font-semibold leading-snug text-foreground"
+                  :title="pipelineName || undefined"
+                >
+                  {{ pipelineName || '—' }}
+                </p>
+              </div>
             </AlertDialogHeader>
             <RadioGroup v-model="pipelineRunMode" class="grid gap-3 py-2">
               <label
