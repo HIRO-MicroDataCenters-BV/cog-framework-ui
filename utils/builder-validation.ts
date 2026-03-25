@@ -1,8 +1,62 @@
 import type {
   Node,
   ComponentInput,
+  ComponentPath,
   PipelineInputParam,
+  PipelineBuilderData,
 } from '~/types/builder.types';
+
+/**
+ * Resolves the effective input for a definition: stored row, or synthetic constant from schema default.
+ */
+export function resolveComponentInput(
+  inputs: ComponentInput[] | undefined,
+  inputDef: ComponentPath,
+): ComponentInput | undefined {
+  const existing = (inputs || []).find((i) => i.destination === inputDef.name);
+  if (existing) return existing;
+  if (inputDef.default !== undefined && inputDef.default !== null) {
+    return {
+      destination: inputDef.name,
+      value_source_type: 'constant',
+      source: String(inputDef.default),
+    };
+  }
+  return undefined;
+}
+
+function inferPipelineParamType(value: unknown): string {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? 'Integer' : 'Float';
+  }
+  if (typeof value === 'string') {
+    if (!Number.isNaN(Number(value)) && value.trim() !== '') {
+      return value.includes('.') ? 'Float' : 'Integer';
+    }
+    if (value === 'true' || value === 'false') return 'Boolean';
+  }
+  return 'String';
+}
+
+/**
+ * Pipeline parameters for validating pipeline_inputparam sources (matches sheet: input_path or runtime_config).
+ */
+export function getPipelineParamsForValidation(
+  builder: PipelineBuilderData | undefined | null,
+): PipelineInputParam[] {
+  if (!builder) return [];
+  if (builder.input_path?.length) return builder.input_path;
+  const pd = builder.pipelineData as
+    | { runtime_config?: { parameters?: Record<string, unknown> } }
+    | undefined
+    | null;
+  if (!pd?.runtime_config?.parameters) return [];
+  return Object.entries(pd.runtime_config.parameters).map(([name, value]) => ({
+    name,
+    default: String(value),
+    type: inferPipelineParamType(value),
+  }));
+}
 
 /**
  * Validates component name according to schema rules

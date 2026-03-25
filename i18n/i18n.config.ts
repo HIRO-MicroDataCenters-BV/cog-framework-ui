@@ -159,7 +159,8 @@ export default defineI18nConfig(() => ({
         save_run_mode_standard: 'Non-federated',
         save_run_mode_standard_desc: 'Regular training run.',
         save_run_mode_federated: 'Federated',
-        save_run_mode_federated_desc: 'Dataspace federated run. Order ID is used if present.',
+        save_run_mode_federated_desc:
+          'Dataspace federated run. Order ID is used if present.',
         empty_selection: 'Select a component to view its properties',
         category: 'Category',
         component_renamed: 'Component "{oldName}" renamed to "{newName}"',
@@ -718,6 +719,7 @@ export default defineI18nConfig(() => ({
           pipeline_components: 'Pipeline components',
           component_required: 'Pipeline must have at least one component',
           input_required: '{component}: input "{input}" is required',
+          components_invalid: 'All components need valid inputs.',
         },
         validation: {
           model_name: 'Model name',

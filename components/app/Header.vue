@@ -124,10 +124,7 @@
               <AlertDialogDescription>
                 {{ $t('builder.save_run_dialog_description') }}
               </AlertDialogDescription>
-              <div
-                class="mt-4 border-l-2 border-primary/50 pl-3"
-                role="status"
-              >
+              <div class="mt-4 border-l-2 border-primary/50 pl-3" role="status">
                 <p
                   class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
                 >
@@ -208,7 +205,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import type {
-  Edge,
   Component,
   Node as BuilderNode,
   ComponentInput,
@@ -234,6 +230,8 @@ import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
 
 const { page } = useApp();
 const { t } = useI18n();
+const { nodes } = usePipelineBuilder();
+const { isNodeValid } = useNodeValidation();
 
 /** `page.section` keys do not always match URL paths (e.g. runs list is `/pipelines/run`). */
 const breadcrumbSectionTo = computed(() => {
@@ -317,33 +315,15 @@ const validationErrors = computed(() => {
     errors.push(t('validation.pipeline.component_required'));
   }
 
-  // Check each component's required inputs
-  builder.nodes?.forEach((node: BuilderNode) => {
-    const component = node.data?.component;
-    if (!component) return;
+  // Same rules as canvas / sheet: full input validation per component
+  const graph =
+    nodes.value.length > 0
+      ? nodes.value
+      : ((builder.nodes ?? []) as BuilderNode[]);
 
-    // Get required inputs (those without optional flag or with optional: false)
-    const requiredInputs =
-      component.input_path?.filter((input: ComponentPath) => !input.optional) ||
-      [];
-
-    const configuredInputs = component.inputs || [];
-
-    requiredInputs.forEach((reqInput: ComponentPath) => {
-      const configured = configuredInputs.find(
-        (i: ComponentInput) => i.destination === reqInput.name,
-      );
-
-      if (!configured || !configured.source || !configured.value_source_type) {
-        errors.push(
-          t('validation.pipeline.input_required', {
-            component: component.name || node.label,
-            input: reqInput.name,
-          }),
-        );
-      }
-    });
-  });
+  if (graph.some((node) => node.data?.component && !isNodeValid(node, graph))) {
+    errors.push(t('validation.pipeline.components_invalid'));
+  }
 
   return errors;
 });

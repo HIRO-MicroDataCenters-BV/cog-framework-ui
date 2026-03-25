@@ -1,30 +1,53 @@
-import type { Node } from '~/types/builder.types';
+import type { Node, PipelineBuilderData } from '~/types/builder.types';
+import {
+  getPipelineParamsForValidation,
+  resolveComponentInput,
+  validateComponentInput,
+} from '~/utils/builder-validation';
 
 export const useNodeValidation = () => {
-  const isNodeValid = (node: Node): boolean => {
+  const { page } = useApp();
+
+  /**
+   * Same rules as the properties sheet and `validateComponentInput` (source type + value shape).
+   * `allNodes` must be the full graph; peers exclude `node` for component_output resolution.
+   */
+  const isNodeValid = (node: Node, allNodes: Node[]): boolean => {
     const component = node.data?.component;
     if (!component) return false;
 
-    // Get required inputs (inputs that are not optional)
-    const requiredInputs =
-      component.input_path?.filter((input) => !input.optional) || [];
+    const inputDefs = component.input_path || [];
+    const inputs = component.inputs || [];
+    const builder = page.value.data?.builder as PipelineBuilderData | undefined;
+    const pipelineParams = getPipelineParamsForValidation(builder);
+    const peers = allNodes.filter((n) => n.id !== node.id);
 
-    // Get provided inputs
-    const providedInputs = component.inputs || [];
+    for (const inputDef of inputDefs) {
+      const input = resolveComponentInput(inputs, inputDef);
 
-    // Check all required inputs have a source
-    return requiredInputs.every((required) =>
-      providedInputs.some(
-        (provided) =>
-          provided.destination === required.name &&
-          provided.source &&
-          provided.source.trim() !== '',
-      ),
-    );
+      if (!inputDef.optional && !input) {
+        return false;
+      }
+      if (!input) continue;
+
+      if (!input.value_source_type) {
+        return false;
+      }
+
+      const err = validateComponentInput(
+        input,
+        inputDef,
+        peers,
+        pipelineParams,
+      );
+      if (err !== null) return false;
+    }
+
+    return true;
   };
 
-  const getValidationStatus = (node: Node): string => {
-    return isNodeValid(node) ? 'valid' : 'invalid';
+  const getValidationStatus = (node: Node, allNodes: Node[]): string => {
+    return isNodeValid(node, allNodes) ? 'valid' : 'invalid';
   };
 
   return { isNodeValid, getValidationStatus };

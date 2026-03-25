@@ -46,7 +46,7 @@ const enrichedNodes = computed(() => {
     ...node,
     data: {
       ...node.data,
-      status: getValidationStatus(node),
+      status: getValidationStatus(node, nodes.value),
     },
   }));
 });

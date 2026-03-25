@@ -200,7 +200,10 @@ import type {
   Node,
   NodeUpdate,
 } from '~/types/builder.types';
-import { validateComponentInput } from '~/utils/builder-validation';
+import {
+  resolveComponentInput,
+  validateComponentInput,
+} from '~/utils/builder-validation';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const { t } = useI18n();
@@ -294,26 +297,7 @@ const currentInputs = computed(() => {
 function getInputForDefinition(
   inputDef: ComponentPath,
 ): ComponentInput | undefined {
-  const existingInput = currentInputs.value.find(
-    (input) => input.destination === inputDef.name,
-  );
-
-  // If input exists, return it
-  if (existingInput) {
-    return existingInput;
-  }
-
-  // If no input exists but inputDef has a default, create a default input
-  if (inputDef.default !== undefined && inputDef.default !== null) {
-    return {
-      destination: inputDef.name,
-      value_source_type: 'constant',
-      source: String(inputDef.default),
-    };
-  }
-
-  // No input and no default - return undefined
-  return undefined;
+  return resolveComponentInput(currentInputs.value, inputDef);
 }
 
 // Available upstream components (all nodes except current)
