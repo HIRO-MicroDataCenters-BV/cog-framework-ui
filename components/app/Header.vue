@@ -76,7 +76,7 @@
                     size="sm"
                     :disabled="!canSave"
                     class="group h-9 gap-2 px-4 font-medium shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
-                    @click="runPipeline"
+                    @click="openSaveRunDialog"
                   >
                     <Icon
                       name="lucide:play"
@@ -111,6 +111,58 @@
         </div>
 
         <div class="min-w-0 flex-1" aria-hidden="true" />
+
+        <AlertDialog
+          :open="saveRunDialogOpen"
+          @update:open="onSaveRunDialogOpenChange"
+        >
+          <AlertDialogContent class="max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle>{{
+                $t('builder.save_run_dialog_title')
+              }}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {{ $t('builder.save_run_dialog_description') }}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <RadioGroup v-model="pipelineRunMode" class="grid gap-3 py-2">
+              <label
+                class="flex cursor-pointer gap-3 rounded-lg border border-border p-3 text-left transition-colors has-data-[state=checked]:border-primary has-data-[state=checked]:bg-muted/40"
+              >
+                <RadioGroupItem value="standard" class="mt-0.5 shrink-0" />
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium text-foreground">{{
+                    $t('builder.save_run_mode_standard')
+                  }}</span>
+                  <span class="mt-0.5 block text-xs text-muted-foreground">{{
+                    $t('builder.save_run_mode_standard_desc')
+                  }}</span>
+                </span>
+              </label>
+              <label
+                class="flex cursor-pointer gap-3 rounded-lg border border-border p-3 text-left transition-colors has-data-[state=checked]:border-primary has-data-[state=checked]:bg-muted/40"
+              >
+                <RadioGroupItem value="federated" class="mt-0.5 shrink-0" />
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium text-foreground">{{
+                    $t('builder.save_run_mode_federated')
+                  }}</span>
+                  <span class="mt-0.5 block text-xs text-muted-foreground">{{
+                    $t('builder.save_run_mode_federated_desc')
+                  }}</span>
+                </span>
+              </label>
+            </RadioGroup>
+            <AlertDialogFooter>
+              <AlertDialogCancel @click="saveRunDialogOpen = false">
+                {{ $t('action.cancel') }}
+              </AlertDialogCancel>
+              <Button type="button" @click="confirmSaveRun">
+                {{ $t('action.confirm') }}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </template>
 
       <!-- Default header (non–pipeline builder) -->
@@ -138,7 +190,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type {
   Edge,
   Component,
@@ -153,6 +205,16 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
 
 const { page } = useApp();
 const { t } = useI18n();
@@ -168,9 +230,6 @@ const breadcrumbSectionTo = computed(() => {
   return `/${section}`;
 });
 const api = useApi();
-const config = useRuntimeConfig();
-const baseUrl = config.app.baseURL;
-const urlOrigin = window.location.origin;
 
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
@@ -277,9 +336,29 @@ const canSave = computed(() => {
   return validationErrors.value.length === 0;
 });
 
-const runPipeline = () => {
+const saveRunDialogOpen = ref(false);
+const pipelineRunMode = ref<'standard' | 'federated'>('standard');
+
+const openSaveRunDialog = () => {
+  if (!canSave.value) return;
+  pipelineRunMode.value = orderId.value ? 'federated' : 'standard';
+  saveRunDialogOpen.value = true;
+};
+
+const confirmSaveRun = () => {
+  saveRunDialogOpen.value = false;
+  executePipelineRun(pipelineRunMode.value);
+};
+
+function onSaveRunDialogOpenChange(open: boolean) {
+  saveRunDialogOpen.value = open;
+}
+
+function executePipelineRun(mode: 'standard' | 'federated') {
   const builder = page.value.data?.builder;
   if (!builder) return;
+
+  const isFederated = mode === 'federated';
 
   interface PipelineData {
     name: string;
@@ -304,7 +383,7 @@ const runPipeline = () => {
       const input_path = component?.input_path || [];
       const output_path = component?.output_path || [];
 
-      if (orderId.value) {
+      if (isFederated) {
         // For federated pipelines, include both metadata AND inputs
         const inputs =
           component?.inputs?.map((input: ComponentInput) => ({
@@ -341,7 +420,7 @@ const runPipeline = () => {
       };
     }) || [];
 
-  if (orderId.value) {
+  if (isFederated) {
     const inputPathMap = new Map<string, TopLevelInputPath>();
 
     components.forEach((comp) => {
@@ -420,13 +499,16 @@ const runPipeline = () => {
 
   data.pipeline_components = components;
 
-  if (orderId.value) {
-    data.order_id = orderId.value;
+  if (isFederated) {
+    const oid = orderId.value;
+    if (oid) {
+      data.order_id = oid;
+    }
     api.postTrainingBuilderPipelineDataspaceFederatedRun(data);
   } else {
     api.postTrainingBuilderPipeline(data);
   }
-};
+}
 </script>
 
 <style></style>
