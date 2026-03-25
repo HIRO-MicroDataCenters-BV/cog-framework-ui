@@ -31,7 +31,7 @@
 <script lang="ts" setup>
 import type { Node } from '~/types/builder.types';
 import { useNodeValidation } from '~/composables/useNodeValidation';
-import PipelineBuilderSheet from '~/components/app/PipelineBuilderSheet.vue';
+import PipelineBuilderSheet from '~/components/app/builder/PipelineBuilderSheet.vue';
 
 const route = useRoute();
 const { setPage, page } = useApp();

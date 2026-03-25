@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import BuilderNodeProperties from './builder/BuilderNodeProperties.vue';
+import BuilderNodeProperties from './BuilderNodeProperties.vue';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { DialogClose } from '@/components/ui/dialog';
 import type { Node, NodeUpdate } from '~/types/builder.types';
