@@ -7,7 +7,10 @@
         >
           <Icon :name="getTypeIcon(inputDefinition.type)" class="w-3.5 h-3.5" />
         </div>
-        <span class="text-sm">{{ inputDefinition.name }}</span>
+        <span class="text-sm">
+          {{ inputDefinition.name }}
+          <span v-if="!inputDefinition.optional" class="text-orange-500">*</span>
+        </span>
       </div>
       <span class="text-[10px] font-mono px-1.5 py-0.5 text-muted-foreground">
         {{ inputDefinition.type }}

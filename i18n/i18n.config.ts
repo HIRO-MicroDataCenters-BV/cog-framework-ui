@@ -293,6 +293,7 @@ export default defineI18nConfig(() => ({
       placeholder: {
         select_parameter: 'Select Parameter',
         select_source_type: 'Select Source Type',
+        select_component_output: 'Select Component Output',
         dataset_type: 'Select Dataset Type',
         name: 'Enter a name',
         version: 'Version',
