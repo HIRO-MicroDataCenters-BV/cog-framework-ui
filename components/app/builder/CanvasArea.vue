@@ -568,22 +568,12 @@ const onDrop = (event: DragEvent) => {
             ? String(inputDef.default)
             : '';
 
-        console.log(
-          `[CanvasArea] Initializing input "${inputDef.name}" with default:`,
-          defaultValue,
-        );
-
         return {
           destination: inputDef.name,
           value_source_type: 'constant',
           source: defaultValue,
         };
       },
-    );
-
-    console.log(
-      `[CanvasArea] Created component "${component.name}" with ${inputs.length} inputs:`,
-      inputs,
     );
 
     // Create a DEEP copy of component with initialized inputs
