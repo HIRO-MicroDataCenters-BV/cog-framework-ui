@@ -115,7 +115,6 @@ const fetchComponents = async () => {
     if (res && 'data' in res) {
       components.value = res.data as unknown as Component[];
 
-
       // Debug: Show first component's input_path to verify defaults
       if (components.value.length > 0) {
         const firstComp = components.value[0];

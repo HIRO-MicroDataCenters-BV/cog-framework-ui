@@ -98,7 +98,9 @@
                 <p class="mb-2 text-xs font-semibold">
                   {{ $t('builder.header_run_tooltip_title') }}
                 </p>
-                <ul class="list-inside list-disc space-y-1.5 text-xs text-background/80">
+                <ul
+                  class="list-inside list-disc space-y-1.5 text-xs text-background/80"
+                >
                   <li v-for="error in validationErrors" :key="error">
                     {{ error }}
                   </li>

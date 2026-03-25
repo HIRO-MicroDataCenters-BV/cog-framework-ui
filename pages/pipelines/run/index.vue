@@ -304,24 +304,27 @@ watch(activeTab, () => {
     :filterable-columns="['status']"
   >
     <template #header-actions>
-      <!-- Segmented Control for Active/Archived -->
+      <!-- Segmented control: h-9 matches Table search Input and refresh icon button -->
       <div
-        class="relative inline-flex items-center bg-muted rounded-lg p-1 gap-1"
+        class="relative inline-flex h-9 shrink-0 items-stretch gap-0.5 rounded-lg bg-muted p-0.5"
       >
-        <!-- Animated sliding background -->
         <div
           :class="[
-            'absolute top-1 bottom-1 bg-background rounded-md shadow-sm transition-all duration-300 ease-in-out',
-            activeTab === 'active' ? 'left-1' : 'left-[calc(50%)]',
+            'pointer-events-none absolute top-0.5 bottom-0.5 rounded-md bg-background shadow-sm transition-[left] duration-300 ease-in-out',
+            activeTab === 'active' ? 'left-0.5' : 'left-(--seg-archived-left)',
           ]"
           :style="{
-            width: 'calc(50% - 0.25rem)',
+            /* p-0.5×2 + gap-0.5 → segment = (100% - 0.625rem) / 2 */
+            width: 'calc((100% - 0.625rem) / 2)',
+            '--seg-archived-left':
+              'calc(0.125rem + (100% - 0.625rem) / 2 + 0.125rem)',
           }"
         />
 
         <button
+          type="button"
           :class="[
-            'relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors duration-200',
+            'relative z-10 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors duration-200',
             activeTab === 'active'
               ? 'text-foreground'
               : 'text-muted-foreground hover:text-foreground',
@@ -331,15 +334,16 @@ watch(activeTab, () => {
           <Icon
             name="lucide:folder-open-dot"
             :class="[
-              'h-4 w-4 transition-colors duration-300',
+              'size-4 shrink-0 transition-colors duration-300',
               activeTab === 'active' ? 'text-blue-500' : '',
             ]"
           />
           <span>Active</span>
         </button>
         <button
+          type="button"
           :class="[
-            'relative z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-colors duration-200',
+            'relative z-10 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors duration-200',
             activeTab === 'archived'
               ? 'text-foreground'
               : 'text-muted-foreground hover:text-foreground',
@@ -349,7 +353,7 @@ watch(activeTab, () => {
           <Icon
             name="lucide:folder-archive"
             :class="[
-              'h-4 w-4 transition-colors duration-300',
+              'size-4 shrink-0 transition-colors duration-300',
               activeTab === 'archived' ? 'text-orange-500' : '',
             ]"
           />

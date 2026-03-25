@@ -36,11 +36,7 @@
             </div>
           </div>
           <!-- Error sits under the name row; min-h keeps layout stable when it appears -->
-          <div
-            v-if="!readonly"
-            class="mt-1 min-h-4.5"
-            aria-live="polite"
-          >
+          <div v-if="!readonly" class="mt-1 min-h-4.5" aria-live="polite">
             <p
               v-if="componentNameError"
               class="text-xs font-medium text-red-500 leading-tight"

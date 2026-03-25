@@ -9,7 +9,9 @@
         </div>
         <span class="text-sm">
           {{ inputDefinition.name }}
-          <span v-if="!inputDefinition.optional" class="text-orange-500">*</span>
+          <span v-if="!inputDefinition.optional" class="text-orange-500"
+            >*</span
+          >
         </span>
       </div>
       <span class="text-[10px] font-mono px-1.5 py-0.5 text-muted-foreground">
@@ -38,11 +40,7 @@
             v-model="localInput.value_source_type"
             @update:model-value="onSourceTypeChange"
           >
-            <SelectTrigger
-              size="sm"
-              class="w-full text-xs"
-              @blur="markTouched"
-            >
+            <SelectTrigger size="sm" class="w-full text-xs" @blur="markTouched">
               <SelectValue
                 :placeholder="$t('placeholder.select_source_type')"
               />
