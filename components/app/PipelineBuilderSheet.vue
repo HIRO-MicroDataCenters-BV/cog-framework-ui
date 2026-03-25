@@ -1,7 +1,7 @@
 <template>
   <Sheet :open="open" @update:open="(v) => emit('update:open', v)">
     <SheetContent
-      class="sm:max-w-lg"
+      class="sm:max-w-lg gap-2 p-0"
       :show-overlay="false"
       :show-close-button="false"
       :disable-outside-pointer-events="false"
@@ -33,7 +33,7 @@
       <SheetTitle class="sr-only">Properties</SheetTitle>
 
       <!-- Separate top section with close button -->
-      <div class="flex items-center justify-end px-4 py-3 border-b">
+      <div class="flex items-center justify-end px-2 py-2 border-b">
         <DialogClose
           class="h-6 w-6 flex items-center justify-center cursor-pointer hover:bg-accent rounded-sm transition-colors"
         >

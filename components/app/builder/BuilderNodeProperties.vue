@@ -5,10 +5,10 @@
       <p>{{ $t('builder.empty_selection') }}</p>
     </div>
 
-    <div v-else class="space-y-4 px-2">
+    <div v-else class="space-y-4 px-0">
       <!-- HUD Container -->
       <div class="overflow-hidden">
-        <div class="px-4 py-3 flex gap-2 items-center">
+        <div class="px-2 py-2.5 flex gap-2 items-center">
           <Input
             v-if="!readonly"
             v-model="nodeName"
@@ -21,28 +21,25 @@
           <Button
             v-if="!readonly"
             type="button"
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+            variant="outline"
+            size="sm"
+            class="h-8 px-2.5 shrink-0"
             :disabled="!hasNameChanged || !isComponentNameValid"
             :title="$t('action.save')"
             @click="onSaveComponentName"
           >
-            <Icon
-              name="lucide:check"
-              class="size-6 shrink-0 builder-name-save-check"
-            />
+            <Icon name="lucide:check" class="size-4 shrink-0" />
           </Button>
-          <div v-else class="font-semibold px-3">
+          <div v-else class="font-semibold px-2">
             {{ selectedNode.data?.label }}
           </div>
         </div>
 
-        <div class="p-4 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
+        <div class="px-2 py-3 overflow-y-auto max-h-[calc(100vh-140px)] space-y-3">
           <!-- Validation Error -->
           <div
             v-if="componentNameError && !readonly"
-            class="text-red-500 text-xs mb-3 px-1 font-medium"
+            class="text-red-500 text-xs mb-3 px-0 font-medium"
           >
             {{ componentNameError }}
           </div>
@@ -50,7 +47,7 @@
           <!-- INPUT block -->
           <div class="rounded-lg border border-border overflow-hidden">
             <div
-              class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+              class="flex items-center gap-2 px-2 py-2 bg-muted/40 border-b border-border"
             >
               <span
                 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
@@ -67,7 +64,7 @@
                 <div
                   v-for="inputDef in inputDefinitions"
                   :key="inputDef.name"
-                  class="px-3 py-3"
+                  class="px-2 py-2.5"
                 >
                   <InputParameterEditor
                     :input-definition="inputDef"
@@ -81,7 +78,7 @@
                   />
                 </div>
               </div>
-              <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              <p v-else class="px-2 py-2 text-xs text-muted-foreground italic">
                 None
               </p>
             </div>
@@ -90,7 +87,7 @@
           <!-- OUTPUT block -->
           <div class="rounded-lg border border-border overflow-hidden">
             <div
-              class="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border"
+              class="flex items-center gap-2 px-2 py-2 bg-muted/40 border-b border-border"
             >
               <span
                 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
@@ -104,7 +101,7 @@
                 <div
                   v-for="path in outputPaths"
                   :key="path.key"
-                  class="flex items-center justify-between gap-4 px-3 py-2"
+                  class="flex items-center justify-between gap-3 px-2 py-2"
                 >
                   <span class="text-xs font-medium text-foreground shrink-0">{{
                     path.name
@@ -115,7 +112,7 @@
                   >
                 </div>
               </div>
-              <p v-else class="px-3 py-2 text-xs text-muted-foreground italic">
+              <p v-else class="px-2 py-2 text-xs text-muted-foreground italic">
                 None
               </p>
             </div>
@@ -545,10 +542,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped>
-/* Lucide default stroke is 2; bump for a bolder check next to the name field */
-.builder-name-save-check :deep(svg) {
-  stroke-width: 2.75px;
-}
-</style>
