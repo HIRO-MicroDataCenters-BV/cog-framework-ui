@@ -205,7 +205,6 @@
   <CreateParameterDialog
     :open="showCreateDialog"
     :existing-parameters="pipelineParams"
-    :suggested-name="inputDefinition.name"
     @update:open="showCreateDialog = $event"
     @create="handleParameterCreated"
   />
