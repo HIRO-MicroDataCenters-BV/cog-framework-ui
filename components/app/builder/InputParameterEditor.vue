@@ -112,7 +112,7 @@
               <SelectContent align="start" side="bottom">
                 <!-- Create New Parameter Option -->
                 <div
-                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 bg-primary/5"
                   role="option"
                   @click.stop="openCreateDialog"
                   @mousedown.prevent.stop
@@ -121,7 +121,7 @@
                     name="lucide:plus"
                     class="absolute left-2 w-3 h-3 text-primary"
                   />
-                  <span class="font-medium text-primary">
+                  <span class="font-semibold text-primary">
                     {{ $t('builder.create_new_parameter') }}
                   </span>
                 </div>
@@ -156,16 +156,16 @@
 
                 <!-- Manage Parameters Option -->
                 <div
-                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 bg-primary/5"
                   role="option"
                   @click.stop="openManagePanel"
                   @mousedown.prevent.stop
                 >
                   <Icon
                     name="lucide:settings"
-                    class="absolute left-2 w-3 h-3"
+                    class="absolute left-2 w-3 h-3 text-primary"
                   />
-                  <span>{{ $t('builder.manage_parameters') }}</span>
+                  <span class="font-semibold text-primary">{{ $t('builder.manage_parameters') }}</span>
                 </div>
               </SelectContent>
             </Select>
