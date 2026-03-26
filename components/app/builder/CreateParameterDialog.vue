@@ -26,13 +26,15 @@
             @input="validateName"
             @keydown.enter="handleCreate"
           />
-          <p
-            v-if="errors.name"
-            class="text-xs text-destructive"
-            role="alert"
-          >
-            {{ errors.name }}
-          </p>
+          <div class="h-1 -mt-1" aria-live="polite">
+            <p
+              v-if="errors.name"
+              class="text-xs text-destructive leading-tight"
+              role="alert"
+            >
+              {{ errors.name }}
+            </p>
+          </div>
         </div>
 
         <!-- Type -->
