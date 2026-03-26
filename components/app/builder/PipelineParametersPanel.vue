@@ -103,6 +103,14 @@
     </div>
   </div>
 
+  <!-- Create Parameter Dialog -->
+  <CreateParameterDialog
+    :open="showCreateDialog"
+    :existing-parameters="parameters"
+    @update:open="showCreateDialog = $event"
+    @create="handleParameterCreated"
+  />
+
   <AlertDialog :open="deleteConfirmation !== null">
     <AlertDialogContent>
       <AlertDialogHeader>
@@ -145,6 +153,7 @@
 </template>
 
 <script setup lang="ts">
+import CreateParameterDialog from './CreateParameterDialog.vue';
 import type { PipelineInputParam, Node } from '~/types/builder.types';
 
 const props = withDefaults(
@@ -177,6 +186,8 @@ const deleteConfirmation = ref<{
   usageCount: number;
 } | null>(null);
 
+const showCreateDialog = ref(false);
+
 const getUsageCount = (paramName: string): number => {
   let count = 0;
   props.allNodes.forEach((node) => {
@@ -194,18 +205,11 @@ const getUsageCount = (paramName: string): number => {
 };
 
 const addParameter = () => {
-  const newParam: PipelineInputParam = {
-    name: `param_${props.parameters.length + 1}`,
-    default: '',
-    description: '',
-  };
-  emit('update:parameters', [...props.parameters, newParam]);
+  showCreateDialog.value = true;
+};
 
-  // Start editing the new parameter
-  nextTick(() => {
-    editingIndex.value = props.parameters.length;
-    editingParam.value = { ...newParam };
-  });
+const handleParameterCreated = (parameter: PipelineInputParam) => {
+  emit('update:parameters', [...props.parameters, parameter]);
 };
 
 const startEdit = (index: number) => {
