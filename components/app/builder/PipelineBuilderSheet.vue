@@ -31,6 +31,9 @@
       "
     >
       <SheetTitle class="sr-only">Properties</SheetTitle>
+      <SheetDescription class="sr-only">
+        Edit the properties, input parameters, and output parameters for the selected component
+      </SheetDescription>
 
       <!-- Separate top section with close button -->
       <div class="flex items-center justify-end px-2 py-2 border-b">
@@ -62,7 +65,7 @@
 
 <script setup lang="ts">
 import BuilderNodeProperties from './BuilderNodeProperties.vue';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DialogClose } from '@/components/ui/dialog';
 import type { Node, NodeUpdate } from '~/types/builder.types';
 
