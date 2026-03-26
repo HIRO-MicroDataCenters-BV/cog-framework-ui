@@ -394,9 +394,12 @@ function handleParameterSelect(value: unknown) {
 }
 
 // Handle parameter created
-function handleParameterCreated(parameter: PipelineInputParam) {
+async function handleParameterCreated(parameter: PipelineInputParam) {
   // Emit to parent to add the parameter
   emit('create-parameter', parameter);
+
+  // Wait for the parameter to be added to the composable state
+  await nextTick();
 
   // Auto-select the newly created parameter
   localInput.value.source = parameter.name;

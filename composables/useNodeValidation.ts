@@ -1,12 +1,11 @@
-import type { Node, PipelineBuilderData } from '~/types/builder.types';
+import type { Node } from '~/types/builder.types';
 import {
-  getPipelineParamsForValidation,
   resolveComponentInput,
   validateComponentInput,
 } from '~/utils/builder-validation';
 
 export const useNodeValidation = () => {
-  const { page } = useApp();
+  const { pipelineParameters } = usePipelineBuilder();
 
   /**
    * Same rules as the properties sheet and `validateComponentInput` (source type + value shape).
@@ -18,8 +17,7 @@ export const useNodeValidation = () => {
 
     const inputDefs = component.input_path || [];
     const inputs = component.inputs || [];
-    const builder = page.value.data?.builder as PipelineBuilderData | undefined;
-    const pipelineParams = getPipelineParamsForValidation(builder);
+    const pipelineParams = pipelineParameters.value;
     const peers = allNodes.filter((n) => n.id !== node.id);
 
     for (const inputDef of inputDefs) {

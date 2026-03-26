@@ -87,7 +87,7 @@
                     :input-definition="inputDef"
                     :input="getInputForDefinition(inputDef)"
                     :available-components="availableUpstreamComponents"
-                    :pipeline-params="pipelineParameters"
+                    :pipeline-params="pipelineParams"
                     :readonly="readonly"
                     @update="
                       (updatedInput) => onInputUpdate(inputDef, updatedInput)
@@ -211,6 +211,7 @@ import { useBuilderColors } from '~/composables/useBuilderColors';
 const { t } = useI18n();
 const { page } = useApp();
 const { getCategoryColor } = useBuilderColors();
+const { pipelineParameters: pipelineParams } = usePipelineBuilder();
 
 interface Props {
   selectedNode?: Node | null;
@@ -323,52 +324,12 @@ const hasValidationErrors = computed(() => {
       input,
       inputDef,
       availableUpstreamComponents.value,
-      pipelineParameters.value,
+      pipelineParams.value,
     );
     return error !== null;
   });
 });
 
-// Helper function to infer type from value
-function inferTypeFromValue(value: unknown): string {
-  if (typeof value === 'string') {
-    // Check if it's a number
-    if (!isNaN(Number(value))) {
-      return value.includes('.') ? 'Float' : 'Integer';
-    }
-    // Check if it's a boolean
-    if (value === 'true' || value === 'false') return 'Boolean';
-  }
-  return 'String';
-}
-
-// Pipeline parameters from runtime_config
-const pipelineParameters = computed((): PipelineInputParam[] => {
-  console.log('[BuilderNodeProperties] pipelineData:', props.pipelineData);
-
-  // Type guard for pipelineData
-  const data = props.pipelineData as
-    | {
-        runtime_config?: { parameters?: Record<string, unknown> };
-      }
-    | null
-    | undefined;
-
-  console.log('[BuilderNodeProperties] runtime_config:', data?.runtime_config);
-
-  if (!data?.runtime_config?.parameters) return [];
-
-  const params = Object.entries(data.runtime_config.parameters).map(
-    ([name, value]) => ({
-      name,
-      default: value as string,
-      type: inferTypeFromValue(value),
-    }),
-  );
-
-  console.log('[BuilderNodeProperties] pipelineParameters:', params);
-  return params;
-});
 
 // Handle input update
 function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
