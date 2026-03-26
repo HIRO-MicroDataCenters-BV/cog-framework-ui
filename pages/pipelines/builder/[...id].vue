@@ -27,6 +27,15 @@
       @create-parameter="handleCreateParameter"
       @manage-parameters="handleManageParameters"
     />
+
+    <ManageParametersSheet
+      :open="showManageParameters"
+      :parameters="pipelineParameters"
+      :all-nodes="enrichedNodes"
+      :readonly="false"
+      @update:open="showManageParameters = $event"
+      @update:parameters="handleUpdateParameters"
+    />
   </div>
 </template>
 
@@ -34,6 +43,7 @@
 import type { Node, PipelineInputParam } from '~/types/builder.types';
 import { useNodeValidation } from '~/composables/useNodeValidation';
 import PipelineBuilderSheet from '~/components/app/builder/PipelineBuilderSheet.vue';
+import ManageParametersSheet from '~/components/app/builder/ManageParametersSheet.vue';
 
 const { setPage, page } = useApp();
 const {
@@ -42,10 +52,12 @@ const {
   selectNode,
   pipelineParameters,
   addPipelineParameter,
+  updatePipelineParameters,
 } = usePipelineBuilder();
 const { getValidationStatus } = useNodeValidation();
 
 const builderRef = ref();
+const showManageParameters = ref(false);
 
 // Enrich nodes with validation status
 const enrichedNodes = computed(() => {
@@ -83,8 +95,12 @@ const handleCreateParameter = (parameter: PipelineInputParam) => {
 
 // Handle manage parameters
 const handleManageParameters = () => {
-  // TODO: Open manage parameters panel
-  console.log('Manage parameters clicked');
+  showManageParameters.value = true;
+};
+
+// Handle update parameters from manage panel
+const handleUpdateParameters = (params: PipelineInputParam[]) => {
+  updatePipelineParameters(params);
 };
 
 setPage({

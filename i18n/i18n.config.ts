@@ -189,6 +189,8 @@ export default defineI18nConfig(() => ({
           'Create a new parameter that can be used across components in this pipeline',
         create_new_parameter: 'Create New Parameter...',
         manage_parameters: 'Manage Parameters...',
+        manage_parameters_description:
+          'Add, edit, or delete pipeline parameters in one place',
         categories: {
           inputs: 'Inputs',
           processing: 'Processing',
