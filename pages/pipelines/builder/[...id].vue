@@ -55,6 +55,7 @@ const {
   updatePipelineParameters,
 } = usePipelineBuilder();
 const { getValidationStatus } = useNodeValidation();
+const { triggerManageParameters } = useBuilderEvents();
 
 const builderRef = ref();
 const showManageParameters = ref(false);
@@ -102,6 +103,11 @@ const handleManageParameters = () => {
 const handleUpdateParameters = (params: PipelineInputParam[]) => {
   updatePipelineParameters(params);
 };
+
+// Watch for manage parameters trigger from Header component
+watch(triggerManageParameters, () => {
+  showManageParameters.value = true;
+});
 
 setPage({
   section: 'pipelines_builder',

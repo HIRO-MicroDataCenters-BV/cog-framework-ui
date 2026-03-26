@@ -61,11 +61,12 @@
           </FormField>
         </Form>
 
-        <div class="flex shrink-0 items-center">
+        <div class="flex shrink-0 items-center gap-2">
+          <!-- Save & Run Button -->
           <TooltipProvider :delay-duration="200">
             <Tooltip>
               <TooltipTrigger as-child>
-                <!-- Wrapper: disabled buttons don’t receive hover; tooltip still explains validation -->
+                <!-- Wrapper: disabled buttons don't receive hover; tooltip still explains validation -->
                 <span
                   class="inline-flex rounded-lg"
                   :class="{ 'cursor-not-allowed': !canSave }"
@@ -105,6 +106,35 @@
                     {{ error }}
                   </li>
                 </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <!-- Manage Parameters Button -->
+          <TooltipProvider :delay-duration="200">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="h-9 w-9 p-0 shadow-xs"
+                  @click="openManageParameters"
+                >
+                  <Icon
+                    name="lucide:settings"
+                    class="size-3.5"
+                    aria-hidden="true"
+                  />
+                  <span class="sr-only">{{ $t('builder.manage_parameters') }}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                align="center"
+                :side-offset="6"
+              >
+                <p class="text-xs">{{ $t('builder.manage_parameters') }}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -232,6 +262,7 @@ const { page } = useApp();
 const { t } = useI18n();
 const { nodes } = usePipelineBuilder();
 const { isNodeValid } = useNodeValidation();
+const { openManageParameters: triggerManageParameters } = useBuilderEvents();
 
 /** `page.section` keys do not always match URL paths (e.g. runs list is `/pipelines/run`). */
 const breadcrumbSectionTo = computed(() => {
@@ -339,6 +370,10 @@ const openSaveRunDialog = () => {
   if (!canSave.value) return;
   pipelineRunMode.value = orderId.value ? 'federated' : 'standard';
   saveRunDialogOpen.value = true;
+};
+
+const openManageParameters = () => {
+  triggerManageParameters();
 };
 
 const confirmSaveRun = () => {
