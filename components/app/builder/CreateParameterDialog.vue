@@ -20,6 +20,7 @@
             ref="nameInputRef"
             v-model="formData.name"
             type="text"
+            autofocus
             :placeholder="$t('placeholder.parameter_name')"
             :aria-invalid="!!errors.name"
             @input="validateName"
@@ -133,7 +134,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const nameInputRef = ref<HTMLInputElement | null>(null);
+const nameInputRef = ref<HTMLElement | null>(null);
 
 const formData = ref({
   name: '',
@@ -160,9 +161,10 @@ watch(
       };
       errors.value = { name: '' };
 
-      // Focus name input
+      // Focus name input - use getElementById as fallback
       nextTick(() => {
-        nameInputRef.value?.focus();
+        const inputElement = document.getElementById('param-name') as HTMLInputElement;
+        inputElement?.focus();
       });
     }
   },
