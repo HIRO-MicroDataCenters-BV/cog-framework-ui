@@ -118,8 +118,8 @@
                   @mousedown.prevent.stop
                 >
                   <Icon
-                    name="lucide:plus"
-                    class="absolute left-2 w-3 h-3 text-primary"
+                    name="lucide:plus-circle"
+                    class="absolute left-2 w-3.5 h-3.5 text-blue-500"
                   />
                   <span class="font-semibold text-primary">
                     {{ $t('builder.create_new_parameter') }}
@@ -163,7 +163,7 @@
                 >
                   <Icon
                     name="lucide:settings"
-                    class="absolute left-2 w-3 h-3 text-primary"
+                    class="absolute left-2 w-3.5 h-3.5 text-blue-500"
                   />
                   <span class="font-semibold text-primary">{{ $t('builder.manage_parameters') }}</span>
                 </div>
