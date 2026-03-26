@@ -38,6 +38,7 @@
         <div>
           <Select
             v-model="localInput.value_source_type"
+            :modal="false"
             @update:model-value="onSourceTypeChange"
           >
             <SelectTrigger size="sm" class="w-full text-xs" @blur="markTouched">
@@ -65,6 +66,7 @@
           <div v-if="localInput.value_source_type === 'component_output'">
             <Select
               v-model="selectedComponentOutput"
+              :modal="false"
               @update:model-value="onComponentOutputChange"
             >
               <SelectTrigger
@@ -93,7 +95,10 @@
           <div v-if="localInput.value_source_type === 'pipeline_inputparam'">
             <Select
               v-model="localInput.source"
-              @update:model-value="emitUpdate"
+              :open="selectOpen"
+              :modal="false"
+              @update:open="selectOpen = $event"
+              @update:model-value="handleParameterSelect"
             >
               <SelectTrigger
                 size="sm"
@@ -105,6 +110,29 @@
                 />
               </SelectTrigger>
               <SelectContent align="start" side="bottom">
+                <!-- Create New Parameter Option -->
+                <div
+                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  role="option"
+                  @click.stop="openCreateDialog"
+                  @mousedown.prevent.stop
+                >
+                  <Icon
+                    name="lucide:plus"
+                    class="absolute left-2 w-3 h-3 text-primary"
+                  />
+                  <span class="font-medium text-primary">
+                    {{ $t('builder.create_new_parameter') }}
+                  </span>
+                </div>
+
+                <!-- Divider -->
+                <div
+                  v-if="pipelineParams.length > 0"
+                  class="h-px bg-border my-1"
+                />
+
+                <!-- Existing Parameters -->
                 <SelectItem
                   v-for="param in pipelineParams"
                   :key="param.name"
@@ -119,6 +147,26 @@
                     (default: {{ param.default }})
                   </span>
                 </SelectItem>
+
+                <!-- Divider -->
+                <div
+                  v-if="pipelineParams.length > 0"
+                  class="h-px bg-border my-1"
+                />
+
+                <!-- Manage Parameters Option -->
+                <div
+                  class="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  role="option"
+                  @click.stop="openManagePanel"
+                  @mousedown.prevent.stop
+                >
+                  <Icon
+                    name="lucide:settings"
+                    class="absolute left-2 w-3 h-3"
+                  />
+                  <span>{{ $t('builder.manage_parameters') }}</span>
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -152,10 +200,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Create Parameter Dialog -->
+  <CreateParameterDialog
+    :open="showCreateDialog"
+    :existing-parameters="pipelineParams"
+    :suggested-name="inputDefinition.name"
+    @update:open="showCreateDialog = $event"
+    @create="handleParameterCreated"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { Input } from '~/components/ui/input';
 import {
   Select,
@@ -164,6 +221,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+import CreateParameterDialog from './CreateParameterDialog.vue';
 import type {
   ComponentInput,
   ComponentPath,
@@ -191,7 +249,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   update: [input: ComponentInput];
+  'create-parameter': [parameter: PipelineInputParam];
+  'manage-parameters': [];
 }>();
+
+// State for create parameter dialog
+const showCreateDialog = ref(false);
+// State for select dropdown
+const selectOpen = ref(false);
 
 // Initialize local input state
 const localInput = ref<ComponentInput>(
@@ -299,6 +364,44 @@ function onComponentOutputChange(value: unknown) {
 function emitUpdate() {
   markTouched();
   emit('update', { ...localInput.value });
+}
+
+// Handle opening create parameter dialog
+function openCreateDialog() {
+  // Close the Select dropdown first to avoid aria-hidden conflicts
+  selectOpen.value = false;
+
+  // Wait for Select to close before opening dialog
+  nextTick(() => {
+    showCreateDialog.value = true;
+  });
+}
+
+// Handle opening manage parameters panel
+function openManagePanel() {
+  // Close the Select dropdown first
+  selectOpen.value = false;
+
+  // Wait for Select to close before emitting
+  nextTick(() => {
+    emit('manage-parameters');
+  });
+}
+
+// Handle parameter selection
+function handleParameterSelect(value: unknown) {
+  if (!value || typeof value !== 'string') return;
+  emitUpdate();
+}
+
+// Handle parameter created
+function handleParameterCreated(parameter: PipelineInputParam) {
+  // Emit to parent to add the parameter
+  emit('create-parameter', parameter);
+
+  // Auto-select the newly created parameter
+  localInput.value.source = parameter.name;
+  emitUpdate();
 }
 
 // Watch for external changes

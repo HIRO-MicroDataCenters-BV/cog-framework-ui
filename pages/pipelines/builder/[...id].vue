@@ -24,17 +24,25 @@
           builderRef?.onRenameComponent(id, oldName, newName);
         }
       "
+      @create-parameter="handleCreateParameter"
+      @manage-parameters="handleManageParameters"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { Node } from '~/types/builder.types';
+import type { Node, PipelineInputParam } from '~/types/builder.types';
 import { useNodeValidation } from '~/composables/useNodeValidation';
 import PipelineBuilderSheet from '~/components/app/builder/PipelineBuilderSheet.vue';
 
 const { setPage, page } = useApp();
-const { nodes, selectedNode, selectNode } = usePipelineBuilder();
+const {
+  nodes,
+  selectedNode,
+  selectNode,
+  pipelineParameters,
+  addPipelineParameter,
+} = usePipelineBuilder();
 const { getValidationStatus } = useNodeValidation();
 
 const builderRef = ref();
@@ -50,9 +58,34 @@ const enrichedNodes = computed(() => {
   }));
 });
 
-const pipelineData = computed(
-  () => page.value.data?.builder?.pipelineData || null,
-);
+const pipelineData = computed(() => {
+  const baseData = page.value.data?.builder?.pipelineData || {};
+  // Include pipeline parameters in the runtime_config for BuilderNodeProperties to access
+  return {
+    ...baseData,
+    runtime_config: {
+      ...((baseData as any)?.runtime_config || {}),
+      parameters: pipelineParameters.value.reduce(
+        (acc, param) => {
+          acc[param.name] = param.default || '';
+          return acc;
+        },
+        {} as Record<string, any>,
+      ),
+    },
+  };
+});
+
+// Handle create parameter
+const handleCreateParameter = (parameter: PipelineInputParam) => {
+  addPipelineParameter(parameter);
+};
+
+// Handle manage parameters
+const handleManageParameters = () => {
+  // TODO: Open manage parameters panel
+  console.log('Manage parameters clicked');
+};
 
 setPage({
   section: 'pipelines_builder',

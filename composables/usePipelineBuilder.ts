@@ -1,4 +1,4 @@
-import type { Node, Edge } from '~/types/builder.types';
+import type { Node, Edge, PipelineInputParam } from '~/types/builder.types';
 
 export const usePipelineBuilder = () => {
   const nodes = useState<Node[]>('builder-nodes', () => []);
@@ -7,11 +7,20 @@ export const usePipelineBuilder = () => {
     'builder-selected-node',
     () => null,
   );
+  const pipelineParameters = useState<PipelineInputParam[]>(
+    'builder-pipeline-parameters',
+    () => [],
+  );
 
-  const initialize = (initialNodes: Node[], initialEdges: Edge[]) => {
+  const initialize = (
+    initialNodes: Node[],
+    initialEdges: Edge[],
+    initialParameters?: PipelineInputParam[],
+  ) => {
     // Deep copy to break references to the page object
     nodes.value = initialNodes || []; // JSON.parse(JSON.stringify(initialNodes || []));
     edges.value = initialEdges || []; // JSON.parse(JSON.stringify(initialEdges || []));
+    pipelineParameters.value = initialParameters || [];
     selectedNode.value = null;
   };
 
@@ -115,10 +124,19 @@ export const usePipelineBuilder = () => {
     }
   };
 
+  const addPipelineParameter = (parameter: PipelineInputParam) => {
+    pipelineParameters.value.push(parameter);
+  };
+
+  const updatePipelineParameters = (parameters: PipelineInputParam[]) => {
+    pipelineParameters.value = parameters;
+  };
+
   return {
     nodes,
     edges,
     selectedNode,
+    pipelineParameters,
     initialize,
     addNode,
     removeNode,
@@ -127,5 +145,7 @@ export const usePipelineBuilder = () => {
     addEdge,
     removeEdge,
     selectNode,
+    addPipelineParameter,
+    updatePipelineParameters,
   };
 };

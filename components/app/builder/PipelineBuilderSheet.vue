@@ -5,6 +5,7 @@
       :show-overlay="false"
       :show-close-button="false"
       :disable-outside-pointer-events="false"
+      :trap-focus="false"
       @pointer-down-outside="
         (event) => {
           const originalEvent = event.detail.originalEvent;
@@ -57,6 +58,8 @@
             (id, oldName, newName) =>
               emit('rename-component', id, oldName, newName)
           "
+          @create-parameter="(param) => emit('create-parameter', param)"
+          @manage-parameters="emit('manage-parameters')"
         />
       </div>
     </SheetContent>
@@ -67,7 +70,7 @@
 import BuilderNodeProperties from './BuilderNodeProperties.vue';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DialogClose } from '@/components/ui/dialog';
-import type { Node, NodeUpdate } from '~/types/builder.types';
+import type { Node, NodeUpdate, PipelineInputParam } from '~/types/builder.types';
 
 defineProps<{
   open: boolean;
@@ -82,5 +85,7 @@ const emit = defineEmits<{
   (e: 'update-node', id: string, updates: NodeUpdate): void;
   (e: 'delete-node', id: string): void;
   (e: 'rename-component', id: string, oldName: string, newName: string): void;
+  (e: 'create-parameter', param: PipelineInputParam): void;
+  (e: 'manage-parameters'): void;
 }>();
 </script>

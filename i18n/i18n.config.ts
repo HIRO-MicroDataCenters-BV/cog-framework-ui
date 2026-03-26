@@ -170,6 +170,25 @@ export default defineI18nConfig(() => ({
         delete_component_warning:
           'Component "{name}" is used by {count} other component(s):',
         delete_component_consequence: 'Deleting will break these connections.',
+        pipeline_parameters: 'Pipeline Parameters',
+        add_parameter: 'Add Parameter',
+        no_parameters: 'No parameters yet',
+        parameter_name: 'Parameter Name',
+        parameter_type: 'Type',
+        default_value: 'Default Value',
+        default: 'Default',
+        description: 'Description',
+        used_in_components: 'Used in {count} component(s)',
+        delete_parameter: 'Delete Parameter',
+        parameter_used_warning:
+          'Parameter "{name}" is used in {count} component(s). Deleting it may break those components.',
+        delete_parameter_confirm:
+          'Are you sure you want to delete parameter "{name}"?',
+        create_parameter: 'Create Pipeline Parameter',
+        create_parameter_description:
+          'Create a new parameter that can be used across components in this pipeline',
+        create_new_parameter: 'Create New Parameter...',
+        manage_parameters: 'Manage Parameters...',
         categories: {
           inputs: 'Inputs',
           processing: 'Processing',
@@ -343,6 +362,9 @@ export default defineI18nConfig(() => ({
         connection_parameter: 'Enter connection parameters (JSON)',
         metric_list: 'Enter metric list (JSON)',
         feature_list: 'Enter feature list (JSON)',
+        parameter_name: 'e.g., model_name',
+        parameter_description: 'Describe this parameter (optional)',
+        select_type: 'Select type',
       },
       theme: {
         dark: 'Dark',
@@ -373,6 +395,7 @@ export default defineI18nConfig(() => ({
         load_more: 'Load More',
         confirm: 'Confirm',
         add: 'Add',
+        create: 'Create',
         remove: 'Remove',
         select: 'Select',
         test_connection: 'Test Connection',
@@ -720,6 +743,11 @@ export default defineI18nConfig(() => ({
           component_required: 'Pipeline must have at least one component',
           input_required: '{component}: input "{input}" is required',
           components_invalid: 'All components need valid inputs.',
+        },
+        parameter: {
+          name_required: 'Parameter name is required',
+          name_format: 'Use only letters, numbers, underscores, and hyphens',
+          name_unique: 'A parameter with this name already exists',
         },
         validation: {
           model_name: 'Model name',

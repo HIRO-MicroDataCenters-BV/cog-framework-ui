@@ -92,6 +92,8 @@
                     @update="
                       (updatedInput) => onInputUpdate(inputDef, updatedInput)
                     "
+                    @create-parameter="onCreateParameter"
+                    @manage-parameters="onManageParameters"
                   />
                 </div>
               </div>
@@ -230,6 +232,8 @@ const emit = defineEmits<{
   updateNode: [nodeId: string, updates: NodeUpdate];
   deleteNode: [nodeId: string, componentName: string];
   renameComponent: [nodeId: string, oldName: string, newName: string];
+  createParameter: [parameter: PipelineInputParam];
+  manageParameters: [];
 }>();
 const formData = reactive({
   nodeName: '',
@@ -394,6 +398,16 @@ function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
       },
     },
   });
+}
+
+// Handle create parameter
+function onCreateParameter(parameter: PipelineInputParam) {
+  emit('createParameter', parameter);
+}
+
+// Handle manage parameters
+function onManageParameters() {
+  emit('manageParameters');
 }
 
 function updateNode() {
