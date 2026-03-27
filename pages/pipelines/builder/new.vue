@@ -74,17 +74,20 @@ const enrichedNodes = computed(() => {
 
 const pipelineData = computed(() => {
   const baseData = page.value.data?.builder?.pipelineData || {};
+  const base = baseData as {
+    runtime_config?: { parameters?: Record<string, string> };
+  };
   // Include pipeline parameters in the runtime_config for BuilderNodeProperties to access
   return {
-    ...baseData,
+    ...base,
     runtime_config: {
-      ...((baseData as any)?.runtime_config || {}),
+      ...(base.runtime_config || {}),
       parameters: pipelineParameters.value.reduce(
         (acc, param) => {
           acc[param.name] = param.default || '';
           return acc;
         },
-        {} as Record<string, any>,
+        {} as Record<string, string>,
       ),
     },
   };

@@ -433,7 +433,7 @@ const onRenameComponent = (
     });
     console.log('[builder] onRenameComponent - after update:', {
       label: node.data.label,
-      componentName: (node.data.component as any)?.name,
+      componentName: (node.data.component as Component | undefined)?.name,
     });
   } else {
     console.warn('[builder] onRenameComponent - node or component not found:', {
