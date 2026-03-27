@@ -39,13 +39,13 @@ export function nodeToPayloadComponent(node: Node): PipelinePayloadComponent {
   const component = node.data?.component as Component | undefined;
   const uuid = String(component?.id ?? '');
   const name = (node.data?.label as string) || component?.name || '';
-  const inputs: PipelinePayloadComponentInput[] = (
-    component?.inputs ?? []
-  ).map((input: ComponentInput) => ({
-    source: input.source,
-    destination: input.destination,
-    value_source_type: input.value_source_type,
-  }));
+  const inputs: PipelinePayloadComponentInput[] = (component?.inputs ?? []).map(
+    (input: ComponentInput) => ({
+      source: input.source,
+      destination: input.destination,
+      value_source_type: input.value_source_type,
+    }),
+  );
 
   return { uuid, name, inputs };
 }

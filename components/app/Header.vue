@@ -126,14 +126,12 @@
                     class="size-3.5"
                     aria-hidden="true"
                   />
-                  <span class="sr-only">{{ $t('builder.manage_parameters') }}</span>
+                  <span class="sr-only">{{
+                    $t('builder.manage_parameters')
+                  }}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                align="center"
-                :side-offset="6"
-              >
+              <TooltipContent side="bottom" align="center" :side-offset="6">
                 <p class="text-xs">{{ $t('builder.manage_parameters') }}</p>
               </TooltipContent>
             </Tooltip>

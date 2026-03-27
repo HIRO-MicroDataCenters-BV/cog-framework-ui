@@ -120,11 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  PipelineOutput,
-  Node,
-  ComponentPath,
-} from '~/types/canvas.types';
+import type { PipelineOutput, Node, ComponentPath } from '~/types/canvas.types';
 
 const props = withDefaults(
   defineProps<{

@@ -165,7 +165,9 @@ watch(
 
       // Focus name input - use getElementById as fallback
       nextTick(() => {
-        const inputElement = document.getElementById('param-name') as HTMLInputElement;
+        const inputElement = document.getElementById(
+          'param-name',
+        ) as HTMLInputElement;
         inputElement?.focus();
       });
     }

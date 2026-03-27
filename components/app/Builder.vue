@@ -436,7 +436,11 @@ const onRenameComponent = (
       componentName: (node.data.component as any)?.name,
     });
   } else {
-    console.warn('[builder] onRenameComponent - node or component not found:', { nodeId, hasNode: !!node, hasComponent: !!(node?.data?.component) });
+    console.warn('[builder] onRenameComponent - node or component not found:', {
+      nodeId,
+      hasNode: !!node,
+      hasComponent: !!node?.data?.component,
+    });
   }
 
   // 2. Update ALL other components that reference this component

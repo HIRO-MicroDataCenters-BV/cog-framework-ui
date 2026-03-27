@@ -33,7 +33,8 @@
     >
       <SheetTitle class="sr-only">Properties</SheetTitle>
       <SheetDescription class="sr-only">
-        Edit the properties, input parameters, and output parameters for the selected component
+        Edit the properties, input parameters, and output parameters for the
+        selected component
       </SheetDescription>
 
       <!-- Separate top section with close button -->
@@ -68,9 +69,18 @@
 
 <script setup lang="ts">
 import BuilderNodeProperties from './BuilderNodeProperties.vue';
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { DialogClose } from '@/components/ui/dialog';
-import type { Node, NodeUpdate, PipelineInputParam } from '~/types/canvas.types';
+import type {
+  Node,
+  NodeUpdate,
+  PipelineInputParam,
+} from '~/types/canvas.types';
 
 defineProps<{
   open: boolean;

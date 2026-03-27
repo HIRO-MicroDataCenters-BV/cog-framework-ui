@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import PipelineParametersPanel from './PipelineParametersPanel.vue';
 import {
   Sheet,
   SheetContent,
@@ -28,7 +29,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import PipelineParametersPanel from './PipelineParametersPanel.vue';
 import type { PipelineInputParam, Node } from '~/types/canvas.types';
 
 interface Props {

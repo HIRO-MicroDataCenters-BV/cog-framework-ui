@@ -96,32 +96,14 @@
                     <CopyPaste :has-copy="item.hasCopy">
                       <template v-if="item.type === 'text'">
                         <span class="text-sm font-medium break-all">{{
-                          (group as { prefix?: string | null }).prefix &&
-                          additional[(group as { prefix: string }).prefix]?.[
-                            item.key
-                          ]
-                            ? additional[
-                                (group as { prefix: string }).prefix
-                              ]?.[item.key]
-                            : additional[item.key]
-                              ? additional[item.key]
-                              : content[item.key]
+                          getItemValue(group, item.key)
                         }}</span>
                       </template>
                       <template v-if="item.type === 'date'">
                         <span class="text-sm font-medium">{{
-                          dayjs(
-                            (group as { prefix?: string | null }).prefix &&
-                              additional[
-                                (group as { prefix: string }).prefix
-                              ]?.[item.key]
-                              ? additional[
-                                  (group as { prefix: string }).prefix
-                                ]?.[item.key]
-                              : additional[item.key]
-                                ? additional[item.key]
-                                : content[item.key],
-                          ).format('YYYY MMM DD, HH:mm')
+                          dayjs(getItemValue(group, item.key)).format(
+                            'YYYY MMM DD, HH:mm',
+                          )
                         }}</span>
                       </template>
                       <template v-if="item.type === 'list'">

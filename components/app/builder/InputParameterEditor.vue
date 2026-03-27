@@ -165,7 +165,9 @@
                     name="lucide:settings"
                     class="absolute left-2 w-3.5 h-3.5 text-blue-500"
                   />
-                  <span class="font-semibold text-primary">{{ $t('builder.manage_parameters') }}</span>
+                  <span class="font-semibold text-primary">{{
+                    $t('builder.manage_parameters')
+                  }}</span>
                 </div>
               </SelectContent>
             </Select>
@@ -212,6 +214,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
+import CreateParameterDialog from './CreateParameterDialog.vue';
 import { Input } from '~/components/ui/input';
 import {
   Select,
@@ -220,7 +223,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import CreateParameterDialog from './CreateParameterDialog.vue';
 import type {
   ComponentInput,
   ComponentPath,

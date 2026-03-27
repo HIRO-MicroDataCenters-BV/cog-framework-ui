@@ -2945,7 +2945,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
-      console.log("saving pipeline")
+      console.log('saving pipeline');
       console.log(data);
       // todo un comments if we want to send this to backednd
       // return request(`/training-builder-pipelines`, 'POST', data, {
