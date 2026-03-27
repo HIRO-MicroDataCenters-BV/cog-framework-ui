@@ -29,7 +29,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import PipelineParametersPanel from './PipelineParametersPanel.vue';
-import type { PipelineInputParam, Node } from '~/types/builder.types';
+import type { PipelineInputParam, Node } from '~/types/canvas.types';
 
 interface Props {
   open: boolean;

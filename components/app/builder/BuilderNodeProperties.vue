@@ -201,7 +201,7 @@ import type {
   PipelineInputParam,
   Node,
   NodeUpdate,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import {
   resolveComponentInput,
   validateComponentInput,
@@ -330,7 +330,6 @@ const hasValidationErrors = computed(() => {
   });
 });
 
-
 // Handle input update
 function onInputUpdate(inputDef: ComponentPath, updatedInput: ComponentInput) {
   if (!props.selectedNode) return;
@@ -450,6 +449,11 @@ const onSaveComponentName = () => {
   if (oldName !== newName && newName && oldName) {
     emit('renameComponent', props.selectedNode.id, oldName, newName);
     previousNodeName.value = newName;
+
+    // console.log('[builder] component JSON after rename:---');
+    // console.log(
+    //   JSON.stringify(props.selectedNode.data?.component ?? null, null, 2),
+    // );
   }
 };
 

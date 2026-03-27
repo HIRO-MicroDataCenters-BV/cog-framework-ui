@@ -124,7 +124,7 @@ import type {
   PipelineOutput,
   Node,
   ComponentPath,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 
 const props = withDefaults(
   defineProps<{

@@ -1,4 +1,4 @@
-import type { Node } from '~/types/builder.types';
+import type { Node } from '~/types/canvas.types';
 import {
   resolveComponentInput,
   validateComponentInput,

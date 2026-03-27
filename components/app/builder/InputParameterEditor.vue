@@ -226,7 +226,7 @@ import type {
   ComponentPath,
   Node,
   PipelineInputParam,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import { validateComponentInput } from '~/utils/builder-validation';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 import { useBuilderIcons } from '~/composables/useBuilderIcons';

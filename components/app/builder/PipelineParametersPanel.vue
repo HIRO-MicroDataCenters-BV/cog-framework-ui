@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import CreateParameterDialog from './CreateParameterDialog.vue';
-import type { PipelineInputParam, Node } from '~/types/builder.types';
+import type { PipelineInputParam, Node } from '~/types/canvas.types';
 
 const props = withDefaults(
   defineProps<{

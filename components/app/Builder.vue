@@ -83,7 +83,7 @@ import type {
   PipelineOutput,
   PipelineBuilderData,
   NodeUpdate,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
 
 const emit = defineEmits<{
@@ -431,6 +431,12 @@ const onRenameComponent = (
       label: newName,
       component: { ...node.data.component, name: newName },
     });
+    console.log('[builder] onRenameComponent - after update:', {
+      label: node.data.label,
+      componentName: (node.data.component as any)?.name,
+    });
+  } else {
+    console.warn('[builder] onRenameComponent - node or component not found:', { nodeId, hasNode: !!node, hasComponent: !!(node?.data?.component) });
   }
 
   // 2. Update ALL other components that reference this component

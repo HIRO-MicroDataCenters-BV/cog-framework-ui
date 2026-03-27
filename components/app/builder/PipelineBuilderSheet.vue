@@ -70,7 +70,7 @@
 import BuilderNodeProperties from './BuilderNodeProperties.vue';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DialogClose } from '@/components/ui/dialog';
-import type { Node, NodeUpdate, PipelineInputParam } from '~/types/builder.types';
+import type { Node, NodeUpdate, PipelineInputParam } from '~/types/canvas.types';
 
 defineProps<{
   open: boolean;

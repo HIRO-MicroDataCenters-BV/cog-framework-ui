@@ -7,7 +7,7 @@ import type {
   TaskDetail,
   PipelineData,
   ComponentInput,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import SimpleTabs from '~/components/app/SimpleTabs.vue';

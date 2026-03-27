@@ -4,7 +4,7 @@ import type {
   ComponentPath,
   PipelineInputParam,
   PipelineBuilderData,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 
 /**
  * Resolves the effective input for a definition: stored row, or synthetic constant from schema default.

@@ -116,7 +116,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { PipelineInputParam } from '~/types/builder.types';
+import type { PipelineInputParam } from '~/types/canvas.types';
 
 interface Props {
   open: boolean;

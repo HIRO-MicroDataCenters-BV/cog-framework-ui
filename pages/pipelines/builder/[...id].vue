@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Node, PipelineInputParam } from '~/types/builder.types';
+import type { Node, PipelineInputParam } from '~/types/canvas.types';
 import { useNodeValidation } from '~/composables/useNodeValidation';
 import PipelineBuilderSheet from '~/components/app/builder/PipelineBuilderSheet.vue';
 import ManageParametersSheet from '~/components/app/builder/ManageParametersSheet.vue';

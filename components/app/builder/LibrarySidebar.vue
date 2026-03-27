@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Component, Category } from '~/types/builder.types';
+import type { Component, Category } from '~/types/canvas.types';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const api = useApi();

@@ -1,5 +1,5 @@
 import type { Node, Connection } from '@vue-flow/core';
-import type { Node as AppNode, ComponentPath } from '~/types/builder.types';
+import type { Node as AppNode, ComponentPath } from '~/types/canvas.types';
 
 export const useConnectionValidation = () => {
   /**

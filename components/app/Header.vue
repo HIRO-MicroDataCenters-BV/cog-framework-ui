@@ -234,11 +234,9 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import type {
-  Component,
-  Node as BuilderNode,
-  ComponentInput,
-} from '~/types/builder.types';
+import type { Node as BuilderNode } from '~/types/canvas.types';
+import type { PipelineCreationPayload } from '~/types/pipeline-payload.types';
+import { builderDataToPayload } from '~/utils/pipeline-payload.builder';
 import { Form, FormField, FormItem, FormControl } from '~/components/ui/form';
 import {
   Tooltip,
@@ -284,48 +282,6 @@ const pipelineName = computed({
     }
   },
 });
-
-interface ComponentPath {
-  name: string;
-  type: string;
-  description?: string;
-  default?: unknown;
-  optional?: boolean;
-}
-
-interface TopLevelInputPath {
-  name: string;
-  type: string;
-  default?: unknown;
-}
-
-interface TopLevelOutputPath {
-  name: string;
-  source: {
-    component_name: string;
-    output_name: string;
-  };
-}
-
-interface RegularPipelineComponent {
-  id: string;
-  name: string;
-  inputs: ComponentInput[];
-  input_path: ComponentPath[];
-  output_path: ComponentPath[];
-}
-
-interface FederatedPipelineComponent {
-  id: string;
-  name: string;
-  input_path: ComponentPath[];
-  output_path: ComponentPath[];
-  component_file: string | null;
-  category: string | null;
-  creator: string | null;
-}
-
-type PipelineComponent = RegularPipelineComponent | FederatedPipelineComponent;
 
 const orderId = computed(() => page.value.data?.orderId as string | undefined);
 
@@ -389,155 +345,20 @@ function executePipelineRun(mode: 'standard' | 'federated') {
   const builder = page.value.data?.builder;
   if (!builder) return;
 
-  const isFederated = mode === 'federated';
+  const payload: PipelineCreationPayload = builderDataToPayload(builder);
 
-  interface PipelineData {
-    name: string;
-    pipeline_components: PipelineComponent[];
-    input_path: TopLevelInputPath[];
-    output_path: TopLevelOutputPath[];
-    order_id?: string;
-  }
+  console.log(
+    `[builder] save & run JSON (${mode}):`,
+    JSON.stringify(payload, null, 2),
+  );
 
-  const data: PipelineData = {
-    name: builder.name,
-    pipeline_components: [] as PipelineComponent[],
-    input_path: [] as TopLevelInputPath[],
-    output_path: [] as TopLevelOutputPath[],
-  };
-
-  const components =
-    builder?.nodes?.map((node) => {
-      const component = node?.data?.component as Component;
-      const uuid = String(component?.id || '');
-      const name = node?.data?.label || component?.name || '';
-      const input_path = component?.input_path || [];
-      const output_path = component?.output_path || [];
-
-      if (isFederated) {
-        // For federated pipelines, include both metadata AND inputs
-        const inputs =
-          component?.inputs?.map((input: ComponentInput) => ({
-            destination: input.destination,
-            value_source_type: input.value_source_type,
-            source: input.source,
-          })) || [];
-
-        return {
-          id: uuid,
-          name,
-          inputs, // Include configured input values
-          input_path,
-          output_path,
-          component_file: component?.component_file || null,
-          category: component?.category || null,
-          creator: component?.creator || null,
-        };
-      }
-
-      const inputs =
-        component?.inputs?.map((input: ComponentInput) => ({
-          destination: input.destination,
-          value_source_type: input.value_source_type,
-          source: input.source,
-        })) || [];
-
-      return {
-        id: uuid,
-        name,
-        inputs,
-        input_path,
-        output_path,
-      };
-    }) || [];
-
-  if (isFederated) {
-    const inputPathMap = new Map<string, TopLevelInputPath>();
-
-    components.forEach((comp) => {
-      comp.input_path.forEach((path: ComponentPath) => {
-        if (path.default !== undefined && !inputPathMap.has(path.name)) {
-          inputPathMap.set(path.name, {
-            name: path.name,
-            type: path.type,
-            default: path.default,
-          });
-        }
-      });
-    });
-
-    data.input_path = Array.from(inputPathMap.values());
-
-    const serverComp = components.find(
-      (c) =>
-        c.name.toLowerCase().includes('server') ||
-        ('category' in c &&
-          (c as FederatedPipelineComponent).category
-            ?.toLowerCase()
-            .includes('server')),
-    );
-
-    if (serverComp) {
-      data.output_path = [
-        {
-          name: 'final_global_model',
-          source: {
-            component_name: serverComp.name,
-            output_name: serverComp.output_path[0]?.name || 'Output',
-          },
-        },
-      ];
-    } else {
-      const lastComp = components[components.length - 1];
-      if (lastComp) {
-        data.output_path = [
-          {
-            name: 'final_global_model',
-            source: {
-              component_name: lastComp.name,
-              output_name: lastComp.output_path[0]?.name || 'Output',
-            },
-          },
-        ];
-      }
-    }
-  } else {
-    const input_path: TopLevelInputPath[] = [];
-    const output_path: TopLevelOutputPath[] = [];
-
-    components.forEach((comp) => {
-      comp.input_path.forEach((path: ComponentPath) => {
-        input_path.push({
-          name: path.name,
-          type: path.type,
-          default: path.default,
-        });
-      });
-      comp.output_path.forEach((path: ComponentPath) => {
-        output_path.push({
-          name: path.name,
-          source: {
-            component_name: comp.name,
-            output_name: path.name,
-          },
-        });
-      });
-    });
-
-    data.input_path = input_path;
-    data.output_path = output_path;
-  }
-
-  data.pipeline_components = components;
-
-  if (isFederated) {
+  if (mode === 'federated') {
     const oid = orderId.value;
-    if (oid) {
-      data.order_id = oid;
-    }
-    api.postTrainingBuilderPipelineDataspaceFederatedRun(data);
+    api.postTrainingBuilderPipelineDataspaceFederatedRun(
+      oid ? { ...payload, order_id: oid } : payload,
+    );
   } else {
-    api.postTrainingBuilderPipeline(data);
+    api.postTrainingBuilderPipeline(payload);
   }
 }
 </script>

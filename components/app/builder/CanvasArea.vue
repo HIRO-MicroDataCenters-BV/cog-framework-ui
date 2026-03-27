@@ -350,7 +350,7 @@ import type {
   Edge,
   Component,
   ComponentPath,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 
 interface Props {
   nodes?: VueFlowNode[];

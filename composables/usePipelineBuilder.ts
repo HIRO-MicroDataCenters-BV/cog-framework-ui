@@ -1,4 +1,4 @@
-import type { Node, Edge, PipelineInputParam } from '~/types/builder.types';
+import type { Node, Edge, PipelineInputParam } from '~/types/canvas.types';
 
 export const usePipelineBuilder = () => {
   const nodes = useState<Node[]>('builder-nodes', () => []);
