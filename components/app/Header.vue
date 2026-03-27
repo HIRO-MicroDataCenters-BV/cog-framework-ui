@@ -3,15 +3,16 @@
     class="group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 flex h-16 w-full shrink-0 items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur-sm transition-[width,height] ease-linear"
   >
     <div class="flex w-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-4">
-      <!-- Builder: breadcrumb | name (compact) | CTA grouped with tight gap -->
+      <!-- Builder: breadcrumb | name + validity dot | mode pill | run button -->
       <template v-if="page.section === 'pipelines_builder'">
         <Breadcrumb class="shrink-0">
           <BreadcrumbList class="flex-wrap gap-x-1">
             <BreadcrumbItem class="hidden sm:block">
               <NuxtLink
                 :to="breadcrumbSectionTo"
-                class="text-muted-foreground transition-colors hover:text-foreground"
+                class="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
+                <Icon name="lucide:workflow" class="size-3.5 shrink-0" aria-hidden="true" />
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
@@ -31,42 +32,114 @@
           aria-hidden="true"
         />
 
-        <Form
-          :validation-schema="pipelineNameSchema"
-          class="w-full min-w-0 max-w-52 shrink-0 sm:max-w-60"
-        >
-          <FormField
-            v-slot="{ componentField }"
-            type="text"
-            name="pipeline_name"
+        <!-- Pipeline name: ghost label → input on hover/focus, with dirty * prefix -->
+        <div class="flex min-w-0 max-w-52 shrink-0 items-center sm:max-w-60">
+          <!-- Dirty asterisk — always reserves space, visibility toggled to avoid layout shift -->
+          <span
+            class="mr-0.5 shrink-0 text-sm font-bold text-orange-400/80 transition-opacity duration-150"
+            :class="hasUnsavedChanges ? 'opacity-100' : 'opacity-0'"
+            :title="hasUnsavedChanges ? 'Unsaved changes' : undefined"
+            aria-hidden="true"
+          >*</span>
+          <Form
+            :validation-schema="pipelineNameSchema"
+            class="min-w-0 flex-1"
           >
-            <FormItem class="space-y-0">
-              <FormControl>
-                <div class="relative">
-                  <Icon
-                    name="lucide:workflow"
-                    class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
-                    aria-hidden="true"
-                  />
+            <FormField
+              v-slot="{ componentField }"
+              type="text"
+              name="pipeline_name"
+            >
+              <FormItem class="space-y-0">
+                <FormControl>
                   <Input
                     v-bind="componentField"
                     v-model="pipelineName"
                     type="text"
                     :placeholder="$t('placeholder.pipeline_name')"
-                    class="h-9 border-border/80 bg-muted/30 pl-9 text-sm font-medium shadow-sm transition-[box-shadow,background-color] placeholder:text-muted-foreground/70 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/25"
+                    class="h-7 border-transparent bg-transparent px-2 text-xs font-semibold shadow-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:font-normal placeholder:text-muted-foreground/50 hover:border-border/60 hover:bg-muted/30 focus-visible:border-border/80 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/25"
                   />
-                </div>
-              </FormControl>
-            </FormItem>
-          </FormField>
-        </Form>
+                </FormControl>
+              </FormItem>
+            </FormField>
+          </Form>
+        </div>
 
         <div class="flex shrink-0 items-center gap-2">
-          <!-- Save & Run Button -->
+          <!-- Mode pill — click to switch Standard / Federated and access Manage Parameters -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
+                type="button"
+                class="flex h-7 w-[7.5rem] cursor-pointer items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                :class="
+                  pipelineRunMode === 'federated'
+                    ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/15'
+                    : 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/15'
+                "
+              >
+                <span
+                  class="size-1.5 rounded-full"
+                  :class="
+                    pipelineRunMode === 'federated'
+                      ? 'bg-violet-600 dark:bg-violet-400'
+                      : 'bg-emerald-600 dark:bg-emerald-400'
+                  "
+                />
+                {{
+                  pipelineRunMode === 'federated'
+                    ? $t('builder.save_run_mode_federated_short')
+                    : $t('builder.save_run_mode_standard_short')
+                }}
+                <Icon
+                  name="lucide:chevron-down"
+                  class="size-3 opacity-60"
+                  aria-hidden="true"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" class="w-56">
+              <DropdownMenuLabel class="text-xs text-muted-foreground">
+                {{ $t('builder.save_run_dialog_description') }}
+              </DropdownMenuLabel>
+              <DropdownMenuRadioGroup v-model="pipelineRunMode">
+                <DropdownMenuRadioItem value="standard">
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-medium">{{
+                      $t('builder.save_run_mode_standard')
+                    }}</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      $t('builder.save_run_mode_standard_desc')
+                    }}</span>
+                  </div>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="federated">
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-medium">{{
+                      $t('builder.save_run_mode_federated')
+                    }}</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      $t('builder.save_run_mode_federated_desc')
+                    }}</span>
+                  </div>
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem @click="openManageParameters">
+                <Icon
+                  name="lucide:sliders-horizontal"
+                  class="mr-2 size-3.5"
+                  aria-hidden="true"
+                />
+                {{ $t('builder.manage_parameters') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Run button — fires immediately in the selected mode -->
           <TooltipProvider :delay-duration="200">
             <Tooltip>
               <TooltipTrigger as-child>
-                <!-- Wrapper: disabled buttons don't receive hover; tooltip still explains validation -->
                 <span
                   class="inline-flex rounded-lg"
                   :class="{ 'cursor-not-allowed': !canSave }"
@@ -76,8 +149,8 @@
                     variant="default"
                     size="sm"
                     :disabled="!canSave"
-                    class="group h-9 gap-2 px-4 font-medium shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
-                    @click="openSaveRunDialog"
+                    class="group h-7 gap-2 px-3 text-xs font-semibold shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
+                    @click="executePipelineRun(pipelineRunMode)"
                   >
                     <Icon
                       name="lucide:play"
@@ -109,101 +182,9 @@
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
-          <!-- Manage Parameters Button -->
-          <TooltipProvider :delay-duration="200">
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  class="h-9 w-9 p-0 shadow-xs"
-                  @click="openManageParameters"
-                >
-                  <Icon
-                    name="lucide:settings"
-                    class="size-3.5"
-                    aria-hidden="true"
-                  />
-                  <span class="sr-only">{{
-                    $t('builder.manage_parameters')
-                  }}</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" align="center" :side-offset="6">
-                <p class="text-xs">{{ $t('builder.manage_parameters') }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
         <div class="min-w-0 flex-1" aria-hidden="true" />
-
-        <AlertDialog
-          :open="saveRunDialogOpen"
-          @update:open="onSaveRunDialogOpenChange"
-        >
-          <AlertDialogContent class="max-w-md">
-            <AlertDialogHeader>
-              <AlertDialogTitle>{{
-                $t('builder.save_run_dialog_title')
-              }}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {{ $t('builder.save_run_dialog_description') }}
-              </AlertDialogDescription>
-              <div class="mt-4 border-l-2 border-primary/50 pl-3" role="status">
-                <p
-                  class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
-                >
-                  {{ $t('builder.save_run_pipeline_label') }}
-                </p>
-                <p
-                  class="truncate text-base font-semibold leading-snug text-foreground"
-                  :title="pipelineName || undefined"
-                >
-                  {{ pipelineName || '—' }}
-                </p>
-              </div>
-            </AlertDialogHeader>
-            <RadioGroup v-model="pipelineRunMode" class="grid gap-3 py-2">
-              <label
-                class="flex cursor-pointer gap-3 rounded-lg border border-border p-3 text-left transition-colors has-data-[state=checked]:border-primary has-data-[state=checked]:bg-muted/40"
-              >
-                <RadioGroupItem value="standard" class="mt-0.5 shrink-0" />
-                <span class="min-w-0">
-                  <span class="block text-sm font-medium text-foreground">{{
-                    $t('builder.save_run_mode_standard')
-                  }}</span>
-                  <span class="mt-0.5 block text-xs text-muted-foreground">{{
-                    $t('builder.save_run_mode_standard_desc')
-                  }}</span>
-                </span>
-              </label>
-              <label
-                class="flex cursor-pointer gap-3 rounded-lg border border-border p-3 text-left transition-colors has-data-[state=checked]:border-primary has-data-[state=checked]:bg-muted/40"
-              >
-                <RadioGroupItem value="federated" class="mt-0.5 shrink-0" />
-                <span class="min-w-0">
-                  <span class="block text-sm font-medium text-foreground">{{
-                    $t('builder.save_run_mode_federated')
-                  }}</span>
-                  <span class="mt-0.5 block text-xs text-muted-foreground">{{
-                    $t('builder.save_run_mode_federated_desc')
-                  }}</span>
-                </span>
-              </label>
-            </RadioGroup>
-            <AlertDialogFooter>
-              <AlertDialogCancel @click="saveRunDialogOpen = false">
-                {{ $t('action.cancel') }}
-              </AlertDialogCancel>
-              <Button type="button" @click="confirmSaveRun">
-                {{ $t('action.confirm') }}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </template>
 
       <!-- Default header (non–pipeline builder) -->
@@ -231,7 +212,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { Node as BuilderNode } from '~/types/canvas.types';
 import type { PipelineCreationPayload } from '~/types/pipeline-payload.types';
 import { builderDataToPayload } from '~/utils/pipeline-payload.builder';
@@ -244,15 +225,15 @@ import {
 } from '~/components/ui/tooltip';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '~/components/ui/alert-dialog';
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
 
 const { page } = useApp();
 const { t } = useI18n();
@@ -317,31 +298,43 @@ const canSave = computed(() => {
   return validationErrors.value.length === 0;
 });
 
-const saveRunDialogOpen = ref(false);
-const pipelineRunMode = ref<'standard' | 'federated'>('standard');
+// Dirty / unsaved-changes tracking
+const _lastRunSnapshot = ref('');
+const _modifiedAfterRun = ref(false);
 
-const openSaveRunDialog = () => {
-  if (!canSave.value) return;
-  pipelineRunMode.value = orderId.value ? 'federated' : 'standard';
-  saveRunDialogOpen.value = true;
-};
+watch(
+  [pipelineName, nodes],
+  () => {
+    if (!_lastRunSnapshot.value) return; // before first run, hasUnsavedChanges handles it
+    const snapshot = JSON.stringify({ name: pipelineName.value, nodes: nodes.value });
+    _modifiedAfterRun.value = snapshot !== _lastRunSnapshot.value;
+  },
+  { deep: true },
+);
+
+// Show * when: canvas has content and never been run, OR modified since last run
+const hasUnsavedChanges = computed(() =>
+  _lastRunSnapshot.value === ''
+    ? nodes.value.length > 0
+    : _modifiedAfterRun.value,
+);
+
+// Default to federated when opened from a dataspace order link
+const pipelineRunMode = ref<'standard' | 'federated'>(
+  orderId.value ? 'federated' : 'standard',
+);
 
 const openManageParameters = () => {
   triggerManageParameters();
 };
 
-const confirmSaveRun = () => {
-  saveRunDialogOpen.value = false;
-  executePipelineRun(pipelineRunMode.value);
-};
-
-function onSaveRunDialogOpenChange(open: boolean) {
-  saveRunDialogOpen.value = open;
-}
-
 function executePipelineRun(mode: 'standard' | 'federated') {
   const builder = page.value.data?.builder;
   if (!builder) return;
+
+  // Snapshot current state — clears the * until something changes again
+  _lastRunSnapshot.value = JSON.stringify({ name: pipelineName.value, nodes: nodes.value });
+  _modifiedAfterRun.value = false;
 
   const payload: PipelineCreationPayload = builderDataToPayload(builder);
 
