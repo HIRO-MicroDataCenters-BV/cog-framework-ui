@@ -216,7 +216,7 @@
                   </span>
                   <span class="flex items-center gap-1.5">
                     <Icon name="lucide:sliders-horizontal" class="size-3.5" />
-                    {{ confirmPayload?.input_path?.length ?? 0 }} input param{{ (confirmPayload?.input_path?.length ?? 0) !== 1 ? 's' : '' }}
+                    {{ pipelineParameters.length }} input param{{ pipelineParameters.length !== 1 ? 's' : '' }}
                   </span>
                   <span class="flex items-center gap-1.5">
                     <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
@@ -251,13 +251,14 @@
                   <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     Pipeline Input
                   </p>
-                  <div v-if="confirmPayload?.input_path?.length" class="flex flex-wrap gap-1.5">
+                  <div v-if="pipelineParameters.length" class="flex flex-wrap gap-1.5">
                     <span
-                      v-for="param in confirmPayload.input_path"
+                      v-for="param in pipelineParameters"
                       :key="param.name"
-                      class="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-xs"
+                      class="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-xs"
                     >
                       <span class="font-medium">{{ param.name }}</span>
+                      <span v-if="param.type" class="rounded bg-muted px-1 py-px font-mono text-[10px] text-muted-foreground">{{ param.type }}</span>
                       <span v-if="param.default" class="text-muted-foreground">= {{ param.default }}</span>
                     </span>
                   </div>
