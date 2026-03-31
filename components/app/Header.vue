@@ -150,7 +150,7 @@
                     size="sm"
                     :disabled="!canSave"
                     class="group h-7 gap-2 px-3 text-xs font-semibold shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
-                    @click="executePipelineRun(pipelineRunMode)"
+                    @click="openConfirmDialog"
                   >
                     <Icon
                       name="lucide:play"
@@ -182,6 +182,142 @@
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          <!-- Save & Run confirmation dialog -->
+          <Dialog v-model:open="confirmDialogOpen">
+            <DialogContent class="flex max-h-[90vh] max-w-lg flex-col">
+              <DialogHeader class="shrink-0">
+                <DialogTitle class="flex items-center gap-2">
+                  <Icon name="lucide:play" class="size-4 text-primary" />
+                  Confirm Save &amp; Run
+                </DialogTitle>
+                <DialogDescription>
+                  Review the pipeline configuration before running.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div class="min-h-0 flex-1 overflow-y-auto">
+                <div class="space-y-4 py-1 text-sm">
+
+                  <!-- Pipeline name + mode -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="rounded-md border border-border bg-muted/30 px-3 py-2">
+                      <p class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pipeline name</p>
+                      <p class="truncate font-medium">{{ confirmPayload?.name || '—' }}</p>
+                    </div>
+                    <div class="rounded-md border border-border bg-muted/30 px-3 py-2">
+                      <p class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Mode</p>
+                      <p
+                        class="font-medium capitalize"
+                        :class="pipelineRunMode === 'federated' ? 'text-violet-500' : 'text-emerald-500'"
+                      >
+                        {{ pipelineRunMode }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Components — own scroll -->
+                  <div>
+                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Components ({{ confirmPayload?.pipeline_components?.length ?? 0 }})
+                    </p>
+                    <div class="max-h-36 overflow-y-auto rounded-md border border-border divide-y divide-border/60">
+                      <div
+                        v-for="comp in confirmPayload?.pipeline_components"
+                        :key="comp.uuid"
+                        class="flex items-center justify-between gap-2 px-3 py-1.5"
+                      >
+                        <span class="font-medium truncate">{{ comp.name }}</span>
+                        <span class="shrink-0 font-mono text-[10px] text-muted-foreground">{{ comp.uuid?.slice(0, 8) }}…</span>
+                      </div>
+                      <div v-if="!confirmPayload?.pipeline_components?.length" class="px-3 py-2 text-xs text-muted-foreground italic">None</div>
+                    </div>
+                  </div>
+
+                  <!-- Input params -->
+                  <div v-if="confirmPayload?.input_path?.length">
+                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Input Parameters ({{ confirmPayload.input_path.length }})
+                    </p>
+                    <div class="rounded-md border border-border divide-y divide-border/60 overflow-hidden">
+                      <div
+                        v-for="param in confirmPayload.input_path"
+                        :key="param.name"
+                        class="flex items-center justify-between gap-2 px-3 py-1.5"
+                      >
+                        <span class="font-medium">{{ param.name }}</span>
+                        <span class="text-xs text-muted-foreground">{{ param.default ?? '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pipeline output -->
+                  <div>
+                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Pipeline Output
+                    </p>
+                    <Select
+                      :model-value="confirmOutputNodeId ?? '__none__'"
+                      @update:model-value="(v) => (confirmOutputNodeId = v === '__none__' ? null : v)"
+                    >
+                      <SelectTrigger class="h-8 text-xs">
+                        <SelectValue placeholder="None (all components used)">
+                          <span v-if="confirmOutputNodeId" class="flex items-center gap-2">
+                            <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                            {{ confirmOutputNodeLabel }}
+                          </span>
+                          <span v-else class="text-muted-foreground">None (all components used)</span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          <span class="text-muted-foreground italic">None (all components used)</span>
+                        </SelectItem>
+                        <SelectItem v-for="node in nodes" :key="node.id" :value="node.id">
+                          <span class="flex items-center gap-2">
+                            <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                            {{ node.data?.label }}
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <!-- Output preview -->
+                    <div
+                      v-if="confirmOutputNodeId && confirmPayload?.output_path?.length"
+                      class="mt-1.5 rounded-md border border-border overflow-hidden"
+                    >
+                      <div
+                        v-for="out in confirmPayload.output_path"
+                        :key="`${out.source.component_name}-${out.source.output_name}`"
+                        class="space-y-1 px-3 py-2 text-xs"
+                      >
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-muted-foreground">component_name</span>
+                          <span class="font-medium">{{ out.source.component_name }}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-muted-foreground">component_uuid</span>
+                          <span class="font-mono text-[11px] text-muted-foreground">{{ out.source.component_uuid ?? '—' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <DialogFooter class="shrink-0 gap-2 border-t-0 pt-2">
+                <Button variant="outline" size="sm" @click="confirmDialogOpen = false">
+                  Cancel
+                </Button>
+                <Button size="sm" class="gap-2" @click="confirmAndRun">
+                  <Icon name="lucide:play" class="size-3.5" />
+                  Run Pipeline
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div class="min-w-0 flex-1" aria-hidden="true" />
@@ -234,6 +370,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '~/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select';
 
 const { page } = useApp();
 const { t } = useI18n();
@@ -327,6 +478,46 @@ const pipelineRunMode = ref<'standard' | 'federated'>(
 const openManageParameters = () => {
   triggerManageParameters();
 };
+
+// Confirmation dialog state
+const confirmDialogOpen = ref(false);
+const confirmOutputNodeId = ref<string | null>(null);
+
+// Reset local selection whenever dialog opens
+watch(confirmDialogOpen, (open) => {
+  if (open) confirmOutputNodeId.value = outputNodeId.value;
+});
+
+// Payload preview — reacts to confirmOutputNodeId changes inside the dialog
+const confirmPayload = computed<PipelineCreationPayload | null>(() => {
+  const builder = page.value.data?.builder;
+  if (!builder) return null;
+  return builderDataToPayload(builder, confirmOutputNodeId.value);
+});
+
+// The output_path entries for the currently chosen output node
+const confirmOutputPaths = computed(() => {
+  if (!confirmOutputNodeId.value) return [];
+  const node = nodes.value.find((n) => n.id === confirmOutputNodeId.value);
+  return (node?.data?.component?.output_path as { name: string; type: string }[]) ?? [];
+});
+
+// Label of the chosen output node
+const confirmOutputNodeLabel = computed(() => {
+  if (!confirmOutputNodeId.value) return '';
+  const node = nodes.value.find((n) => n.id === confirmOutputNodeId.value);
+  return (node?.data?.label as string) || '';
+});
+
+function openConfirmDialog() {
+  confirmDialogOpen.value = true;
+}
+
+function confirmAndRun() {
+  outputNodeId.value = confirmOutputNodeId.value;
+  confirmDialogOpen.value = false;
+  executePipelineRun(pipelineRunMode.value);
+}
 
 function executePipelineRun(mode: 'standard' | 'federated') {
   const builder = page.value.data?.builder;

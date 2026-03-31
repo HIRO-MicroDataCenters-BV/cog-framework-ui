@@ -120,7 +120,7 @@
                       class="shrink-0 rounded p-0.5 transition-all"
                       :class="
                         outputNodeId === id
-                          ? 'text-emerald-500 opacity-100'
+                          ? 'text-amber-500 opacity-100'
                           : 'text-muted-foreground/40 opacity-0 group-hover/node:opacity-100 hover:text-muted-foreground'
                       "
                       @click.stop="toggleOutputNode(id)"
@@ -140,7 +140,7 @@
                 <Icon
                   v-else-if="outputNodeId === id"
                   name="lucide:square-arrow-down"
-                  class="w-3.5 h-3.5 shrink-0 text-emerald-500"
+                  class="w-3.5 h-3.5 shrink-0 text-amber-500"
                 />
                 <Tooltip v-if="data.status">
                   <TooltipTrigger as-child>
