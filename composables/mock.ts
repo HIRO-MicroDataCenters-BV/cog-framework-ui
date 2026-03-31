@@ -1365,5 +1365,26 @@ export const useApiWithMock = () => {
         `/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`,
       );
     },
+
+    postTrainingBuilderPipeline: async (data: unknown) => {
+      console.log('[mock] postTrainingBuilderPipeline:', data);
+      return Promise.resolve({
+        status_code: 200,
+        message: 'Pipeline saved (mock)',
+        data: null,
+      });
+    },
+
+    postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
+      console.log(
+        '[mock] postTrainingBuilderPipelineDataspaceFederatedRun:',
+        data,
+      );
+      return Promise.resolve({
+        status_code: 200,
+        message: 'Federated pipeline run started (mock)',
+        data: null,
+      });
+    },
   };
 };

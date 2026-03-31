@@ -37,7 +37,7 @@
       <template #node-default="{ id, data }">
         <TooltipProvider>
           <div
-            class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative"
+            class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative group/node"
             :class="[
               props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
@@ -113,6 +113,35 @@
                   class="text-sm flex-auto overflow-hidden font-medium truncate"
                   >{{ data.displayName || data.label }}</span
                 >
+                <!-- Pipeline output toggle (hidden in readonly mode) -->
+                <Tooltip v-if="!props.readonly">
+                  <TooltipTrigger as-child>
+                    <button
+                      class="shrink-0 rounded p-0.5 transition-all"
+                      :class="
+                        outputNodeId === id
+                          ? 'text-emerald-500 opacity-100'
+                          : 'text-muted-foreground/40 opacity-0 group-hover/node:opacity-100 hover:text-muted-foreground'
+                      "
+                      @click.stop="toggleOutputNode(id)"
+                    >
+                      <Icon name="lucide:square-arrow-down" class="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" class="text-xs">
+                    {{
+                      outputNodeId === id
+                        ? 'Remove as pipeline output'
+                        : 'Set as pipeline output'
+                    }}
+                  </TooltipContent>
+                </Tooltip>
+                <!-- Readonly indicator: show flag if this node is the output -->
+                <Icon
+                  v-else-if="outputNodeId === id"
+                  name="lucide:square-arrow-down"
+                  class="w-3.5 h-3.5 shrink-0 text-emerald-500"
+                />
                 <Tooltip v-if="data.status">
                   <TooltipTrigger as-child>
                     <Icon
@@ -386,6 +415,8 @@ const {
   onNodesInitialized,
   setNodes,
 } = useVueFlow();
+
+const { outputNodeId, toggleOutputNode } = usePipelineBuilder();
 
 // Re-fit view when pipeline run data loads (readonly). In the builder, auto-fit on
 // every node change (e.g. drag from library) is jarring; users can use Fit view.

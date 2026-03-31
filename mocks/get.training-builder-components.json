@@ -295,7 +295,7 @@
       "name": "Add ten",
       "input_path": [
         {
-          "name": "number10",
+          "name": "number",
           "type": "int"
         }
       ],

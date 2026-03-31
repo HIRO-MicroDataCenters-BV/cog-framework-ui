@@ -237,7 +237,7 @@ import {
 
 const { page } = useApp();
 const { t } = useI18n();
-const { nodes } = usePipelineBuilder();
+const { nodes, outputNodeId } = usePipelineBuilder();
 const { isNodeValid } = useNodeValidation();
 const { openManageParameters: triggerManageParameters } = useBuilderEvents();
 
@@ -336,7 +336,10 @@ function executePipelineRun(mode: 'standard' | 'federated') {
   _lastRunSnapshot.value = JSON.stringify({ name: pipelineName.value, nodes: nodes.value });
   _modifiedAfterRun.value = false;
 
-  const payload: PipelineCreationPayload = builderDataToPayload(builder);
+  const payload: PipelineCreationPayload = builderDataToPayload(
+    builder,
+    outputNodeId.value,
+  );
 
   console.log(
     `[builder] save & run JSON (${mode}):`,

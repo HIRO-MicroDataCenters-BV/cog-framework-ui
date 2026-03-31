@@ -127,12 +127,18 @@ function deriveOutputsFromComponents(
 /**
  * Converts the full canvas builder state into the API creation payload.
  *
+ * @param builder   - Canvas builder state (nodes, edges, params)
+ * @param outputNodeId - ID of the node marked as pipeline output (optional).
+ *                       When provided, that node's output_path entries become
+ *                       the payload's output_path. Falls back to all components.
+ *
  * Usage:
- *   const payload = builderDataToPayload(page.data.builder);
+ *   const payload = builderDataToPayload(builder, outputNodeId);
  *   api.postTrainingBuilderPipeline(payload);
  */
 export function builderDataToPayload(
   builder: PipelineBuilderData,
+  outputNodeId?: string | null,
 ): PipelineCreationPayload {
   const nodes: Node[] = builder.nodes ?? [];
 
@@ -140,12 +146,27 @@ export function builderDataToPayload(
 
   const input_path = (builder.input_path ?? []).map(paramToPayloadInput);
 
-  const output_path: PipelinePayloadOutputItem[] =
-    (builder.output_path ?? []).length > 0
-      ? (builder.output_path ?? []).map((o) =>
-          outputToPayloadOutputItem(o, nodes),
-        )
-      : deriveOutputsFromComponents(pipeline_components, nodes);
+  let output_path: PipelinePayloadOutputItem[];
+
+  if (outputNodeId) {
+    // Only the designated output node's outputs go into the payload
+    const outputNode = nodes.find((n) => n.id === outputNodeId);
+    const comp = outputNode?.data?.component as Component | undefined;
+    const compName = (outputNode?.data?.label as string) || comp?.name || '';
+    const compUuid = String(comp?.id ?? '') || undefined;
+
+    output_path = (comp?.output_path ?? []).map((path) => ({
+      name: path.name,
+      source: {
+        component_name: compName,
+        output_name: path.name,
+        ...(compUuid ? { component_uuid: compUuid } : {}),
+      },
+    }));
+  } else {
+    // Fallback: derive from all components (original behaviour)
+    output_path = deriveOutputsFromComponents(pipeline_components, nodes);
+  }
 
   return {
     name: builder.name ?? '',

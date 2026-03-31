@@ -12,15 +12,19 @@ export const usePipelineBuilder = () => {
     () => [],
   );
 
+  /** Node ID of the component designated as the pipeline output (single selection). */
+  const outputNodeId = useState<string | null>('builder-output-node-id', () => null);
+
   const initialize = (
     initialNodes: Node[],
     initialEdges: Edge[],
     initialParameters?: PipelineInputParam[],
   ) => {
     // Deep copy to break references to the page object
-    nodes.value = initialNodes || []; // JSON.parse(JSON.stringify(initialNodes || []));
-    edges.value = initialEdges || []; // JSON.parse(JSON.stringify(initialEdges || []));
+    nodes.value = initialNodes || [];
+    edges.value = initialEdges || [];
     pipelineParameters.value = initialParameters || [];
+    outputNodeId.value = null;
     selectedNode.value = null;
   };
 
@@ -34,9 +38,8 @@ export const usePipelineBuilder = () => {
     edges.value = edges.value.filter(
       (e) => e.source !== nodeId && e.target !== nodeId,
     );
-    if (selectedNode.value?.id === nodeId) {
-      selectedNode.value = null;
-    }
+    if (selectedNode.value?.id === nodeId) selectedNode.value = null;
+    if (outputNodeId.value === nodeId) outputNodeId.value = null;
   };
 
   const updateNodePosition = (
@@ -132,11 +135,18 @@ export const usePipelineBuilder = () => {
     pipelineParameters.value = parameters;
   };
 
+  /** Toggle a node as the pipeline output. Selecting a new one deselects the previous. */
+  const toggleOutputNode = (nodeId: string) => {
+    outputNodeId.value = outputNodeId.value === nodeId ? null : nodeId;
+  };
+
   return {
     nodes,
     edges,
     selectedNode,
     pipelineParameters,
+    outputNodeId,
+    toggleOutputNode,
     initialize,
     addNode,
     removeNode,
