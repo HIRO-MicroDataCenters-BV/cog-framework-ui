@@ -185,142 +185,140 @@
 
           <!-- Save & Run confirmation dialog -->
           <Dialog v-model:open="confirmDialogOpen">
-            <DialogContent class="flex max-h-[90vh] max-w-lg flex-col">
-              <DialogHeader class="shrink-0">
-                <DialogTitle class="flex items-center gap-2">
-                  <Icon name="lucide:play" class="size-4 text-primary" />
-                  Confirm Save &amp; Run
-                </DialogTitle>
-                <DialogDescription>
-                  Review the pipeline configuration before running.
-                </DialogDescription>
-              </DialogHeader>
+            <DialogContent class="flex max-h-[90vh] max-w-xl flex-col gap-0 p-0 overflow-hidden">
 
-              <div class="min-h-0 flex-1 overflow-y-auto">
-                <div class="space-y-4 py-1 text-sm">
-
-                  <!-- Pipeline name + mode -->
-                  <div class="grid grid-cols-2 gap-3">
-                    <div class="rounded-md border border-border bg-muted/30 px-3 py-2">
-                      <p class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pipeline name</p>
-                      <p class="truncate font-medium">{{ confirmPayload?.name || '—' }}</p>
-                    </div>
-                    <div class="rounded-md border border-border bg-muted/30 px-3 py-2">
-                      <p class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Mode</p>
-                      <p
-                        class="font-medium capitalize"
-                        :class="pipelineRunMode === 'federated' ? 'text-violet-500' : 'text-emerald-500'"
-                      >
-                        {{ pipelineRunMode }}
-                      </p>
-                    </div>
+              <!-- Header -->
+              <div class="px-5 pt-5 pb-4 border-b border-border shrink-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <DialogTitle class="text-base font-semibold truncate">
+                      {{ confirmPayload?.name || 'Untitled Pipeline' }}
+                    </DialogTitle>
+                    <DialogDescription class="mt-0.5 text-xs text-muted-foreground">
+                      Review before running
+                    </DialogDescription>
                   </div>
+                  <span
+                    class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize"
+                    :class="pipelineRunMode === 'federated'
+                      ? 'bg-violet-500/10 text-violet-500 ring-1 ring-violet-500/20'
+                      : 'bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20'"
+                  >
+                    {{ pipelineRunMode }}
+                  </span>
+                </div>
 
-                  <!-- Components — own scroll -->
-                  <div>
-                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Components ({{ confirmPayload?.pipeline_components?.length ?? 0 }})
-                    </p>
-                    <div class="max-h-36 overflow-y-auto rounded-md border border-border divide-y divide-border/60">
-                      <div
-                        v-for="comp in confirmPayload?.pipeline_components"
-                        :key="comp.uuid"
-                        class="flex items-center justify-between gap-2 px-3 py-1.5"
-                      >
-                        <span class="font-medium truncate">{{ comp.name }}</span>
-                        <span class="shrink-0 font-mono text-[10px] text-muted-foreground">{{ comp.uuid?.slice(0, 8) }}…</span>
-                      </div>
-                      <div v-if="!confirmPayload?.pipeline_components?.length" class="px-3 py-2 text-xs text-muted-foreground italic">None</div>
-                    </div>
-                  </div>
-
-                  <!-- Pipeline Input -->
-                  <div>
-                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Pipeline Input ({{ confirmPayload?.input_path?.length ?? 0 }})
-                    </p>
-                    <div class="rounded-md border border-border divide-y divide-border/60 overflow-hidden">
-                      <div
-                        v-for="param in confirmPayload?.input_path"
-                        :key="param.name"
-                        class="px-3 py-2 text-xs space-y-0.5"
-                      >
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-muted-foreground">name</span>
-                          <span class="font-medium">{{ param.name }}</span>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-muted-foreground">default</span>
-                          <span class="text-muted-foreground">{{ param.default ?? '—' }}</span>
-                        </div>
-                        <div v-if="param.description" class="flex items-center justify-between gap-2">
-                          <span class="text-muted-foreground">description</span>
-                          <span class="text-muted-foreground truncate max-w-48">{{ param.description }}</span>
-                        </div>
-                      </div>
-                      <div v-if="!confirmPayload?.input_path?.length" class="px-3 py-2 text-xs text-muted-foreground italic">
-                        No input parameters defined.
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Pipeline output -->
-                  <div>
-                    <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Pipeline Output
-                    </p>
-                    <Select
-                      :model-value="confirmOutputNodeId ?? '__none__'"
-                      @update:model-value="(v) => (confirmOutputNodeId = v === '__none__' ? null : v)"
-                    >
-                      <SelectTrigger class="h-8 text-xs">
-                        <SelectValue placeholder="None (all components used)">
-                          <span v-if="confirmOutputNodeId" class="flex items-center gap-2">
-                            <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
-                            {{ confirmOutputNodeLabel }}
-                          </span>
-                          <span v-else class="text-muted-foreground">None (all components used)</span>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">
-                          <span class="text-muted-foreground italic">None (all components used)</span>
-                        </SelectItem>
-                        <SelectItem v-for="node in nodes" :key="node.id" :value="node.id">
-                          <span class="flex items-center gap-2">
-                            <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
-                            {{ node.data?.label }}
-                          </span>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <!-- Output preview -->
-                    <div
-                      v-if="confirmOutputNodeId && confirmPayload?.output_path?.length"
-                      class="mt-1.5 rounded-md border border-border overflow-hidden"
-                    >
-                      <div
-                        v-for="out in confirmPayload.output_path"
-                        :key="`${out.source.component_name}-${out.source.output_name}`"
-                        class="space-y-1 px-3 py-2 text-xs"
-                      >
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-muted-foreground">component_name</span>
-                          <span class="font-medium">{{ out.source.component_name }}</span>
-                        </div>
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-muted-foreground">component_uuid</span>
-                          <span class="font-mono text-[11px] text-muted-foreground">{{ out.source.component_uuid ?? '—' }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                <!-- Summary stats -->
+                <div class="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                  <span class="flex items-center gap-1.5">
+                    <Icon name="lucide:boxes" class="size-3.5" />
+                    {{ confirmPayload?.pipeline_components?.length ?? 0 }} component{{ (confirmPayload?.pipeline_components?.length ?? 0) !== 1 ? 's' : '' }}
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <Icon name="lucide:sliders-horizontal" class="size-3.5" />
+                    {{ confirmPayload?.input_path?.length ?? 0 }} input param{{ (confirmPayload?.input_path?.length ?? 0) !== 1 ? 's' : '' }}
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                    Output: {{ confirmOutputNodeId ? confirmOutputNodeLabel : 'Not set' }}
+                  </span>
                 </div>
               </div>
 
-              <DialogFooter class="shrink-0 gap-2 border-t-0 pt-2">
+              <!-- Body -->
+              <div class="min-h-0 flex-1 overflow-y-auto divide-y divide-border">
+
+                <!-- Components -->
+                <div class="px-5 py-4">
+                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Components
+                  </p>
+                  <div class="max-h-32 overflow-y-auto space-y-1">
+                    <div
+                      v-for="comp in confirmPayload?.pipeline_components"
+                      :key="comp.uuid"
+                      class="flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-xs"
+                    >
+                      <span class="font-medium truncate">{{ comp.name }}</span>
+                      <span class="shrink-0 font-mono text-[10px] text-muted-foreground/70">{{ comp.uuid?.slice(0, 8) }}…</span>
+                    </div>
+                    <p v-if="!confirmPayload?.pipeline_components?.length" class="text-xs text-muted-foreground italic">No components.</p>
+                  </div>
+                </div>
+
+                <!-- Pipeline Input -->
+                <div class="px-5 py-4">
+                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Pipeline Input
+                  </p>
+                  <div v-if="confirmPayload?.input_path?.length" class="flex flex-wrap gap-1.5">
+                    <span
+                      v-for="param in confirmPayload.input_path"
+                      :key="param.name"
+                      class="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-xs"
+                    >
+                      <span class="font-medium">{{ param.name }}</span>
+                      <span v-if="param.default" class="text-muted-foreground">= {{ param.default }}</span>
+                    </span>
+                  </div>
+                  <p v-else class="text-xs text-muted-foreground italic">No input parameters defined.</p>
+                </div>
+
+                <!-- Pipeline Output -->
+                <div class="px-5 py-4">
+                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Pipeline Output
+                  </p>
+                  <Select
+                    :model-value="confirmOutputNodeId ?? '__none__'"
+                    @update:model-value="(v) => (confirmOutputNodeId = v === '__none__' ? null : v)"
+                  >
+                    <SelectTrigger class="h-8 text-xs">
+                      <SelectValue>
+                        <span v-if="confirmOutputNodeId" class="flex items-center gap-2">
+                          <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                          {{ confirmOutputNodeLabel }}
+                        </span>
+                        <span v-else class="text-muted-foreground">Not set</span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        <span class="text-muted-foreground italic">Not set</span>
+                      </SelectItem>
+                      <SelectItem v-for="node in nodes" :key="node.id" :value="node.id">
+                        <span class="flex items-center gap-2">
+                          <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                          {{ node.data?.label }}
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div
+                    v-if="confirmOutputNodeId && confirmPayload?.output_path?.length"
+                    class="mt-2 rounded-md bg-muted/40 px-3 py-2 text-xs space-y-1"
+                  >
+                    <div
+                      v-for="out in confirmPayload.output_path"
+                      :key="`${out.source.component_name}-${out.source.output_name}`"
+                    >
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-muted-foreground">component_name</span>
+                        <span class="font-medium">{{ out.source.component_name }}</span>
+                      </div>
+                      <div class="flex items-center justify-between gap-2 mt-0.5">
+                        <span class="text-muted-foreground">component_uuid</span>
+                        <span class="font-mono text-[10px] text-muted-foreground/80">{{ out.source.component_uuid ?? '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Footer -->
+              <div class="flex items-center justify-end gap-2 px-5 py-4 border-t border-border shrink-0">
                 <Button variant="outline" size="sm" @click="confirmDialogOpen = false">
                   Cancel
                 </Button>
@@ -328,7 +326,8 @@
                   <Icon name="lucide:play" class="size-3.5" />
                   Run Pipeline
                 </Button>
-              </DialogFooter>
+              </div>
+
             </DialogContent>
           </Dialog>
         </div>
