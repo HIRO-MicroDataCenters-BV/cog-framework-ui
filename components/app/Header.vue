@@ -234,19 +234,32 @@
                     </div>
                   </div>
 
-                  <!-- Input params -->
-                  <div v-if="confirmPayload?.input_path?.length">
+                  <!-- Pipeline Input -->
+                  <div>
                     <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Input Parameters ({{ confirmPayload.input_path.length }})
+                      Pipeline Input ({{ confirmPayload?.input_path?.length ?? 0 }})
                     </p>
                     <div class="rounded-md border border-border divide-y divide-border/60 overflow-hidden">
                       <div
-                        v-for="param in confirmPayload.input_path"
+                        v-for="param in confirmPayload?.input_path"
                         :key="param.name"
-                        class="flex items-center justify-between gap-2 px-3 py-1.5"
+                        class="px-3 py-2 text-xs space-y-0.5"
                       >
-                        <span class="font-medium">{{ param.name }}</span>
-                        <span class="text-xs text-muted-foreground">{{ param.default ?? '—' }}</span>
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-muted-foreground">name</span>
+                          <span class="font-medium">{{ param.name }}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-muted-foreground">default</span>
+                          <span class="text-muted-foreground">{{ param.default ?? '—' }}</span>
+                        </div>
+                        <div v-if="param.description" class="flex items-center justify-between gap-2">
+                          <span class="text-muted-foreground">description</span>
+                          <span class="text-muted-foreground truncate max-w-48">{{ param.description }}</span>
+                        </div>
+                      </div>
+                      <div v-if="!confirmPayload?.input_path?.length" class="px-3 py-2 text-xs text-muted-foreground italic">
+                        No input parameters defined.
                       </div>
                     </div>
                   </div>
@@ -388,7 +401,7 @@ import {
 
 const { page } = useApp();
 const { t } = useI18n();
-const { nodes, outputNodeId } = usePipelineBuilder();
+const { nodes, outputNodeId, pipelineParameters } = usePipelineBuilder();
 const { isNodeValid } = useNodeValidation();
 const { openManageParameters: triggerManageParameters } = useBuilderEvents();
 
@@ -488,11 +501,15 @@ watch(confirmDialogOpen, (open) => {
   if (open) confirmOutputNodeId.value = outputNodeId.value;
 });
 
-// Payload preview — reacts to confirmOutputNodeId changes inside the dialog
+// Payload preview — reacts to confirmOutputNodeId changes inside the dialog.
+// Always merges the latest pipelineParameters so input_path is up to date.
 const confirmPayload = computed<PipelineCreationPayload | null>(() => {
   const builder = page.value.data?.builder;
   if (!builder) return null;
-  return builderDataToPayload(builder, confirmOutputNodeId.value);
+  return builderDataToPayload(
+    { ...builder, input_path: pipelineParameters.value },
+    confirmOutputNodeId.value,
+  );
 });
 
 // The output_path entries for the currently chosen output node
@@ -528,7 +545,7 @@ function executePipelineRun(mode: 'standard' | 'federated') {
   _modifiedAfterRun.value = false;
 
   const payload: PipelineCreationPayload = builderDataToPayload(
-    builder,
+    { ...builder, input_path: pipelineParameters.value },
     outputNodeId.value,
   );
 
