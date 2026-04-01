@@ -116,15 +116,25 @@
 
             <!-- Output Parameters -->
             <div>
-              <div v-if="outputPaths.length" class="divide-y divide-border/50">
+              <div v-if="outputDefinitions.length" class="divide-y divide-border/50">
                 <div
-                  v-for="path in outputPaths"
+                  v-for="(path, index) in outputDefinitions"
                   :key="path.key"
                   class="flex items-center justify-between gap-3 px-2 py-2"
                 >
-                  <span class="text-xs font-medium text-foreground shrink-0">{{
-                    path.name
-                  }}</span>
+                  <div class="min-w-0 flex-1">
+                    <Input
+                      v-if="!readonly"
+                      :model-value="outputNameDrafts[index] ?? path.name"
+                      class="h-7 text-xs"
+                      @update:model-value="(v) => onOutputNameDraftChange(index, String(v))"
+                      @blur="onOutputNameSave(index)"
+                      @keydown.enter.prevent="onOutputNameSave(index)"
+                    />
+                    <span v-else class="text-xs font-medium text-foreground shrink-0">
+                      {{ path.name }}
+                    </span>
+                  </div>
                   <span
                     class="text-xs text-muted-foreground text-right break-all"
                     >{{ path.type }}</span
@@ -363,6 +373,51 @@ const outputPaths = computed(() =>
   renderPathList(props.selectedNode?.data?.component?.output_path || []),
 );
 
+const outputDefinitions = computed(() =>
+  renderPathList(props.selectedNode?.data?.component?.output_path || []),
+);
+
+const outputNameDrafts = ref<Record<number, string>>({});
+
+function onOutputNameDraftChange(index: number, value: string) {
+  outputNameDrafts.value[index] = value;
+}
+
+function onOutputNameSave(index: number) {
+  if (!props.selectedNode || props.readonly) return;
+  const currentOutputPath = props.selectedNode.data?.component?.output_path || [];
+  const current = currentOutputPath[index];
+  if (!current) return;
+
+  const draft = (outputNameDrafts.value[index] ?? current.name).trim();
+  if (!draft) {
+    outputNameDrafts.value[index] = current.name;
+    return;
+  }
+  if (draft === current.name) return;
+
+  // Prevent duplicate output names within the same component.
+  const duplicate = currentOutputPath.some(
+    (out, i) => i !== index && out.name === draft,
+  );
+  if (duplicate) {
+    outputNameDrafts.value[index] = current.name;
+    return;
+  }
+
+  const nextOutputPath = currentOutputPath.map((out, i) =>
+    i === index ? { ...out, name: draft } : { ...out },
+  );
+
+  emit('updateNode', props.selectedNode.id, {
+    data: {
+      component: {
+        output_path: nextOutputPath,
+      },
+    },
+  });
+}
+
 const existingNodeNames = computed(() => {
   if (!props.allNodes) return [];
   const currentId = props.selectedNode?.id;
@@ -443,6 +498,15 @@ watch(
       formData.transformExpression =
         (newNode.data?.transformExpression as string) || '';
       selectedNodeLabel.value = label;
+    }
+
+    if (newNode) {
+      const outputPath = newNode.data?.component?.output_path || [];
+      outputNameDrafts.value = Object.fromEntries(
+        outputPath.map((out, i) => [i, out.name]),
+      );
+    } else {
+      outputNameDrafts.value = {};
     }
   },
   { immediate: true },

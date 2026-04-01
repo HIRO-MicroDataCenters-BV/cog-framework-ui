@@ -378,6 +378,10 @@
                         <span class="text-muted-foreground">component_name</span>
                         <span class="font-medium">{{ out.source.component_name }}</span>
                       </div>
+                      <div class="mt-0.5 flex items-center justify-between gap-2">
+                        <span class="text-muted-foreground">output_name</span>
+                        <span class="font-medium">{{ out.source.output_name }}</span>
+                      </div>
                       <div class="flex items-center justify-between gap-2 mt-0.5">
                         <span class="text-muted-foreground">component_uuid</span>
                         <span class="font-mono text-[10px] text-muted-foreground/80">{{ out.source.component_uuid ?? '—' }}</span>

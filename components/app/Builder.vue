@@ -83,6 +83,7 @@ import type {
   Node,
   Edge,
   ComponentInput,
+  ComponentPath,
   PipelineInputParam,
   PipelineOutput,
   PipelineBuilderData,
@@ -505,6 +506,66 @@ const syncEdgesFromComponentInputs = (
   });
 };
 
+const syncOutputRenameReferences = (
+  nodeId: string,
+  previousOutputPath: ComponentPath[],
+  nextOutputPath: ComponentPath[],
+) => {
+  const sourceNode = nodes.value.find((n) => n.id === nodeId);
+  if (!sourceNode) return;
+  const sourceComponentName = getNodeDisplayName(sourceNode);
+
+  const renameMap = new Map<string, string>();
+  const maxLen = Math.min(previousOutputPath.length, nextOutputPath.length);
+  for (let i = 0; i < maxLen; i++) {
+    const before = previousOutputPath[i]?.name;
+    const after = nextOutputPath[i]?.name;
+    if (before && after && before !== after) {
+      renameMap.set(before, after);
+    }
+  }
+  if (!renameMap.size) return;
+
+  // Update edges sourced from this node so handles keep working.
+  edges.value.forEach((edge) => {
+    if (edge.source !== nodeId) return;
+    const oldHandle = edge.sourceHandle || '';
+    const newHandle = renameMap.get(oldHandle);
+    if (!newHandle) return;
+    edge.sourceHandle = newHandle;
+    applyEdgeVisualStyle(edge as Edge, nodeId, newHandle);
+  });
+  // Ensure reactivity for any deep edge mutations above.
+  edges.value = [...edges.value];
+
+  // Update all component-input references that point to renamed outputs.
+  nodes.value.forEach((node) => {
+    const inputs = node.data?.component?.inputs || [];
+    if (!inputs.length) return;
+
+    let hasChanges = false;
+    const updatedInputs = inputs.map((input: ComponentInput) => {
+      if (input.value_source_type !== 'component_output') return input;
+      const source = input.source || '';
+      if (!source.startsWith(`${sourceComponentName}.`)) return input;
+      const outputName = source.slice(sourceComponentName.length + 1);
+      const renamed = renameMap.get(outputName);
+      if (!renamed) return input;
+      hasChanges = true;
+      return { ...input, source: `${sourceComponentName}.${renamed}` };
+    });
+
+    if (hasChanges) {
+      updateNodeData(node.id, {
+        component: {
+          ...node.data.component,
+          inputs: updatedInputs,
+        },
+      });
+    }
+  });
+};
+
 const onEdgeUpdate = (edge: VueFlowEdge) => {
   // TODO: Implement modifyEdge in store if needed, or just remove/add
 };
@@ -517,6 +578,11 @@ const onAddNode = (node: VueFlowNode) => {
 const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
   if (readonly.value) return;
 
+  const nodeBeforeUpdate = nodes.value.find((n) => n.id === nodeId);
+  const previousOutputPath = [
+    ...((nodeBeforeUpdate?.data?.component?.output_path as ComponentPath[]) || []),
+  ];
+
   if (updates.position) {
     updateNodePosition(nodeId, updates.position);
   }
@@ -528,6 +594,12 @@ const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
       ?.inputs;
     if (Array.isArray(maybeInputs)) {
       syncEdgesFromComponentInputs(nodeId, maybeInputs);
+    }
+
+    const maybeOutputPath = (updates.data.component as { output_path?: ComponentPath[] })
+      ?.output_path;
+    if (Array.isArray(maybeOutputPath)) {
+      syncOutputRenameReferences(nodeId, previousOutputPath, maybeOutputPath);
     }
   }
 };
