@@ -33,7 +33,7 @@
 
     <!-- Edit View: grid + error grouped so validation sits tight under the row -->
     <div v-else class="flex flex-col gap-1">
-      <div class="grid grid-cols-[150px_1fr] gap-3 items-start">
+      <div class="grid grid-cols-[165px_1fr] gap-3 items-start">
         <!-- Value Source Type Selector -->
         <div>
           <Select
