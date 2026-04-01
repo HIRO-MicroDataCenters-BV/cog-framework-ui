@@ -326,6 +326,41 @@ const onNodeClick = (node: VueFlowNode | null) => {
 
 const onConnect = (edge: VueFlowEdge) => {
   if (readonly.value) return;
+
+  const targetNode = nodes.value.find((n) => n.id === edge.target);
+  const sourceNode = nodes.value.find((n) => n.id === edge.source);
+  const targetHandle = edge.targetHandle || '';
+  const sourceHandle = edge.sourceHandle || '';
+
+  // Keep component sheet in sync: when a canvas edge is created,
+  // update the target component input relationship immediately.
+  if (targetNode?.data?.component && targetHandle && sourceNode && sourceHandle) {
+    const existingInputs = targetNode.data.component.inputs || [];
+    const mappedInput: ComponentInput = {
+      destination: targetHandle,
+      value_source_type: 'component_output',
+      source: `${sourceNode.data?.label || sourceNode.data?.component?.name || edge.source}.${sourceHandle}`,
+    };
+
+    const existingIndex = existingInputs.findIndex(
+      (input) => input.destination === targetHandle,
+    );
+    const nextInputs = [...existingInputs];
+
+    if (existingIndex >= 0) {
+      nextInputs[existingIndex] = mappedInput;
+    } else {
+      nextInputs.push(mappedInput);
+    }
+
+    updateNodeData(targetNode.id, {
+      component: {
+        ...targetNode.data.component,
+        inputs: nextInputs,
+      },
+    });
+  }
+
   addEdge(edge as Edge);
 };
 

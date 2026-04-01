@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="canvasRootRef"
     class="h-full relative bg-muted/20"
     :class="{ readonly: props.readonly }"
   >
@@ -22,6 +23,7 @@
       :default-edge-options="{
         markerEnd: { type: MarkerType.ArrowClosed, width: 8, height: 8 },
       }"
+      :connection-mode="ConnectionMode.Loose"
       :is-valid-connection="isValidConnectionWrapper"
       @drop="onDrop"
       @dragover="onDragOver"
@@ -47,23 +49,57 @@
               borderRadius: '0.75rem',
             }"
             :data-nodeid="data.id || data.component.id"
+            @mouseenter="hoveredNodeId = id"
+            @mouseleave="hoveredNodeId = null"
           >
+            <Tooltip
+              v-if="
+                !isInputRailExpanded(id) &&
+                (hiddenInputCountByNode.get(id) ?? 0) > 0
+              "
+            >
+              <TooltipTrigger as-child>
+                <div
+                  class="absolute -top-2 right-3 z-20 rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm"
+                >
+                  +{{ hiddenInputCountByNode.get(id) }} more
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" class="text-xs">
+                Hover to expand all inputs
+              </TooltipContent>
+            </Tooltip>
+
             <!-- Input Handles (Top) -->
             <div
               class="absolute top-0 left-0 right-0 h-0 flex justify-center z-10"
+              @mouseenter="hoveredInputRailNodeId = id"
+              @mouseleave="hoveredInputRailNodeId = null"
             >
               <div
-                v-for="(input, index) in (
-                  data.component.input_path || []
-                ).filter((i: any) => isConnectableType(i.type, i.name))"
+                v-for="(input, index) in allInputHandlesByNode.get(id) || []"
                 :key="`input-${input.name}`"
-                class="absolute"
+                class="absolute transition-opacity duration-150"
+                :class="
+                  isInputHandleVisible(id, input.name)
+                    ? 'opacity-100'
+                    : 'opacity-0 pointer-events-none'
+                "
+                @mouseenter="
+                  (e) =>
+                    showHandleTooltip(
+                      e,
+                      id,
+                      input.name,
+                      input.type,
+                      getInputAssignedText(id, input.name),
+                    )
+                "
+                @mouseleave="hideHandleTooltip"
                 :style="{
                   left: calculateHandlePosition(
                     Number(index),
-                    (data.component.input_path || []).filter((i: any) =>
-                      isConnectableType(i.type, i.name),
-                    ).length,
+                    (allInputHandlesByNode.get(id) || []).length,
                   ),
                 }"
               >
@@ -71,36 +107,20 @@
                   :id="input.name"
                   type="target"
                   :position="Position.Top"
+                  :connectable="1"
                   class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
                     borderColor: getTypeColor(input.type),
                     color: getTypeColor(input.type),
-                    backgroundColor: isHandleConnected(id, input.name, 'target')
-                      ? getTypeColor(input.type)
-                      : 'hsl(var(--background))',
+                    backgroundColor:
+                      isHandleConnected(id, input.name, 'target') ||
+                      isInputAssigned(id, input.name)
+                        ? getTypeColor(input.type)
+                        : 'hsl(var(--background))',
                   }"
                   :data-handleid="input.name"
-                >
-                  <Tooltip v-if="!props.readonly">
-                    <TooltipTrigger as-child>
-                      <div
-                        class="absolute inset-0 flex items-center justify-center"
-                      >
-                        <!-- Tiny dot icon inside handle if needed, or just color -->
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent class="text-xs">
-                      <div class="font-medium">{{ input.name }}</div>
-                      <div
-                        class="text-muted-foreground flex items-center gap-1"
-                      >
-                        <Icon :name="getTypeIcon(input.type)" class="w-3 h-3" />
-                        {{ input.type }}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </Handle>
+                />
               </div>
             </div>
 
@@ -117,12 +137,7 @@
                 <Tooltip v-if="!props.readonly">
                   <TooltipTrigger as-child>
                     <button
-                      class="shrink-0 rounded p-0.5 transition-all"
-                      :class="
-                        outputNodeId === id
-                          ? 'text-amber-500 opacity-100'
-                          : 'text-muted-foreground/40 opacity-0 group-hover/node:opacity-100 hover:text-muted-foreground'
-                      "
+                      class="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all group-hover/node:opacity-100 hover:text-muted-foreground"
                       @click.stop="toggleOutputNode(id)"
                     >
                       <Icon name="lucide:square-arrow-down" class="w-3.5 h-3.5" />
@@ -132,12 +147,6 @@
                     {{ outputNodeId === id ? 'Remove as pipeline output' : 'Set as pipeline output' }}
                   </TooltipContent>
                 </Tooltip>
-                <!-- Readonly: icon only when active -->
-                <Icon
-                  v-else-if="outputNodeId === id"
-                  name="lucide:square-arrow-down"
-                  class="w-3.5 h-3.5 shrink-0 text-amber-500"
-                />
                 <Tooltip v-if="data.status">
                   <TooltipTrigger as-child>
                     <Icon
@@ -201,6 +210,17 @@
                 ).filter((o: any) => isConnectableType(o.type, o.name))"
                 :key="`output-${output.name}`"
                 class="absolute"
+                @mouseenter="
+                  (e) =>
+                    showHandleTooltip(
+                      e,
+                      id,
+                      output.name,
+                      output.type,
+                      getOutputAssignedText(id, output.name),
+                    )
+                "
+                @mouseleave="hideHandleTooltip"
                 :style="{
                   left: calculateHandlePosition(
                     Number(index),
@@ -228,25 +248,7 @@
                       : 'hsl(var(--background))',
                   }"
                   :data-handleid="output.name"
-                >
-                  <Tooltip v-if="!props.readonly">
-                    <TooltipTrigger as-child>
-                      <div class="w-full h-full"></div>
-                    </TooltipTrigger>
-                    <TooltipContent class="text-xs">
-                      <div class="font-medium">{{ output.name }}</div>
-                      <div
-                        class="text-muted-foreground flex items-center gap-1"
-                      >
-                        <Icon
-                          :name="getTypeIcon(output.type)"
-                          class="w-3 h-3"
-                        />
-                        {{ output.type }}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </Handle>
+                />
               </div>
             </div>
           </div>
@@ -345,11 +347,33 @@
         </div>
       </Panel>
     </VueFlow>
+
+    <div
+      v-if="hoveredHandleTooltip"
+      class="pointer-events-none absolute z-[60] w-max min-w-[11rem] max-w-[26rem] -translate-x-1/2 -translate-y-full rounded-md bg-primary px-3 py-2 text-xs text-primary-foreground opacity-90 shadow-md backdrop-blur-[1px]"
+      :style="{
+        left: `${hoveredHandleTooltip.x}px`,
+        top: `${hoveredHandleTooltip.y}px`,
+      }"
+    >
+      <div class="font-medium text-primary-foreground">
+        {{ hoveredHandleTooltip.name }}
+      </div>
+      <div class="mt-0.5 text-primary-foreground/90">
+        Type: {{ hoveredHandleTooltip.type }}
+      </div>
+      <div class="mt-1 break-words text-primary-foreground/90">
+        Assigned: {{ hoveredHandleTooltip.assigned }}
+      </div>
+      <div
+        class="absolute left-1/2 top-full z-[60] size-2.5 -translate-x-1/2 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-primary"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, watch, ref } from 'vue';
+import { computed, nextTick, watch, ref } from 'vue';
 import type { CSSProperties } from 'vue';
 import {
   VueFlow,
@@ -358,6 +382,7 @@ import {
   Position,
   Handle,
   MarkerType,
+  ConnectionMode,
   type Connection,
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
@@ -385,6 +410,7 @@ import type {
   Node,
   Edge,
   Component,
+  ComponentInput,
   ComponentPath,
 } from '~/types/canvas.types';
 
@@ -478,27 +504,178 @@ const isHandleConnected = (
   });
 };
 
-// Helper to determine if a type should show a handle (connectable types only)
-const isConnectableType = (type: string, name?: string): boolean => {
-  const connectableTypes = [
-    'Dataset',
-    'Model',
-    'JsonObject',
-    'Array',
-    'Object',
-    'Artifact',
-    'Any',
-  ];
+const canvasRootRef = ref<HTMLElement | null>(null);
+const hoveredHandleTooltip = ref<{
+  nodeId: string;
+  name: string;
+  type: string;
+  assigned: string;
+  x: number;
+  y: number;
+} | null>(null);
 
-  if (connectableTypes.includes(type)) return true;
-
-  // Special case: local_data_connector in FedSCVI client is a data input
-  if (name === 'local_data_connector' && type === 'String') return true;
-
-  return false;
+const getAssignedInput = (
+  nodeId: string,
+  inputName: string,
+): ComponentInput | undefined => {
+  const node = props.nodes.find((n) => n.id === nodeId);
+  const inputs = node?.data?.component?.inputs || [];
+  return inputs.find((input: ComponentInput) => input.destination === inputName);
 };
 
+const isInputAssigned = (nodeId: string, inputName: string): boolean => {
+  const assigned = getAssignedInput(nodeId, inputName);
+  if (!assigned) return false;
+  return Boolean(assigned.source && String(assigned.source).trim() !== '');
+};
+
+const getAssignedOutputTargets = (
+  nodeId: string,
+  outputName: string,
+): string[] => {
+  return props.edges
+    .filter((edge) => edge.source === nodeId && edge.sourceHandle === outputName)
+    .map((edge) => {
+      const targetNode = props.nodes.find((n) => n.id === edge.target);
+      const targetLabel =
+        (targetNode?.data?.label as string) ||
+        targetNode?.data?.component?.name ||
+        edge.target;
+      return `${targetLabel}.${edge.targetHandle || ''}`.replace(/\.$/, '');
+    });
+};
+
+const getInputAssignedText = (nodeId: string, inputName: string): string => {
+  const assigned = getAssignedInput(nodeId, inputName);
+  return assigned
+    ? `${assigned.value_source_type} = ${assigned.source || '—'}`
+    : 'none';
+};
+
+const getOutputAssignedText = (nodeId: string, outputName: string): string => {
+  const targets = getAssignedOutputTargets(nodeId, outputName);
+  return targets.length ? targets.join(', ') : 'none';
+};
+
+const showHandleTooltip = (
+  event: MouseEvent,
+  nodeId: string,
+  name: string,
+  type: string,
+  assigned: string,
+) => {
+  const root = canvasRootRef.value;
+  if (!root) return;
+  const targetEl = event.currentTarget as HTMLElement | null;
+  if (!targetEl) return;
+
+  const rect = root.getBoundingClientRect();
+  const dotRect = targetEl.getBoundingClientRect();
+
+  hoveredHandleTooltip.value = {
+    nodeId,
+    name,
+    type,
+    assigned,
+    x: dotRect.left - rect.left + dotRect.width / 2,
+    y: dotRect.top - rect.top - 10,
+  };
+};
+
+const hideHandleTooltip = () => {
+  hoveredHandleTooltip.value = null;
+};
+
+// Show handles for all declared input/output types from component definition.
+const isConnectableType = (type: string): boolean => Boolean(type);
+
+const hoveredNodeId = ref<string | null>(null);
+const hoveredInputRailNodeId = ref<string | null>(null);
+
+const allInputHandlesByNode = computed(() => {
+  const byNode = new Map<string, ComponentPath[]>();
+
+  for (const node of props.nodes) {
+    const inputPath = (node.data?.component?.input_path || []).filter(
+      (i: ComponentPath) => isConnectableType(i.type),
+    );
+    // Keep the API-defined input order stable so dot positions do not jump.
+    byNode.set(node.id, inputPath);
+  }
+
+  return byNode;
+});
+
+const isInputRailExpanded = (nodeId: string): boolean => {
+  if (hoveredNodeId.value === nodeId) return true;
+  if (hoveredInputRailNodeId.value === nodeId) return true;
+  const node = props.nodes.find((n) => n.id === nodeId);
+  return Boolean(node?.selected);
+};
+
+const visibleInputHandleNamesByNode = computed(() => {
+  const byNode = new Map<string, Set<string>>();
+  for (const node of props.nodes) {
+    const allInputs = allInputHandlesByNode.value.get(node.id) || [];
+    if (isInputRailExpanded(node.id)) {
+      byNode.set(node.id, new Set(allInputs.map((input) => input.name)));
+      continue;
+    }
+
+    // In collapsed mode, keep all connected input dots visible so users
+    // can always see existing mappings on the node.
+    const connectedHandleNames = new Set(
+      props.edges
+        .filter((edge) => edge.target === node.id)
+        .map((edge) => edge.targetHandle)
+        .filter((h): h is string => Boolean(h)),
+    );
+    const connectedInputs = allInputs.filter((input) =>
+      connectedHandleNames.has(input.name),
+    );
+
+    if (connectedInputs.length > 0) {
+      byNode.set(node.id, new Set(connectedInputs.map((input) => input.name)));
+    } else {
+      const centerIndex = Math.floor((allInputs.length - 1) / 2);
+      const centerInput = allInputs[centerIndex];
+      byNode.set(
+        node.id,
+        new Set(centerInput ? [centerInput.name] : []),
+      );
+    }
+  }
+  return byNode;
+});
+
+const isInputHandleVisible = (nodeId: string, handleName: string): boolean => {
+  const visibleHandles = visibleInputHandleNamesByNode.value.get(nodeId);
+  return visibleHandles ? visibleHandles.has(handleName) : false;
+};
+
+const hiddenInputCountByNode = computed(() => {
+  const byNode = new Map<string, number>();
+
+  for (const node of props.nodes) {
+    const total = allInputHandlesByNode.value.get(node.id)?.length || 0;
+    const visible = visibleInputHandleNamesByNode.value.get(node.id)?.size || 0;
+    byNode.set(node.id, Math.max(0, total - visible));
+  }
+
+  return byNode;
+});
+
 const isValidConnectionWrapper = (connection: Connection) => {
+  // One input handle can accept only one incoming output connection.
+  if (connection.target && connection.targetHandle) {
+    const targetAlreadyConnected = props.edges.some(
+      (edge) =>
+        edge.target === connection.target &&
+        edge.targetHandle === connection.targetHandle,
+    );
+    if (targetAlreadyConnected) return false;
+  }
+
   // We pass the full component nodes list to the validator
   // props.nodes contains the data with component structure
   // We cast to any because AppNode type mismatches slightly with VueFlowNode but data structure is compatible
@@ -764,7 +941,8 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 
 /* Ensure handles are visible above other elements */
 .vue-flow__handle {
-  z-index: 10;
+  z-index: 80 !important;
+  pointer-events: auto !important;
 }
 
 /* Compatibility Styling */
