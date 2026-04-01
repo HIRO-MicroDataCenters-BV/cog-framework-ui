@@ -142,23 +142,67 @@
                 <div
                   v-for="(path, index) in outputDefinitions"
                   :key="path.key"
-                  class="flex items-center justify-between gap-3 px-2 py-2"
+                  class="flex items-center gap-2 px-2 py-2"
+                  @mouseenter="hoveredOutputIndex = index"
+                  @mouseleave="hoveredOutputIndex = null"
                 >
-                  <div class="min-w-0 flex-1">
+                  <div class="flex min-w-0 items-center gap-1 h-7">
                     <Input
-                      v-if="!readonly"
+                      v-if="!readonly && editingOutputIndex === index"
                       :model-value="outputNameDrafts[index] ?? path.name"
-                      class="h-7 text-xs"
+                      class="h-7 w-56 max-w-full border-border/60 bg-muted/30 px-2 text-xs font-semibold shadow-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:font-normal placeholder:text-muted-foreground/50 hover:border-border/80 hover:bg-muted/40 focus-visible:border-border/80 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/25"
                       @update:model-value="(v) => onOutputNameDraftChange(index, String(v))"
-                      @blur="onOutputNameSave(index)"
                       @keydown.enter.prevent="onOutputNameSave(index)"
                     />
-                    <span v-else class="text-xs font-medium text-foreground shrink-0">
+                    <span
+                      v-else
+                      class="inline-flex h-7 max-w-[16rem] items-center truncate px-2 text-xs font-semibold text-foreground"
+                    >
                       {{ path.name }}
                     </span>
+                    <Button
+                      v-if="
+                        !readonly &&
+                        editingOutputIndex !== index &&
+                        hoveredOutputIndex === index
+                      "
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      class="h-7 px-2.5 shrink-0"
+                      :title="$t('action.edit')"
+                      @click="startOutputNameEdit(index)"
+                    >
+                      <Icon name="lucide:pencil" class="size-3.5 shrink-0" />
+                    </Button>
+                  </div>
+                  <div
+                    v-if="!readonly && editingOutputIndex === index"
+                    class="flex items-center gap-1"
+                  >
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      class="h-7 px-2.5 shrink-0"
+                      :title="$t('action.cancel')"
+                      @click="onOutputNameCancel(index)"
+                    >
+                      <Icon name="lucide:x" class="size-3.5 shrink-0" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      class="h-7 px-2.5 shrink-0"
+                      :title="$t('action.save')"
+                      @click="onOutputNameSave(index)"
+                    >
+                      <Icon name="lucide:check" class="size-3.5 shrink-0" />
+                    </Button>
                   </div>
                   <span
-                    class="text-xs text-muted-foreground text-right break-all"
+                    class="ml-auto text-xs text-muted-foreground text-right break-all"
                     >{{ path.type }}</span
                   >
                 </div>
@@ -415,9 +459,23 @@ const toggleSelectedNodePipelineOutput = () => {
 };
 
 const outputNameDrafts = ref<Record<number, string>>({});
+const editingOutputIndex = ref<number | null>(null);
+const hoveredOutputIndex = ref<number | null>(null);
 
 function onOutputNameDraftChange(index: number, value: string) {
   outputNameDrafts.value[index] = value;
+}
+
+function startOutputNameEdit(index: number) {
+  if (props.readonly) return;
+  editingOutputIndex.value = index;
+}
+
+function onOutputNameCancel(index: number) {
+  const currentOutputPath = props.selectedNode?.data?.component?.output_path || [];
+  const current = currentOutputPath[index];
+  if (current) outputNameDrafts.value[index] = current.name;
+  editingOutputIndex.value = null;
 }
 
 function onOutputNameSave(index: number) {
@@ -429,9 +487,13 @@ function onOutputNameSave(index: number) {
   const draft = (outputNameDrafts.value[index] ?? current.name).trim();
   if (!draft) {
     outputNameDrafts.value[index] = current.name;
+    editingOutputIndex.value = null;
     return;
   }
-  if (draft === current.name) return;
+  if (draft === current.name) {
+    editingOutputIndex.value = null;
+    return;
+  }
 
   // Prevent duplicate output names within the same component.
   const duplicate = currentOutputPath.some(
@@ -439,6 +501,7 @@ function onOutputNameSave(index: number) {
   );
   if (duplicate) {
     outputNameDrafts.value[index] = current.name;
+    editingOutputIndex.value = null;
     return;
   }
 
@@ -453,6 +516,7 @@ function onOutputNameSave(index: number) {
       },
     },
   });
+  editingOutputIndex.value = null;
 }
 
 const existingNodeNames = computed(() => {
@@ -542,8 +606,10 @@ watch(
       outputNameDrafts.value = Object.fromEntries(
         outputPath.map((out, i) => [i, out.name]),
       );
+      editingOutputIndex.value = null;
     } else {
       outputNameDrafts.value = {};
+      editingOutputIndex.value = null;
     }
   },
   { immediate: true },

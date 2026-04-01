@@ -35,7 +35,7 @@
                 <Input
                   v-if="editingIndex === index"
                   v-model="editingParam.name"
-                  class="h-8 text-sm font-medium"
+                  class="h-7 text-[10px] font-medium"
                   :placeholder="$t('builder.parameter_name')"
                   @blur="saveEdit"
                   @keydown.enter="saveEdit"
