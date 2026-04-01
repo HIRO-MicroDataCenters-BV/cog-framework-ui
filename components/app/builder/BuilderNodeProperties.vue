@@ -15,7 +15,7 @@
               v-model="nodeName"
               type="text"
               :placeholder="$t('placeholder.component_name')"
-              class="h-8 font-semibold bg-transparent flex-1"
+              class="h-7 px-2 text-xs font-semibold bg-transparent flex-1"
               :class="{ 'text-red-500': !isComponentNameValid }"
               @keydown.enter="onSaveComponentName"
             />
@@ -24,24 +24,38 @@
               type="button"
               variant="outline"
               size="sm"
-              class="h-8 px-2.5 shrink-0"
+              class="h-7 px-2.5 shrink-0"
               :disabled="!hasNameChanged"
               :title="$t('action.cancel')"
               @click="onCancelComponentName"
             >
-              <Icon name="lucide:x" class="size-4 shrink-0" />
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Icon name="lucide:x" class="size-4 shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent side="top" class="text-xs">
+                  {{ $t('action.cancel') }}
+                </TooltipContent>
+              </Tooltip>
             </Button>
             <Button
               v-if="!readonly"
               type="button"
               variant="outline"
               size="sm"
-              class="h-8 px-2.5 shrink-0"
+              class="h-7 px-2.5 shrink-0"
               :disabled="!hasNameChanged || !isComponentNameValid"
               :title="$t('action.save')"
               @click="onSaveComponentName"
             >
-              <Icon name="lucide:check" class="size-4 shrink-0" />
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Icon name="lucide:check" class="size-4 shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent side="top" class="text-xs">
+                  {{ $t('action.save') }}
+                </TooltipContent>
+              </Tooltip>
             </Button>
             <div v-else class="font-semibold px-2">
               {{ selectedNode.data?.label }}
@@ -178,7 +192,14 @@
                       :title="$t('action.edit')"
                       @click="startOutputNameEdit(index)"
                     >
-                      <Icon name="lucide:pencil" class="size-3.5 shrink-0" />
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <Icon name="lucide:pencil" class="size-3.5 shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          {{ $t('action.edit') }}
+                        </TooltipContent>
+                      </Tooltip>
                     </Button>
                   </div>
                   <div
@@ -193,7 +214,14 @@
                       :title="$t('action.cancel')"
                       @click="onOutputNameCancel(index)"
                     >
-                      <Icon name="lucide:x" class="size-3.5 shrink-0" />
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <Icon name="lucide:x" class="size-3.5 shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          {{ $t('action.cancel') }}
+                        </TooltipContent>
+                      </Tooltip>
                     </Button>
                     <Button
                       type="button"
@@ -203,7 +231,14 @@
                       :title="$t('action.save')"
                       @click="onOutputNameSave(index)"
                     >
-                      <Icon name="lucide:check" class="size-3.5 shrink-0" />
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <Icon name="lucide:check" class="size-3.5 shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" class="text-xs">
+                          {{ $t('action.save') }}
+                        </TooltipContent>
+                      </Tooltip>
                     </Button>
                   </div>
                   <span
@@ -241,6 +276,7 @@ import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { SheetTitle } from '~/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import type {
   ComponentInput,
   ComponentPath,

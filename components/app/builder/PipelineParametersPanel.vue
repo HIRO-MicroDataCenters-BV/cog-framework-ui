@@ -11,8 +11,17 @@
           variant="outline"
           @click="addParameter"
         >
-          <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
-          {{ $t('builder.add_parameter') }}
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span class="inline-flex items-center">
+                <Icon name="lucide:plus" class="w-4 h-4 mr-1" />
+                {{ $t('builder.add_parameter') }}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" class="text-xs">
+              {{ $t('builder.add_parameter') }}
+            </TooltipContent>
+          </Tooltip>
         </Button>
       </div>
 
@@ -37,14 +46,26 @@
                   v-model="editingParam.name"
                   class="h-7 text-[10px] font-medium"
                   :placeholder="$t('builder.parameter_name')"
-                  @blur="saveEdit"
                   @keydown.enter="saveEdit"
                   @keydown.esc="cancelEdit"
                 />
                 <div v-else class="text-sm font-medium">
                   {{ param.name }}
                 </div>
-                <Badge v-if="param.type" variant="secondary" class="text-xs">
+                <template v-if="editingIndex === index">
+                  <Select v-model="editingParam.type">
+                    <SelectTrigger class="h-7 w-28 text-[10px]">
+                      <SelectValue :placeholder="$t('placeholder.select_type')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="String">String</SelectItem>
+                      <SelectItem value="Integer">Integer</SelectItem>
+                      <SelectItem value="Float">Float</SelectItem>
+                      <SelectItem value="Boolean">Boolean</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </template>
+                <Badge v-else-if="param.type" variant="secondary" class="text-xs">
                   {{ param.type }}
                 </Badge>
               </div>
@@ -85,16 +106,54 @@
             </div>
 
             <div v-if="!readonly" class="flex gap-1">
-              <Button
-                v-if="editingIndex !== index"
-                size="sm"
-                variant="ghost"
-                @click="startEdit(index)"
-              >
-                <Icon name="lucide:pencil" class="w-3 h-3" />
-              </Button>
-              <Button size="sm" variant="ghost" @click="deleteParameter(index)">
-                <Icon name="lucide:trash-2" class="w-3 h-3" />
+              <template v-if="editingIndex !== index">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="h-7 w-8 px-0"
+                  @click="startEdit(index)"
+                >
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Icon name="lucide:pencil" class="w-3 h-3" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" class="text-xs">
+                      {{ $t('action.edit') }}
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+              </template>
+              <template v-else>
+                <Button size="sm" variant="outline" class="h-7 w-8 px-0" @click="cancelEdit">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Icon name="lucide:x" class="w-3 h-3" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" class="text-xs">
+                      {{ $t('action.cancel') }}
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+                <Button size="sm" variant="outline" class="h-7 w-8 px-0" @click="saveEdit">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Icon name="lucide:check" class="w-3 h-3" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" class="text-xs">
+                      {{ $t('action.save') }}
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+              </template>
+              <Button size="sm" variant="ghost" class="h-7 w-8 px-0" @click="deleteParameter(index)">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Icon name="lucide:trash-2" class="w-3 h-3" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" class="text-xs">
+                    {{ $t('action.delete') }}
+                  </TooltipContent>
+                </Tooltip>
               </Button>
             </div>
           </div>
@@ -155,6 +214,7 @@
 <script setup lang="ts">
 import CreateParameterDialog from './CreateParameterDialog.vue';
 import type { PipelineInputParam, Node } from '~/types/canvas.types';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 
 const props = withDefaults(
   defineProps<{
@@ -176,6 +236,7 @@ const emit = defineEmits<{
 const editingIndex = ref<number | null>(null);
 const editingParam = ref<PipelineInputParam>({
   name: '',
+  type: 'String',
   default: '',
   description: '',
 });
@@ -214,7 +275,7 @@ const handleParameterCreated = (parameter: PipelineInputParam) => {
 
 const startEdit = (index: number) => {
   editingIndex.value = index;
-  editingParam.value = { ...props.parameters[index] };
+  editingParam.value = { type: 'String', ...props.parameters[index] };
 };
 
 const saveEdit = () => {
