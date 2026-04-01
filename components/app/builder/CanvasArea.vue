@@ -85,6 +85,12 @@
                     ? 'opacity-100'
                     : 'opacity-0 pointer-events-none'
                 "
+                :style="{
+                  left: calculateHandlePosition(
+                    Number(index),
+                    (allInputHandlesByNode.get(id) || []).length,
+                  ),
+                }"
                 @mouseenter="
                   (e) =>
                     showHandleTooltip(
@@ -96,12 +102,6 @@
                     )
                 "
                 @mouseleave="hideHandleTooltip"
-                :style="{
-                  left: calculateHandlePosition(
-                    Number(index),
-                    (allInputHandlesByNode.get(id) || []).length,
-                  ),
-                }"
               >
                 <Handle
                   :id="input.name"
@@ -181,11 +181,18 @@
                         class="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all group-hover/node:opacity-100 hover:text-muted-foreground"
                         @click.stop="toggleOutputNode(id)"
                       >
-                        <Icon name="lucide:square-arrow-down" class="w-3.5 h-3.5" />
+                        <Icon
+                          name="lucide:square-arrow-down"
+                          class="w-3.5 h-3.5"
+                        />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" class="text-xs">
-                      {{ outputNodeIds.includes(id) ? 'Remove as pipeline output' : 'Set as pipeline output' }}
+                      {{
+                        outputNodeIds.includes(id)
+                          ? 'Remove as pipeline output'
+                          : 'Set as pipeline output'
+                      }}
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -197,8 +204,14 @@
                   v-if="outputNodeIds.includes(id)"
                   class="flex items-center justify-center gap-1.5 border-t border-sky-400/30 bg-sky-400/10 px-3 py-1.5"
                 >
-                  <Icon name="lucide:square-arrow-down" class="w-3 h-3 shrink-0 text-sky-400" />
-                  <span class="text-[10px] font-semibold uppercase tracking-wide text-sky-400">Pipeline Output</span>
+                  <Icon
+                    name="lucide:square-arrow-down"
+                    class="w-3 h-3 shrink-0 text-sky-400"
+                  />
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wide text-sky-400"
+                    >Pipeline Output</span
+                  >
                 </div>
               </Transition>
             </div>
@@ -213,6 +226,14 @@
                 ).filter((o: any) => isConnectableType(o.type, o.name))"
                 :key="`output-${output.name}`"
                 class="absolute"
+                :style="{
+                  left: calculateHandlePosition(
+                    Number(index),
+                    (data.component.output_path || []).filter((o: any) =>
+                      isConnectableType(o.type, o.name),
+                    ).length,
+                  ),
+                }"
                 @mouseenter="
                   (e) =>
                     showHandleTooltip(
@@ -224,14 +245,6 @@
                     )
                 "
                 @mouseleave="hideHandleTooltip"
-                :style="{
-                  left: calculateHandlePosition(
-                    Number(index),
-                    (data.component.output_path || []).filter((o: any) =>
-                      isConnectableType(o.type, o.name),
-                    ).length,
-                  ),
-                }"
               >
                 <Handle
                   :id="output.name"
@@ -523,7 +536,9 @@ const getAssignedInput = (
 ): ComponentInput | undefined => {
   const node = props.nodes.find((n) => n.id === nodeId);
   const inputs = node?.data?.component?.inputs || [];
-  return inputs.find((input: ComponentInput) => input.destination === inputName);
+  return inputs.find(
+    (input: ComponentInput) => input.destination === inputName,
+  );
 };
 
 const isInputAssigned = (nodeId: string, inputName: string): boolean => {
@@ -537,7 +552,9 @@ const getAssignedOutputTargets = (
   outputName: string,
 ): string[] => {
   return props.edges
-    .filter((edge) => edge.source === nodeId && edge.sourceHandle === outputName)
+    .filter(
+      (edge) => edge.source === nodeId && edge.sourceHandle === outputName,
+    )
     .map((edge) => {
       const targetNode = props.nodes.find((n) => n.id === edge.target);
       const targetLabel =
@@ -642,10 +659,7 @@ const visibleInputHandleNamesByNode = computed(() => {
     } else {
       const centerIndex = Math.floor((allInputs.length - 1) / 2);
       const centerInput = allInputs[centerIndex];
-      byNode.set(
-        node.id,
-        new Set(centerInput ? [centerInput.name] : []),
-      );
+      byNode.set(node.id, new Set(centerInput ? [centerInput.name] : []));
     }
   }
   return byNode;
@@ -903,7 +917,9 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 <style scoped>
 .output-banner-enter-active,
 .output-banner-leave-active {
-  transition: opacity 0.2s ease, max-height 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    max-height 0.2s ease;
   max-height: 40px;
   overflow: hidden;
 }

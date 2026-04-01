@@ -341,7 +341,12 @@ const onConnect = (edge: VueFlowEdge) => {
 
   // Keep component sheet in sync: when a canvas edge is created,
   // update the target component input relationship immediately.
-  if (targetNode?.data?.component && targetHandle && sourceNode && sourceHandle) {
+  if (
+    targetNode?.data?.component &&
+    targetHandle &&
+    sourceNode &&
+    sourceHandle
+  ) {
     const existingInputs = targetNode.data.component.inputs || [];
     const mappedInput: ComponentInput = {
       destination: targetHandle,
@@ -449,7 +454,8 @@ const syncEdgesFromComponentInputs = (
       const label = getNodeDisplayName(n);
       const componentName = (n.data?.component?.name as string) || '';
       return (
-        label === parsed.componentLabel || componentName === parsed.componentLabel
+        label === parsed.componentLabel ||
+        componentName === parsed.componentLabel
       );
     });
     if (!sourceNode) continue;
@@ -580,7 +586,8 @@ const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
 
   const nodeBeforeUpdate = nodes.value.find((n) => n.id === nodeId);
   const previousOutputPath = [
-    ...((nodeBeforeUpdate?.data?.component?.output_path as ComponentPath[]) || []),
+    ...((nodeBeforeUpdate?.data?.component?.output_path as ComponentPath[]) ||
+      []),
   ];
 
   if (updates.position) {
@@ -590,14 +597,16 @@ const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
   if (updates.data) {
     updateNodeData(nodeId, updates.data);
 
-    const maybeInputs = (updates.data.component as { inputs?: ComponentInput[] })
-      ?.inputs;
+    const maybeInputs = (
+      updates.data.component as { inputs?: ComponentInput[] }
+    )?.inputs;
     if (Array.isArray(maybeInputs)) {
       syncEdgesFromComponentInputs(nodeId, maybeInputs);
     }
 
-    const maybeOutputPath = (updates.data.component as { output_path?: ComponentPath[] })
-      ?.output_path;
+    const maybeOutputPath = (
+      updates.data.component as { output_path?: ComponentPath[] }
+    )?.output_path;
     if (Array.isArray(maybeOutputPath)) {
       syncOutputRenameReferences(nodeId, previousOutputPath, maybeOutputPath);
     }

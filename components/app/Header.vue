@@ -12,7 +12,11 @@
                 :to="breadcrumbSectionTo"
                 class="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
               >
-                <Icon name="lucide:workflow" class="size-3.5 shrink-0" aria-hidden="true" />
+                <Icon
+                  name="lucide:workflow"
+                  class="size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
                 {{ $t(`menu.${page.section}`) }}
               </NuxtLink>
             </BreadcrumbItem>
@@ -40,11 +44,9 @@
             :class="hasUnsavedChanges ? 'opacity-100' : 'opacity-0'"
             :title="hasUnsavedChanges ? 'Unsaved changes' : undefined"
             aria-hidden="true"
-          >*</span>
-          <Form
-            :validation-schema="pipelineNameSchema"
-            class="min-w-0 flex-1"
+            >*</span
           >
+          <Form :validation-schema="pipelineNameSchema" class="min-w-0 flex-1">
             <FormField
               v-slot="{ componentField }"
               type="text"
@@ -144,7 +146,11 @@
                 class="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 @click="openManageParameters"
               >
-                <Icon name="lucide:sliders-horizontal" class="size-3.5" aria-hidden="true" />
+                <Icon
+                  name="lucide:sliders-horizontal"
+                  class="size-3.5"
+                  aria-hidden="true"
+                />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" class="text-xs">
@@ -201,8 +207,9 @@
 
           <!-- Save & Run confirmation dialog -->
           <Dialog v-model:open="confirmDialogOpen">
-            <DialogContent class="flex max-h-[90vh] max-w-xl flex-col gap-0 p-0 overflow-hidden">
-
+            <DialogContent
+              class="flex max-h-[90vh] max-w-xl flex-col gap-0 p-0 overflow-hidden"
+            >
               <!-- Header -->
               <div class="px-5 pt-5 pb-4 border-b border-border shrink-0">
                 <div class="flex items-start justify-between gap-3">
@@ -210,33 +217,50 @@
                     <DialogTitle class="text-base font-semibold truncate">
                       {{ confirmPayload?.name || 'Untitled Pipeline' }}
                     </DialogTitle>
-                    <DialogDescription class="mt-0.5 text-xs text-muted-foreground">
+                    <DialogDescription
+                      class="mt-0.5 text-xs text-muted-foreground"
+                    >
                       Review before running
                     </DialogDescription>
                   </div>
                   <span
                     class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize"
-                    :class="pipelineRunMode === 'federated'
-                      ? 'bg-violet-500/10 text-violet-500 ring-1 ring-violet-500/20'
-                      : 'bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20'"
+                    :class="
+                      pipelineRunMode === 'federated'
+                        ? 'bg-violet-500/10 text-violet-500 ring-1 ring-violet-500/20'
+                        : 'bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20'
+                    "
                   >
                     {{ pipelineRunMode }}
                   </span>
                 </div>
 
                 <!-- Summary stats -->
-                <div class="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <div
+                  class="mt-3 flex items-center gap-4 text-xs text-muted-foreground"
+                >
                   <span class="flex items-center gap-1.5">
                     <Icon name="lucide:boxes" class="size-3.5" />
-                    {{ confirmPayload?.pipeline_components?.length ?? 0 }} component{{ (confirmPayload?.pipeline_components?.length ?? 0) !== 1 ? 's' : '' }}
+                    {{ confirmPayload?.pipeline_components?.length ?? 0 }}
+                    component{{
+                      (confirmPayload?.pipeline_components?.length ?? 0) !== 1
+                        ? 's'
+                        : ''
+                    }}
                   </span>
                   <span class="flex items-center gap-1.5">
                     <Icon name="lucide:sliders-horizontal" class="size-3.5" />
-                    {{ pipelineParameters.length }} input param{{ pipelineParameters.length !== 1 ? 's' : '' }}
+                    {{ pipelineParameters.length }} input param{{
+                      pipelineParameters.length !== 1 ? 's' : ''
+                    }}
                   </span>
                   <span class="flex items-center gap-1.5">
-                    <Icon name="lucide:square-arrow-down" class="size-3.5 text-sky-400" />
-                    Output: {{
+                    <Icon
+                      name="lucide:square-arrow-down"
+                      class="size-3.5 text-sky-400"
+                    />
+                    Output:
+                    {{
                       confirmOutputNodeIds.length
                         ? `${confirmOutputNodeIds.length} selected`
                         : 'Not set'
@@ -246,11 +270,14 @@
               </div>
 
               <!-- Body -->
-              <div class="min-h-0 flex-1 overflow-y-auto divide-y divide-border">
-
+              <div
+                class="min-h-0 flex-1 overflow-y-auto divide-y divide-border"
+              >
                 <!-- Components -->
                 <div class="px-5 py-4">
-                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p
+                    class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                  >
                     Components
                   </p>
                   <div class="max-h-32 overflow-y-auto space-y-1">
@@ -260,34 +287,57 @@
                       class="flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-xs"
                     >
                       <span class="font-medium truncate">{{ comp.name }}</span>
-                      <span class="shrink-0 font-mono text-[10px] text-muted-foreground/70">{{ comp.uuid?.slice(0, 8) }}…</span>
+                      <span
+                        class="shrink-0 font-mono text-[10px] text-muted-foreground/70"
+                        >{{ comp.uuid?.slice(0, 8) }}…</span
+                      >
                     </div>
-                    <p v-if="!confirmPayload?.pipeline_components?.length" class="text-xs text-muted-foreground italic">No components.</p>
+                    <p
+                      v-if="!confirmPayload?.pipeline_components?.length"
+                      class="text-xs text-muted-foreground italic"
+                    >
+                      No components.
+                    </p>
                   </div>
                 </div>
 
                 <!-- Pipeline Input -->
                 <div class="px-5 py-4">
-                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p
+                    class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                  >
                     Pipeline Input
                   </p>
-                  <div v-if="pipelineParameters.length" class="flex flex-wrap gap-1.5">
+                  <div
+                    v-if="pipelineParameters.length"
+                    class="flex flex-wrap gap-1.5"
+                  >
                     <span
                       v-for="param in pipelineParameters"
                       :key="param.name"
                       class="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-xs"
                     >
                       <span class="font-medium">{{ param.name }}</span>
-                      <span v-if="param.type" class="rounded bg-muted px-1 py-px font-mono text-[10px] text-muted-foreground">{{ param.type }}</span>
-                      <span v-if="param.default" class="text-muted-foreground">= {{ param.default }}</span>
+                      <span
+                        v-if="param.type"
+                        class="rounded bg-muted px-1 py-px font-mono text-[10px] text-muted-foreground"
+                        >{{ param.type }}</span
+                      >
+                      <span v-if="param.default" class="text-muted-foreground"
+                        >= {{ param.default }}</span
+                      >
                     </span>
                   </div>
-                  <p v-else class="text-xs text-muted-foreground italic">No input parameters defined.</p>
+                  <p v-else class="text-xs text-muted-foreground italic">
+                    No input parameters defined.
+                  </p>
                 </div>
 
                 <!-- Pipeline Output -->
                 <div class="px-5 py-4">
-                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p
+                    class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                  >
                     Pipeline Output
                   </p>
                   <DropdownMenu>
@@ -316,7 +366,10 @@
                         />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" class="w-[26rem] max-w-[90vw]">
+                    <DropdownMenuContent
+                      align="start"
+                      class="w-[26rem] max-w-[90vw]"
+                    >
                       <DropdownMenuLabel class="text-xs text-muted-foreground">
                         Select one or more output components
                       </DropdownMenuLabel>
@@ -327,10 +380,16 @@
                       >
                         <span class="flex min-w-0 items-center gap-2">
                           <Icon
-                            :name="allOutputsSelected ? 'lucide:check-square' : 'lucide:square'"
+                            :name="
+                              allOutputsSelected
+                                ? 'lucide:check-square'
+                                : 'lucide:square'
+                            "
                             class="size-3.5 shrink-0 text-muted-foreground"
                           />
-                          <span class="truncate font-medium">Select all components</span>
+                          <span class="truncate font-medium"
+                            >Select all components</span
+                          >
                         </span>
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
@@ -366,7 +425,10 @@
                   </p>
 
                   <div
-                    v-if="confirmOutputNodeIds.length && confirmPayload?.output_path?.length"
+                    v-if="
+                      confirmOutputNodeIds.length &&
+                      confirmPayload?.output_path?.length
+                    "
                     class="mt-2 space-y-2 text-xs"
                   >
                     <div
@@ -375,26 +437,46 @@
                       class="rounded-md border border-border bg-muted/40 px-3 py-2"
                     >
                       <div class="flex items-center justify-between gap-2">
-                        <span class="text-muted-foreground">component_name</span>
-                        <span class="font-medium">{{ out.source.component_name }}</span>
+                        <span class="text-muted-foreground"
+                          >component_name</span
+                        >
+                        <span class="font-medium">{{
+                          out.source.component_name
+                        }}</span>
                       </div>
-                      <div class="mt-0.5 flex items-center justify-between gap-2">
+                      <div
+                        class="mt-0.5 flex items-center justify-between gap-2"
+                      >
                         <span class="text-muted-foreground">output_name</span>
-                        <span class="font-medium">{{ out.source.output_name }}</span>
+                        <span class="font-medium">{{
+                          out.source.output_name
+                        }}</span>
                       </div>
-                      <div class="flex items-center justify-between gap-2 mt-0.5">
-                        <span class="text-muted-foreground">component_uuid</span>
-                        <span class="font-mono text-[10px] text-muted-foreground/80">{{ out.source.component_uuid ?? '—' }}</span>
+                      <div
+                        class="flex items-center justify-between gap-2 mt-0.5"
+                      >
+                        <span class="text-muted-foreground"
+                          >component_uuid</span
+                        >
+                        <span
+                          class="font-mono text-[10px] text-muted-foreground/80"
+                          >{{ out.source.component_uuid ?? '—' }}</span
+                        >
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <!-- Footer -->
-              <div class="flex items-center justify-end gap-2 px-5 py-4 border-t border-border shrink-0">
-                <Button variant="outline" size="sm" @click="confirmDialogOpen = false">
+              <div
+                class="flex items-center justify-end gap-2 px-5 py-4 border-t border-border shrink-0"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  @click="confirmDialogOpen = false"
+                >
                   Cancel
                 </Button>
                 <Button size="sm" class="gap-2" @click="confirmAndRun">
@@ -402,7 +484,6 @@
                   Run Pipeline
                 </Button>
               </div>
-
             </DialogContent>
           </Dialog>
         </div>
@@ -466,6 +547,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '~/components/ui/dialog';
+
 const { page } = useApp();
 const { t } = useI18n();
 const { nodes, outputNodeIds, pipelineParameters } = usePipelineBuilder();
@@ -484,7 +566,9 @@ const breadcrumbSectionTo = computed(() => {
 });
 const api = useApi();
 const runtimeConfig = useRuntimeConfig();
-const federatedEnabled = computed(() => runtimeConfig.public.federatedEnabled as boolean);
+const federatedEnabled = computed(
+  () => runtimeConfig.public.federatedEnabled as boolean,
+);
 
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
@@ -539,7 +623,10 @@ watch(
   [pipelineName, nodes],
   () => {
     if (!_lastRunSnapshot.value) return; // before first run, hasUnsavedChanges handles it
-    const snapshot = JSON.stringify({ name: pipelineName.value, nodes: nodes.value });
+    const snapshot = JSON.stringify({
+      name: pipelineName.value,
+      nodes: nodes.value,
+    });
     _modifiedAfterRun.value = snapshot !== _lastRunSnapshot.value;
   },
   { deep: true },
@@ -639,7 +726,10 @@ function executePipelineRun(mode: 'standard' | 'federated') {
   if (!builder) return;
 
   // Snapshot current state — clears the * until something changes again
-  _lastRunSnapshot.value = JSON.stringify({ name: pipelineName.value, nodes: nodes.value });
+  _lastRunSnapshot.value = JSON.stringify({
+    name: pipelineName.value,
+    nodes: nodes.value,
+  });
   _modifiedAfterRun.value = false;
 
   const payload: PipelineCreationPayload = builderDataToPayload(

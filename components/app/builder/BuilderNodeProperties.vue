@@ -138,7 +138,10 @@
 
             <!-- Output Parameters -->
             <div>
-              <div v-if="outputDefinitions.length" class="divide-y divide-border/50">
+              <div
+                v-if="outputDefinitions.length"
+                class="divide-y divide-border/50"
+              >
                 <div
                   v-for="(path, index) in outputDefinitions"
                   :key="path.key"
@@ -151,7 +154,9 @@
                       v-if="!readonly && editingOutputIndex === index"
                       :model-value="outputNameDrafts[index] ?? path.name"
                       class="h-7 w-56 max-w-full border-border/60 bg-muted/30 px-2 text-xs font-semibold shadow-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:font-normal placeholder:text-muted-foreground/50 hover:border-border/80 hover:bg-muted/40 focus-visible:border-border/80 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/25"
-                      @update:model-value="(v) => onOutputNameDraftChange(index, String(v))"
+                      @update:model-value="
+                        (v) => onOutputNameDraftChange(index, String(v))
+                      "
                       @keydown.enter.prevent="onOutputNameSave(index)"
                     />
                     <span
@@ -472,7 +477,8 @@ function startOutputNameEdit(index: number) {
 }
 
 function onOutputNameCancel(index: number) {
-  const currentOutputPath = props.selectedNode?.data?.component?.output_path || [];
+  const currentOutputPath =
+    props.selectedNode?.data?.component?.output_path || [];
   const current = currentOutputPath[index];
   if (current) outputNameDrafts.value[index] = current.name;
   editingOutputIndex.value = null;
@@ -480,7 +486,8 @@ function onOutputNameCancel(index: number) {
 
 function onOutputNameSave(index: number) {
   if (!props.selectedNode || props.readonly) return;
-  const currentOutputPath = props.selectedNode.data?.component?.output_path || [];
+  const currentOutputPath =
+    props.selectedNode.data?.component?.output_path || [];
   const current = currentOutputPath[index];
   if (!current) return;
 
