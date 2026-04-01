@@ -66,8 +66,8 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
-          <!-- Mode pill — click to switch Standard / Federated and access Manage Parameters -->
-          <DropdownMenu>
+          <!-- Mode pill — only shown when NUXT_PUBLIC_FEDERATED_ENABLED=true -->
+          <DropdownMenu v-if="federatedEnabled">
             <DropdownMenuTrigger as-child>
               <button
                 type="button"
@@ -135,6 +135,22 @@
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <!-- When federated is disabled, show icon-only Manage Parameters button -->
+          <Tooltip v-if="!federatedEnabled">
+            <TooltipTrigger as-child>
+              <button
+                type="button"
+                class="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                @click="openManageParameters"
+              >
+                <Icon name="lucide:sliders-horizontal" class="size-3.5" aria-hidden="true" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" class="text-xs">
+              {{ $t('builder.manage_parameters') }}
+            </TooltipContent>
+          </Tooltip>
 
           <!-- Run button — fires immediately in the selected mode -->
           <TooltipProvider :delay-duration="200">
@@ -416,6 +432,8 @@ const breadcrumbSectionTo = computed(() => {
   return `/${section}`;
 });
 const api = useApi();
+const runtimeConfig = useRuntimeConfig();
+const federatedEnabled = computed(() => runtimeConfig.public.federatedEnabled as boolean);
 
 const pipelineName = computed({
   get: () => page.value.data?.builder?.name || '',
@@ -483,9 +501,10 @@ const hasUnsavedChanges = computed(() =>
     : _modifiedAfterRun.value,
 );
 
-// Default to federated when opened from a dataspace order link
+// Default to federated when opened from a dataspace order link.
+// When federated feature is disabled via env var, always lock to standard.
 const pipelineRunMode = ref<'standard' | 'federated'>(
-  orderId.value ? 'federated' : 'standard',
+  federatedEnabled.value && orderId.value ? 'federated' : 'standard',
 );
 
 const openManageParameters = () => {
