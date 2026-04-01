@@ -95,7 +95,7 @@
                 <div
                   v-for="inputDef in inputDefinitions"
                   :key="inputDef.name"
-                  class="px-2 pt-2.5 pb-0.5"
+                  class="px-2 pt-2 pb-0.5"
                 >
                   <InputParameterEditor
                     :input-definition="inputDef"
