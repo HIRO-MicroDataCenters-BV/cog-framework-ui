@@ -70,7 +70,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
+import {
+  MarkerType,
+  type Node as VueFlowNode,
+  type Edge as VueFlowEdge,
+} from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
@@ -85,6 +89,7 @@ import type {
   NodeUpdate,
 } from '~/types/canvas.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
+import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const emit = defineEmits<{
   (e: 'node-click', node: VueFlowNode | null): void;
@@ -112,6 +117,7 @@ const { setPage, page } = useApp();
 const toaster = useToaster();
 const { t } = useI18n();
 const { getValidationStatus } = useNodeValidation();
+const { getTypeColor } = useBuilderColors();
 const {
   nodes,
   edges,
@@ -380,6 +386,41 @@ const getNodeDisplayName = (node: Node): string =>
   (node.data?.component?.name as string) ||
   node.id;
 
+const getEdgeColor = (sourceNodeId: string, sourceHandle: string): string => {
+  const sourceNode = nodes.value.find((n) => n.id === sourceNodeId);
+  const outputDef = sourceNode?.data?.component?.output_path?.find(
+    (output) => output.name === sourceHandle,
+  );
+  return outputDef
+    ? getTypeColor(outputDef.type)
+    : 'hsl(var(--muted-foreground))';
+};
+
+const applyEdgeVisualStyle = (
+  edge: Edge | VueFlowEdge,
+  sourceNodeId: string,
+  sourceHandle: string,
+) => {
+  const edgeColor = getEdgeColor(sourceNodeId, sourceHandle);
+  const markerSize = 11;
+
+  edge.style = {
+    ...(edge.style || {}),
+    stroke: edgeColor,
+    strokeWidth: 2,
+  };
+  edge.markerEnd = {
+    type: MarkerType.ArrowClosed,
+    width: markerSize,
+    height: markerSize,
+    color: edgeColor,
+  };
+  edge.data = {
+    ...(edge.data || {}),
+    color: edgeColor,
+  };
+};
+
 const syncEdgesFromComponentInputs = (
   targetNodeId: string,
   inputs: ComponentInput[],
@@ -436,22 +477,31 @@ const syncEdgesFromComponentInputs = (
 
   // Add missing edges for sheet mappings.
   desiredByDestination.forEach((desired, destination) => {
-    const exists = edges.value.some(
+    const existingEdge = edges.value.find(
       (e) =>
         e.target === targetNodeId &&
         (e.targetHandle || '') === destination &&
         e.source === desired.sourceNodeId &&
         (e.sourceHandle || '') === desired.outputName,
     );
-    if (exists) return;
+    if (existingEdge) {
+      applyEdgeVisualStyle(
+        existingEdge,
+        desired.sourceNodeId,
+        desired.outputName,
+      );
+      return;
+    }
 
-    addEdge({
+    const newEdge = {
       id: `edge-${desired.sourceNodeId}-${targetNodeId}-${destination}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       source: desired.sourceNodeId,
       target: targetNodeId,
       sourceHandle: desired.outputName,
       targetHandle: destination,
-    } as Edge);
+    } as Edge;
+    applyEdgeVisualStyle(newEdge, desired.sourceNodeId, desired.outputName);
+    addEdge(newEdge);
   });
 };
 

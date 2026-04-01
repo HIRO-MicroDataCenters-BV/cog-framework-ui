@@ -108,7 +108,7 @@
                   type="target"
                   :position="Position.Top"
                   :connectable="1"
-                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
+                  class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
                     borderColor: getTypeColor(input.type),
@@ -234,7 +234,7 @@
                   :id="output.name"
                   type="source"
                   :position="Position.Bottom"
-                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
+                  class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
                     borderColor: getTypeColor(output.type),
