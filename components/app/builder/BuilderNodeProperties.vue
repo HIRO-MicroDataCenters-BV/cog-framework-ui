@@ -106,12 +106,34 @@
           <!-- OUTPUT block -->
           <div class="rounded-lg border border-border overflow-hidden">
             <div
-              class="flex items-center gap-2 px-2 py-2 bg-muted/40 border-b border-border"
+              class="flex items-center justify-between gap-2 px-2 py-2 bg-muted/40 border-b border-border"
             >
               <span
                 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
                 >Component Output</span
               >
+              <button
+                v-if="selectedNode && !readonly"
+                type="button"
+                class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors"
+                :class="
+                  isSelectedNodePipelineOutput
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    : 'text-muted-foreground hover:bg-muted'
+                "
+                @click="toggleSelectedNodePipelineOutput"
+              >
+                <Icon
+                  name="lucide:square-arrow-down"
+                  class="h-3 w-3"
+                  :class="isSelectedNodePipelineOutput ? 'text-amber-500' : ''"
+                />
+                {{
+                  isSelectedNodePipelineOutput
+                    ? 'Pipeline Output'
+                    : 'Set as Pipeline Output'
+                }}
+              </button>
             </div>
 
             <!-- Output Parameters -->
@@ -186,7 +208,11 @@ import { useBuilderColors } from '~/composables/useBuilderColors';
 const { t } = useI18n();
 const { page } = useApp();
 const { getCategoryColor } = useBuilderColors();
-const { pipelineParameters: pipelineParams } = usePipelineBuilder();
+const {
+  pipelineParameters: pipelineParams,
+  outputNodeIds,
+  toggleOutputNode,
+} = usePipelineBuilder();
 
 interface Props {
   selectedNode?: Node | null;
@@ -376,6 +402,17 @@ const outputPaths = computed(() =>
 const outputDefinitions = computed(() =>
   renderPathList(props.selectedNode?.data?.component?.output_path || []),
 );
+
+const isSelectedNodePipelineOutput = computed(() => {
+  const nodeId = props.selectedNode?.id;
+  if (!nodeId) return false;
+  return outputNodeIds.value.includes(nodeId);
+});
+
+const toggleSelectedNodePipelineOutput = () => {
+  if (!props.selectedNode) return;
+  toggleOutputNode(props.selectedNode.id);
+};
 
 const outputNameDrafts = ref<Record<number, string>>({});
 
