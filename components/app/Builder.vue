@@ -364,6 +364,97 @@ const onConnect = (edge: VueFlowEdge) => {
   addEdge(edge as Edge);
 };
 
+const parseComponentOutputSource = (
+  source: string,
+): { componentLabel: string; outputName: string } | null => {
+  const dotIndex = source.lastIndexOf('.');
+  if (dotIndex <= 0 || dotIndex === source.length - 1) return null;
+  return {
+    componentLabel: source.slice(0, dotIndex),
+    outputName: source.slice(dotIndex + 1),
+  };
+};
+
+const getNodeDisplayName = (node: Node): string =>
+  (node.data?.label as string) ||
+  (node.data?.component?.name as string) ||
+  node.id;
+
+const syncEdgesFromComponentInputs = (
+  targetNodeId: string,
+  inputs: ComponentInput[],
+) => {
+  const targetNode = nodes.value.find((n) => n.id === targetNodeId);
+  if (!targetNode) return;
+
+  const desiredByDestination = new Map<
+    string,
+    { sourceNodeId: string; outputName: string }
+  >();
+
+  for (const input of inputs) {
+    if (
+      input.value_source_type !== 'component_output' ||
+      !input.source ||
+      !input.destination
+    ) {
+      continue;
+    }
+    const parsed = parseComponentOutputSource(input.source);
+    if (!parsed) continue;
+
+    const sourceNode = nodes.value.find((n) => {
+      const label = getNodeDisplayName(n);
+      const componentName = (n.data?.component?.name as string) || '';
+      return (
+        label === parsed.componentLabel || componentName === parsed.componentLabel
+      );
+    });
+    if (!sourceNode) continue;
+
+    desiredByDestination.set(input.destination, {
+      sourceNodeId: sourceNode.id,
+      outputName: parsed.outputName,
+    });
+  }
+
+  const incomingEdges = edges.value.filter((e) => e.target === targetNodeId);
+
+  // Remove edges that no longer match sheet input mapping.
+  incomingEdges.forEach((edge) => {
+    const targetHandle = edge.targetHandle || '';
+    if (!targetHandle) return;
+    const desired = desiredByDestination.get(targetHandle);
+    const shouldKeep =
+      desired &&
+      edge.source === desired.sourceNodeId &&
+      (edge.sourceHandle || '') === desired.outputName;
+    if (!shouldKeep) {
+      removeEdge(edge.id);
+    }
+  });
+
+  // Add missing edges for sheet mappings.
+  desiredByDestination.forEach((desired, destination) => {
+    const exists = edges.value.some(
+      (e) =>
+        e.target === targetNodeId &&
+        (e.targetHandle || '') === destination &&
+        e.source === desired.sourceNodeId &&
+        (e.sourceHandle || '') === desired.outputName,
+    );
+    if (exists) return;
+
+    addEdge({
+      id: `edge-${desired.sourceNodeId}-${targetNodeId}-${destination}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      source: desired.sourceNodeId,
+      target: targetNodeId,
+      sourceHandle: desired.outputName,
+      targetHandle: destination,
+    } as Edge);
+  });
+};
+
 const onEdgeUpdate = (edge: VueFlowEdge) => {
   // TODO: Implement modifyEdge in store if needed, or just remove/add
 };
@@ -382,6 +473,12 @@ const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
 
   if (updates.data) {
     updateNodeData(nodeId, updates.data);
+
+    const maybeInputs = (updates.data.component as { inputs?: ComponentInput[] })
+      ?.inputs;
+    if (Array.isArray(maybeInputs)) {
+      syncEdgesFromComponentInputs(nodeId, maybeInputs);
+    }
   }
 };
 
