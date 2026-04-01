@@ -235,7 +235,7 @@
                     {{ pipelineParameters.length }} input param{{ pipelineParameters.length !== 1 ? 's' : '' }}
                   </span>
                   <span class="flex items-center gap-1.5">
-                    <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
+                    <Icon name="lucide:square-arrow-down" class="size-3.5 text-sky-400" />
                     Output: {{
                       confirmOutputNodeIds.length
                         ? `${confirmOutputNodeIds.length} selected`

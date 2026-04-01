@@ -195,10 +195,10 @@
               <Transition name="output-banner">
                 <div
                   v-if="outputNodeIds.includes(id)"
-                  class="flex items-center justify-center gap-1.5 border-t border-amber-500/30 bg-amber-500/10 px-3 py-1.5"
+                  class="flex items-center justify-center gap-1.5 border-t border-sky-400/30 bg-sky-400/10 px-3 py-1.5"
                 >
-                  <Icon name="lucide:square-arrow-down" class="w-3 h-3 shrink-0 text-amber-500" />
-                  <span class="text-[10px] font-semibold uppercase tracking-wide text-amber-500">Pipeline Output</span>
+                  <Icon name="lucide:square-arrow-down" class="w-3 h-3 shrink-0 text-sky-400" />
+                  <span class="text-[10px] font-semibold uppercase tracking-wide text-sky-400">Pipeline Output</span>
                 </div>
               </Transition>
             </div>

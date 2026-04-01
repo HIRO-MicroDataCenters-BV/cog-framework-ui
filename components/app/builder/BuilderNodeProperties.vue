@@ -118,7 +118,7 @@
                 class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors"
                 :class="
                   isSelectedNodePipelineOutput
-                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    ? 'bg-sky-400/10 text-sky-600 dark:text-sky-300'
                     : 'text-muted-foreground hover:bg-muted'
                 "
                 @click="toggleSelectedNodePipelineOutput"
@@ -126,7 +126,7 @@
                 <Icon
                   name="lucide:square-arrow-down"
                   class="h-3 w-3"
-                  :class="isSelectedNodePipelineOutput ? 'text-amber-500' : ''"
+                  :class="isSelectedNodePipelineOutput ? 'text-sky-400' : ''"
                 />
                 {{
                   isSelectedNodePipelineOutput
