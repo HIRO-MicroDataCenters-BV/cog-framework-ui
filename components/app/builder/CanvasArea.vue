@@ -133,20 +133,6 @@
                   class="text-sm flex-auto overflow-hidden font-medium truncate"
                   >{{ data.displayName || data.label }}</span
                 >
-                <!-- Pipeline output toggle button (icon only, visible on hover or when active) -->
-                <Tooltip v-if="!props.readonly">
-                  <TooltipTrigger as-child>
-                    <button
-                      class="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all group-hover/node:opacity-100 hover:text-muted-foreground"
-                      @click.stop="toggleOutputNode(id)"
-                    >
-                      <Icon name="lucide:square-arrow-down" class="w-3.5 h-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" class="text-xs">
-                    {{ outputNodeId === id ? 'Remove as pipeline output' : 'Set as pipeline output' }}
-                  </TooltipContent>
-                </Tooltip>
                 <Tooltip v-if="data.status">
                   <TooltipTrigger as-child>
                     <Icon
@@ -173,19 +159,36 @@
                 "
                 class="px-4 py-3"
               >
-                <p
-                  v-if="data.displayName"
-                  class="text-xs text-muted-foreground font-medium"
-                >
-                  {{ data.label }}
-                </p>
-                <p
-                  v-else-if="data.category && data.category !== 'general'"
-                  class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
-                >
-                  <Icon name="lucide:folder" class="w-3 h-3" />
-                  {{ data.category }}
-                </p>
+                <div class="flex items-center justify-between gap-2">
+                  <p
+                    v-if="data.displayName"
+                    class="text-xs text-muted-foreground font-medium"
+                  >
+                    {{ data.label }}
+                  </p>
+                  <p
+                    v-else-if="data.category && data.category !== 'general'"
+                    class="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium"
+                  >
+                    <Icon name="lucide:folder" class="w-3 h-3" />
+                    {{ data.category }}
+                  </p>
+
+                  <!-- Pipeline output toggle moved to second row (near subtitle/category) -->
+                  <Tooltip v-if="!props.readonly">
+                    <TooltipTrigger as-child>
+                      <button
+                        class="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all group-hover/node:opacity-100 hover:text-muted-foreground"
+                        @click.stop="toggleOutputNode(id)"
+                      >
+                        <Icon name="lucide:square-arrow-down" class="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" class="text-xs">
+                      {{ outputNodeId === id ? 'Remove as pipeline output' : 'Set as pipeline output' }}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
 
               <!-- Pipeline Output banner -->
