@@ -113,7 +113,7 @@
                   class="text-sm flex-auto overflow-hidden font-medium truncate"
                   >{{ data.displayName || data.label }}</span
                 >
-                <!-- Pipeline output toggle (hidden in readonly mode) -->
+                <!-- Pipeline output toggle button (icon only, visible on hover or when active) -->
                 <Tooltip v-if="!props.readonly">
                   <TooltipTrigger as-child>
                     <button
@@ -129,14 +129,10 @@
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" class="text-xs">
-                    {{
-                      outputNodeId === id
-                        ? 'Remove as pipeline output'
-                        : 'Set as pipeline output'
-                    }}
+                    {{ outputNodeId === id ? 'Remove as pipeline output' : 'Set as pipeline output' }}
                   </TooltipContent>
                 </Tooltip>
-                <!-- Readonly indicator: show flag if this node is the output -->
+                <!-- Readonly: icon only when active -->
                 <Icon
                   v-else-if="outputNodeId === id"
                   name="lucide:square-arrow-down"
@@ -182,6 +178,17 @@
                   {{ data.category }}
                 </p>
               </div>
+
+              <!-- Pipeline Output banner -->
+              <Transition name="output-banner">
+                <div
+                  v-if="outputNodeId === id"
+                  class="flex items-center justify-center gap-1.5 border-t border-amber-500/30 bg-amber-500/10 px-3 py-1.5"
+                >
+                  <Icon name="lucide:square-arrow-down" class="w-3 h-3 shrink-0 text-amber-500" />
+                  <span class="text-[10px] font-semibold uppercase tracking-wide text-amber-500">Pipeline Output</span>
+                </div>
+              </Transition>
             </div>
 
             <!-- Output Handles (Bottom) -->
@@ -714,6 +721,18 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 </script>
 
 <style scoped>
+.output-banner-enter-active,
+.output-banner-leave-active {
+  transition: opacity 0.2s ease, max-height 0.2s ease;
+  max-height: 40px;
+  overflow: hidden;
+}
+.output-banner-enter-from,
+.output-banner-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
 .canvas-ctrl-btn {
   display: flex;
   align-items: center;
