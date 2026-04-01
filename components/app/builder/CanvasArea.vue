@@ -981,9 +981,22 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   animation: flow 1.5s linear infinite;
 }
 
+/* Animated preview line while dragging a new connection */
+:deep(.vue-flow__connectionline path),
+:deep(.vue-flow__connection-path) {
+  stroke-dasharray: 6 6;
+  animation: connection-flow 0.4s linear infinite;
+}
+
 @keyframes flow {
   to {
     stroke-dashoffset: -10;
+  }
+}
+
+@keyframes connection-flow {
+  to {
+    stroke-dashoffset: -12;
   }
 }
 </style>
