@@ -12,8 +12,8 @@ export const usePipelineBuilder = () => {
     () => [],
   );
 
-  /** Node ID of the component designated as the pipeline output (single selection). */
-  const outputNodeId = useState<string | null>('builder-output-node-id', () => null);
+  /** Node IDs of components designated as pipeline outputs (multi selection). */
+  const outputNodeIds = useState<string[]>('builder-output-node-ids', () => []);
 
   const initialize = (
     initialNodes: Node[],
@@ -24,7 +24,7 @@ export const usePipelineBuilder = () => {
     nodes.value = initialNodes || [];
     edges.value = initialEdges || [];
     pipelineParameters.value = initialParameters || [];
-    outputNodeId.value = null;
+    outputNodeIds.value = [];
     selectedNode.value = null;
   };
 
@@ -39,7 +39,7 @@ export const usePipelineBuilder = () => {
       (e) => e.source !== nodeId && e.target !== nodeId,
     );
     if (selectedNode.value?.id === nodeId) selectedNode.value = null;
-    if (outputNodeId.value === nodeId) outputNodeId.value = null;
+    outputNodeIds.value = outputNodeIds.value.filter((id) => id !== nodeId);
   };
 
   const updateNodePosition = (
@@ -135,9 +135,13 @@ export const usePipelineBuilder = () => {
     pipelineParameters.value = parameters;
   };
 
-  /** Toggle a node as the pipeline output. Selecting a new one deselects the previous. */
+  /** Toggle a node as a pipeline output (multi-selection). */
   const toggleOutputNode = (nodeId: string) => {
-    outputNodeId.value = outputNodeId.value === nodeId ? null : nodeId;
+    if (outputNodeIds.value.includes(nodeId)) {
+      outputNodeIds.value = outputNodeIds.value.filter((id) => id !== nodeId);
+    } else {
+      outputNodeIds.value = [...outputNodeIds.value, nodeId];
+    }
   };
 
   return {
@@ -145,7 +149,7 @@ export const usePipelineBuilder = () => {
     edges,
     selectedNode,
     pipelineParameters,
-    outputNodeId,
+    outputNodeIds,
     toggleOutputNode,
     initialize,
     addNode,

@@ -185,7 +185,7 @@
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" class="text-xs">
-                      {{ outputNodeId === id ? 'Remove as pipeline output' : 'Set as pipeline output' }}
+                      {{ outputNodeIds.includes(id) ? 'Remove as pipeline output' : 'Set as pipeline output' }}
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -194,7 +194,7 @@
               <!-- Pipeline Output banner -->
               <Transition name="output-banner">
                 <div
-                  v-if="outputNodeId === id"
+                  v-if="outputNodeIds.includes(id)"
                   class="flex items-center justify-center gap-1.5 border-t border-amber-500/30 bg-amber-500/10 px-3 py-1.5"
                 >
                   <Icon name="lucide:square-arrow-down" class="w-3 h-3 shrink-0 text-amber-500" />
@@ -452,7 +452,7 @@ const {
   setNodes,
 } = useVueFlow();
 
-const { outputNodeId, toggleOutputNode } = usePipelineBuilder();
+const { outputNodeIds, toggleOutputNode } = usePipelineBuilder();
 
 // Re-fit view when pipeline run data loads (readonly). In the builder, auto-fit on
 // every node change (e.g. drag from library) is jarring; users can use Fit view.

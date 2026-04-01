@@ -236,7 +236,11 @@
                   </span>
                   <span class="flex items-center gap-1.5">
                     <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
-                    Output: {{ confirmOutputNodeId ? confirmOutputNodeLabel : 'Not set' }}
+                    Output: {{
+                      confirmOutputNodeIds.length
+                        ? `${confirmOutputNodeIds.length} selected`
+                        : 'Not set'
+                    }}
                   </span>
                 </div>
               </div>
@@ -286,39 +290,89 @@
                   <p class="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     Pipeline Output
                   </p>
-                  <Select
-                    :model-value="confirmOutputNodeId ?? '__none__'"
-                    @update:model-value="(v) => (confirmOutputNodeId = v === '__none__' ? null : v)"
-                  >
-                    <SelectTrigger class="h-8 text-xs">
-                      <SelectValue>
-                        <span v-if="confirmOutputNodeId" class="flex items-center gap-2">
-                          <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
-                          {{ confirmOutputNodeLabel }}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                      <button
+                        type="button"
+                        class="flex h-8 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-xs"
+                      >
+                        <span
+                          class="min-w-0 flex-1 truncate text-left"
+                          :class="
+                            confirmOutputNodeIds.length
+                              ? 'text-foreground'
+                              : 'text-muted-foreground'
+                          "
+                        >
+                          {{
+                            confirmOutputNodeIds.length
+                              ? confirmOutputDropdownLabel
+                              : 'Select output components'
+                          }}
                         </span>
-                        <span v-else class="text-muted-foreground">Not set</span>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">
-                        <span class="text-muted-foreground italic">Not set</span>
-                      </SelectItem>
-                      <SelectItem v-for="node in nodes" :key="node.id" :value="node.id">
-                        <span class="flex items-center gap-2">
-                          <Icon name="lucide:square-arrow-down" class="size-3.5 text-amber-500" />
-                          {{ node.data?.label }}
+                        <Icon
+                          name="lucide:chevron-down"
+                          class="size-4 shrink-0 text-muted-foreground/70"
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" class="w-[26rem] max-w-[90vw]">
+                      <DropdownMenuLabel class="text-xs text-muted-foreground">
+                        Select one or more output components
+                      </DropdownMenuLabel>
+                      <DropdownMenuCheckboxItem
+                        :checked="allOutputsSelected"
+                        class="cursor-pointer text-xs pl-2 pr-2 hover:bg-muted/70"
+                        @select.prevent="toggleAllConfirmOutputNodes"
+                      >
+                        <span class="flex min-w-0 items-center gap-2">
+                          <Icon
+                            :name="allOutputsSelected ? 'lucide:check-square' : 'lucide:square'"
+                            class="size-3.5 shrink-0 text-muted-foreground"
+                          />
+                          <span class="truncate font-medium">Select all components</span>
                         </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuSeparator />
+                      <div class="max-h-56 overflow-y-auto">
+                        <DropdownMenuCheckboxItem
+                          v-for="node in nodes"
+                          :key="node.id"
+                          :checked="isConfirmOutputSelected(node.id)"
+                          class="cursor-pointer text-xs pl-2 pr-2 hover:bg-muted/70"
+                          @select.prevent="toggleConfirmOutputNode(node.id)"
+                        >
+                          <span class="flex min-w-0 items-center gap-2">
+                            <Icon
+                              :name="
+                                isConfirmOutputSelected(node.id)
+                                  ? 'lucide:check-square'
+                                  : 'lucide:square'
+                              "
+                              class="size-3.5 shrink-0 text-muted-foreground"
+                            />
+                            <span class="truncate">{{ node.data?.label }}</span>
+                          </span>
+                        </DropdownMenuCheckboxItem>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <p class="mt-2 text-xs text-muted-foreground">
+                    {{
+                      confirmOutputNodeIds.length
+                        ? `Selected: ${confirmOutputNodeLabels.join(', ')}`
+                        : 'No output component selected.'
+                    }}
+                  </p>
 
                   <div
-                    v-if="confirmOutputNodeId && confirmPayload?.output_path?.length"
-                    class="mt-2 rounded-md bg-muted/40 px-3 py-2 text-xs space-y-1"
+                    v-if="confirmOutputNodeIds.length && confirmPayload?.output_path?.length"
+                    class="mt-2 space-y-2 text-xs"
                   >
                     <div
                       v-for="out in confirmPayload.output_path"
                       :key="`${out.source.component_name}-${out.source.output_name}`"
+                      class="rounded-md border border-border bg-muted/40 px-3 py-2"
                     >
                       <div class="flex items-center justify-between gap-2">
                         <span class="text-muted-foreground">component_name</span>
@@ -390,6 +444,7 @@ import {
 } from '~/components/ui/tooltip';
 import { pipelineNameSchema } from '~/schemas/builder-form.schema';
 import {
+  DropdownMenuCheckboxItem,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -407,17 +462,9 @@ import {
   DialogDescription,
   DialogFooter,
 } from '~/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
-
 const { page } = useApp();
 const { t } = useI18n();
-const { nodes, outputNodeId, pipelineParameters } = usePipelineBuilder();
+const { nodes, outputNodeIds, pipelineParameters } = usePipelineBuilder();
 const { isNodeValid } = useNodeValidation();
 const { openManageParameters: triggerManageParameters } = useBuilderEvents();
 
@@ -513,44 +560,72 @@ const openManageParameters = () => {
 
 // Confirmation dialog state
 const confirmDialogOpen = ref(false);
-const confirmOutputNodeId = ref<string | null>(null);
+const confirmOutputNodeIds = ref<string[]>([]);
 
 // Reset local selection whenever dialog opens
 watch(confirmDialogOpen, (open) => {
-  if (open) confirmOutputNodeId.value = outputNodeId.value;
+  if (open) confirmOutputNodeIds.value = [...outputNodeIds.value];
 });
 
-// Payload preview — reacts to confirmOutputNodeId changes inside the dialog.
+// Payload preview — reacts to confirmOutputNodeIds changes inside the dialog.
 // Always merges the latest pipelineParameters so input_path is up to date.
 const confirmPayload = computed<PipelineCreationPayload | null>(() => {
   const builder = page.value.data?.builder;
   if (!builder) return null;
   return builderDataToPayload(
     { ...builder, input_path: pipelineParameters.value },
-    confirmOutputNodeId.value,
+    confirmOutputNodeIds.value,
   );
 });
 
-// The output_path entries for the currently chosen output node
-const confirmOutputPaths = computed(() => {
-  if (!confirmOutputNodeId.value) return [];
-  const node = nodes.value.find((n) => n.id === confirmOutputNodeId.value);
-  return (node?.data?.component?.output_path as { name: string; type: string }[]) ?? [];
+const confirmOutputNodeLabels = computed(() => {
+  const labels = nodes.value
+    .filter((node) => confirmOutputNodeIds.value.includes(node.id))
+    .map((node) => (node.data?.label as string) || '');
+  return labels.filter(Boolean);
 });
 
-// Label of the chosen output node
-const confirmOutputNodeLabel = computed(() => {
-  if (!confirmOutputNodeId.value) return '';
-  const node = nodes.value.find((n) => n.id === confirmOutputNodeId.value);
-  return (node?.data?.label as string) || '';
+const confirmOutputDropdownLabel = computed(() => {
+  if (!confirmOutputNodeLabels.value.length) return '';
+  if (confirmOutputNodeLabels.value.length <= 2) {
+    return confirmOutputNodeLabels.value.join(', ');
+  }
+  return `${confirmOutputNodeLabels.value.slice(0, 2).join(', ')} +${confirmOutputNodeLabels.value.length - 2} more`;
 });
+
+const isConfirmOutputSelected = (nodeId: string) =>
+  confirmOutputNodeIds.value.includes(nodeId);
+
+const allOutputsSelected = computed(
+  () =>
+    nodes.value.length > 0 &&
+    confirmOutputNodeIds.value.length === nodes.value.length,
+);
+
+const toggleAllConfirmOutputNodes = () => {
+  if (allOutputsSelected.value) {
+    confirmOutputNodeIds.value = [];
+    return;
+  }
+  confirmOutputNodeIds.value = nodes.value.map((node) => node.id);
+};
+
+const toggleConfirmOutputNode = (nodeId: string) => {
+  if (isConfirmOutputSelected(nodeId)) {
+    confirmOutputNodeIds.value = confirmOutputNodeIds.value.filter(
+      (id) => id !== nodeId,
+    );
+  } else {
+    confirmOutputNodeIds.value = [...confirmOutputNodeIds.value, nodeId];
+  }
+};
 
 function openConfirmDialog() {
   confirmDialogOpen.value = true;
 }
 
 function confirmAndRun() {
-  outputNodeId.value = confirmOutputNodeId.value;
+  outputNodeIds.value = [...confirmOutputNodeIds.value];
   confirmDialogOpen.value = false;
   executePipelineRun(pipelineRunMode.value);
 }
@@ -565,7 +640,7 @@ function executePipelineRun(mode: 'standard' | 'federated') {
 
   const payload: PipelineCreationPayload = builderDataToPayload(
     { ...builder, input_path: pipelineParameters.value },
-    outputNodeId.value,
+    outputNodeIds.value,
   );
 
   console.log(

@@ -128,17 +128,17 @@ function deriveOutputsFromComponents(
  * Converts the full canvas builder state into the API creation payload.
  *
  * @param builder   - Canvas builder state (nodes, edges, params)
- * @param outputNodeId - ID of the node marked as pipeline output (optional).
- *                       When provided, that node's output_path entries become
- *                       the payload's output_path. Falls back to all components.
+ * @param outputNodeIds - IDs of nodes marked as pipeline outputs (optional).
+ *                        When provided, only those nodes' output_path entries
+ *                        become the payload's output_path. Falls back to all components.
  *
  * Usage:
- *   const payload = builderDataToPayload(builder, outputNodeId);
+ *   const payload = builderDataToPayload(builder, outputNodeIds);
  *   api.postTrainingBuilderPipeline(payload);
  */
 export function builderDataToPayload(
   builder: PipelineBuilderData,
-  outputNodeId?: string | null,
+  outputNodeIds?: string[],
 ): PipelineCreationPayload {
   const nodes: Node[] = builder.nodes ?? [];
 
@@ -148,21 +148,23 @@ export function builderDataToPayload(
 
   let output_path: PipelinePayloadOutputItem[];
 
-  if (outputNodeId) {
-    // Only the designated output node's outputs go into the payload
-    const outputNode = nodes.find((n) => n.id === outputNodeId);
-    const comp = outputNode?.data?.component as Component | undefined;
-    const compName = (outputNode?.data?.label as string) || comp?.name || '';
-    const compUuid = String(comp?.id ?? '') || undefined;
+  if (outputNodeIds?.length) {
+    // Only designated output nodes' outputs go into the payload
+    output_path = outputNodeIds.flatMap((outputNodeId) => {
+      const outputNode = nodes.find((n) => n.id === outputNodeId);
+      const comp = outputNode?.data?.component as Component | undefined;
+      const compName = (outputNode?.data?.label as string) || comp?.name || '';
+      const compUuid = String(comp?.id ?? '') || undefined;
 
-    output_path = (comp?.output_path ?? []).map((path) => ({
-      name: path.name,
-      source: {
-        component_name: compName,
-        output_name: path.name,
-        ...(compUuid ? { component_uuid: compUuid } : {}),
-      },
-    }));
+      return (comp?.output_path ?? []).map((path) => ({
+        name: path.name,
+        source: {
+          component_name: compName,
+          output_name: path.name,
+          ...(compUuid ? { component_uuid: compUuid } : {}),
+        },
+      }));
+    });
   } else {
     // Fallback: derive from all components (original behaviour)
     output_path = deriveOutputsFromComponents(pipeline_components, nodes);
