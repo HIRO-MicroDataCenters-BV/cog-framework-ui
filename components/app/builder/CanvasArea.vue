@@ -695,7 +695,13 @@ const hiddenInputCountByNode = computed(() => {
 
 const isValidConnectionWrapper = (connection: Connection) => {
   // One input handle can accept only one incoming output connection.
-  if (connection.target && connection.targetHandle) {
+  // When Vue Flow re-validates *existing* edges (e.g. after setEdges / pauseModel
+  // fires on props.edges change), the connection object IS the edge and already
+  // carries an id. In that case skip the duplicate-target guard — otherwise every
+  // edge finds itself in props.edges and is incorrectly rejected as a duplicate,
+  // causing all edges to disappear whenever edges.value is reassigned.
+  const isNewConnection = !(connection as VueFlowEdge).id;
+  if (isNewConnection && connection.target && connection.targetHandle) {
     const targetAlreadyConnected = props.edges.some(
       (edge) =>
         edge.target === connection.target &&
