@@ -547,7 +547,10 @@ const isInputAssigned = (nodeId: string, inputName: string): boolean => {
   return Boolean(assigned.source && String(assigned.source).trim() !== '');
 };
 
-const getInputRequirementColor = (nodeId: string, inputName: string): string => {
+const getInputRequirementColor = (
+  nodeId: string,
+  inputName: string,
+): string => {
   const node = props.nodes.find((n) => n.id === nodeId);
   const inputDef = (node?.data?.component?.input_path || []).find(
     (input: ComponentPath) => input.name === inputName,

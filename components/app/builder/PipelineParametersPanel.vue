@@ -55,7 +55,9 @@
                 <template v-if="editingIndex === index">
                   <Select v-model="editingParam.type">
                     <SelectTrigger class="h-7 w-28 text-[10px]">
-                      <SelectValue :placeholder="$t('placeholder.select_type')" />
+                      <SelectValue
+                        :placeholder="$t('placeholder.select_type')"
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="String">String</SelectItem>
@@ -65,7 +67,11 @@
                     </SelectContent>
                   </Select>
                 </template>
-                <Badge v-else-if="param.type" variant="secondary" class="text-xs">
+                <Badge
+                  v-else-if="param.type"
+                  variant="secondary"
+                  class="text-xs"
+                >
                   {{ param.type }}
                 </Badge>
               </div>
@@ -124,7 +130,12 @@
                 </Button>
               </template>
               <template v-else>
-                <Button size="sm" variant="outline" class="h-7 w-8 px-0" @click="cancelEdit">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="h-7 w-8 px-0"
+                  @click="cancelEdit"
+                >
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Icon name="lucide:x" class="w-3 h-3" />
@@ -134,7 +145,12 @@
                     </TooltipContent>
                   </Tooltip>
                 </Button>
-                <Button size="sm" variant="outline" class="h-7 w-8 px-0" @click="saveEdit">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="h-7 w-8 px-0"
+                  @click="saveEdit"
+                >
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Icon name="lucide:check" class="w-3 h-3" />
@@ -145,7 +161,12 @@
                   </Tooltip>
                 </Button>
               </template>
-              <Button size="sm" variant="ghost" class="h-7 w-8 px-0" @click="deleteParameter(index)">
+              <Button
+                size="sm"
+                variant="ghost"
+                class="h-7 w-8 px-0"
+                @click="deleteParameter(index)"
+              >
                 <Tooltip>
                   <TooltipTrigger as-child>
                     <Icon name="lucide:trash-2" class="w-3 h-3" />
@@ -214,7 +235,11 @@
 <script setup lang="ts">
 import CreateParameterDialog from './CreateParameterDialog.vue';
 import type { PipelineInputParam, Node } from '~/types/canvas.types';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 const props = withDefaults(
   defineProps<{

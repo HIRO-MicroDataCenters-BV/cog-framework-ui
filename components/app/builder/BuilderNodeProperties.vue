@@ -214,7 +214,10 @@
                     >
                       <Tooltip>
                         <TooltipTrigger as-child>
-                          <Icon name="lucide:pencil" class="size-3.5 shrink-0" />
+                          <Icon
+                            name="lucide:pencil"
+                            class="size-3.5 shrink-0"
+                          />
                         </TooltipTrigger>
                         <TooltipContent side="top" class="text-xs">
                           {{ $t('action.edit') }}
@@ -262,7 +265,9 @@
                     </Button>
                   </div>
                   <div class="ml-auto flex items-center gap-2">
-                    <span class="text-xs text-muted-foreground text-right break-all">
+                    <span
+                      class="text-xs text-muted-foreground text-right break-all"
+                    >
                       {{ path.type }}
                     </span>
                   </div>
@@ -298,7 +303,11 @@ import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Switch } from '~/components/ui/switch';
 import { SheetTitle } from '~/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import type {
   ComponentInput,
   ComponentPath,
