@@ -693,21 +693,26 @@ const allOutputsSelected = computed(
     confirmOutputNodeIds.value.length === nodes.value.length,
 );
 
+const applyConfirmOutputSelection = (nextNodeIds: string[]) => {
+  confirmOutputNodeIds.value = nextNodeIds;
+  outputNodeIds.value = [...nextNodeIds];
+};
+
 const toggleAllConfirmOutputNodes = () => {
   if (allOutputsSelected.value) {
-    confirmOutputNodeIds.value = [];
+    applyConfirmOutputSelection([]);
     return;
   }
-  confirmOutputNodeIds.value = nodes.value.map((node) => node.id);
+  applyConfirmOutputSelection(nodes.value.map((node) => node.id));
 };
 
 const toggleConfirmOutputNode = (nodeId: string) => {
   if (isConfirmOutputSelected(nodeId)) {
-    confirmOutputNodeIds.value = confirmOutputNodeIds.value.filter(
-      (id) => id !== nodeId,
+    applyConfirmOutputSelection(
+      confirmOutputNodeIds.value.filter((id) => id !== nodeId),
     );
   } else {
-    confirmOutputNodeIds.value = [...confirmOutputNodeIds.value, nodeId];
+    applyConfirmOutputSelection([...confirmOutputNodeIds.value, nodeId]);
   }
 };
 
@@ -716,7 +721,6 @@ function openConfirmDialog() {
 }
 
 function confirmAndRun() {
-  outputNodeIds.value = [...confirmOutputNodeIds.value];
   confirmDialogOpen.value = false;
   executePipelineRun(pipelineRunMode.value);
 }
