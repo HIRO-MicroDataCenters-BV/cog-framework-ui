@@ -67,6 +67,31 @@
     @cancel="deleteConfirmation = null"
     @confirm="confirmDelete"
   />
+
+  <AlertDialog
+    :open="showCycleWarning"
+    @update:open="(v) => (showCycleWarning = v)"
+  >
+    <AlertDialogContent class="border-destructive/40">
+      <AlertDialogHeader>
+        <AlertDialogTitle class="text-destructive">
+          Invalid connection
+        </AlertDialogTitle>
+        <AlertDialogDescription>
+          This connection creates a cycle in the pipeline graph. Please choose a
+          different connection.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogAction
+          class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          @click="showCycleWarning = false"
+        >
+          OK
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +104,15 @@ import LibrarySidebar from './builder/LibrarySidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 import type {
   Node,
   Edge,
@@ -150,6 +184,7 @@ const isSidebarOpen = ref({
   library: true,
   properties: true,
 });
+const showCycleWarning = ref(false);
 
 // Pipeline-level parameters and outputs
 const pipelineParameters = ref<PipelineInputParam[]>([]);
@@ -373,7 +408,10 @@ const onConnect = (edge: VueFlowEdge) => {
     });
   }
 
-  addEdge(edge as Edge);
+  const wasAdded = addEdge(edge as Edge);
+  if (!wasAdded) {
+    showCycleWarning.value = true;
+  }
 };
 
 const parseComponentOutputSource = (
@@ -508,7 +546,10 @@ const syncEdgesFromComponentInputs = (
       targetHandle: destination,
     } as Edge;
     applyEdgeVisualStyle(newEdge, desired.sourceNodeId, desired.outputName);
-    addEdge(newEdge);
+    const wasAdded = addEdge(newEdge);
+    if (!wasAdded) {
+      showCycleWarning.value = true;
+    }
   });
 };
 

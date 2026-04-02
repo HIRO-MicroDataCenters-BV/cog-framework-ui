@@ -103,8 +103,35 @@ export const usePipelineBuilder = () => {
     }
   };
 
-  const addEdge = (edge: Edge) => {
+  const addEdge = (edge: Edge): boolean => {
+    // Prevent graph cycles: adding source -> target must not create a path
+    // where target can already reach source.
+    const source = edge.source;
+    const target = edge.target;
+    if (source && target) {
+      if (source === target) return false;
+
+      const adjacency = new Map<string, string[]>();
+      edges.value.forEach((e) => {
+        if (!adjacency.has(e.source)) adjacency.set(e.source, []);
+        adjacency.get(e.source)!.push(e.target);
+      });
+
+      const queue = [target];
+      const visited = new Set<string>();
+      while (queue.length) {
+        const nodeId = queue.shift()!;
+        if (nodeId === source) return false;
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+        (adjacency.get(nodeId) || []).forEach((next) => {
+          if (!visited.has(next)) queue.push(next);
+        });
+      }
+    }
+
     edges.value.push(edge);
+    return true;
   };
 
   const removeEdge = (edgeId: string) => {
