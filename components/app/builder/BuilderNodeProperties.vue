@@ -165,6 +165,7 @@
                 <Switch
                   v-if="!readonly"
                   v-model="isSelectedNodePipelineOutputModel"
+                  class="data-[state=checked]:bg-sky-400 data-[state=unchecked]:bg-input"
                 />
               </div>
             </div>
