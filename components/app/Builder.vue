@@ -620,6 +620,20 @@ const onEdgeUpdate = (edge: VueFlowEdge) => {
 const onAddNode = (node: VueFlowNode) => {
   if (readonly.value) return;
   addNode(node as Node);
+  // Auto-name the pipeline on the first drop, but only if the user hasn't
+  // typed a name yet. Deferred to nextTick so the [nodes, edges] watcher
+  // syncs nodes back to page.value.data.builder.nodes first — otherwise the
+  // deep page.data.builder watcher sees nodes:[] in the store and calls
+  // initialize([], []) which would wipe the node we just added.
+  nextTick(() => {
+    if (
+      nodes.value.length === 1 &&
+      page.value.data?.builder &&
+      !page.value.data.builder.name
+    ) {
+      page.value.data.builder.name = 'Untitled Pipeline';
+    }
+  });
 };
 
 const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
