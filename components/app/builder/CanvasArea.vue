@@ -111,12 +111,12 @@
                   class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
-                    borderColor: getTypeColor(input.type),
-                    color: getTypeColor(input.type),
+                    borderColor: getInputRequirementColor(id, input.name),
+                    color: getInputRequirementColor(id, input.name),
                     backgroundColor:
                       isHandleConnected(id, input.name, 'target') ||
                       isInputAssigned(id, input.name)
-                        ? getTypeColor(input.type)
+                        ? getInputRequirementColor(id, input.name)
                         : 'hsl(var(--background))',
                   }"
                   :data-handleid="input.name"
@@ -545,6 +545,17 @@ const isInputAssigned = (nodeId: string, inputName: string): boolean => {
   const assigned = getAssignedInput(nodeId, inputName);
   if (!assigned) return false;
   return Boolean(assigned.source && String(assigned.source).trim() !== '');
+};
+
+const getInputRequirementColor = (nodeId: string, inputName: string): string => {
+  const node = props.nodes.find((n) => n.id === nodeId);
+  const inputDef = (node?.data?.component?.input_path || []).find(
+    (input: ComponentPath) => input.name === inputName,
+  );
+
+  // Two-color scheme for input definitions:
+  // required -> orange, optional -> teal.
+  return inputDef?.optional ? '#14b8a6' : '#f97316';
 };
 
 const getAssignedOutputTargets = (
