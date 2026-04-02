@@ -37,7 +37,7 @@ import type {
  */
 export function nodeToPayloadComponent(node: Node): PipelinePayloadComponent {
   const component = node.data?.component as Component | undefined;
-  const uuid = String(component?.id ?? '');
+  const id = String(component?.id ?? '');
   const name = (node.data?.label as string) || component?.name || '';
   const inputs: PipelinePayloadComponentInput[] = (component?.inputs ?? []).map(
     (input: ComponentInput) => ({
@@ -47,7 +47,7 @@ export function nodeToPayloadComponent(node: Node): PipelinePayloadComponent {
     }),
   );
 
-  return { uuid, name, inputs };
+  return { id, name, inputs };
 }
 
 /**

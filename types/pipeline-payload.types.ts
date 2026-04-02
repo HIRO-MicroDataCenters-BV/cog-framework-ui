@@ -15,7 +15,7 @@
 
 export interface PipelinePayloadComponent {
   /** Component catalog UUID — used by the backend to fetch component code */
-  uuid: string;
+  id: string;
   /** User-assigned name; must be unique within this pipeline */
   name: string;
   inputs: PipelinePayloadComponentInput[];
