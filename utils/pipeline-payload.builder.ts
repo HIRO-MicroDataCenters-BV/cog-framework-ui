@@ -68,26 +68,16 @@ export function paramToPayloadInput(
 
 /**
  * PipelineOutput (canvas) → PipelinePayloadOutputItem (payload)
- *
- * Resolves component_uuid by looking up the matching node by label so the
- * payload carries the optional uuid hint alongside the wiring-by-name fields.
  */
 export function outputToPayloadOutputItem(
   output: PipelineOutput,
-  nodes: Node[],
+  _nodes: Node[],
 ): PipelinePayloadOutputItem {
-  const matchingNode = nodes.find(
-    (n) => (n.data?.label as string) === output.source.component_name,
-  );
-  const componentUuid =
-    String(matchingNode?.data?.component?.id ?? '') || undefined;
-
   return {
     name: output.name,
     source: {
       component_name: output.source.component_name,
       output_name: output.source.output_name,
-      ...(componentUuid ? { component_uuid: componentUuid } : {}),
     },
   };
 }
@@ -111,7 +101,6 @@ function deriveOutputsFromComponents(
         source: {
           component_name: comp.name,
           output_name: path.name,
-          component_uuid: comp.uuid,
         },
       });
     });
@@ -154,14 +143,12 @@ export function builderDataToPayload(
       const outputNode = nodes.find((n) => n.id === outputNodeId);
       const comp = outputNode?.data?.component as Component | undefined;
       const compName = (outputNode?.data?.label as string) || comp?.name || '';
-      const compUuid = String(comp?.id ?? '') || undefined;
 
       return (comp?.output_path ?? []).map((path) => ({
         name: path.name,
         source: {
           component_name: compName,
           output_name: path.name,
-          ...(compUuid ? { component_uuid: compUuid } : {}),
         },
       }));
     });

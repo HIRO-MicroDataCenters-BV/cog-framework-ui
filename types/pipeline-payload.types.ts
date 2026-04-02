@@ -43,8 +43,6 @@ export interface PipelinePayloadInputItem {
 export interface PipelinePayloadOutputSource {
   component_name: string;
   output_name: string;
-  /** Optional hint for the backend; not used for wiring */
-  component_uuid?: string;
 }
 
 /** Top-level pipeline output entry sent in the payload */

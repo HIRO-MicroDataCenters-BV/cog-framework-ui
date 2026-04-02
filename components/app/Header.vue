@@ -452,17 +452,6 @@
                           out.source.output_name
                         }}</span>
                       </div>
-                      <div
-                        class="flex items-center justify-between gap-2 mt-0.5"
-                      >
-                        <span class="text-muted-foreground"
-                          >component_uuid</span
-                        >
-                        <span
-                          class="font-mono text-[10px] text-muted-foreground/80"
-                          >{{ out.source.component_uuid ?? '—' }}</span
-                        >
-                      </div>
                     </div>
                   </div>
                 </div>
