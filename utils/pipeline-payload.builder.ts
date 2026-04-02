@@ -82,33 +82,6 @@ export function outputToPayloadOutputItem(
   };
 }
 
-/**
- * Fallback: when no explicit pipeline outputs are defined, derive one entry
- * per component output from the component catalog definitions.
- */
-function deriveOutputsFromComponents(
-  components: PipelinePayloadComponent[],
-  nodes: Node[],
-): PipelinePayloadOutputItem[] {
-  const items: PipelinePayloadOutputItem[] = [];
-
-  components.forEach((comp) => {
-    const node = nodes.find((n) => (n.data?.label as string) === comp.name);
-    const component = node?.data?.component as Component | undefined;
-    (component?.output_path ?? []).forEach((path) => {
-      items.push({
-        name: path.name,
-        source: {
-          component_name: comp.name,
-          output_name: path.name,
-        },
-      });
-    });
-  });
-
-  return items;
-}
-
 // ---------------------------------------------------------------------------
 // Root converter
 // ---------------------------------------------------------------------------
@@ -153,8 +126,8 @@ export function builderDataToPayload(
       }));
     });
   } else {
-    // Fallback: derive from all components (original behaviour)
-    output_path = deriveOutputsFromComponents(pipeline_components, nodes);
+    // No output nodes selected → send empty output_path
+    output_path = [];
   }
 
   return {
