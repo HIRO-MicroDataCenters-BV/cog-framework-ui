@@ -120,34 +120,53 @@
           <!-- OUTPUT block -->
           <div class="rounded-lg border border-border overflow-hidden">
             <div
-              class="flex items-center justify-between gap-2 px-2 py-2 bg-muted/40 border-b border-border"
+              class="flex items-center gap-2 px-2 py-2 bg-muted/40 border-b border-border"
             >
               <span
                 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
                 >Component Output</span
               >
-              <button
-                v-if="selectedNode && !readonly"
-                type="button"
-                class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors"
-                :class="
-                  isSelectedNodePipelineOutput
-                    ? 'bg-sky-400/10 text-sky-600 dark:text-sky-300'
-                    : 'text-muted-foreground hover:bg-muted'
-                "
-                @click="toggleSelectedNodePipelineOutput"
-              >
-                <Icon
-                  name="lucide:square-arrow-down"
-                  class="h-3 w-3"
-                  :class="isSelectedNodePipelineOutput ? 'text-sky-400' : ''"
+            </div>
+
+            <div class="border-b border-border/60 px-2 py-2.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <Icon
+                      name="lucide:square-arrow-down"
+                      class="size-3.5 shrink-0"
+                      :class="
+                        isSelectedNodePipelineOutput
+                          ? 'text-sky-400'
+                          : 'text-muted-foreground'
+                      "
+                    />
+                    <span class="text-xs font-semibold">Pipeline Output</span>
+                    <span
+                      class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                      :class="
+                        isSelectedNodePipelineOutput
+                          ? 'border-sky-400/40 bg-sky-400/10 text-sky-600 dark:text-sky-300'
+                          : 'border-border/70 bg-muted/40 text-muted-foreground'
+                      "
+                    >
+                      {{
+                        isSelectedNodePipelineOutput
+                          ? 'Selected'
+                          : 'Not selected'
+                      }}
+                    </span>
+                  </div>
+                  <p class="mt-1 text-[11px] text-muted-foreground">
+                    Expose this component outputs as final pipeline output.
+                  </p>
+                </div>
+
+                <Switch
+                  v-if="!readonly"
+                  v-model="isSelectedNodePipelineOutputModel"
                 />
-                {{
-                  isSelectedNodePipelineOutput
-                    ? 'Pipeline Output'
-                    : 'Set as Pipeline Output'
-                }}
-              </button>
+              </div>
             </div>
 
             <!-- Output Parameters -->
@@ -241,10 +260,11 @@
                       </Tooltip>
                     </Button>
                   </div>
-                  <span
-                    class="ml-auto text-xs text-muted-foreground text-right break-all"
-                    >{{ path.type }}</span
-                  >
+                  <div class="ml-auto flex items-center gap-2">
+                    <span class="text-xs text-muted-foreground text-right break-all">
+                      {{ path.type }}
+                    </span>
+                  </div>
                 </div>
               </div>
               <p v-else class="px-2 py-2 text-xs text-muted-foreground italic">
@@ -275,6 +295,7 @@ import { ref, reactive, watch, computed, nextTick } from 'vue';
 import InputParameterEditor from './InputParameterEditor.vue';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
+import { Switch } from '~/components/ui/switch';
 import { SheetTitle } from '~/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import type {
@@ -494,10 +515,15 @@ const isSelectedNodePipelineOutput = computed(() => {
   return outputNodeIds.value.includes(nodeId);
 });
 
-const toggleSelectedNodePipelineOutput = () => {
-  if (!props.selectedNode) return;
-  toggleOutputNode(props.selectedNode.id);
-};
+const isSelectedNodePipelineOutputModel = computed({
+  get: () => isSelectedNodePipelineOutput.value,
+  set: (next: boolean) => {
+    if (!props.selectedNode) return;
+    if (next !== isSelectedNodePipelineOutput.value) {
+      toggleOutputNode(props.selectedNode.id);
+    }
+  },
+});
 
 const outputNameDrafts = ref<Record<number, string>>({});
 const editingOutputIndex = ref<number | null>(null);
