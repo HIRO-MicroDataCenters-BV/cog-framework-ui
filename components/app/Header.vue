@@ -661,9 +661,7 @@ const pipelineRunMode = ref<'standard' | 'federated'>(
   federatedEnabled.value && effectiveOrderId.value ? 'federated' : 'standard',
 );
 const showManualOrderIdInput = computed(
-  () =>
-    federatedEnabled.value &&
-    pipelineRunMode.value === 'federated',
+  () => federatedEnabled.value && pipelineRunMode.value === 'federated',
 );
 
 const openManageParameters = () => {
