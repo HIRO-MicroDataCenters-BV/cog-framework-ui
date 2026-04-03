@@ -1,33 +1,11 @@
 <template>
   <div class="h-full flex">
-    <Sheet :open="isSheetOpen">
-      <div
-        v-if="!readonly && isSidebarOpen.library"
-        class="w-80 flex-shrink-0 border-r"
-      >
-        <AppPanel :title="$t('builder.components')">
-          <template #actions>
-            <button
-              v-for="action in menuActions"
-              :key="action.key"
-              class="p-1 rounded hover:bg-muted"
-              :title="$t(action.titleKey)"
-              @click="action.action"
-            >
-              <Icon :name="action.icon" class="w-4 h-4" />
-            </button>
-          </template>
-          <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
-        </AppPanel>
-      </div>
-      <div
-        v-if="!readonly && !isSidebarOpen.library"
-        class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-white z-50"
-      >
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-medium text-gray-500 flex-1">
-            {{ $t('builder.components') }}
-          </h3>
+    <div
+      v-if="!readonly && isSidebarOpen.library"
+      class="w-80 flex-shrink-0 border-r"
+    >
+      <AppPanel :title="$t('builder.components')">
+        <template #actions>
           <button
             v-for="action in menuActions"
             :key="action.key"
@@ -37,43 +15,49 @@
           >
             <Icon :name="action.icon" class="w-4 h-4" />
           </button>
-        </div>
+        </template>
+        <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
+      </AppPanel>
+    </div>
+    <div
+      v-if="!readonly && !isSidebarOpen.library"
+      class="fixed border m-2 rounded-xl w-3xs p-2 px-4 bg-background z-50 pointer-events-none"
+    >
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-medium text-muted-foreground flex-1">
+          {{ $t('builder.components') }}
+        </h3>
+        <button
+          v-for="action in menuActions"
+          :key="action.key"
+          class="p-1 rounded hover:bg-muted pointer-events-auto"
+          :title="$t(action.titleKey)"
+          @click="action.action"
+        >
+          <Icon :name="action.icon" class="w-4 h-4" />
+        </button>
       </div>
+    </div>
 
-      <div class="flex-1 flex flex-col">
-        <div class="flex-1">
-          <CanvasArea
-            v-if="!readonly || nodes.length > 0 || edges.length > 0"
-            :key="`canvas-${nodes.length}-${edges.length}`"
-            :nodes="enrichedNodes"
-            :edges="edges"
-            :readonly="readonly"
-            @node-click="onNodeClick"
-            @connect="onConnect"
-            @edge-update="onEdgeUpdate"
-            @update="onUpdate"
-            @add-node="onAddNode"
-            @update-node="onUpdateNode"
-            @error="onError"
-            @request-delete="onRequestDelete"
-          />
-        </div>
+    <div class="flex-1 flex flex-col">
+      <div class="flex-1">
+        <CanvasArea
+          v-if="!readonly || nodes.length > 0 || edges.length > 0"
+          :key="`canvas-${nodes.length}-${edges.length}`"
+          :nodes="enrichedNodes"
+          :edges="edges"
+          :readonly="readonly"
+          @node-click="onNodeClick"
+          @connect="onConnect"
+          @edge-update="onEdgeUpdate"
+          @update="onUpdate"
+          @add-node="onAddNode"
+          @update-node="onUpdateNode"
+          @error="onError"
+          @request-delete="onRequestDelete"
+        />
       </div>
-
-      <SheetContent :show-overlay="false" :show-close-button="false">
-        <div>
-          <PropertiesSidebar
-            :readonly="readonly"
-            :selected-node="selectedNode"
-            :all-nodes="enrichedNodes"
-            :pipeline-data="pipelineData"
-            @update-node="onUpdateNode"
-            @delete-node="onDeleteNode"
-            @rename-component="onRenameComponent"
-          />
-        </div>
-      </SheetContent>
-    </Sheet>
+    </div>
   </div>
 
   <DeleteConfirmationDialog
@@ -84,40 +68,69 @@
     @confirm="confirmDelete"
   />
 
-  <AppDialogPipelineComponent
-    :open="openUploadComponentDialog"
-    @on-close="
-      () => {
-        openUploadComponentDialog = false;
-        fetchComponents();
-      }
-    "
-  />
+  <AlertDialog
+    :open="showCycleWarning"
+    @update:open="(v) => (showCycleWarning = v)"
+  >
+    <AlertDialogContent class="border-destructive/40">
+      <AlertDialogHeader>
+        <AlertDialogTitle class="text-destructive">
+          Invalid connection
+        </AlertDialogTitle>
+        <AlertDialogDescription>
+          This connection creates a cycle in the pipeline graph. Please choose a
+          different connection.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogAction
+          class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          @click="showCycleWarning = false"
+        >
+          OK
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
 <script setup lang="ts">
-import type { Node as VueFlowNode, Edge as VueFlowEdge } from '@vue-flow/core';
+import {
+  MarkerType,
+  type Node as VueFlowNode,
+  type Edge as VueFlowEdge,
+} from '@vue-flow/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
-import PropertiesSidebar from './builder/PropertiesSidebar.vue';
-import PipelineParametersPanel from './builder/PipelineParametersPanel.vue';
-import PipelineOutputsPanel from './builder/PipelineOutputsPanel.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
-import AppDialogPipelineComponent from './dialog/PipelineComponent.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 import type {
   Node,
   Edge,
   ComponentInput,
+  ComponentPath,
   PipelineInputParam,
   PipelineOutput,
   PipelineBuilderData,
   NodeUpdate,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
+import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const emit = defineEmits<{
   (e: 'node-click', node: VueFlowNode | null): void;
+  (e: 'update-node', id: string, updates: NodeUpdate): void;
+  (e: 'delete-node', id: string): void;
+  (e: 'rename-component', id: string, oldName: string, newName: string): void;
 }>();
 
 const props = withDefaults(
@@ -139,6 +152,7 @@ const { setPage, page } = useApp();
 const toaster = useToaster();
 const { t } = useI18n();
 const { getValidationStatus } = useNodeValidation();
+const { getTypeColor } = useBuilderColors();
 const {
   nodes,
   edges,
@@ -161,7 +175,7 @@ const enrichedNodes = computed(() => {
     ...node,
     data: {
       ...node.data,
-      status: getValidationStatus(node),
+      status: getValidationStatus(node, nodes.value),
     },
   }));
 });
@@ -170,15 +184,7 @@ const isSidebarOpen = ref({
   library: true,
   properties: true,
 });
-
-// Control sheet open state based on selectedNode.
-// In readonly mode (pipeline run view), keep the internal sheet closed and
-// let the parent handle its own sheets.
-const isSheetOpen = computed(
-  () => !readonly.value && selectedNode.value !== null,
-);
-
-const openUploadComponentDialog = ref(false);
+const showCycleWarning = ref(false);
 
 // Pipeline-level parameters and outputs
 const pipelineParameters = ref<PipelineInputParam[]>([]);
@@ -187,8 +193,12 @@ const pipelineData = ref<unknown>(null);
 const librarySidebar = ref<InstanceType<typeof LibrarySidebar> | null>(null);
 
 const externalBuilderUrl = ref(
-  'https://dashboard.cog.hiro-develop.nl/notebook/admin/sai/lab/workspaces/auto-3/tree/register_component.ipynb',
+  'https://dashboard.cog.hiro-develop.nl/_/jupyter/?ns=admin',
 );
+
+// Pipeline run URL: /…/pipelines/<runId> (not the bare /pipelines list).
+const isPipelineRunDetailPath = (path: string) =>
+  /\/pipelines\/[^/?#]+/.test(path);
 
 // Initialize store from page data
 // We watch page.data.builder to handle initial load or external resets
@@ -198,33 +208,22 @@ watch(
     const hasData = builderData?.nodes?.length || builderData?.edges?.length;
     const storeIsEmpty = nodes.value.length === 0 && edges.value.length === 0;
 
-    console.log('[Builder] builderData:', builderData);
-    console.log(
-      '[Builder] builderData.pipelineData:',
-      builderData?.pipelineData,
-    );
-    console.log(
-      '[Builder] builderData.pipelineData.runtime_config:',
-      builderData?.pipelineData?.runtime_config,
-    );
-
     // Extract pipelineData for readonly mode
     if (builderData?.pipelineData) {
       pipelineData.value = builderData.pipelineData;
-      console.log('[Builder] Set pipelineData.value:', pipelineData.value);
-    } else {
-      console.log('[Builder] No pipelineData found in builderData');
     }
 
-    // Case 1: builderData has data and store is empty -> initialize
-    if (hasData && storeIsEmpty) {
+    // Edit mode: only hydrate when store is empty (avoid clobbering in-progress edits).
+    // Readonly (pipeline run): always sync canvas from page when builder payload updates,
+    // so switching runs replaces the graph even though global builder state is non-empty.
+    if (hasData && (storeIsEmpty || readonly.value)) {
       initialize(
         (builderData.nodes as Node[]) || [],
         (builderData.edges as Edge[]) || [],
       );
     }
 
-    // Case 2: builderData is empty/undefined and store has data -> clear store
+    // Case: builderData is empty/undefined and store has data -> clear store
     // This happens when navigating from readonly view to new pipeline creation
     if (!hasData && !storeIsEmpty) {
       initialize([], []);
@@ -233,21 +232,17 @@ watch(
   { deep: true },
 );
 
-// Clear store when navigating away from a pipeline view
-// This ensures clean state when going from readonly view to new pipeline creation
+// Clear store when navigating away from builder-relevant views.
+// Do not clear when switching between two pipeline *run* URLs — that would race with
+// setPage and could leave an empty graph; the builder watch applies the new run instead.
 watch(
   () => useRoute().fullPath,
   (newPath, oldPath) => {
-    // If we had data and now navigating to a different route, clear store
-    if (
-      oldPath &&
-      newPath !== oldPath &&
-      (nodes.value.length > 0 || edges.value.length > 0)
-    ) {
-      console.log('[Builder] Route changed, clearing store', {
-        from: oldPath,
-        to: newPath,
-      });
+    if (!oldPath || newPath === oldPath) return;
+    if (isPipelineRunDetailPath(oldPath) && isPipelineRunDetailPath(newPath)) {
+      return;
+    }
+    if (nodes.value.length > 0 || edges.value.length > 0) {
       initialize([], []);
     }
   },
@@ -317,14 +312,6 @@ interface MenuAction {
 
 const menuActions = computed<MenuAction[]>(() => [
   {
-    key: 'upload',
-    icon: 'lucide:upload',
-    titleKey: 'menu.upload',
-    action: () => {
-      openUploadComponentDialog.value = true;
-    },
-  },
-  {
     key: 'jupyter',
     icon: 'lucide:file-code',
     titleKey: 'menu.jupyter',
@@ -372,20 +359,258 @@ const onDragStart = (component: unknown) => {
 // --- Event Handlers (Using Store Actions) ---
 
 const onNodeClick = (node: VueFlowNode | null) => {
-  // Store handles selection logic including null
+  // Store handles selection logic including null (for toggle behavior)
   selectNode(node?.id || null);
 
-  // In readonly mode, bubble node click up so pages like pipeline run detail
-  // can open their own sheets (e.g. PipelineRunSheet) instead of the builder
-  // properties sheet.
-  if (readonly.value) {
-    emit('node-click', node);
-  }
+  // Always emit node-click so parent can control the sheet
+  emit('node-click', node);
 };
 
 const onConnect = (edge: VueFlowEdge) => {
   if (readonly.value) return;
-  addEdge(edge as Edge);
+
+  const targetNode = nodes.value.find((n) => n.id === edge.target);
+  const sourceNode = nodes.value.find((n) => n.id === edge.source);
+  const targetHandle = edge.targetHandle || '';
+  const sourceHandle = edge.sourceHandle || '';
+
+  // Keep component sheet in sync: when a canvas edge is created,
+  // update the target component input relationship immediately.
+  if (
+    targetNode?.data?.component &&
+    targetHandle &&
+    sourceNode &&
+    sourceHandle
+  ) {
+    const existingInputs = targetNode.data.component.inputs || [];
+    const mappedInput: ComponentInput = {
+      destination: targetHandle,
+      value_source_type: 'component_output',
+      source: `${sourceNode.data?.label || sourceNode.data?.component?.name || edge.source}.${sourceHandle}`,
+    };
+
+    const existingIndex = existingInputs.findIndex(
+      (input) => input.destination === targetHandle,
+    );
+    const nextInputs = [...existingInputs];
+
+    if (existingIndex >= 0) {
+      nextInputs[existingIndex] = mappedInput;
+    } else {
+      nextInputs.push(mappedInput);
+    }
+
+    updateNodeData(targetNode.id, {
+      component: {
+        ...targetNode.data.component,
+        inputs: nextInputs,
+      },
+    });
+  }
+
+  const wasAdded = addEdge(edge as Edge);
+  if (!wasAdded) {
+    showCycleWarning.value = true;
+  }
+};
+
+const parseComponentOutputSource = (
+  source: string,
+): { componentLabel: string; outputName: string } | null => {
+  const dotIndex = source.lastIndexOf('.');
+  if (dotIndex <= 0 || dotIndex === source.length - 1) return null;
+  return {
+    componentLabel: source.slice(0, dotIndex),
+    outputName: source.slice(dotIndex + 1),
+  };
+};
+
+const getNodeDisplayName = (node: Node): string =>
+  (node.data?.label as string) ||
+  (node.data?.component?.name as string) ||
+  node.id;
+
+const getEdgeColor = (sourceNodeId: string, sourceHandle: string): string => {
+  const sourceNode = nodes.value.find((n) => n.id === sourceNodeId);
+  const outputDef = sourceNode?.data?.component?.output_path?.find(
+    (output) => output.name === sourceHandle,
+  );
+  return outputDef
+    ? getTypeColor(outputDef.type)
+    : 'hsl(var(--muted-foreground))';
+};
+
+const applyEdgeVisualStyle = (
+  edge: Edge | VueFlowEdge,
+  sourceNodeId: string,
+  sourceHandle: string,
+) => {
+  const edgeColor = getEdgeColor(sourceNodeId, sourceHandle);
+  const markerSize = 11;
+
+  edge.style = {
+    ...(edge.style || {}),
+    stroke: edgeColor,
+    strokeWidth: 2,
+  };
+  edge.markerEnd = {
+    type: MarkerType.ArrowClosed,
+    width: markerSize,
+    height: markerSize,
+    color: edgeColor,
+  };
+  edge.data = {
+    ...(edge.data || {}),
+    color: edgeColor,
+  };
+};
+
+const syncEdgesFromComponentInputs = (
+  targetNodeId: string,
+  inputs: ComponentInput[],
+) => {
+  const targetNode = nodes.value.find((n) => n.id === targetNodeId);
+  if (!targetNode) return;
+
+  const desiredByDestination = new Map<
+    string,
+    { sourceNodeId: string; outputName: string }
+  >();
+
+  for (const input of inputs) {
+    if (
+      input.value_source_type !== 'component_output' ||
+      !input.source ||
+      !input.destination
+    ) {
+      continue;
+    }
+    const parsed = parseComponentOutputSource(input.source);
+    if (!parsed) continue;
+
+    const sourceNode = nodes.value.find((n) => {
+      const label = getNodeDisplayName(n);
+      const componentName = (n.data?.component?.name as string) || '';
+      return (
+        label === parsed.componentLabel ||
+        componentName === parsed.componentLabel
+      );
+    });
+    if (!sourceNode) continue;
+
+    desiredByDestination.set(input.destination, {
+      sourceNodeId: sourceNode.id,
+      outputName: parsed.outputName,
+    });
+  }
+
+  const incomingEdges = edges.value.filter((e) => e.target === targetNodeId);
+
+  // Remove edges that no longer match sheet input mapping.
+  incomingEdges.forEach((edge) => {
+    const targetHandle = edge.targetHandle || '';
+    if (!targetHandle) return;
+    const desired = desiredByDestination.get(targetHandle);
+    const shouldKeep =
+      desired &&
+      edge.source === desired.sourceNodeId &&
+      (edge.sourceHandle || '') === desired.outputName;
+    if (!shouldKeep) {
+      removeEdge(edge.id);
+    }
+  });
+
+  // Add missing edges for sheet mappings.
+  desiredByDestination.forEach((desired, destination) => {
+    const existingEdge = edges.value.find(
+      (e) =>
+        e.target === targetNodeId &&
+        (e.targetHandle || '') === destination &&
+        e.source === desired.sourceNodeId &&
+        (e.sourceHandle || '') === desired.outputName,
+    );
+    if (existingEdge) {
+      applyEdgeVisualStyle(
+        existingEdge,
+        desired.sourceNodeId,
+        desired.outputName,
+      );
+      return;
+    }
+
+    const newEdge = {
+      id: `edge-${desired.sourceNodeId}-${targetNodeId}-${destination}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      source: desired.sourceNodeId,
+      target: targetNodeId,
+      sourceHandle: desired.outputName,
+      targetHandle: destination,
+    } as Edge;
+    applyEdgeVisualStyle(newEdge, desired.sourceNodeId, desired.outputName);
+    const wasAdded = addEdge(newEdge);
+    if (!wasAdded) {
+      showCycleWarning.value = true;
+    }
+  });
+};
+
+const syncOutputRenameReferences = (
+  nodeId: string,
+  previousOutputPath: ComponentPath[],
+  nextOutputPath: ComponentPath[],
+) => {
+  const sourceNode = nodes.value.find((n) => n.id === nodeId);
+  if (!sourceNode) return;
+  const sourceComponentName = getNodeDisplayName(sourceNode);
+
+  const renameMap = new Map<string, string>();
+  const maxLen = Math.min(previousOutputPath.length, nextOutputPath.length);
+  for (let i = 0; i < maxLen; i++) {
+    const before = previousOutputPath[i]?.name;
+    const after = nextOutputPath[i]?.name;
+    if (before && after && before !== after) {
+      renameMap.set(before, after);
+    }
+  }
+  if (!renameMap.size) return;
+
+  // Update edges sourced from this node so handles keep working.
+  edges.value.forEach((edge) => {
+    if (edge.source !== nodeId) return;
+    const oldHandle = edge.sourceHandle || '';
+    const newHandle = renameMap.get(oldHandle);
+    if (!newHandle) return;
+    edge.sourceHandle = newHandle;
+    applyEdgeVisualStyle(edge as Edge, nodeId, newHandle);
+  });
+  // Ensure reactivity for any deep edge mutations above.
+  edges.value = [...edges.value];
+
+  // Update all component-input references that point to renamed outputs.
+  nodes.value.forEach((node) => {
+    const inputs = node.data?.component?.inputs || [];
+    if (!inputs.length) return;
+
+    let hasChanges = false;
+    const updatedInputs = inputs.map((input: ComponentInput) => {
+      if (input.value_source_type !== 'component_output') return input;
+      const source = input.source || '';
+      if (!source.startsWith(`${sourceComponentName}.`)) return input;
+      const outputName = source.slice(sourceComponentName.length + 1);
+      const renamed = renameMap.get(outputName);
+      if (!renamed) return input;
+      hasChanges = true;
+      return { ...input, source: `${sourceComponentName}.${renamed}` };
+    });
+
+    if (hasChanges) {
+      updateNodeData(node.id, {
+        component: {
+          ...node.data.component,
+          inputs: updatedInputs,
+        },
+      });
+    }
+  });
 };
 
 const onEdgeUpdate = (edge: VueFlowEdge) => {
@@ -395,10 +620,30 @@ const onEdgeUpdate = (edge: VueFlowEdge) => {
 const onAddNode = (node: VueFlowNode) => {
   if (readonly.value) return;
   addNode(node as Node);
+  // Auto-name the pipeline on the first drop, but only if the user hasn't
+  // typed a name yet. Deferred to nextTick so the [nodes, edges] watcher
+  // syncs nodes back to page.value.data.builder.nodes first — otherwise the
+  // deep page.data.builder watcher sees nodes:[] in the store and calls
+  // initialize([], []) which would wipe the node we just added.
+  nextTick(() => {
+    if (
+      nodes.value.length === 1 &&
+      page.value.data?.builder &&
+      !page.value.data.builder.name
+    ) {
+      page.value.data.builder.name = 'Untitled Pipeline';
+    }
+  });
 };
 
 const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
   if (readonly.value) return;
+
+  const nodeBeforeUpdate = nodes.value.find((n) => n.id === nodeId);
+  const previousOutputPath = [
+    ...((nodeBeforeUpdate?.data?.component?.output_path as ComponentPath[]) ||
+      []),
+  ];
 
   if (updates.position) {
     updateNodePosition(nodeId, updates.position);
@@ -406,6 +651,20 @@ const onUpdateNode = (nodeId: string, updates: NodeUpdate) => {
 
   if (updates.data) {
     updateNodeData(nodeId, updates.data);
+
+    const maybeInputs = (
+      updates.data.component as { inputs?: ComponentInput[] }
+    )?.inputs;
+    if (Array.isArray(maybeInputs)) {
+      syncEdgesFromComponentInputs(nodeId, maybeInputs);
+    }
+
+    const maybeOutputPath = (
+      updates.data.component as { output_path?: ComponentPath[] }
+    )?.output_path;
+    if (Array.isArray(maybeOutputPath)) {
+      syncOutputRenameReferences(nodeId, previousOutputPath, maybeOutputPath);
+    }
   }
 };
 
@@ -443,8 +702,53 @@ const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   }
 
   if (edgesToDelete.length > 0) {
-    edgesToDelete.forEach((edge) => removeEdge(edge.id));
+    edgesToDelete.forEach((edge) => {
+      removeComponentInputMappingForEdge(edge);
+      removeEdge(edge.id);
+    });
   }
+};
+
+const removeComponentInputMappingForEdge = (edge: VueFlowEdge) => {
+  const targetNode = nodes.value.find((n) => n.id === edge.target);
+  if (!targetNode?.data?.component) return;
+
+  const targetHandle = edge.targetHandle || '';
+  if (!targetHandle) return;
+
+  const sourceNode = nodes.value.find((n) => n.id === edge.source);
+  const sourceNodeName = sourceNode ? getNodeDisplayName(sourceNode) : '';
+  const sourceHandle = edge.sourceHandle || '';
+  const expectedSource = sourceNodeName
+    ? `${sourceNodeName}.${sourceHandle}`
+    : '';
+
+  const existingInputs = targetNode.data.component.inputs || [];
+  let hasChanges = false;
+
+  const nextInputs = existingInputs.filter((input) => {
+    if (input.destination !== targetHandle) return true;
+    if (input.value_source_type !== 'component_output') return true;
+
+    // Remove only the mapping linked to this deleted edge.
+    // If node names changed and source text differs, destination+type is still enough
+    // because one target input accepts only one incoming edge.
+    if (!expectedSource || input.source === expectedSource) {
+      hasChanges = true;
+      return false;
+    }
+
+    return true;
+  });
+
+  if (!hasChanges) return;
+
+  updateNodeData(targetNode.id, {
+    component: {
+      ...targetNode.data.component,
+      inputs: nextInputs,
+    },
+  });
 };
 
 const getDependencies = (nodeId: string): string[] => {
@@ -490,6 +794,16 @@ const onRenameComponent = (
       label: newName,
       component: { ...node.data.component, name: newName },
     });
+    console.log('[builder] onRenameComponent - after update:', {
+      label: node.data.label,
+      componentName: (node.data.component as Component | undefined)?.name,
+    });
+  } else {
+    console.warn('[builder] onRenameComponent - node or component not found:', {
+      nodeId,
+      hasNode: !!node,
+      hasComponent: !!node?.data?.component,
+    });
   }
 
   // 2. Update ALL other components that reference this component
@@ -526,25 +840,18 @@ const onRenameComponent = (
 
   // 3. Show success toast
   if (updatedCount > 0) {
-    toaster.show(
-      'success',
-      t('builder.component_renamed_with_updates', {
-        oldName,
-        newName,
-        count: updatedCount,
-      }),
-      {
-        duration: 4000,
-      },
-    );
+    toaster.show('success', 'builder.component_renamed_with_updates', {
+      oldName,
+      newName,
+      count: updatedCount,
+      duration: 4000,
+    });
   } else {
-    toaster.show(
-      'success',
-      t('builder.component_renamed', { oldName, newName }),
-      {
-        duration: 3000,
-      },
-    );
+    toaster.show('success', 'builder.component_renamed', {
+      oldName,
+      newName,
+      duration: 3000,
+    });
   }
 };
 
@@ -610,4 +917,11 @@ const onUpdateOutputs = (newOutputs: PipelineOutput[]) => {
     },
   });
 };
+
+// Expose methods for parent components to call
+defineExpose({
+  onUpdateNode,
+  onDeleteNode,
+  onRenameComponent,
+});
 </script>

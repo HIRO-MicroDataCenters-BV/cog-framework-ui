@@ -12,7 +12,7 @@ const props = defineProps<
   <SelectValue
     data-slot="select-value"
     v-bind="props"
-    :class="cn('max-w-[150px] overflow-hidden text-ellipsis', props.class)"
+    :class="cn('block min-w-0 max-w-full truncate', props.class)"
   >
     <slot />
   </SelectValue>

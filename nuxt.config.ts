@@ -58,6 +58,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: URL_PREFIX,
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
+      federatedEnabled: process.env.NUXT_PUBLIC_FEDERATED_ENABLED === 'true',
       apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.11.27',
     },

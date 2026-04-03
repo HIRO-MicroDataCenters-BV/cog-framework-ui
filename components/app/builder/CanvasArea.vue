@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="canvasRootRef"
     class="h-full relative bg-muted/20"
     :class="{ readonly: props.readonly }"
   >
@@ -7,7 +8,7 @@
       :nodes="props.nodes"
       :edges="props.edges"
       class="w-full h-full"
-      fit-view
+      :fit-view-on-init="props.readonly"
       :nodes-draggable="!props.readonly && !isLocked"
       :nodes-connectable="!props.readonly && !isLocked"
       :edges-updatable="!props.readonly && !isLocked"
@@ -22,6 +23,7 @@
       :default-edge-options="{
         markerEnd: { type: MarkerType.ArrowClosed, width: 8, height: 8 },
       }"
+      :connection-mode="ConnectionMode.Loose"
       :is-valid-connection="isValidConnectionWrapper"
       @drop="onDrop"
       @dragover="onDragOver"
@@ -37,7 +39,7 @@
       <template #node-default="{ id, data }">
         <TooltipProvider>
           <div
-            class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative"
+            class="bg-card border-none w-3xs min-h-[86px] overflow-visible kenney-node relative group/node"
             :class="[
               props.readonly ? '' : 'cursor-grab active:cursor-grabbing',
             ]"
@@ -47,99 +49,117 @@
               borderRadius: '0.75rem',
             }"
             :data-nodeid="data.id || data.component.id"
+            @mouseenter="hoveredNodeId = id"
+            @mouseleave="hoveredNodeId = null"
           >
+            <Tooltip
+              v-if="
+                !isInputRailExpanded(id) &&
+                (hiddenInputCountByNode.get(id) ?? 0) > 0
+              "
+            >
+              <TooltipTrigger as-child>
+                <div
+                  class="absolute -top-2 right-3 z-20 rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm"
+                >
+                  +{{ hiddenInputCountByNode.get(id) }} more
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" class="text-xs">
+                Hover to expand all inputs
+              </TooltipContent>
+            </Tooltip>
+
             <!-- Input Handles (Top) -->
             <div
               class="absolute top-0 left-0 right-0 h-0 flex justify-center z-10"
+              @mouseenter="hoveredInputRailNodeId = id"
+              @mouseleave="hoveredInputRailNodeId = null"
             >
               <div
-                v-for="(input, index) in (
-                  data.component.input_path || []
-                ).filter((i: any) => isConnectableType(i.type, i.name))"
+                v-for="(input, index) in allInputHandlesByNode.get(id) || []"
                 :key="`input-${input.name}`"
-                class="absolute"
+                class="absolute transition-opacity duration-150"
+                :class="
+                  isInputHandleVisible(id, input.name)
+                    ? 'opacity-100'
+                    : 'opacity-0 pointer-events-none'
+                "
                 :style="{
                   left: calculateHandlePosition(
                     Number(index),
-                    (data.component.input_path || []).filter((i: any) =>
-                      isConnectableType(i.type, i.name),
-                    ).length,
+                    (allInputHandlesByNode.get(id) || []).length,
                   ),
                 }"
+                @mouseenter="
+                  (e) =>
+                    showHandleTooltip(
+                      e,
+                      id,
+                      input.name,
+                      input.type,
+                      getInputAssignedText(id, input.name),
+                    )
+                "
+                @mouseleave="hideHandleTooltip"
               >
                 <Handle
                   :id="input.name"
                   type="target"
                   :position="Position.Top"
-                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
+                  :connectable="1"
+                  class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
-                    borderColor: getTypeColor(input.type),
-                    color: getTypeColor(input.type),
-                    backgroundColor: isHandleConnected(id, input.name, 'target')
-                      ? getTypeColor(input.type)
-                      : 'hsl(var(--background))',
+                    borderColor: getInputRequirementColor(id, input.name),
+                    color: getInputRequirementColor(id, input.name),
+                    backgroundColor:
+                      isHandleConnected(id, input.name, 'target') ||
+                      isInputAssigned(id, input.name)
+                        ? getInputRequirementColor(id, input.name)
+                        : 'hsl(var(--background))',
                   }"
                   :data-handleid="input.name"
-                >
-                  <Tooltip v-if="!props.readonly">
-                    <TooltipTrigger as-child>
-                      <div
-                        class="absolute inset-0 flex items-center justify-center"
-                      >
-                        <!-- Tiny dot icon inside handle if needed, or just color -->
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent class="text-xs">
-                      <div class="font-medium">{{ input.name }}</div>
-                      <div
-                        class="text-muted-foreground flex items-center gap-1"
-                      >
-                        <Icon :name="getTypeIcon(input.type)" class="w-3 h-3" />
-                        {{ input.type }}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </Handle>
+                />
               </div>
             </div>
 
             <!-- Header & Content -->
-            <SheetTrigger as-child>
-              <div class="cursor-pointer">
-                <div
-                  class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
+            <div class="cursor-pointer">
+              <div
+                class="flex items-center flex-nowrap gap-2 border-b border-border px-4 py-2 text-card-foreground bg-muted/30"
+              >
+                <span
+                  class="text-sm flex-auto overflow-hidden font-medium truncate"
+                  >{{ data.displayName || data.label }}</span
                 >
-                  <span
-                    class="text-sm flex-auto overflow-hidden font-medium truncate"
-                    >{{ data.displayName || data.label }}</span
-                  >
-                  <Tooltip v-if="data.status">
-                    <TooltipTrigger as-child>
-                      <Icon
-                        :name="getStatusConfig(data.status).icon"
-                        :class="[
-                          'w-4 h-4 shrink-0',
-                          data.status?.toLowerCase() === 'running' &&
-                            'animate-[spin_2s_linear_infinite]',
-                        ]"
-                        :style="{ color: getStatusConfig(data.status).color }"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p class="capitalize text-xs">
-                        {{ data.status.toLowerCase() }}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div
-                  v-if="
-                    data.displayName ||
-                    (data.category && data.category !== 'general')
-                  "
-                  class="px-4 py-3"
-                >
+                <Tooltip v-if="data.status">
+                  <TooltipTrigger as-child>
+                    <Icon
+                      :name="getStatusConfig(data.status).icon"
+                      :class="[
+                        'w-4 h-4 shrink-0',
+                        data.status?.toLowerCase() === 'running' &&
+                          'animate-[spin_2s_linear_infinite]',
+                      ]"
+                      :style="{ color: getStatusConfig(data.status).color }"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p class="capitalize text-xs">
+                      {{ data.status.toLowerCase() }}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div
+                v-if="
+                  data.displayName ||
+                  (data.category && data.category !== 'general')
+                "
+                class="px-4 py-3"
+              >
+                <div class="flex items-center justify-between gap-2">
                   <p
                     v-if="data.displayName"
                     class="text-xs text-muted-foreground font-medium"
@@ -153,9 +173,48 @@
                     <Icon name="lucide:folder" class="w-3 h-3" />
                     {{ data.category }}
                   </p>
+
+                  <!-- Pipeline output toggle moved to second row (near subtitle/category) -->
+                  <Tooltip v-if="!props.readonly">
+                    <TooltipTrigger as-child>
+                      <button
+                        class="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all group-hover/node:opacity-100 hover:text-muted-foreground"
+                        @click.stop="toggleOutputNode(id)"
+                      >
+                        <Icon
+                          name="lucide:square-arrow-down"
+                          class="w-3.5 h-3.5"
+                        />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" class="text-xs">
+                      {{
+                        outputNodeIds.includes(id)
+                          ? 'Remove as pipeline output'
+                          : 'Set as pipeline output'
+                      }}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
-            </SheetTrigger>
+
+              <!-- Pipeline Output banner -->
+              <Transition name="output-banner">
+                <div
+                  v-if="outputNodeIds.includes(id)"
+                  class="flex items-center justify-center gap-1.5 border-t border-sky-400/30 bg-sky-400/10 px-3 py-1.5"
+                >
+                  <Icon
+                    name="lucide:square-arrow-down"
+                    class="w-3 h-3 shrink-0 text-sky-400"
+                  />
+                  <span
+                    class="text-[10px] font-semibold uppercase tracking-wide text-sky-400"
+                    >Pipeline Output</span
+                  >
+                </div>
+              </Transition>
+            </div>
 
             <!-- Output Handles (Bottom) -->
             <div
@@ -175,12 +234,23 @@
                     ).length,
                   ),
                 }"
+                @mouseenter="
+                  (e) =>
+                    showHandleTooltip(
+                      e,
+                      id,
+                      output.name,
+                      output.type,
+                      getOutputAssignedText(id, output.name),
+                    )
+                "
+                @mouseleave="hideHandleTooltip"
               >
                 <Handle
                   :id="output.name"
                   type="source"
                   :position="Position.Bottom"
-                  class="!w-3 !h-3 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
+                  class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-all duration-200 hover:scale-125"
                   :class="[props.readonly ? 'opacity-0' : '']"
                   :style="{
                     borderColor: getTypeColor(output.type),
@@ -194,25 +264,7 @@
                       : 'hsl(var(--background))',
                   }"
                   :data-handleid="output.name"
-                >
-                  <Tooltip v-if="!props.readonly">
-                    <TooltipTrigger as-child>
-                      <div class="w-full h-full"></div>
-                    </TooltipTrigger>
-                    <TooltipContent class="text-xs">
-                      <div class="font-medium">{{ output.name }}</div>
-                      <div
-                        class="text-muted-foreground flex items-center gap-1"
-                      >
-                        <Icon
-                          :name="getTypeIcon(output.type)"
-                          class="w-3 h-3"
-                        />
-                        {{ output.type }}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </Handle>
+                />
               </div>
             </div>
           </div>
@@ -229,7 +281,7 @@
       />
 
       <!-- Floating Controls Toolbar -->
-      <Panel :position="PanelPosition.TopLeft">
+      <Panel :position="PanelPosition.BottomLeft">
         <div
           class="flex items-center gap-0.5 rounded-xl border border-border bg-background/90 backdrop-blur-sm shadow-lg px-1.5 py-1.5"
         >
@@ -311,11 +363,33 @@
         </div>
       </Panel>
     </VueFlow>
+
+    <div
+      v-if="hoveredHandleTooltip"
+      class="pointer-events-none absolute z-[60] w-max min-w-[11rem] max-w-[26rem] -translate-x-1/2 -translate-y-full rounded-md bg-primary px-3 py-2 text-xs text-primary-foreground opacity-90 shadow-md backdrop-blur-[1px]"
+      :style="{
+        left: `${hoveredHandleTooltip.x}px`,
+        top: `${hoveredHandleTooltip.y}px`,
+      }"
+    >
+      <div class="font-medium text-primary-foreground">
+        {{ hoveredHandleTooltip.name }}
+      </div>
+      <div class="mt-0.5 text-primary-foreground/90">
+        Type: {{ hoveredHandleTooltip.type }}
+      </div>
+      <div class="mt-1 break-words text-primary-foreground/90">
+        Assigned: {{ hoveredHandleTooltip.assigned }}
+      </div>
+      <div
+        class="absolute left-1/2 top-full z-[60] size-2.5 -translate-x-1/2 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] bg-primary"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, watch, ref } from 'vue';
+import { computed, nextTick, watch, ref } from 'vue';
 import type { CSSProperties } from 'vue';
 import {
   VueFlow,
@@ -324,6 +398,7 @@ import {
   Position,
   Handle,
   MarkerType,
+  ConnectionMode,
   type Connection,
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
@@ -351,8 +426,9 @@ import type {
   Node,
   Edge,
   Component,
+  ComponentInput,
   ComponentPath,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 
 interface Props {
   nodes?: VueFlowNode[];
@@ -389,10 +465,14 @@ const {
   setNodes,
 } = useVueFlow();
 
-// Re-fit view whenever nodes are first loaded (async data)
+const { outputNodeIds, toggleOutputNode } = usePipelineBuilder();
+
+// Re-fit view when pipeline run data loads (readonly). In the builder, auto-fit on
+// every node change (e.g. drag from library) is jarring; users can use Fit view.
 watch(
   () => props.nodes,
   (newNodes) => {
+    if (!props.readonly) return;
     if (newNodes && newNodes.length > 0) {
       nextTick(() => {
         fitView({ padding: 0.15, duration: 300 });
@@ -402,8 +482,8 @@ watch(
   { immediate: false },
 );
 
-// Also fit after VueFlow has measured & positioned nodes
 onNodesInitialized(() => {
+  if (!props.readonly) return;
   fitView({ padding: 0.35, duration: 200 });
 });
 
@@ -440,27 +520,199 @@ const isHandleConnected = (
   });
 };
 
-// Helper to determine if a type should show a handle (connectable types only)
-const isConnectableType = (type: string, name?: string): boolean => {
-  const connectableTypes = [
-    'Dataset',
-    'Model',
-    'JsonObject',
-    'Array',
-    'Object',
-    'Artifact',
-    'Any',
-  ];
+const canvasRootRef = ref<HTMLElement | null>(null);
+const hoveredHandleTooltip = ref<{
+  nodeId: string;
+  name: string;
+  type: string;
+  assigned: string;
+  x: number;
+  y: number;
+} | null>(null);
 
-  if (connectableTypes.includes(type)) return true;
-
-  // Special case: local_data_connector in FedSCVI client is a data input
-  if (name === 'local_data_connector' && type === 'String') return true;
-
-  return false;
+const getAssignedInput = (
+  nodeId: string,
+  inputName: string,
+): ComponentInput | undefined => {
+  const node = props.nodes.find((n) => n.id === nodeId);
+  const inputs = node?.data?.component?.inputs || [];
+  return inputs.find(
+    (input: ComponentInput) => input.destination === inputName,
+  );
 };
 
+const isInputAssigned = (nodeId: string, inputName: string): boolean => {
+  const assigned = getAssignedInput(nodeId, inputName);
+  if (!assigned) return false;
+  return Boolean(assigned.source && String(assigned.source).trim() !== '');
+};
+
+const getInputRequirementColor = (
+  nodeId: string,
+  inputName: string,
+): string => {
+  const node = props.nodes.find((n) => n.id === nodeId);
+  const inputDef = (node?.data?.component?.input_path || []).find(
+    (input: ComponentPath) => input.name === inputName,
+  );
+
+  // Two-color scheme for input definitions:
+  // required -> orange, optional -> teal.
+  return inputDef?.optional ? '#14b8a6' : '#f97316';
+};
+
+const getAssignedOutputTargets = (
+  nodeId: string,
+  outputName: string,
+): string[] => {
+  return props.edges
+    .filter(
+      (edge) => edge.source === nodeId && edge.sourceHandle === outputName,
+    )
+    .map((edge) => {
+      const targetNode = props.nodes.find((n) => n.id === edge.target);
+      const targetLabel =
+        (targetNode?.data?.label as string) ||
+        targetNode?.data?.component?.name ||
+        edge.target;
+      return `${targetLabel}.${edge.targetHandle || ''}`.replace(/\.$/, '');
+    });
+};
+
+const getInputAssignedText = (nodeId: string, inputName: string): string => {
+  const assigned = getAssignedInput(nodeId, inputName);
+  return assigned
+    ? `${assigned.value_source_type} = ${assigned.source || '—'}`
+    : 'none';
+};
+
+const getOutputAssignedText = (nodeId: string, outputName: string): string => {
+  const targets = getAssignedOutputTargets(nodeId, outputName);
+  return targets.length ? targets.join(', ') : 'none';
+};
+
+const showHandleTooltip = (
+  event: MouseEvent,
+  nodeId: string,
+  name: string,
+  type: string,
+  assigned: string,
+) => {
+  const root = canvasRootRef.value;
+  if (!root) return;
+  const targetEl = event.currentTarget as HTMLElement | null;
+  if (!targetEl) return;
+
+  const rect = root.getBoundingClientRect();
+  const dotRect = targetEl.getBoundingClientRect();
+
+  hoveredHandleTooltip.value = {
+    nodeId,
+    name,
+    type,
+    assigned,
+    x: dotRect.left - rect.left + dotRect.width / 2,
+    y: dotRect.top - rect.top - 10,
+  };
+};
+
+const hideHandleTooltip = () => {
+  hoveredHandleTooltip.value = null;
+};
+
+// Show handles for all declared input/output types from component definition.
+const isConnectableType = (type: string): boolean => Boolean(type);
+
+const hoveredNodeId = ref<string | null>(null);
+const hoveredInputRailNodeId = ref<string | null>(null);
+
+const allInputHandlesByNode = computed(() => {
+  const byNode = new Map<string, ComponentPath[]>();
+
+  for (const node of props.nodes) {
+    const inputPath = (node.data?.component?.input_path || []).filter(
+      (i: ComponentPath) => isConnectableType(i.type),
+    );
+    // Keep the API-defined input order stable so dot positions do not jump.
+    byNode.set(node.id, inputPath);
+  }
+
+  return byNode;
+});
+
+const isInputRailExpanded = (nodeId: string): boolean => {
+  if (hoveredNodeId.value === nodeId) return true;
+  if (hoveredInputRailNodeId.value === nodeId) return true;
+  const node = props.nodes.find((n) => n.id === nodeId);
+  return Boolean(node?.selected);
+};
+
+const visibleInputHandleNamesByNode = computed(() => {
+  const byNode = new Map<string, Set<string>>();
+  for (const node of props.nodes) {
+    const allInputs = allInputHandlesByNode.value.get(node.id) || [];
+    if (isInputRailExpanded(node.id)) {
+      byNode.set(node.id, new Set(allInputs.map((input) => input.name)));
+      continue;
+    }
+
+    // In collapsed mode, keep all connected input dots visible so users
+    // can always see existing mappings on the node.
+    const connectedHandleNames = new Set(
+      props.edges
+        .filter((edge) => edge.target === node.id)
+        .map((edge) => edge.targetHandle)
+        .filter((h): h is string => Boolean(h)),
+    );
+    const connectedInputs = allInputs.filter((input) =>
+      connectedHandleNames.has(input.name),
+    );
+
+    if (connectedInputs.length > 0) {
+      byNode.set(node.id, new Set(connectedInputs.map((input) => input.name)));
+    } else {
+      const centerIndex = Math.floor((allInputs.length - 1) / 2);
+      const centerInput = allInputs[centerIndex];
+      byNode.set(node.id, new Set(centerInput ? [centerInput.name] : []));
+    }
+  }
+  return byNode;
+});
+
+const isInputHandleVisible = (nodeId: string, handleName: string): boolean => {
+  const visibleHandles = visibleInputHandleNamesByNode.value.get(nodeId);
+  return visibleHandles ? visibleHandles.has(handleName) : false;
+};
+
+const hiddenInputCountByNode = computed(() => {
+  const byNode = new Map<string, number>();
+
+  for (const node of props.nodes) {
+    const total = allInputHandlesByNode.value.get(node.id)?.length || 0;
+    const visible = visibleInputHandleNamesByNode.value.get(node.id)?.size || 0;
+    byNode.set(node.id, Math.max(0, total - visible));
+  }
+
+  return byNode;
+});
+
 const isValidConnectionWrapper = (connection: Connection) => {
+  // One input handle can accept only one incoming output connection.
+  // When Vue Flow re-validates *existing* edges (e.g. after setEdges / pauseModel
+  // fires on props.edges change), the connection object IS the edge and already
+  // carries an id. In that case skip the duplicate-target guard — otherwise every
+  // edge finds itself in props.edges and is incorrectly rejected as a duplicate,
+  // causing all edges to disappear whenever edges.value is reassigned.
+  const isNewConnection = !(connection as VueFlowEdge).id;
+  if (isNewConnection && connection.target && connection.targetHandle) {
+    const targetAlreadyConnected = props.edges.some(
+      (edge) =>
+        edge.target === connection.target &&
+        edge.targetHandle === connection.targetHandle,
+    );
+    if (targetAlreadyConnected) return false;
+  }
+
   // We pass the full component nodes list to the validator
   // props.nodes contains the data with component structure
   // We cast to any because AppNode type mismatches slightly with VueFlowNode but data structure is compatible
@@ -523,9 +775,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
-  console.log('CanvasArea mounted');
-  console.log('CanvasArea nodes:', props.nodes);
-  console.log('CanvasArea edges:', props.edges);
 });
 
 onUnmounted(() => {
@@ -571,22 +820,12 @@ const onDrop = (event: DragEvent) => {
             ? String(inputDef.default)
             : '';
 
-        console.log(
-          `[CanvasArea] Initializing input "${inputDef.name}" with default:`,
-          defaultValue,
-        );
-
         return {
           destination: inputDef.name,
           value_source_type: 'constant',
           source: defaultValue,
         };
       },
-    );
-
-    console.log(
-      `[CanvasArea] Created component "${component.name}" with ${inputs.length} inputs:`,
-      inputs,
     );
 
     // Create a DEEP copy of component with initialized inputs
@@ -696,6 +935,20 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 </script>
 
 <style scoped>
+.output-banner-enter-active,
+.output-banner-leave-active {
+  transition:
+    opacity 0.2s ease,
+    max-height 0.2s ease;
+  max-height: 40px;
+  overflow: hidden;
+}
+.output-banner-enter-from,
+.output-banner-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
 .canvas-ctrl-btn {
   display: flex;
   align-items: center;
@@ -727,7 +980,8 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
 
 /* Ensure handles are visible above other elements */
 .vue-flow__handle {
-  z-index: 10;
+  z-index: 80 !important;
+  pointer-events: auto !important;
 }
 
 /* Compatibility Styling */
@@ -766,9 +1020,22 @@ const onNodeDragStop = (event: { node: VueFlowNode; nodes: VueFlowNode[] }) => {
   animation: flow 1.5s linear infinite;
 }
 
+/* Animated preview line while dragging a new connection */
+:deep(.vue-flow__connectionline path),
+:deep(.vue-flow__connection-path) {
+  stroke-dasharray: 6 6;
+  animation: connection-flow 0.4s linear infinite;
+}
+
 @keyframes flow {
   to {
     stroke-dashoffset: -10;
+  }
+}
+
+@keyframes connection-flow {
+  to {
+    stroke-dashoffset: -12;
   }
 }
 </style>

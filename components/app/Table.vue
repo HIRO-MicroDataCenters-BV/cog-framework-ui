@@ -389,6 +389,10 @@ const getValueLabel = (columnId: string, value: string | number): string => {
 
 const getSectionIcon = (section: string | undefined) => {
   if (!section) return null;
+  // Use specific icon for pipeline_runs
+  if (section === 'pipeline_runs') {
+    return 'lucide:gauge';
+  }
   return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
@@ -813,6 +817,7 @@ const add = () => {
       openAddModel.value = true;
       break;
     case 'pipelines':
+    case 'pipeline_runs':
       navigateTo('/pipelines/builder/new');
       break;
   }
@@ -928,7 +933,11 @@ defineExpose({ fetchData, totalItems });
 
               <Button class="cursor-pointer" @click="() => add()">
                 <Icon name="lucide:plus" />
-                {{ t(`action.add_${page.section}`) }}
+                {{
+                  t(
+                    `action.add_${page.section === 'pipeline_runs' ? 'pipelines' : page.section}`,
+                  )
+                }}
               </Button>
             </div>
           </div>

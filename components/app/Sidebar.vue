@@ -29,10 +29,12 @@ const isSubActive = (subUrl: string) => {
   const fullPath = route.path;
 
   // Special handling for Pipelines "Runs" vs "Builder"
-  if (subUrl === 'pipelines') {
+  if (subUrl === 'pipelines/run') {
     return (
-      fullPath.startsWith('/pipelines') &&
-      !fullPath.startsWith('/pipelines/builder')
+      fullPath.startsWith('/pipelines/run') ||
+      (fullPath.startsWith('/pipelines') &&
+        !fullPath.startsWith('/pipelines/builder') &&
+        !fullPath.startsWith('/pipelines/run'))
     );
   }
 
@@ -161,6 +163,11 @@ const toggleTheme = () => {
                         :is-active="isSubActive(subItem.url)"
                       >
                         <NuxtLink :to="`/${subItem.url}`">
+                          <Icon
+                            v-if="subItem.icon"
+                            :name="subItem.icon"
+                            class="w-4 h-4 mr-2"
+                          />
                           <span>{{ subItem.title }}</span>
                         </NuxtLink>
                       </SidebarMenuSubButton>

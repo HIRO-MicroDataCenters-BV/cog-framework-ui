@@ -2945,6 +2945,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
+      console.log('saving pipeline');
       return request(`/training-builder-pipelines`, 'POST', data, {
         showToast: true,
       });
@@ -2996,6 +2997,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
+      console.log(data);
       return request(
         `/training-builder-pipelines/dataspace/federated/run`,
         'POST',

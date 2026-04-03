@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/pipeline-creation.schema.json",
+  "title": "PipelineCreation",
+  "type": "object",
+  "required": ["name", "pipeline_components"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pipeline_components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["uuid", "name", "inputs"],
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["source", "destination", "value_source_type"],
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "description": "For component_output: '<ComponentName>.<output>'; for constant: literal; for pipeline_inputparam: param name"
+                },
+                "destination": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value_source_type": {
+                  "type": "string",
+                  "enum": [
+                    "component_output",
+                    "constant",
+                    "pipeline_inputparam"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "input_path": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output_path": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "source"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "object",
+            "required": ["component_name", "output_name"],
+            "properties": {
+              "component_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "output_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "component_uuid": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Optional hint; ignored for wiring"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

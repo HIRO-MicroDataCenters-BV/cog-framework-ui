@@ -3,7 +3,7 @@ import type {
   Edge,
   PipelineInputParam,
   PipelineOutput,
-} from './builder.types';
+} from './canvas.types';
 
 export interface PageBuilderData {
   builder: {
