@@ -133,7 +133,7 @@ export function builderDataToPayload(
   return {
     name: builder.name ?? '',
     pipeline_components,
-    ...(input_path.length > 0 ? { input_path } : {}),
-    ...(output_path.length > 0 ? { output_path } : {}),
+    input_path,
+    output_path,
   };
 }
