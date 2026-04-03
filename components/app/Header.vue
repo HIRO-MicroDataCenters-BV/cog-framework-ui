@@ -68,6 +68,53 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+          <!-- Run button — fires immediately in the selected mode -->
+          <TooltipProvider :delay-duration="200">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <span
+                  class="inline-flex rounded-lg"
+                  :class="{ 'cursor-not-allowed': !canSave }"
+                >
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    :disabled="!canSave"
+                    class="group h-7 gap-2 px-3 text-xs font-semibold shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
+                    @click="openConfirmDialog"
+                  >
+                    <Icon
+                      name="lucide:play"
+                      class="size-3.5 opacity-90 group-disabled:opacity-55"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t('action.save_and_run') }}</span>
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                v-if="!canSave"
+                side="bottom"
+                align="center"
+                :side-offset="6"
+                :avoid-collisions="false"
+                class="max-w-sm p-3"
+              >
+                <p class="mb-2 text-xs font-semibold">
+                  {{ $t('builder.header_run_tooltip_title') }}
+                </p>
+                <ul
+                  class="list-inside list-disc space-y-1.5 text-xs text-background/80"
+                >
+                  <li v-for="error in validationErrors" :key="error">
+                    {{ error }}
+                  </li>
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <!-- Mode pill — only shown when NUXT_PUBLIC_FEDERATED_ENABLED=true -->
           <DropdownMenu v-if="federatedEnabled">
             <DropdownMenuTrigger as-child>
@@ -138,8 +185,18 @@
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <!-- When federated is disabled, show icon-only Manage Parameters button -->
-          <Tooltip v-if="!federatedEnabled">
+          <!-- Debug only: manual order_id override for federated runs -->
+          <Input
+            v-if="showManualOrderIdInput"
+            v-model="manualOrderId"
+            type="text"
+            placeholder="order_id"
+            class="h-7 w-28 border-border/70 bg-muted/30 px-2 text-xs font-mono"
+            title="Debug: override order_id for federated run"
+          />
+
+          <!-- Manage Parameters button -->
+          <Tooltip>
             <TooltipTrigger as-child>
               <button
                 type="button"
@@ -157,53 +214,6 @@
               {{ $t('builder.manage_parameters') }}
             </TooltipContent>
           </Tooltip>
-
-          <!-- Run button — fires immediately in the selected mode -->
-          <TooltipProvider :delay-duration="200">
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <span
-                  class="inline-flex rounded-lg"
-                  :class="{ 'cursor-not-allowed': !canSave }"
-                >
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    :disabled="!canSave"
-                    class="group h-7 gap-2 px-3 text-xs font-semibold shadow-xs disabled:pointer-events-none disabled:cursor-not-allowed disabled:border disabled:border-border/50 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 disabled:shadow-none"
-                    @click="openConfirmDialog"
-                  >
-                    <Icon
-                      name="lucide:play"
-                      class="size-3.5 opacity-90 group-disabled:opacity-55"
-                      aria-hidden="true"
-                    />
-                    <span>{{ $t('action.save_and_run') }}</span>
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent
-                v-if="!canSave"
-                side="bottom"
-                align="center"
-                :side-offset="6"
-                :avoid-collisions="false"
-                class="max-w-sm p-3"
-              >
-                <p class="mb-2 text-xs font-semibold">
-                  {{ $t('builder.header_run_tooltip_title') }}
-                </p>
-                <ul
-                  class="list-inside list-disc space-y-1.5 text-xs text-background/80"
-                >
-                  <li v-for="error in validationErrors" :key="error">
-                    {{ error }}
-                  </li>
-                </ul>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
 
           <!-- Save & Run confirmation dialog -->
           <Dialog v-model:open="confirmDialogOpen">
@@ -575,8 +585,17 @@ const routeOrderId = computed(() => {
   if (Array.isArray(queryOrderId)) return queryOrderId[0];
   return typeof queryOrderId === 'string' ? queryOrderId : undefined;
 });
-// Query value must win so manual URL changes take effect immediately.
-const effectiveOrderId = computed(() => routeOrderId.value || orderId.value);
+const manualOrderId = ref('');
+watch(
+  [routeOrderId, orderId],
+  ([queryOrderId, pageOrderId]) => {
+    manualOrderId.value = queryOrderId || pageOrderId || '';
+  },
+  { immediate: true },
+);
+const effectiveOrderId = computed(
+  () => manualOrderId.value.trim() || routeOrderId.value || orderId.value,
+);
 
 // Validation logic
 const validationErrors = computed(() => {
@@ -640,6 +659,11 @@ const hasUnsavedChanges = computed(() =>
 // When federated feature is disabled via env var, always lock to standard.
 const pipelineRunMode = ref<'standard' | 'federated'>(
   federatedEnabled.value && effectiveOrderId.value ? 'federated' : 'standard',
+);
+const showManualOrderIdInput = computed(
+  () =>
+    federatedEnabled.value &&
+    pipelineRunMode.value === 'federated',
 );
 
 const openManageParameters = () => {

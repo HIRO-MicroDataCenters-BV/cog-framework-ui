@@ -2946,11 +2946,9 @@ export const useApi = () => {
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
       console.log('saving pipeline');
-      console.log(data);
-      // todo un comments if we want to send this to backednd
-      // return request(`/training-builder-pipelines`, 'POST', data, {
-      //   showToast: true,
-      // });
+      return request(`/training-builder-pipelines`, 'POST', data, {
+        showToast: true,
+      });
     },
 
     /**
@@ -2999,6 +2997,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
+      console.log(data);
       return request(
         `/training-builder-pipelines/dataspace/federated/run`,
         'POST',
