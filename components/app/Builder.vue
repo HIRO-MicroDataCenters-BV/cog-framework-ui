@@ -702,8 +702,53 @@ const onRequestDelete = (elements: (VueFlowNode | VueFlowEdge)[]) => {
   }
 
   if (edgesToDelete.length > 0) {
-    edgesToDelete.forEach((edge) => removeEdge(edge.id));
+    edgesToDelete.forEach((edge) => {
+      removeComponentInputMappingForEdge(edge);
+      removeEdge(edge.id);
+    });
   }
+};
+
+const removeComponentInputMappingForEdge = (edge: VueFlowEdge) => {
+  const targetNode = nodes.value.find((n) => n.id === edge.target);
+  if (!targetNode?.data?.component) return;
+
+  const targetHandle = edge.targetHandle || '';
+  if (!targetHandle) return;
+
+  const sourceNode = nodes.value.find((n) => n.id === edge.source);
+  const sourceNodeName = sourceNode ? getNodeDisplayName(sourceNode) : '';
+  const sourceHandle = edge.sourceHandle || '';
+  const expectedSource = sourceNodeName
+    ? `${sourceNodeName}.${sourceHandle}`
+    : '';
+
+  const existingInputs = targetNode.data.component.inputs || [];
+  let hasChanges = false;
+
+  const nextInputs = existingInputs.filter((input) => {
+    if (input.destination !== targetHandle) return true;
+    if (input.value_source_type !== 'component_output') return true;
+
+    // Remove only the mapping linked to this deleted edge.
+    // If node names changed and source text differs, destination+type is still enough
+    // because one target input accepts only one incoming edge.
+    if (!expectedSource || input.source === expectedSource) {
+      hasChanges = true;
+      return false;
+    }
+
+    return true;
+  });
+
+  if (!hasChanges) return;
+
+  updateNodeData(targetNode.id, {
+    component: {
+      ...targetNode.data.component,
+      inputs: nextInputs,
+    },
+  });
 };
 
 const getDependencies = (nodeId: string): string[] => {

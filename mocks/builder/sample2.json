@@ -1,0 +1,57 @@
+{
+  "name": "TrainAndEvaluate",
+  "pipeline_components": [
+    {
+      "uuid": "7b3c59b9-6ce0-4a1b-8a8c-3d9a2c0a9b11",
+      "name": "DataPreprocessor",
+      "inputs": [
+        {
+          "source": "test_split_ratio",
+          "destination": "test_split",
+          "value_source_type": "pipeline_inputparam"
+        }
+      ]
+    },
+    {
+      "uuid": "c9b3e9d8-5b22-4a0c-9c2f-0b1f2e3d4a55",
+      "name": "ModelTrainer",
+      "inputs": [
+        {
+          "source": "DataPreprocessor.output_dataset",
+          "destination": "train_data",
+          "value_source_type": "component_output"
+        },
+        {
+          "source": "0.001",
+          "destination": "learning_rate",
+          "value_source_type": "constant"
+        },
+        {
+          "source": "epochs",
+          "destination": "num_epochs",
+          "value_source_type": "pipeline_inputparam"
+        }
+      ]
+    }
+  ],
+  "input_path": [
+    {
+      "name": "test_split_ratio",
+      "default": "0.2",
+      "description": "Fraction for test set"
+    },
+    {
+      "name": "epochs",
+      "default": "10"
+    }
+  ],
+  "output_path": [
+    {
+      "name": "final_model",
+      "source": {
+        "component_name": "ModelTrainer",
+        "output_name": "model"
+      }
+    }
+  ]
+}
