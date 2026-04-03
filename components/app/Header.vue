@@ -542,6 +542,7 @@ const { t } = useI18n();
 const { nodes, outputNodeIds, pipelineParameters } = usePipelineBuilder();
 const { isNodeValid } = useNodeValidation();
 const { openManageParameters: triggerManageParameters } = useBuilderEvents();
+const route = useRoute();
 
 /** `page.section` keys do not always match URL paths (e.g. runs list is `/pipelines/run`). */
 const breadcrumbSectionTo = computed(() => {
@@ -569,6 +570,13 @@ const pipelineName = computed({
 });
 
 const orderId = computed(() => page.value.data?.orderId as string | undefined);
+const routeOrderId = computed(() => {
+  const queryOrderId = route.query.order_id;
+  if (Array.isArray(queryOrderId)) return queryOrderId[0];
+  return typeof queryOrderId === 'string' ? queryOrderId : undefined;
+});
+// Query value must win so manual URL changes take effect immediately.
+const effectiveOrderId = computed(() => routeOrderId.value || orderId.value);
 
 // Validation logic
 const validationErrors = computed(() => {
@@ -631,7 +639,7 @@ const hasUnsavedChanges = computed(() =>
 // Default to federated when opened from a dataspace order link.
 // When federated feature is disabled via env var, always lock to standard.
 const pipelineRunMode = ref<'standard' | 'federated'>(
-  federatedEnabled.value && orderId.value ? 'federated' : 'standard',
+  federatedEnabled.value && effectiveOrderId.value ? 'federated' : 'standard',
 );
 
 const openManageParameters = () => {
@@ -730,17 +738,19 @@ function executePipelineRun(mode: 'standard' | 'federated') {
     outputNodeIds.value,
   );
 
-  console.log(
-    `[builder] save & run JSON (${mode}):`,
-    JSON.stringify(payload, null, 2),
-  );
-
   if (mode === 'federated') {
-    const oid = orderId.value;
-    api.postTrainingBuilderPipelineDataspaceFederatedRun(
-      oid ? { ...payload, order_id: oid } : payload,
+    const oid = effectiveOrderId.value;
+    const requestBody = oid ? { ...payload, order_id: oid } : payload;
+    console.log(
+      `[builder] save & run request (${mode}):`,
+      JSON.stringify(requestBody, null, 2),
     );
+    api.postTrainingBuilderPipelineDataspaceFederatedRun(requestBody);
   } else {
+    console.log(
+      `[builder] save & run request (${mode}):`,
+      JSON.stringify(payload, null, 2),
+    );
     api.postTrainingBuilderPipeline(payload);
   }
 }
