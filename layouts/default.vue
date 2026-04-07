@@ -18,7 +18,7 @@
                 <!-- <template v-else>{{ page.title }}</template> -->
               </h1>
             </div>
-            <div class="flex-1 overflow-hidden">
+            <div class="flex-1 overflow-y-auto">
               <slot />
             </div>
           </div>
