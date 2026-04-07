@@ -49,8 +49,6 @@ setPage({
 });
 
 const baseUrl = page.value.section;
-const config = useRuntimeConfig();
-const urlOrigin = window.location.origin;
 
 const tabs = uselistTabs().value.dataset_management;
 
@@ -62,12 +60,12 @@ const columns = [
       const isShared = row.original.user_id !== currentUser.value?.email;
 
       const nameLink = h(
-        'a',
+        resolveComponent('NuxtLink'),
         {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          to: `/${baseUrl}/${row.getValue('id')}`,
           class: 'font-medium truncate block pr-16',
         },
-        row.getValue('dataset_name'),
+        () => row.getValue('dataset_name'),
       );
 
       const sharedBadge = isShared
