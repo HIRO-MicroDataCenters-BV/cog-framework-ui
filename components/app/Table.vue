@@ -992,7 +992,7 @@ defineExpose({ fetchData, totalItems });
 
     <!-- Scrollable table body -->
     <div
-      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative"
+      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative pb-10"
     >
       <table
         class="border-b w-full border-collapse table-fixed bg-sidebar-background"
