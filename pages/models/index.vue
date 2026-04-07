@@ -33,20 +33,17 @@ setPage({
 });
 
 const baseUrl = page.value.section;
-const config = useRuntimeConfig();
-const urlOrigin = window.location.origin;
-
 const columns = [
   {
     id: 'name',
     size: 250,
     cell: ({ row }: { row: TableRowType }) =>
       h(
-        'a',
+        resolveComponent('NuxtLink'),
         {
-          href: `${urlOrigin}${config.app.baseURL}${baseUrl}/${row.getValue('id')}`,
+          to: `/${baseUrl}/${row.getValue('id')}`,
         },
-        row.getValue('name'),
+        () => row.getValue('name'),
       ),
   },
   {

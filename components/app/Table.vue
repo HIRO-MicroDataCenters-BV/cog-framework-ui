@@ -878,7 +878,7 @@ defineExpose({ fetchData, totalItems });
   <div :class="['w-full flex flex-col relative h-svh', props.class]">
     <div v-if="!props.hideHeader" class="pl-4 p-3">
       <div>
-        <div class="pb-2 flex justify-between gap-2">
+        <div class="flex justify-between gap-2">
           <div>
             <h2 class="text-xl font-medium flex items-center gap-2">
               <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
