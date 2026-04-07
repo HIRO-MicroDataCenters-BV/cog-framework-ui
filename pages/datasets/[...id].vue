@@ -181,7 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-import { getDataTypeFromValue, DATA_TYPE_MAPPING } from '~/utils';
+import { getDataTypeFromValue } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 
 const { t } = useI18n();
@@ -200,8 +200,6 @@ const content = ref();
 const additional = ref();
 const type = ref();
 const detailsError = ref<string | null>(null);
-
-console.log(DATA_TYPE_MAPPING);
 
 const additionalSchema = {
   file: [
@@ -606,9 +604,7 @@ onMounted(async () => {
           type.value as keyof typeof additionalDataSource
         ](id.value);
         if (resAdditional && 'data' in resAdditional && resAdditional.data) {
-          const data = resAdditional.data;
-          additional.value = data;
-          console.log(additional.value);
+          additional.value = resAdditional.data;
         } else {
           detailsError.value = `Could not load ${type.value} details for this dataset.`;
         }

@@ -1880,7 +1880,6 @@ export const useApi = () => {
         console.log('mockEnabled', datasetsDetailsData);
         return Promise.resolve(datasetsDetailsData);
       }
-      console.log(`/datasets/${id}`);
       return request(`/datasets/${id}`);
     },
 
