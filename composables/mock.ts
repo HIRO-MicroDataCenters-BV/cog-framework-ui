@@ -8,7 +8,7 @@ import {
  * Simulates realistic API response time for testing loading states
  * Set to 0 to disable delay
  */
-const MOCK_API_DELAY_MS = 2;
+const MOCK_API_DELAY_MS = 500;
 
 export const useMock = () => {
   const { t } = useI18n();

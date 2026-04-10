@@ -469,7 +469,7 @@ async function saveTraffic() {
     });
   } catch (e) {
     console.error(e);
-    toaster.show('error', 'Failed to update traffic');
+    toaster.show('error', 'canary_traffic_update_failed');
   } finally {
     isSaving.value = false;
   }

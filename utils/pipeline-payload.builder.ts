@@ -92,7 +92,8 @@ export function outputToPayloadOutputItem(
  * @param builder   - Canvas builder state (nodes, edges, params)
  * @param outputNodeIds - IDs of nodes marked as pipeline outputs (optional).
  *                        When provided, only those nodes' output_path entries
- *                        become the payload's output_path. Falls back to all components.
+ *                        become the payload's output_path.
+ *                        When omitted, payload output_path is an empty array.
  *
  * Usage:
  *   const payload = builderDataToPayload(builder, outputNodeIds);
@@ -126,7 +127,7 @@ export function builderDataToPayload(
       }));
     });
   } else {
-    // No output nodes selected → send empty output_path
+    // No output nodes selected -> send empty output_path
     output_path = [];
   }
 

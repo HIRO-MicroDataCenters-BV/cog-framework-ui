@@ -59,6 +59,18 @@ const pendingAction = ref<Item | null>(null);
 const pendingConfirmFn = ref<(() => void | Promise<void>) | null>(null);
 const confirmInFlight = ref(false);
 
+const confirmAlertKeyByAction: Record<string, string> = {
+  delete: 'alert.delete_dataset',
+  delete_model: 'alert.delete_model',
+  delete_model_service: 'alert.delete_model_service',
+  delete_run: 'alert.delete_pipeline_run',
+};
+
+const getConfirmDescriptionKey = (actionKey?: string) => {
+  if (!actionKey) return 'alert.delete_resource';
+  return confirmAlertKeyByAction[actionKey] || 'alert.delete_resource';
+};
+
 /** Runs only after user confirms; awaits archive/delete so POST completes before dialog closes. */
 async function onConfirmDialogAction() {
   const fn = pendingConfirmFn.value;
@@ -160,14 +172,12 @@ function onActionMenuItemClick(item: Item) {
         >
           {{ t('alert.restore_run', { name: props.title }) }}
         </AlertDialogDescription>
-        <AlertDialogDescription
-          v-else-if="pendingAction?.key === 'delete_run'"
-          class="m-0"
-        >
-          {{ t('alert.delete_pipeline_run', { name: props.title }) }}
-        </AlertDialogDescription>
         <AlertDialogDescription v-else class="m-0">
-          {{ t('alert.delete_dataset', { name: props.title }) }}
+          {{
+            t(getConfirmDescriptionKey(pendingAction?.key), {
+              name: props.title,
+            })
+          }}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>

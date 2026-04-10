@@ -70,6 +70,8 @@ export default defineI18nConfig(() => ({
           unknown_dataset_type: 'Unknown dataset type',
           required_field: 'This field is required',
           connection_failed: 'Connection failed',
+          canary_traffic_update_failed: 'Failed to update canary traffic',
+          canary_serving_create_failed: 'Failed to create canary serving',
         },
         info: {
           operation_in_progress: 'Operation in progress',
@@ -119,6 +121,9 @@ export default defineI18nConfig(() => ({
       alert: {
         delete_dataset:
           'Are you sure you want to delete this dataset "{name}"?',
+        delete_model: 'Are you sure you want to delete model "{name}"?',
+        delete_resource:
+          'Are you sure you want to delete "{name}"? This action cannot be undone.',
         restore_run:
           'Restore "{name}" to the Active list? You can archive it again at any time.',
         delete_pipeline_run:
