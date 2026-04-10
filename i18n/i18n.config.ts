@@ -70,6 +70,8 @@ export default defineI18nConfig(() => ({
           unknown_dataset_type: 'Unknown dataset type',
           required_field: 'This field is required',
           connection_failed: 'Connection failed',
+          canary_traffic_update_failed: 'Failed to update canary traffic',
+          canary_serving_create_failed: 'Failed to create canary serving',
         },
         info: {
           operation_in_progress: 'Operation in progress',

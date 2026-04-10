@@ -739,7 +739,7 @@ const handleSubmit = async () => {
     emit('close');
   } catch (error) {
     console.error('Failed to create canary serving', error);
-    toaster.show('error', 'Failed to create canary serving');
+    toaster.show('error', 'canary_serving_create_failed');
   } finally {
     isSubmitting.value = false;
   }
