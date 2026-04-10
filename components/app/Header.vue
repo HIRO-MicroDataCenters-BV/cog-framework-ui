@@ -220,18 +220,42 @@
             <DialogContent
               class="flex max-h-[90vh] max-w-xl flex-col gap-0 p-0 overflow-hidden"
             >
+              <DialogHeader class="sr-only">
+                <DialogTitle>{{ $t('action.save_and_run') }}</DialogTitle>
+                <DialogDescription>
+                  {{ $t('builder.save_run_dialog_description') }}
+                </DialogDescription>
+              </DialogHeader>
+
               <!-- Header -->
               <div class="px-5 pt-5 pb-4 border-b border-border shrink-0">
                 <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <DialogTitle class="text-base font-semibold truncate">
-                      {{ confirmPayload?.name || 'Untitled Pipeline' }}
-                    </DialogTitle>
-                    <DialogDescription
-                      class="mt-0.5 text-xs text-muted-foreground"
+                  <div class="min-w-0 flex-1 max-w-[22rem]">
+                    <div
+                      class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/90"
                     >
-                      Review before running
-                    </DialogDescription>
+                      <Icon name="lucide:pencil-line" class="size-3" />
+                      {{ $t('builder.save_run_pipeline_label') }}
+                    </div>
+                    <div class="group mt-1.5">
+                      <div class="relative h-8">
+                        <div
+                          class="absolute inset-0 flex items-center rounded-md px-2 text-base font-semibold text-foreground transition-opacity whitespace-nowrap overflow-hidden text-ellipsis group-hover:opacity-0 group-focus-within:opacity-0"
+                        >
+                          {{
+                            pipelineName?.trim()
+                              ? pipelineName
+                              : $t('placeholder.pipeline_name')
+                          }}
+                        </div>
+                        <Input
+                          v-model="pipelineName"
+                          type="text"
+                          :placeholder="$t('placeholder.pipeline_name')"
+                          class="absolute inset-0 h-8 rounded-md bg-transparent px-2 text-base font-semibold whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <span
                     class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize"
@@ -244,6 +268,8 @@
                     {{ pipelineRunMode }}
                   </span>
                 </div>
+
+                <div class="mt-3 border-t border-border/60" />
 
                 <!-- Summary stats -->
                 <div
@@ -478,7 +504,12 @@
                 >
                   Cancel
                 </Button>
-                <Button size="sm" class="gap-2" @click="confirmAndRun">
+                <Button
+                  size="sm"
+                  class="gap-2"
+                  :disabled="!pipelineName?.trim()"
+                  @click="confirmAndRun"
+                >
                   <Icon name="lucide:play" class="size-3.5" />
                   Run Pipeline
                 </Button>
