@@ -60,7 +60,7 @@ export default defineNuxtConfig({
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
       federatedEnabled: process.env.NUXT_PUBLIC_FEDERATED_ENABLED === 'true',
       apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
-      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.11.27',
+      appVersion: process.env.NUXT_COG_APP_VERSION || '1.11.27',
     },
   },
   compatibilityDate: '2024-11-01',

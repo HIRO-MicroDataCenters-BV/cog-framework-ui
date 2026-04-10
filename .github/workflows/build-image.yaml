@@ -144,7 +144,7 @@ jobs:
             dex_username=${{ secrets.NUXT_DEX_USERNAME }}
             dex_password=${{ secrets.NUXT_DEX_PASSWORD }}
           build-args: |
-            NUXT_PUBLIC_APP_VERSION=${{ env.APP_VERSION }}
+            NUXT_COG_APP_VERSION=${{ vars.NUXT_COG_APP_VERSION }}
             NUXT_DEX_HOST=${{ secrets.NUXT_DEX_HOST }}
             NUXT_DEX_AUTH_TYPE=${{ secrets.NUXT_DEX_AUTH_TYPE }}
             NUXT_DEX_SKIP_TLS_VERIFY=${{ secrets.NUXT_DEX_SKIP_TLS_VERIFY }}
@@ -170,7 +170,7 @@ jobs:
         run: gh release create "${{ env.APP_VERSION }}"
         env:
           GH_TOKEN: ${{ github.token }}
-          NUXT_PUBLIC_APP_VERSION: ${{ env.APP_VERSION }}
+          NUXT_COG_APP_VERSION: ${{ vars.NUXT_COG_APP_VERSION }}
 
       - name: Publish Helm charts
         uses: stefanprodan/helm-gh-pages@master
