@@ -12,6 +12,16 @@ entries:
     - https://HIRO-MicroDataCenters-BV.github.io/cog-framework-ui/helm-charts/app-0.0.6.tgz
     version: 0.0.6
   - apiVersion: v2
+    appVersion: 0.0.6-dev.797.nuxt.42e70bff
+    created: "2026-04-10T12:43:27.664757028Z"
+    description: A frontend web service template for reuse.
+    digest: 7e7062c8530dccc203f57f2561a40d0914f18649a88b6e69354a0066bc587c18
+    name: app
+    type: application
+    urls:
+    - https://HIRO-MicroDataCenters-BV.github.io/cog-framework-ui/helm-charts/app-0.0.6-dev.797.nuxt.42e70bff.tgz
+    version: 0.0.6-dev.797.nuxt.42e70bff
+  - apiVersion: v2
     appVersion: 0.0.6-dev.795.nuxt.48e0352e
     created: "2026-04-10T12:07:35.897928714Z"
     description: A frontend web service template for reuse.
@@ -1771,4 +1781,4 @@ entries:
     urls:
     - https://HIRO-MicroDataCenters-BV.github.io/cog-framework-ui/helm-charts/app-0.0.1-dev.1.nuxt.c922868e.tgz
     version: 0.0.1-dev.1.nuxt.c922868e
-generated: "2026-04-10T12:07:35.897494873Z"
+generated: "2026-04-10T12:43:27.663638593Z"
