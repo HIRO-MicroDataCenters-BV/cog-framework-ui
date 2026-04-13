@@ -66,7 +66,7 @@ describe('Actions menu confirmation dialog', () => {
     const wrapper = buildWrapper();
 
     const items = wrapper.findAll('[data-test="menu-item"]');
-    await items[0].trigger('click1');
+    await items[0].trigger('click');
 
     expect(wrapper.text()).toContain('alert.delete_model:Test Resource');
   });
