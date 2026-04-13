@@ -41,22 +41,20 @@ describe('Actions menu confirmation dialog', () => {
       props: {
         id: '1',
         title: 'Test Resource',
-        items:
-          items ||
-          [
-            {
-              key: 'delete_model',
-              label: 'delete_model',
-              hasConfirmation: true,
-              action: vi.fn(),
-            },
-            {
-              key: 'delete',
-              label: 'delete',
-              hasConfirmation: true,
-              action: vi.fn(),
-            },
-          ],
+        items: items || [
+          {
+            key: 'delete_model',
+            label: 'delete_model',
+            hasConfirmation: true,
+            action: vi.fn(),
+          },
+          {
+            key: 'delete',
+            label: 'delete',
+            hasConfirmation: true,
+            action: vi.fn(),
+          },
+        ],
       },
       global: {
         stubs: globalStubs,
@@ -102,7 +100,9 @@ describe('Actions menu confirmation dialog', () => {
     ]);
 
     await wrapper.find('[data-test="menu-item"]').trigger('click');
-    expect(wrapper.text()).toContain('alert.delete_model_service:Test Resource');
+    expect(wrapper.text()).toContain(
+      'alert.delete_model_service:Test Resource',
+    );
   });
 
   it('falls back to generic delete alert for unknown delete action key', async () => {
