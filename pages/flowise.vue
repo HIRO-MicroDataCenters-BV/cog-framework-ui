@@ -19,10 +19,8 @@ setPage({
 onMounted(async () => {
   if (!flowiseHost.value || !flowiseChatflowId.value) return;
 
-  // Use the official CDN ESM bundle, client-side only
-  const { default: Chatbot } = await import(
-    'https://cdn.jsdelivr.net/npm/flowise-embed@3.0.5/dist/web.js'
-  );
+  // Use explicit dist entry because flowise-embed package main is misconfigured.
+  const { default: Chatbot } = await import('flowise-embed/dist/web.js');
 
   // Popup/bubble bot only while on /flowise
   Chatbot.init({
@@ -43,9 +41,7 @@ onUnmounted(async () => {
   if (!flowiseHost.value || !flowiseChatflowId.value) return;
 
   // Clean up the bot when leaving /flowise
-  const { default: Chatbot } = await import(
-    'https://cdn.jsdelivr.net/npm/flowise-embed@3.0.5/dist/web.js'
-  );
+  const { default: Chatbot } = await import('flowise-embed/dist/web.js');
   Chatbot.destroy();
 });
 </script>
