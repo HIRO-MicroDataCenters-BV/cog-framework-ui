@@ -140,7 +140,15 @@ function onActionMenuItemClick(item: Item) {
     </DropdownMenuContent>
   </DropdownMenu>
 
-  <AlertDialog :open="isOpenConfirm" @update:open="(v) => (isOpenConfirm = v)">
+  <AlertDialog
+    :open="isOpenConfirm"
+    @update:open="
+      (v) => {
+        isOpenConfirm = v;
+        if (!v) onCancelConfirmDialog();
+      }
+    "
+  >
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>
