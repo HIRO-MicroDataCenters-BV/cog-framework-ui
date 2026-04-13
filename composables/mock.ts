@@ -675,6 +675,17 @@ export const useApiWithMock = () => {
       return request(`/datasets?${q}`);
     },
 
+    getDatasetPrometheus: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const prometheusJson = await import(
+          '~/mocks/get.datasets.details.prometheus.json'
+        );
+        return Promise.resolve(prometheusJson);
+      }
+      return request(`/datasets/${id}/prometheus`);
+    },
+
     getModels: async (params = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
