@@ -48,7 +48,7 @@
               borderLeft: `4px solid ${data.status ? getStatusConfig(data.status).color : getCategoryColor(data.category)}`,
               borderRadius: '0.75rem',
             }"
-            :data-nodeid="data.id || data.component.id"
+            :data-nodeid="id"
             @mouseenter="hoveredNodeId = id"
             @mouseleave="hoveredNodeId = null"
           >

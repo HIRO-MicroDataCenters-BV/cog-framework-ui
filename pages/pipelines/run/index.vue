@@ -24,8 +24,6 @@ setPage({
 });
 
 const baseUrl = 'pipelines';
-const config = useRuntimeConfig();
-const urlOrigin = window.location.origin;
 
 const { getPipelineActions } = usePipelineActions();
 const tableRef = ref();
