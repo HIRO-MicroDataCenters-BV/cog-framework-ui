@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 // Mock environment variables for tests
 process.env.NUXT_DEX_HOST = 'https://test.example.com';
@@ -18,6 +18,7 @@ process.env.NUXT_DEX_SKIP_TLS_VERIFY = 'true';
 // These are intentionally lightweight and overridden in specific tests as needed.
 globalThis.ref = ref;
 globalThis.onBeforeUnmount = onBeforeUnmount;
+globalThis.computed = computed;
 globalThis.watch = watch;
 globalThis.useI18n = () => ({
   t: (key: string, params?: Record<string, unknown>) =>
@@ -50,6 +51,7 @@ global.testUtils = {
 // Extend global types
 declare global {
   const ref: typeof import('vue').ref;
+  const computed: typeof import('vue').computed;
   const onBeforeUnmount: typeof import('vue').onBeforeUnmount;
   const watch: typeof import('vue').watch;
   const useI18n: () => {
