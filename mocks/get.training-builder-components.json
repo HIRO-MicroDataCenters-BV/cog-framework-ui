@@ -4,7 +4,7 @@
   "data": [
     {
       "id": "55455462-0957-4d57-9847-9cc36dd07068",
-      "name": "FedSCVI server222",
+      "name": "FedSCVI server",
       "input_path": [
         {
           "name": "number_of_iterations",
@@ -70,18 +70,64 @@
       "creator": "admin@hiro.com"
     },
     {
-      "id": "933cd6ed-40ff-4f38-860e-37a532b9a67c",
-      "name": "cogflow_refactor",
+      "id": "8fd340c3-960d-4be5-81be-8f4ca40698a1",
+      "name": "FedSCVI client",
       "input_path": [
         {
-          "name": "number_of_iterations",
-          "type": "Integer",
-          "description": "Number of federated learning rounds"
+          "name": "local_data_connector",
+          "type": "String"
         },
         {
           "name": "server_address",
           "type": "String",
+          "description": "Server address (e.g., \"localhost:8080\")"
+        },
+        {
+          "name": "num_local_epochs",
+          "type": "Integer",
+          "description": "Number of local training epochs per round"
+        },
+        {
+          "name": "validation_split",
+          "type": "Float",
+          "description": "Fraction of data to use for validation"
+        },
+        {
+          "name": "n_layers",
+          "type": "Integer",
+          "description": "Number of layers in scVI model"
+        },
+        {
+          "name": "dropout_rate",
+          "type": "Float",
+          "description": "Dropout rate for scVI model"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "JsonObject"
+        }
+      ],
+      "component_file": "s3://components/FedSCVI_client.yaml",
+      "category": "federated client",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "b32496a2-9b22-48e9-a6ac-fc902a389f3f",
+      "name": "Daniela_server",
+      "input_path": [
+        {
+          "name": "server_address",
+          "type": "String",
           "description": "Server address (e.g., \"0.0.0.0:8080\")"
+        },
+        {
+          "name": "number_of_iterations",
+          "type": "Integer",
+          "description": "Number of federated learning rounds",
+          "default": "2",
+          "optional": true
         },
         {
           "name": "experiment_name",
@@ -132,42 +178,52 @@
           "type": "JsonObject"
         }
       ],
-      "component_file": "s3://components/cogflow_refactor.yaml",
-      "category": "cogflow-refactor",
+      "component_file": "s3://Federated server/components/Daniela_server.yaml",
+      "category": "federated server",
       "creator": "admin@hiro.com"
     },
     {
-      "id": "8fd340c3-960d-4be5-81be-8f4ca40698a1",
-      "name": "FedSCVI client",
+      "id": "23a8f75c-31c5-40a9-b350-08f3babbcc8c",
+      "name": "Daniela_client",
       "input_path": [
         {
           "name": "local_data_connector",
-          "type": "String"
+          "type": "String",
+          "optional": true
         },
         {
           "name": "server_address",
           "type": "String",
-          "description": "Server address (e.g., \"localhost:8080\")"
+          "description": "Server address (e.g., \"localhost:8080\")",
+          "optional": true
         },
         {
           "name": "num_local_epochs",
           "type": "Integer",
-          "description": "Number of local training epochs per round"
+          "description": "Number of local training epochs per round",
+          "default": "1",
+          "optional": true
         },
         {
           "name": "validation_split",
           "type": "Float",
-          "description": "Fraction of data to use for validation"
+          "description": "Fraction of data to use for validation",
+          "default": "0.2",
+          "optional": true
         },
         {
           "name": "n_layers",
           "type": "Integer",
-          "description": "Number of layers in scVI model"
+          "description": "Number of layers in scVI model",
+          "default": "2",
+          "optional": true
         },
         {
           "name": "dropout_rate",
           "type": "Float",
-          "description": "Dropout rate for scVI model"
+          "description": "Dropout rate for scVI model",
+          "default": "0.2",
+          "optional": true
         }
       ],
       "output_path": [
@@ -176,14 +232,167 @@
           "type": "JsonObject"
         }
       ],
-      "component_file": "s3://components/FedSCVI_client.yaml",
+      "component_file": "s3://Federated client/components/Daniela_client.yaml",
       "category": "federated client",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "7861f9cc-949c-4e3f-a3ed-ddfe0e3f88a9",
+      "name": "Daniela federated client",
+      "input_path": [
+        {
+          "name": "local_data_connector",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "server_address",
+          "type": "String",
+          "description": "Server address (e.g., \"localhost:8080\")",
+          "optional": true
+        },
+        {
+          "name": "num_local_epochs",
+          "type": "Integer",
+          "description": "Number of local training epochs per round",
+          "default": "1",
+          "optional": true
+        },
+        {
+          "name": "validation_split",
+          "type": "Float",
+          "description": "Fraction of data to use for validation",
+          "default": "0.2",
+          "optional": true
+        },
+        {
+          "name": "n_layers",
+          "type": "Integer",
+          "description": "Number of layers in scVI model",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "name": "dropout_rate",
+          "type": "Float",
+          "description": "Dropout rate for scVI model",
+          "default": "0.2",
+          "optional": true
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "JsonObject"
+        }
+      ],
+      "component_file": "s3://Federated client/components/Daniela_federated_client.yaml",
+      "category": "federated client",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "17fe58d1-af26-4dbb-9102-a916c42fa7f4",
+      "name": "Add ten",
+      "input_path": [
+        {
+          "name": "number",
+          "type": "int"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "int"
+        }
+      ],
+      "component_file": "s3://Test/components/Add_ten.yaml",
+      "category": "test",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "9b7b1ccf-7415-4504-8001-05570421c0f6",
+      "name": "Multiply by two",
+      "input_path": [
+        {
+          "name": "number2",
+          "type": "int"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "int"
+        }
+      ],
+      "component_file": "s3://Test/components/Multiply_by_two.yaml",
+      "category": "test",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "24713549-2b90-43fe-8d45-98a0f513b6b1",
+      "name": "Divide by five",
+      "input_path": [
+        {
+          "name": "number5",
+          "type": "int"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "int"
+        }
+      ],
+      "component_file": "s3://Test/components/Divide_by_five.yaml",
+      "category": "test",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "08fe1b99-cc19-47a1-89db-4579e5eb93ee",
+      "name": "Final sum",
+      "input_path": [
+        {
+          "name": "number1",
+          "type": "int"
+        },
+        {
+          "name": "number2",
+          "type": "int"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "int"
+        }
+      ],
+      "component_file": "s3://Test/components/Final_sum.yaml",
+      "category": "test",
+      "creator": "admin@hiro.com"
+    },
+    {
+      "id": "522fd314-b9a4-4a41-bf1e-a6a9c832cbeb",
+      "name": "Train model",
+      "input_path": [
+        {
+          "name": "data_path",
+          "type": "String"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "Output",
+          "type": "String"
+        }
+      ],
+      "component_file": "s3://DPF/components/Train_model.yaml",
+      "category": "dpf",
       "creator": "admin@hiro.com"
     }
   ],
   "pagination": {
     "page": 1,
     "limit": 10,
-    "total_items": 3
+    "total_items": 13
   }
 }

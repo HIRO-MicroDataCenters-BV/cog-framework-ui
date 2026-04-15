@@ -96,32 +96,14 @@
                     <CopyPaste :has-copy="item.hasCopy">
                       <template v-if="item.type === 'text'">
                         <span class="text-sm font-medium break-all">{{
-                          (group as { prefix?: string | null }).prefix &&
-                          additional[(group as { prefix: string }).prefix]?.[
-                            item.key
-                          ]
-                            ? additional[
-                                (group as { prefix: string }).prefix
-                              ]?.[item.key]
-                            : additional[item.key]
-                              ? additional[item.key]
-                              : content[item.key]
+                          getItemValue(group, item.key)
                         }}</span>
                       </template>
                       <template v-if="item.type === 'date'">
                         <span class="text-sm font-medium">{{
-                          dayjs(
-                            (group as { prefix?: string | null }).prefix &&
-                              additional[
-                                (group as { prefix: string }).prefix
-                              ]?.[item.key]
-                              ? additional[
-                                  (group as { prefix: string }).prefix
-                                ]?.[item.key]
-                              : additional[item.key]
-                                ? additional[item.key]
-                                : content[item.key],
-                          ).format('YYYY MMM DD, HH:mm')
+                          dayjs(getItemValue(group, item.key)).format(
+                            'YYYY MMM DD, HH:mm',
+                          )
                         }}</span>
                       </template>
                       <template v-if="item.type === 'list'">
@@ -199,7 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-import { getDataTypeFromValue, DATA_TYPE_MAPPING } from '~/utils';
+import { getDataTypeFromValue } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 
 const { t } = useI18n();
@@ -218,8 +200,6 @@ const content = ref();
 const additional = ref();
 const type = ref();
 const detailsError = ref<string | null>(null);
-
-console.log(DATA_TYPE_MAPPING);
 
 const additionalSchema = {
   file: [
@@ -624,9 +604,7 @@ onMounted(async () => {
           type.value as keyof typeof additionalDataSource
         ](id.value);
         if (resAdditional && 'data' in resAdditional && resAdditional.data) {
-          const data = resAdditional.data;
-          additional.value = data;
-          console.log(additional.value);
+          additional.value = resAdditional.data;
         } else {
           detailsError.value = `Could not load ${type.value} details for this dataset.`;
         }

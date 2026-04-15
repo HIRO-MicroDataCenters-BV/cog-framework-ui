@@ -18,6 +18,7 @@ import {
   ref,
   watch,
   onMounted,
+  onUnmounted,
   computed,
   h,
   resolveComponent,
@@ -100,6 +101,18 @@ const props = defineProps({
   groupBy: {
     type: String as PropType<string | null>,
     default: null,
+  },
+  hideHeader: {
+    type: Boolean,
+    default: false,
+  },
+  externalSearch: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
+  },
+  searchPlaceholderKey: {
+    type: String,
+    default: 'placeholder.search_by_name_or_id',
   },
 });
 
@@ -218,10 +231,15 @@ const fetchData = async () => {
     params.sort_by = route.query.sort_by as string;
   }
 
+  const effectiveSearch = props.externalSearch ?? searchValue.value;
   if (route.query.q && route.query.column) {
     params[route.query.column as string] = route.query.q;
-  } else if (searchValue.value && selectedFilterColumn.value) {
-    params[selectedFilterColumn.value as string] = searchValue.value;
+  } else if (effectiveSearch) {
+    const filterColumn =
+      (route.query.column as string) ||
+      selectedFilterColumn.value ||
+      getAutoColumn(effectiveSearch);
+    params[getFilterColumnName(filterColumn)] = effectiveSearch;
   }
 
   if (route.query.page) {
@@ -361,11 +379,20 @@ const getValueLabel = (columnId: string, value: string | number): string => {
   if (columnId === 'ownership' && typeof value === 'string') {
     return t(`label.${value}`);
   }
+  if (columnId === 'status' && typeof value === 'string') {
+    // Normalize status value and capitalize first letter
+    const normalized = value.toLowerCase();
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
   return String(value);
 };
 
 const getSectionIcon = (section: string | undefined) => {
   if (!section) return null;
+  // Use specific icon for pipeline_runs
+  if (section === 'pipeline_runs') {
+    return 'lucide:gauge';
+  }
   return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
@@ -620,9 +647,21 @@ const table = useVueTable({
   },
 });
 
+const visibleHeaders = computed(() => {
+  const groups = table.getHeaderGroups();
+  if (!groups.length) return [];
+  return groups[0].headers.filter(
+    (h) =>
+      !(h.column.columnDef as { meta?: { hidden?: boolean } })?.meta?.hidden,
+  );
+});
+
 const openAddDataset = ref(false);
 const openAddModel = ref(false);
 const isUpdatingFromState = ref(false);
+
+// Debounce timer for search input
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const applySearchFilter = () => {
   columnFilters.value = columnFilters.value.filter(
@@ -642,6 +681,18 @@ const applySearchFilter = () => {
   };
   columnFilters.value.push(searchFilter as unknown as SearchFilter);
   updateUrlParams();
+};
+
+const debouncedApplySearchFilter = () => {
+  // Clear existing timer
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
+
+  // Set new timer with 400ms delay
+  searchDebounceTimer = setTimeout(() => {
+    applySearchFilter();
+  }, 400);
 };
 
 const updateUrlParams = () => {
@@ -766,6 +817,7 @@ const add = () => {
       openAddModel.value = true;
       break;
     case 'pipelines':
+    case 'pipeline_runs':
       navigateTo('/pipelines/builder/new');
       break;
   }
@@ -782,6 +834,13 @@ onMounted(() => {
   nextTick(() => {
     columns.value = getColumns(props.columns ?? []) as ColumnDef<DataItem>[];
   });
+});
+
+onUnmounted(() => {
+  // Clear search debounce timer on component unmount
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+  }
 });
 
 watch(
@@ -805,14 +864,21 @@ watch(
   { deep: true },
 );
 
-defineExpose({ fetchData });
+watch(
+  () => props.externalSearch,
+  () => {
+    if (props.hideHeader) fetchData();
+  },
+);
+
+defineExpose({ fetchData, totalItems });
 </script>
 
 <template>
   <div :class="['w-full flex flex-col relative h-svh', props.class]">
-    <div class="pl-4 p-3">
+    <div v-if="!props.hideHeader" class="pl-4 p-3">
       <div>
-        <div class="pb-2 flex justify-between gap-2">
+        <div class="flex justify-between gap-2">
           <div>
             <h2 class="text-xl font-medium flex items-center gap-2">
               <Icon :name="getSectionIcon(page.section)" class="h-4 w-4 mr-2" />
@@ -836,8 +902,8 @@ defineExpose({ fetchData });
                 v-model="searchValue"
                 class="w-64 pl-8"
                 type="search"
-                :placeholder="t('placeholder.search_by_name_or_id')"
-                @update:model-value="applySearchFilter"
+                :placeholder="t(props.searchPlaceholderKey)"
+                @update:model-value="debouncedApplySearchFilter"
               />
               <Icon
                 name="lucide:search"
@@ -846,6 +912,8 @@ defineExpose({ fetchData });
             </div>
 
             <div class="flex gap-2 items-center">
+              <slot name="header-actions" />
+
               <Button
                 variant="outline"
                 size="icon"
@@ -865,55 +933,47 @@ defineExpose({ fetchData });
 
               <Button class="cursor-pointer" @click="() => add()">
                 <Icon name="lucide:plus" />
-                {{ t(`action.add_${page.section}`) }}
+                {{
+                  t(
+                    `action.add_${page.section === 'pipeline_runs' ? 'pipelines' : page.section}`,
+                  )
+                }}
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 
-      <div>
-        <div class="flex gap-2 items-center py-4">
-          <div v-if="validTabs.length > 0" class="flex gap-2">
-            <Tabs default-value="all">
-              <TabsList class="flex">
-                <TabsTrigger
-                  v-for="item in validTabs"
-                  :key="item.key"
-                  :value="item.value"
-                >
-                  <div class="flex items-center">
-                    <Icon
-                      v-if="item.icon"
-                      :name="item.icon"
-                      class="h-4 w-4 mr-2"
-                    />
-                    <span>{{ item.title }}</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-      -->
+      <!-- Slot for custom tabs or additional header content -->
+      <slot name="header-tabs" />
     </div>
-    <div class="overflow-x-auto w-full flex-1">
-      <table class="border-b w-full border-collapse table-fixed">
+    <!-- Non-scrollable table header -->
+    <div class="overflow-x-auto w-full bg-sidebar-background">
+      <table
+        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+      >
+        <colgroup>
+          <col
+            v-for="header in visibleHeaders"
+            :key="header.id"
+            :style="{
+              width:
+                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+            }"
+          />
+        </colgroup>
         <TableHeader
-          class="sticky top-0 bg-muted/40 dark:bg-muted border-b border-t border-border z-10 shadow-xs"
+          class="border-b border-t border-border shadow-xs bg-sidebar"
         >
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
+            class="h-10 min-h-10 border-0"
           >
             <TableHead
-              v-for="header in headerGroup.headers.filter(
-                (h) => !(h.column.columnDef as any).meta?.hidden,
-              )"
+              v-for="header in visibleHeaders"
               :key="header.id"
-              :class="'border-l border-r border-border py-1.5 px-3 text-sm'"
+              :class="'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10'"
               :style="{
                 width:
                   header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
@@ -927,6 +987,26 @@ defineExpose({ fetchData });
             </TableHead>
           </TableRow>
         </TableHeader>
+      </table>
+    </div>
+
+    <!-- Scrollable table body -->
+    <div
+      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative pb-10"
+    >
+      <table
+        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+      >
+        <colgroup>
+          <col
+            v-for="header in visibleHeaders"
+            :key="header.id"
+            :style="{
+              width:
+                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+            }"
+          />
+        </colgroup>
         <TableBody>
           <template v-if="table.getFilteredRowModel().rows?.length">
             <template
@@ -1059,7 +1139,7 @@ defineExpose({ fetchData });
     </div>
 
     <div
-      class="py-2 px-4 bg-sidebar-background absolute bottom-0 left-0 right-0 border-t border-border bg-white dark:bg-gray-800"
+      class="py-1 px-4 border-t border-border bg-card absolute bottom-0 left-0 right-0"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">

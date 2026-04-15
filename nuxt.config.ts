@@ -58,8 +58,11 @@ export default defineNuxtConfig({
     public: {
       apiBase: URL_PREFIX,
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
+      federatedEnabled: process.env.NUXT_PUBLIC_FEDERATED_ENABLED === 'true',
       apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
-      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.11.27',
+      appVersion: process.env.NUXT_COG_APP_VERSION || '1.11.27',
+      flowiseHost: process.env.NUXT_PUBLIC_FLOWISE_HOST || '',
+      flowiseChatflowId: process.env.NUXT_PUBLIC_FLOWISE_CHATFLOW_ID || '',
     },
   },
   compatibilityDate: '2024-11-01',

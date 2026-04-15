@@ -8,7 +8,7 @@ import {
  * Simulates realistic API response time for testing loading states
  * Set to 0 to disable delay
  */
-const MOCK_API_DELAY_MS = 2000;
+const MOCK_API_DELAY_MS = 500;
 
 export const useMock = () => {
   const { t } = useI18n();
@@ -675,6 +675,17 @@ export const useApiWithMock = () => {
       return request(`/datasets?${q}`);
     },
 
+    getDatasetPrometheus: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const prometheusJson = await import(
+          '~/mocks/get.datasets.details.prometheus.json'
+        );
+        return Promise.resolve(prometheusJson);
+      }
+      return request(`/datasets/${id}/prometheus`);
+    },
+
     getModels: async (params = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
@@ -722,6 +733,115 @@ export const useApiWithMock = () => {
         params as Record<string, string>,
       ).toString();
       return request(`/models?${q}`);
+    },
+
+    getModelsServing: async (params: Record<string, unknown> = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const modelsServingJson = await import(
+          '~/mocks/get.models-serving.json'
+        );
+
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...modelsServingJson.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) =>
+              item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        // Apply sort
+        const sortBy = searchParams.sort_by || 'creation_timestamp';
+        const sortOrder = (searchParams.sort_order || 'desc') as 'asc' | 'desc';
+        if (sortBy === 'creation_timestamp') {
+          filteredData = filteredData.sort((a, b) => {
+            const dateA = new Date(a.creation_timestamp || 0).getTime();
+            const dateB = new Date(b.creation_timestamp || 0).getTime();
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
+        return Promise.resolve({
+          status_code: modelsServingJson.status_code,
+          message: modelsServingJson.message,
+          data: paginatedData,
+          pagination: {
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
+        });
+      }
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return request(`/models-serving${q ? `?${q}` : ''}`);
+    },
+
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+      artifact_path?: string;
+    }) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: 'Model serving created successfully',
+          data,
+        });
+      }
+      return request(`/models-serving`, 'POST', data, {
+        showToast: true,
+        successMessage: 'Model serving created successfully',
+      });
+    },
+
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent: number;
+      },
+      _options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Model serving updated successfully',
+          data: data,
+        });
+      }
+      return request(`/models-serving`, 'PATCH', data);
     },
 
     getModelById: async (id: string) => {
@@ -778,51 +898,195 @@ export const useApiWithMock = () => {
     getPipelineRunsList: async (params = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
-        const pipelinesJson = await import('~/mocks/get.pipelines.json');
-
-        let filteredData = [...pipelinesJson.data];
-
-        // Apply search filters
+        const runsJson = await import('~/mocks/get.pipelines.json');
         const searchParams = params as Record<string, string>;
 
-        // Filter by ID
-        if (searchParams.id) {
-          filteredData = filteredData.filter((pipeline) =>
-            pipeline.run_id
-              .toLowerCase()
-              .includes(searchParams.id.toLowerCase()),
+        type PipelineRun = {
+          run_id: string;
+          run_name?: string;
+          status?: string;
+          duration?: string;
+          experiment_id?: string;
+          start_time?: string;
+        };
+
+        let filteredData: PipelineRun[] = [...(runsJson.data as PipelineRun[])];
+
+        if (searchParams.run_id) {
+          filteredData = filteredData.filter((r) =>
+            r.run_id.toLowerCase().includes(searchParams.run_id.toLowerCase()),
           );
         }
 
-        // Filter by name
-        if (searchParams.name) {
-          filteredData = filteredData.filter((pipeline) =>
-            pipeline.run_name
+        if (searchParams.run_name) {
+          filteredData = filteredData.filter((r) =>
+            (r.run_name || '')
               .toLowerCase()
-              .includes(searchParams.name.toLowerCase()),
+              .includes(searchParams.run_name.toLowerCase()),
           );
         }
 
-        // Handle pagination
         const page = parseInt(searchParams.page || '1');
         const limit = parseInt(searchParams.limit || '10');
         const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedData = filteredData.slice(startIndex, endIndex);
+        const paginatedData = filteredData.slice(
+          startIndex,
+          startIndex + limit,
+        );
 
         return Promise.resolve({
-          status_code: pipelinesJson.status_code,
-          message: pipelinesJson.message,
+          status_code: runsJson.status_code,
+          message: runsJson.message,
           data: paginatedData,
           pagination: {
-            total: filteredData.length,
-            page: page,
-            limit: limit,
+            total_items: filteredData.length,
+            page,
+            limit,
             total_pages: Math.ceil(filteredData.length / limit),
           },
         });
       }
       return request(`/pipelines/runs`);
+    },
+
+    getPipelineRunsListV2: async (params = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const kfpJson = await import('~/mocks/get.kfp-runs.json');
+        const searchParams = params as Record<string, string>;
+
+        type KfpRun = {
+          run_id: string;
+          display_name?: string;
+          state?: string;
+          status?: string;
+          storage_state?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          experiment_id?: string;
+          experiment?: { experiment_id?: string };
+        };
+
+        let filteredRuns: KfpRun[] = [...(kfpJson.runs as KfpRun[])];
+
+        // Filter by storage_state (archived/active)
+        if (searchParams.storage_state) {
+          if (searchParams.storage_state === 'NOT_ARCHIVED') {
+            filteredRuns = filteredRuns.filter(
+              (r) =>
+                !r.storage_state ||
+                r.storage_state.toUpperCase() !== 'ARCHIVED',
+            );
+          } else if (searchParams.storage_state === 'ARCHIVED') {
+            filteredRuns = filteredRuns.filter(
+              (r) => r.storage_state?.toUpperCase() === 'ARCHIVED',
+            );
+          }
+        }
+
+        if (searchParams.run_id) {
+          filteredRuns = filteredRuns.filter((r) =>
+            r.run_id.toLowerCase().includes(searchParams.run_id.toLowerCase()),
+          );
+        }
+
+        if (searchParams.run_name) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.display_name || '')
+              .toLowerCase()
+              .includes(searchParams.run_name.toLowerCase()),
+          );
+        }
+
+        if (searchParams.status) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.state || r.status || '')
+              .toLowerCase()
+              .includes(searchParams.status.toLowerCase()),
+          );
+        }
+
+        // Add search filter (matches display_name)
+        if (searchParams.search) {
+          filteredRuns = filteredRuns.filter((r) =>
+            (r.display_name || r.run_id || '')
+              .toLowerCase()
+              .includes(searchParams.search.toLowerCase()),
+          );
+        }
+
+        const sortBy = searchParams.sort_by || 'created_at';
+        const sortOrder = searchParams.sort_order || 'desc';
+        filteredRuns = filteredRuns.sort((a, b) => {
+          const aVal = String(
+            sortBy === 'created_at'
+              ? (a.created_at ?? '')
+              : (a[sortBy as keyof KfpRun] ?? ''),
+          );
+          const bVal = String(
+            sortBy === 'created_at'
+              ? (b.created_at ?? '')
+              : (b[sortBy as keyof KfpRun] ?? ''),
+          );
+          return sortOrder === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+        const startIndex = (page - 1) * limit;
+        const paginatedRuns = filteredRuns.slice(
+          startIndex,
+          startIndex + limit,
+        );
+
+        const runs = paginatedRuns.map((run) => {
+          const createdAt = run.created_at;
+          const finishedAt = run.finished_at;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          const experimentId =
+            run.experiment?.experiment_id ?? run.experiment_id ?? '';
+
+          return {
+            run_id: run.run_id,
+            run_name: run.display_name || run.run_id,
+            status: run.state || run.status || '',
+            start_time: createdAt || null,
+            experiment_id: experimentId,
+            duration,
+          };
+        });
+
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Pipeline runs',
+          data: runs,
+          pagination: {
+            total_items: filteredRuns.length,
+            page,
+            limit,
+            total_pages: Math.ceil(filteredRuns.length / limit),
+            next_page_token: null,
+          },
+        });
+      }
+      // Fallback should never be reached - mock wrapper only used when mockEnabled=true
+      // Real API uses direct fetch to KFP endpoint, not this fallback
+      throw new Error(
+        'Mock data not available. Please enable mock mode or check KFP endpoint configuration.',
+      );
     },
 
     deleteDatasetFile: async (id: number | string) => {
@@ -931,12 +1195,30 @@ export const useApiWithMock = () => {
           return Promise.resolve(federationPipeline);
         }
 
+        // LLM serve pipeline run (Qwen2.5 coder) – use detailed mock JSON
+        if (id === '825bd04f-5114-4156-9a09-fa1c4c70b20a') {
+          const llmServeFlow = await import('~/mocks/get.runs.llm-flow.json');
+          return Promise.resolve(llmServeFlow);
+        }
+
         // Return detailed federation pipeline data from testdata.fed.json
-        if (id === 'e3450222-f475-4062-953b-230836ca00c8') {
-          console.log('Loading get.runs.fed.json for ID:', id);
+        // Supports both common FL run IDs (fed has onExit: release-links-func)
+        if (
+          id === 'e3450222-f475-4062-953b-230836ca00c8' ||
+          id === '8764b495-7c17-4a3d-90f7-8e9f36817fc4'
+        ) {
           const testdataFed = await import('~/mocks/get.runs.fed.json');
-          console.log('Loaded data:', testdataFed);
-          return Promise.resolve(testdataFed);
+          const data =
+            testdataFed &&
+            typeof testdataFed === 'object' &&
+            'default' in testdataFed
+              ? (testdataFed as { default: unknown }).default
+              : testdataFed;
+          return Promise.resolve(
+            typeof data === 'object' && data && 'run_id' in data
+              ? data
+              : { ...data, run_id: id },
+          );
         }
 
         return Promise.resolve({
@@ -1093,6 +1375,27 @@ export const useApiWithMock = () => {
       return request(
         `/models/artifact/preview?url=${encodeURIComponent(artifactUrl)}`,
       );
+    },
+
+    postTrainingBuilderPipeline: async (data: unknown) => {
+      console.log('[mock] postTrainingBuilderPipeline:', data);
+      return Promise.resolve({
+        status_code: 200,
+        message: 'Pipeline saved (mock)',
+        data: null,
+      });
+    },
+
+    postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
+      console.log(
+        '[mock] postTrainingBuilderPipelineDataspaceFederatedRun:',
+        data,
+      );
+      return Promise.resolve({
+        status_code: 200,
+        message: 'Federated pipeline run started (mock)',
+        data: null,
+      });
     },
   };
 };

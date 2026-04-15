@@ -14,8 +14,31 @@ const baseUrl = config.app.baseURL;
 const route = useRoute();
 const query = computed(() => route.query);
 
-const isActive = (url: string) => {
+const isParentActive = (url: string, items: { url: string }[]) =>
+  route.path.startsWith(`/${url}`) ||
+  items.some((item) => route.path.startsWith(`/${item.url}`));
+
+const isMainActive = (url: string, hasChildren: boolean) => {
+  // For menus with children (like Pipelines), don't highlight the parent,
+  // only the sub-items should show an active state.
+  if (hasChildren) return false;
   return route.path.startsWith(`/${url}`);
+};
+
+const isSubActive = (subUrl: string) => {
+  const fullPath = route.path;
+
+  // Special handling for Pipelines "Runs" vs "Builder"
+  if (subUrl === 'pipelines/run') {
+    return (
+      fullPath.startsWith('/pipelines/run') ||
+      (fullPath.startsWith('/pipelines') &&
+        !fullPath.startsWith('/pipelines/builder') &&
+        !fullPath.startsWith('/pipelines/run'))
+    );
+  }
+
+  return fullPath.startsWith(`/${subUrl}`);
 };
 
 const isIframe = useStorage(
@@ -75,9 +98,9 @@ const toggleTheme = () => {
                   <span class="truncate font-semibold">{{
                     t('general.main_project_name')
                   }}</span>
-                  <span class="truncate text-xs text-muted-foreground"
-                    >V {{ appVersion }}</span
-                  >
+                  <span class="truncate text-xs text-muted-foreground">
+                    V {{ appVersion.split('+')[0] }}
+                  </span>
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
@@ -94,7 +117,7 @@ const toggleTheme = () => {
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
                 as-child
-                :is-active="isActive(item.url)"
+                :is-active="isMainActive(item.url, false)"
                 :tooltip="item.title"
               >
                 <NuxtLink :to="`/${item.url}`">
@@ -109,14 +132,14 @@ const toggleTheme = () => {
             <Collapsible
               v-else
               as-child
-              :default-open="isActive(item.url)"
+              :default-open="isParentActive(item.url, item.items)"
               class="group/collapsible"
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
                   <SidebarMenuButton
                     :tooltip="item.title"
-                    :is-active="isActive(item.url)"
+                    :is-active="isMainActive(item.url, item.items.length > 0)"
                   >
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center">
@@ -135,8 +158,16 @@ const toggleTheme = () => {
                       v-for="subItem in item.items"
                       :key="subItem.title"
                     >
-                      <SidebarMenuSubButton as-child>
+                      <SidebarMenuSubButton
+                        as-child
+                        :is-active="isSubActive(subItem.url)"
+                      >
                         <NuxtLink :to="`/${subItem.url}`">
+                          <Icon
+                            v-if="subItem.icon"
+                            :name="subItem.icon"
+                            class="w-4 h-4 mr-2"
+                          />
                           <span>{{ subItem.title }}</span>
                         </NuxtLink>
                       </SidebarMenuSubButton>
@@ -187,6 +218,10 @@ const toggleTheme = () => {
 <style scoped>
 .icon-chevron {
   transition: transform 0.3s;
+}
+
+.group\/collapsible[data-state='open'] .icon-chevron {
+  transform: rotate(90deg);
 }
 
 .theme-icon-animate {

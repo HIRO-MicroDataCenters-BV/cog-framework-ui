@@ -24,7 +24,8 @@ FROM base AS build
 ARG NUXT_PUBLIC_API_BASE=/apidev
 ARG NUXT_PUBLIC_API_REMOTE
 ARG NUXT_PUBLIC_API_RUNS
-ARG NUXT_PUBLIC_APP_VERSION=1.0.0
+ARG NUXT_PUBLIC_FEDERATED_ENABLED=false
+ARG NUXT_COG_APP_VERSION
 ARG URL_PREFIX=/uidev/
 
 # DEX Authentication Configuration (from GitHub Secrets)
@@ -34,10 +35,11 @@ ARG NUXT_DEX_AUTH_TYPE=local
 ARG NUXT_DEX_SKIP_TLS_VERIFY=false
 
 # Set environment variables for non-sensitive data
-ENV NUXT_PUBLIC_APP_VERSION=$NUXT_PUBLIC_APP_VERSION
+ENV NUXT_COG_APP_VERSION=$NUXT_COG_APP_VERSION
 ENV NUXT_PUBLIC_API_BASE=$NUXT_PUBLIC_API_BASE
 ENV NUXT_PUBLIC_API_REMOTE=$NUXT_PUBLIC_API_REMOTE
 ENV NUXT_PUBLIC_API_RUNS=$NUXT_PUBLIC_API_RUNS
+ENV NUXT_PUBLIC_FEDERATED_ENABLED=$NUXT_PUBLIC_FEDERATED_ENABLED
 ENV URL_PREFIX=$URL_PREFIX
 ENV NUXT_DEX_HOST=$NUXT_DEX_HOST
 ENV NUXT_DEX_AUTH_TYPE=$NUXT_DEX_AUTH_TYPE
@@ -92,7 +94,7 @@ FROM nginx:stable-alpine AS nginx
 COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/uidev
 
 COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
-COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf
+COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf.template
 
 EXPOSE 80
 

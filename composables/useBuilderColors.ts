@@ -33,9 +33,9 @@ export const useBuilderColors = () => {
       class: 'text-red-600',
     },
     running: {
-      color: 'hsl(240 5.9% 10%)',
+      color: 'hsl(217 91% 60%)',
       icon: 'lucide:loader-2',
-      class: 'text-primary animate-spin',
+      class: 'text-blue-500 animate-spin',
     },
     pending: {
       color: 'hsl(48 96% 53%)',

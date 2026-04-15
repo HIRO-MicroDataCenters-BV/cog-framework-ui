@@ -141,13 +141,17 @@ const handlePageSizeChange = (value) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between space-x-2 w-full">
+  <div
+    class="flex items-center justify-between space-x-2 w-full text-xs text-foreground"
+  >
     <div class="flex items-center gap-2">
       <Select
         :model-value="pageSize.toString()"
         @update:model-value="handlePageSizeChange"
       >
-        <SelectTrigger class="w-[100px]">
+        <SelectTrigger
+          class="min-w-[92px] w-[92px] h-7 py-0 border-border data-[size=default]:h-7!"
+        >
           <Icon name="lucide:rows-3" class="size-4" />
           <SelectValue />
         </SelectTrigger>
@@ -168,7 +172,7 @@ const handlePageSizeChange = (value) => {
           v-if="
             showEdges && currentPage > PAGINATION_CONFIG.FIRST_PAGE_THRESHOLD
           "
-          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          class="px-2 h-7 border border-border rounded-md bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="currentPage === 1"
           @click="handleFirstPage"
         >
@@ -176,7 +180,7 @@ const handlePageSizeChange = (value) => {
         </button>
 
         <button
-          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          class="px-2 h-7 border border-border rounded-md bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="!canPreviousPage"
           @click="handlePrevPage"
         >
@@ -186,27 +190,29 @@ const handlePageSizeChange = (value) => {
         <template v-for="(item, index) in pageNumbers" :key="index">
           <button
             v-if="item.type === 'page'"
-            class="w-10 h-10 p-0 border rounded-md"
-            :class="{
-              'bg-primary text-primary-foreground hover:bg-primary/90':
-                item.value === currentPage,
-              'bg-background hover:bg-gray-50 cursor-pointer':
-                item.value !== currentPage,
-            }"
+            :class="[
+              'w-7 h-7 p-0 border border-border rounded-md',
+              {
+                'bg-primary text-primary-foreground hover:bg-primary/90':
+                  item.value === currentPage,
+                'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer':
+                  item.value !== currentPage,
+              },
+            ]"
             @click="handleSetPage(item.value)"
           >
             {{ item.value }}
           </button>
           <span
             v-else
-            class="w-10 h-10 p-0 flex items-center justify-center text-gray-500"
+            class="w-7 h-7 p-0 flex items-center justify-center text-muted-foreground"
           >
             ...
           </span>
         </template>
 
         <button
-          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          class="px-2 h-7 border border-border rounded-md bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="!canNextPage"
           @click="handleNextPage"
         >
@@ -218,7 +224,7 @@ const handlePageSizeChange = (value) => {
             showEdges &&
             currentPage < totalPages - PAGINATION_CONFIG.LAST_PAGE_THRESHOLD
           "
-          class="px-3 h-10 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+          class="px-2 h-7 border border-border rounded-md bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           :disabled="currentPage === totalPages"
           @click="handleLastPage"
         >

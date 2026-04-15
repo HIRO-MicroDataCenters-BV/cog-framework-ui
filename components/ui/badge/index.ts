@@ -20,9 +20,10 @@ export const badgeVariants = cva(
           'border-transparent bg-gray-200 text-gray-900 [a&]:hover:bg-green-600',
         running: 'border-transparent bg-blue-600 text-white',
         failed:
-          'border-transparent bg-red-700 text-white [a&]:hover:bg-red-600',
+          'border-transparent [background-color:var(--color-red-800)] text-white [a&]:hover:[background-color:var(--color-red-800)]',
         pending: 'border-transparent bg-gray-200 text-gray-700 dark:bg-white',
-        succeeded: 'border-transparent bg-green-700 text-white',
+        succeeded:
+          'border-transparent [background-color:var(--color-green-800)] text-white [a&]:hover:[background-color:var(--color-green-800)]',
         file: 'border-transparent bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-100',
         database:
           'border-transparent bg-purple-100 text-purple-600 dark:bg-purple-900/60 dark:text-purple-100',
@@ -67,6 +68,7 @@ export const badgeConfig = {
       animate: true,
     },
     failed: {
+      // Use dedicated failed variant which now uses --color-red-800
       variant: 'failed' as const,
       icon: 'CircleSlash',
       animate: false,
@@ -77,6 +79,7 @@ export const badgeConfig = {
       animate: false,
     },
     succeeded: {
+      // Use dedicated succeeded variant which now uses --color-green-800
       variant: 'succeeded' as const,
       icon: 'Check',
       animate: false,

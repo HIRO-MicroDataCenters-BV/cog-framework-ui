@@ -7,19 +7,35 @@ import type {
   TaskDetail,
   PipelineData,
   ComponentInput,
-} from '~/types/builder.types';
+} from '~/types/canvas.types';
 import { shortenUuid } from '~/utils';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
+import PipelineRunSheet from '~/components/app/PipelineRunSheet.vue';
+import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import Badge from '~/components/ui/badge/Badge.vue';
+import { Spinner } from '~/components/ui/spinner';
 
-const { setPage, page } = useApp();
+const { setPage } = useApp();
+const { initialize: resetBuilderGraph } = usePipelineBuilder();
 const { t } = useI18n();
+const route = useRoute();
+
+const pipelineRunRouteId = computed(() => {
+  const id = route.params.id;
+  return Array.isArray(id) ? id[0] : (id as string);
+});
 
 const pipelineData = ref<PipelineData | null>(null);
+const isRunSheetOpen = ref(false);
+const selectedNodeName = ref<string | null>(null);
+const isPipelineFlowLoading = ref(false);
 
-const tabs = ref([
-  { label: 'flow', value: 'flow' },
-  { label: 'details', value: 'details' },
-]);
+const activeTab = ref<'flow' | 'details'>('flow');
+const tabs = [
+  { key: 'flow', label: 'Flow' },
+  { key: 'details', label: 'Details' },
+];
 
 const LAYOUT_CONFIG = {
   nodeWidth: 280,
@@ -173,6 +189,16 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
 
   const topDag = findDagByName(entrypoint) || templates.find((t) => t.dag);
   const taskDetails = pipelineData.run_details?.task_details || [];
+  const onExitTemplateName = (pipelineSpec as { onExit?: string })?.onExit;
+
+  const findTaskDetailForTemplate = (templateName: string) => {
+    const exact = taskDetails.find((t) => t.display_name === templateName);
+    if (exact) return exact;
+    if (templateName === onExitTemplateName) {
+      return taskDetails.find((t) => t.display_name?.endsWith('.onExit'));
+    }
+    return undefined;
+  };
 
   const resolveInputs = (
     template: PipelineTemplate,
@@ -236,13 +262,15 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
   };
 
   const createNode = (template: PipelineTemplate, index: number): Node => {
-    const taskDetail = taskDetails.find(
-      (task) => task.display_name === template.name,
-    );
+    const taskDetail = findTaskDetailForTemplate(template.name);
     const fallbackPosition = {
       x: (index % 3) * 300 + 100,
       y: Math.floor(index / 3) * 200 + 100,
     };
+    const displayName =
+      template.metadata?.annotations?.[
+        'pipelines.kubeflow.org/task_display_name'
+      ];
 
     return {
       id: template.name,
@@ -252,6 +280,7 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       sourcePosition: Position.Bottom,
       data: {
         label: template.name,
+        displayName: displayName || null,
         status: getTaskStatus(taskDetail),
         category: getComponentCategory(template),
         component: {
@@ -397,6 +426,14 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
       });
     });
 
+  // onExit handler runs after main DAG completes: add edges from all leaf nodes to it
+  if (onExitTemplateName && entrypoint) {
+    const mainDagLeaves = getLeafContainersForTemplate(entrypoint);
+    mainDagLeaves.forEach((leaf) =>
+      edgePairs.add(`${leaf}=>${onExitTemplateName}`),
+    );
+  }
+
   // Get node IDs for layout calculation
   const nodeIdsForLayout = templates.filter((t) => !t.dag).map((t) => t.name);
 
@@ -440,7 +477,88 @@ const convertPipelineToVueFlow = (pipelineData: PipelineData) => {
     n.position = nodePositions[n.id] || n.position;
   });
 
-  return { nodes, edges: edgesArray };
+  // Filter nodes based on status to implement progressive disclosure
+  const filterNodesByStatus = (
+    allNodes: Node[],
+    allEdges: Edge[],
+  ): { nodes: Node[]; edges: Edge[] } => {
+    // Build parent -> children map
+    const childrenMap = new Map<string, Set<string>>();
+    allNodes.forEach((node) => childrenMap.set(node.id, new Set()));
+
+    allEdges.forEach((edge) => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, new Set());
+      }
+      childrenMap.get(edge.source)!.add(edge.target);
+    });
+
+    // Get all descendants (recursive)
+    const getAllDescendants = (
+      nodeId: string,
+      seen = new Set<string>(),
+    ): Set<string> => {
+      if (seen.has(nodeId)) return new Set();
+      seen.add(nodeId);
+
+      const descendants = new Set<string>();
+      const children = childrenMap.get(nodeId) || new Set();
+
+      children.forEach((child) => {
+        descendants.add(child);
+        const childDescendants = getAllDescendants(child, seen);
+        childDescendants.forEach((d) => descendants.add(d));
+      });
+
+      return descendants;
+    };
+
+    // Get direct children only
+    const getDirectChildren = (nodeId: string): Set<string> => {
+      return childrenMap.get(nodeId) || new Set();
+    };
+
+    // Determine which nodes to hide
+    const nodesToHide = new Set<string>();
+
+    allNodes.forEach((node) => {
+      const status = node.data?.status;
+
+      if (status === 'pending') {
+        // Pending: hide all descendants
+        const descendants = getAllDescendants(node.id);
+        descendants.forEach((d) => nodesToHide.add(d));
+      } else if (status === 'running') {
+        // Running: hide all descendants except direct children
+        const allDescendants = getAllDescendants(node.id);
+        const directChildren = getDirectChildren(node.id);
+
+        allDescendants.forEach((d) => {
+          if (!directChildren.has(d)) {
+            nodesToHide.add(d);
+          }
+        });
+      }
+      // succeeded/failed: show all (don't hide anything)
+    });
+
+    // Filter nodes and edges
+    const visibleNodes = allNodes.filter((node) => !nodesToHide.has(node.id));
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+    const visibleEdges = allEdges.filter(
+      (edge) =>
+        visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
+    );
+
+    return { nodes: visibleNodes, edges: visibleEdges };
+  };
+
+  const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByStatus(
+    nodes,
+    edgesArray,
+  );
+
+  return { nodes: filteredNodes, edges: filteredEdges };
 };
 
 const getTaskStatus = (taskDetail: TaskDetail | undefined) => {
@@ -459,130 +577,126 @@ const getComponentCategory = (template: PipelineTemplate) => {
   return found?.category || 'general';
 };
 
-const extractTypesFromComponentSpec = (template: PipelineTemplate) => {
-  const typesMap = new Map<string, string>();
+const extractPaths = (
+  items: Array<{ name: string; type?: string }> | undefined,
+  defaultType: string,
+) =>
+  items?.map((item) => ({ name: item.name, type: item.type || defaultType })) ||
+  [];
 
-  try {
-    const componentSpecStr =
-      template.metadata?.annotations?.['pipelines.kubeflow.org/component_spec'];
-    if (!componentSpecStr) return typesMap;
+const getInputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.inputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.inputs?.parameters, 'String'),
+];
 
-    const componentSpec = JSON.parse(componentSpecStr);
+const getOutputPaths = (template: PipelineTemplate) => [
+  ...extractPaths(template.outputs?.artifacts, 'Dataset'),
+  ...extractPaths(template.outputs?.parameters, 'String'),
+];
 
-    // Extract input types
-    componentSpec.inputs?.forEach((input: { name: string; type: string }) => {
-      if (input.name && input.type) {
-        typesMap.set(`input:${input.name}`, input.type);
-      }
-    });
-
-    // Extract output types
-    componentSpec.outputs?.forEach((output: { name: string; type: string }) => {
-      if (output.name && output.type) {
-        typesMap.set(`output:${output.name}`, output.type);
-      }
-    });
-  } catch (error) {
-    console.warn('Failed to parse component_spec:', error);
-  }
-
-  return typesMap;
-};
-
-const getInputPaths = (template: PipelineTemplate) => {
-  const typesMap = extractTypesFromComponentSpec(template);
-
-  const artifacts =
-    template.inputs?.artifacts?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`input:${item.name}`) || 'Dataset',
-    })) || [];
-
-  const parameters =
-    template.inputs?.parameters?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`input:${item.name}`) || 'String',
-    })) || [];
-
-  return [...artifacts, ...parameters];
-};
-
-const getOutputPaths = (template: PipelineTemplate) => {
-  const typesMap = extractTypesFromComponentSpec(template);
-
-  const artifacts =
-    template.outputs?.artifacts?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`output:${item.name}`) || 'Dataset',
-    })) || [];
-
-  const parameters =
-    template.outputs?.parameters?.map((item) => ({
-      name: item.name,
-      type: typesMap.get(`output:${item.name}`) || 'String',
-    })) || [];
-
-  return [...artifacts, ...parameters];
-};
-
-const fetchPipelineData = async () => {
-  const route = useRoute();
-  // route.params.id is an array because of [...id].vue catch-all route
-  const runId = Array.isArray(route.params.id)
-    ? route.params.id[0]
-    : (route.params.id as string);
+const fetchPipelineData = async (expectedRunId: string) => {
   const api = useApi();
 
-  const data = await api.getPipelineRunFlow(runId);
-  if (!data) return;
+  const isStale = () => pipelineRunRouteId.value !== expectedRunId;
 
-  pipelineData.value = data as PipelineData;
+  try {
+    const data = await api.getPipelineRunFlow(expectedRunId);
+    if (isStale()) return;
+    if (!data) return;
 
-  // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
-  if (
-    pipelineData.value.pipeline_version_reference &&
-    !pipelineData.value.pipeline_spec
-  ) {
-    const { pipeline_id, pipeline_version_id } =
-      pipelineData.value.pipeline_version_reference;
+    pipelineData.value = data as PipelineData;
+    const run = data as Record<string, unknown>;
 
-    const versionData = await api.getPipelineVersion(
-      pipeline_id,
-      pipeline_version_id,
-    );
-    if (versionData && 'data' in versionData && versionData.data) {
-      // Inject the pipeline_spec from version into pipelineData
-      pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
+    // Derive run details from KFP v2beta1 run (same shape as Details tab expects)
+    const createdAt = run.created_at as string | undefined;
+    const finishedAt = run.finished_at as string | undefined;
+    let duration: string = '-';
+    if (createdAt && finishedAt) {
+      const ms = new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+    const experimentRef = run.experiment as Record<string, unknown> | undefined;
+    const experimentId =
+      experimentRef?.experiment_id ??
+      (run.experiment_id as string | undefined) ??
+      '';
+    runDetails.value = {
+      run_id: run.run_id,
+      experiment_id: experimentId,
+      status:
+        (run.state as string | undefined) ||
+        (run.status as string | undefined) ||
+        '',
+      start_time: createdAt ?? null,
+      duration,
+    };
+
+    // If pipeline uses pipeline_version_reference, fetch the spec from pipeline_version API
+    if (
+      pipelineData.value.pipeline_version_reference &&
+      !pipelineData.value.pipeline_spec
+    ) {
+      const { pipeline_id, pipeline_version_id } =
+        pipelineData.value.pipeline_version_reference;
+
+      const versionData = await api.getPipelineVersion(
+        pipeline_id,
+        pipeline_version_id,
+      );
+      if (isStale()) return;
+      if (versionData && 'data' in versionData && versionData.data) {
+        // Inject the pipeline_spec from version into pipelineData
+        pipelineData.value.pipeline_spec = versionData.data.pipeline_spec;
+      }
+    }
+
+    if (isStale()) return;
+
+    const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
+
+    const title = pipelineData.value.display_name || 'Pipeline';
+
+    setPage({
+      section: 'pipeline_runs',
+      title,
+      data: {
+        builder: {
+          name: title,
+          nodes,
+          edges,
+          pipelineData: pipelineData.value,
+        },
+      },
+    });
+  } finally {
+    if (pipelineRunRouteId.value === expectedRunId) {
+      isPipelineFlowLoading.value = false;
     }
   }
-
-  const { nodes, edges } = convertPipelineToVueFlow(pipelineData.value);
-
-  console.log('edges', edges);
-
-  const title = pipelineData.value.display_name || 'Pipeline';
-
-  console.log('[Pipeline Viewer] Setting page with pipelineData:', {
-    pipelineData: pipelineData.value,
-    hasRuntimeConfig: !!pipelineData.value?.runtime_config,
-    parameters: pipelineData.value?.runtime_config?.parameters,
-  });
-
-  setPage({
-    section: 'pipelines',
-    title,
-    data: {
-      builder: {
-        name: title,
-        nodes,
-        edges,
-        pipelineData: pipelineData.value,
-      },
-    },
-  });
 };
 
 const runDetails = ref<Record<string, unknown> | null>(null);
+
+watch(
+  pipelineRunRouteId,
+  async (runId, prevRunId) => {
+    if (!runId || runId === prevRunId) return;
+
+    isRunSheetOpen.value = false;
+    selectedNodeName.value = null;
+    isPipelineFlowLoading.value = true;
+    pipelineData.value = null;
+    runDetails.value = null;
+    resetBuilderGraph([], []);
+
+    await fetchPipelineData(runId);
+  },
+  { immediate: true },
+);
 
 const getKeyIcon = (key: string) => {
   const iconMap: Record<string, string> = {
@@ -603,88 +717,110 @@ const getKeyIcon = (key: string) => {
 
   return 'lucide:text';
 };
-
-const fetchRunDetails = async () => {
-  const route = useRoute();
-  const runId = route.params.id as string;
-  const api = useApi();
-
-  const response = await api.getPipelineRunsList({ run_id: runId });
-  if (
-    response &&
-    'data' in response &&
-    Array.isArray(response.data) &&
-    response.data.length > 0
-  ) {
-    runDetails.value = response.data[0];
-  }
-};
-
-onMounted(async () => {
-  await Promise.all([fetchPipelineData(), fetchRunDetails()]);
-});
 </script>
 
 <template>
-  <div class="h-[calc(100svh-74px)]">
-    <Tabs default-value="flow" class="h-full">
-      <div class="w-full h-[52px] px-4 border-b border-gray-200">
-        <TabsList class="h-full rounded-none bg-transparent gap-4 py-0">
-          <TabsTrigger
-            v-for="tab in tabs"
-            :key="tab.value"
-            class="rounded-none px-0 cursor-pointer border-b border-transparent data-[state=active]:border-b-primary data-[state=active]:shadow-none"
-            :value="tab.value"
-            >{{ t(`tab.${tab.label}`) }}
-          </TabsTrigger>
-        </TabsList>
+  <div class="h-[calc(100svh-74px)] w-full flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between flex-shrink-0 pr-4">
+      <SimpleTabs v-model="activeTab" :tabs="tabs" />
+    </div>
+
+    <div class="flex-1 overflow-hidden">
+      <div v-if="activeTab === 'flow'" class="relative h-full">
+        <AppBuilder
+          :key="String(pipelineRunRouteId ?? '')"
+          :readonly="true"
+          @node-click="
+            (node) => {
+              isRunSheetOpen = !!node;
+              selectedNodeName = node?.id || null;
+            }
+          "
+        />
+
+        <div
+          v-if="isPipelineFlowLoading"
+          class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]"
+          aria-busy="true"
+          aria-live="polite"
+        >
+          <Spinner class="w-8 h-8 text-muted-foreground" />
+        </div>
+
+        <PipelineRunSheet
+          :open="isRunSheetOpen"
+          :run="pipelineData"
+          :selected-node-name="selectedNodeName"
+          @update:open="(v) => (isRunSheetOpen = v)"
+        />
       </div>
-      <TabsContent value="flow" class="h-full">
-        <AppBuilder :readonly="true" />
-      </TabsContent>
-      <TabsContent value="details" class="h-full p-4">
-        <div v-if="runDetails" class="space-y-4">
-          <Table class="w-full">
-            <TableBody>
-              <TableRow
-                v-for="(value, key) in runDetails"
-                :key="key"
-                class="border-b-0"
-              >
-                <TableCell
-                  class="text-left py-3 pr-8 w-20 text-gray-500 font-medium flex items-center gap-2"
+
+      <div v-else class="h-full p-4 overflow-y-auto">
+        <div v-if="runDetails" class="max-w-4xl space-y-4">
+          <Card class="transition-all duration-200 hover:shadow-md">
+            <CardHeader class="py-3 px-4">
+              <CardTitle class="flex items-center gap-2 text-sm">
+                <div class="p-1 rounded bg-blue-100 dark:bg-blue-900/50">
+                  <Icon
+                    name="lucide:info"
+                    class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"
+                  />
+                </div>
+                {{ t('title.run_details') }}
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="px-4 pb-4 pt-0">
+              <!-- Two-column responsive grid like model metrics table -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
+                <div
+                  v-for="(value, key) in runDetails"
+                  :key="key"
+                  class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors"
                 >
-                  <span class="size-4"><Icon :name="getKeyIcon(key)" /></span>
-                  <span>{{ t(`label.${key}`) }}</span>
-                </TableCell>
-                <TableCell class="text-left py-3">
                   <span
-                    v-if="
-                      typeof value === 'string' &&
-                      value.includes('T') &&
-                      value.includes('+')
-                    "
+                    class="text-muted-foreground text-xs flex items-center gap-1"
                   >
-                    {{ new Date(value).toLocaleString() }}
+                    <Icon :name="getKeyIcon(key)" class="w-3 h-3" />
+                    {{ t(`label.${key}`) }}
                   </span>
-                  <span v-else-if="key === 'status'">{{ value }}</span>
-                  <CopyPaste
-                    v-else-if="key === 'run_id' || key === 'experiment_id'"
-                    :has-copy="true"
-                    :copy-text="String(value)"
+                  <span
+                    class="text-xs font-medium text-right max-w-[55%] bg-muted px-1.5 py-0.5 rounded"
                   >
-                    {{ shortenUuid(String(value)) }}
-                  </CopyPaste>
-                  <span v-else>{{ value }}</span>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                    <span
+                      v-if="
+                        typeof value === 'string' &&
+                        value.includes('T') &&
+                        value.includes('+')
+                      "
+                    >
+                      {{ new Date(value).toLocaleString() }}
+                    </span>
+                    <Badge
+                      v-else-if="key === 'status'"
+                      :value="String(value).toLowerCase() || 'pending'"
+                      type="status"
+                      class="text-[11px]"
+                    />
+                    <CopyPaste
+                      v-else-if="key === 'run_id' || key === 'experiment_id'"
+                      :has-copy="true"
+                      :copy-text="String(value)"
+                    >
+                      <code class="text-[11px] font-mono">
+                        {{ shortenUuid(String(value)) }}
+                      </code>
+                    </CopyPaste>
+                    <span v-else>{{ value }}</span>
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <div v-else class="flex items-center justify-center h-64">
           <div class="text-gray-500">{{ t('hint.loading') }}</div>
         </div>
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   </div>
 </template>

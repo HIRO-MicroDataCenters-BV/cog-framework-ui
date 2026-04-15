@@ -2,7 +2,7 @@
 interface Item {
   key: string;
   label: string;
-  action: () => void;
+  action: () => void | Promise<void>;
   hasConfirmation?: boolean;
   icon?: string;
   disabled?: boolean;
@@ -14,9 +14,12 @@ const actionIcons: Record<string, string> = {
   download: 'lucide:download',
   preview: 'lucide:eye',
   delete: 'lucide:trash-2',
+  archive: 'lucide:archive',
+  restore: 'lucide:rotate-ccw',
   edit: 'lucide:pencil',
   copy: 'lucide:copy',
   view: 'lucide:eye',
+  serve: 'lucide:server',
 };
 
 const getIcon = (item: Item) => {
@@ -46,9 +49,58 @@ defineEmits<{
   (e: 'expand'): void;
 }>();
 
-const isOpenDelete = ref(false);
+const isOpenConfirm = ref(false);
+/** UI copy (title, key); cleared when dialog closes — do not use for invoking the action. */
+const pendingAction = ref<Item | null>(null);
+/**
+ * Callback captured when opening the dialog. Reka/Radix closes the dialog before or after click
+ * and @update:open clears pendingAction — this ref must stay set until confirm runs.
+ */
+const pendingConfirmFn = ref<(() => void | Promise<void>) | null>(null);
+const confirmInFlight = ref(false);
 
-const action = ref();
+const confirmAlertKeyByAction: Record<string, string> = {
+  delete: 'alert.delete_dataset',
+  delete_model: 'alert.delete_model',
+  delete_model_service: 'alert.delete_model_service',
+  delete_run: 'alert.delete_pipeline_run',
+};
+
+const getConfirmDescriptionKey = (actionKey?: string) => {
+  if (!actionKey) return 'alert.delete_resource';
+  return confirmAlertKeyByAction[actionKey] || 'alert.delete_resource';
+};
+
+/** Runs only after user confirms; awaits archive/delete so POST completes before dialog closes. */
+async function onConfirmDialogAction() {
+  const fn = pendingConfirmFn.value;
+  if (!fn || confirmInFlight.value) return;
+  confirmInFlight.value = true;
+  try {
+    await Promise.resolve(fn());
+  } finally {
+    confirmInFlight.value = false;
+    pendingConfirmFn.value = null;
+    pendingAction.value = null;
+    isOpenConfirm.value = false;
+  }
+}
+
+function onCancelConfirmDialog() {
+  pendingConfirmFn.value = null;
+  pendingAction.value = null;
+}
+
+function onActionMenuItemClick(item: Item) {
+  if (item.disabled) return;
+  pendingAction.value = item;
+  if (item.hasConfirmation) {
+    pendingConfirmFn.value = item.action;
+    isOpenConfirm.value = true;
+  } else {
+    void item.action();
+  }
+}
 </script>
 
 <template>
@@ -79,19 +131,7 @@ const action = ref();
               ? 'text-destructive focus:text-destructive'
               : '',
           ]"
-          @click="
-            () => {
-              if (item.disabled) return;
-              action = item.action;
-              if (item.hasConfirmation) {
-                if (item.key.includes('delete')) {
-                  isOpenDelete = true;
-                }
-              } else {
-                action();
-              }
-            }
-          "
+          @click="() => onActionMenuItemClick(item)"
         >
           <Icon v-if="getIcon(item)" :name="getIcon(item)" class="h-4 w-4" />
           {{ t(`action.${item.key}`) }}
@@ -100,28 +140,79 @@ const action = ref();
     </DropdownMenuContent>
   </DropdownMenu>
 
-  <AlertDialog :open="isOpenDelete" @update:open="isOpenDelete = $event">
+  <AlertDialog
+    :open="isOpenConfirm"
+    @update:open="
+      (v) => {
+        isOpenConfirm = v;
+        if (!v) onCancelConfirmDialog();
+      }
+    "
+  >
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>{{ $t('title.are_you_sure') }}</AlertDialogTitle>
-        <AlertDialogDescription>
-          {{ t('alert.delete_dataset', { name: props.title }) }}
+        <AlertDialogTitle>
+          <template v-if="pendingAction?.key === 'archive_run'">{{
+            $t('title.archive_run')
+          }}</template>
+          <template v-else-if="pendingAction?.key === 'restore_run'">{{
+            $t('title.restore_run')
+          }}</template>
+          <template v-else>{{ $t('title.are_you_sure') }}</template>
+        </AlertDialogTitle>
+        <AlertDialogDescription
+          v-if="pendingAction?.key === 'archive_run'"
+          class="space-y-3"
+        >
+          <p class="m-0">{{ t('alert.archive_run_p1') }}</p>
+          <p
+            class="m-0 rounded-md border border-border/60 bg-muted/40 px-3 py-2.5 text-sm"
+          >
+            <span class="font-semibold text-foreground">
+              {{ t('alert.archive_run_note_label') }}:
+            </span>
+            {{ t('alert.archive_run_p2') }}
+          </p>
+        </AlertDialogDescription>
+        <AlertDialogDescription
+          v-else-if="pendingAction?.key === 'restore_run'"
+          class="m-0"
+        >
+          {{ t('alert.restore_run', { name: props.title }) }}
+        </AlertDialogDescription>
+        <AlertDialogDescription v-else class="m-0">
+          {{
+            t(getConfirmDescriptionKey(pendingAction?.key), {
+              name: props.title,
+            })
+          }}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel class="cursor-pointer">{{
-          $t('action.cancel')
-        }}</AlertDialogCancel>
-        <AlertDialogAction
-          variant="destructive"
+        <AlertDialogCancel
           class="cursor-pointer"
-          @click="
-            () => {
-              action();
-            }
-          "
-          >{{ $t('action.delete') }}</AlertDialogAction
+          @click="onCancelConfirmDialog"
+          >{{ $t('action.cancel') }}</AlertDialogCancel
         >
+        <AlertDialogAction
+          :variant="
+            pendingAction?.key === 'archive_run' ||
+            pendingAction?.key === 'restore_run'
+              ? 'default'
+              : 'destructive'
+          "
+          class="cursor-pointer"
+          :disabled="confirmInFlight"
+          @click.prevent="onConfirmDialogAction"
+        >
+          <template v-if="pendingAction?.key === 'archive_run'">{{
+            $t('action.archive')
+          }}</template>
+          <template v-else-if="pendingAction?.key === 'restore_run'">{{
+            $t('action.restore_run')
+          }}</template>
+          <template v-else>{{ $t('action.delete') }}</template>
+        </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

@@ -9,7 +9,7 @@ export const useToaster = () => {
       message: string,
       data?: Record<string, string | number>,
     ) => {
-      const msg = t(`message.${type}.${message}`);
+      const msg = t(`message.${type}.${message}`, data);
       const options = { duration: 3000, ...data };
       switch (type) {
         case 'success':

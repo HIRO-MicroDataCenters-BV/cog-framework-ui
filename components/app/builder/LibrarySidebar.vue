@@ -35,15 +35,23 @@
                 <div
                   v-for="component in category.components"
                   :key="component.id"
-                  class="cursor-grab flex items-center gap-2 px-2 py-1.5 active:cursor-grabbing"
+                  class="group cursor-all-scroll flex items-center gap-2 px-2 py-1.5 rounded-md transition-all duration-200 hover:bg-muted hover:shadow-sm hover:scale-[1.02] active:scale-100 border border-transparent hover:border-border"
                   draggable="true"
                   @dragstart="onDragStart($event, component)"
                 >
                   <Icon
+                    name="lucide:grip-vertical"
+                    class="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 -ml-1"
+                  />
+                  <Icon
                     name="lucide:box"
                     class="w-4 h-4 text-muted-foreground"
                   />
-                  <span class="text-sm">{{ component.name }}</span>
+                  <span class="text-sm flex-1">{{ component.name }}</span>
+                  <Icon
+                    name="lucide:arrow-right"
+                    class="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-50 transition-opacity duration-200"
+                  />
                 </div>
               </div>
             </CollapsibleContent>
@@ -55,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Component, Category } from '~/types/builder.types';
+import type { Component, Category } from '~/types/canvas.types';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 
 const api = useApi();
@@ -104,34 +112,17 @@ const fetchComponents = async () => {
   console.log('[LibrarySidebar] Fetching components...');
   try {
     const res = await api.getTrainingBuilderComponents();
-    console.log('[LibrarySidebar] API response:', res);
     if (res && 'data' in res) {
       components.value = res.data as unknown as Component[];
-      console.log(
-        '[LibrarySidebar] Loaded',
-        components.value.length,
-        'components',
-      );
 
       // Debug: Show first component's input_path to verify defaults
       if (components.value.length > 0) {
         const firstComp = components.value[0];
-        console.log('[LibrarySidebar] First component:', firstComp.name);
-        console.log(
-          '[LibrarySidebar] First component input_path:',
-          firstComp.input_path,
-        );
       }
 
       categories.value = getCategories(components.value);
-      console.log(
-        '[LibrarySidebar] Created',
-        categories.value.length,
-        'categories',
-      );
     }
   } catch (error) {
-    console.error('[LibrarySidebar] Error fetching components:', error);
     // Toast is shown by API layer, just set empty arrays
     components.value = [];
     categories.value = [];

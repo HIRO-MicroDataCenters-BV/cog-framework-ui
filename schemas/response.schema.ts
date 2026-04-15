@@ -17,7 +17,7 @@ export const apiResponseSchema = z.union([
         z.null(),
       ])
       .optional(),
-    pagination: paginationSchema.optional(),
+    pagination: paginationSchema.nullable().optional(),
   }),
   z.array(z.object({}).passthrough()),
 ]);

@@ -3,15 +3,16 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type {
-  ModelRecommendParams,
-  ModelQueryParams,
-  DatasetQueryParams,
-  ModelFileUploadParams,
   DatasetFileUploadParams,
+  DatasetQueryParams,
+  InferenceServiceParams,
+  ModelFileUploadParams,
+  ModelQueryParams,
+  ModelRecommendParams,
   PipelineComponentParams,
   PodParams,
-  InferenceServiceParams,
 } from '~/types/api.types';
+import type { ModelServingResponse } from '~/types/model.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -22,10 +23,9 @@ import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
-import runsData from '@/mocks/get.runs.json';
-import runsDetailsData from '@/mocks/get.runs.details.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
 import runsFlowData from '@/mocks/get.runs.flow.json';
+import modelsServingData from '@/mocks/get.models-serving.json';
 
 /**
  * @fileoverview Cognitive Framework API client
@@ -36,6 +36,27 @@ import runsFlowData from '@/mocks/get.runs.flow.json';
  * @version 2.0
  * @author Cognitive Framework Team
  */
+
+/**
+ * Token cache for KFP pagination
+ * Structure: Map<cacheKey, Map<pageNumber, token>>
+ * cacheKey is derived from query parameters (namespace, filters, sort)
+ */
+const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
+
+/**
+ * Generate a cache key for pipeline runs pagination tokens
+ */
+function getPipelineRunsCacheKey(params: {
+  namespace?: string;
+  storage_state?: string;
+  status?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+}): string {
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+}
 
 /**
  * Main API composable for Cognitive Framework
@@ -148,6 +169,23 @@ export const useApi = () => {
 
       const data = await res.json();
 
+      // Backend may return HTTP 200 with error in body (e.g. status_code 500 or detail with exception)
+      const bodyIndicatesError =
+        (data &&
+          typeof data.status_code === 'number' &&
+          data.status_code >= 400) ||
+        (typeof data?.detail === 'string' &&
+          data.detail.length > 0 &&
+          (data.detail.toLowerCase().includes('error') ||
+            data.detail.toLowerCase().includes('exception')));
+
+      if (bodyIndicatesError) {
+        if (showToast) {
+          toaster.show('error', 'server_error');
+        }
+        return null;
+      }
+
       if (!res.ok) {
         // Always show error toasts
         switch (res.status) {
@@ -160,7 +198,9 @@ export const useApi = () => {
             toaster.show('error', 'forbidden');
             return null;
           case 404:
-            toaster.show('error', 'not_found');
+            if (showToast) {
+              toaster.show('error', 'not_found');
+            }
             return null;
           case 422: {
             // Handle validation errors - detail might be an array or object
@@ -251,16 +291,182 @@ export const useApi = () => {
      * const paginatedModels = await api.getModels({ page: 1, limit: 10 });
      * ```
      */
-    getModels: async (params: ModelQueryParams = {}) => {
+    getModels: async (
+      params: ModelQueryParams = {},
+      options?: { showToast?: boolean },
+    ) => {
       if (mockEnabled) {
         return Promise.resolve(modelsData);
+      }
+      // Backend expects `search` for free-text name queries.
+      const raw = params as Record<string, string>;
+      const mapped: Record<string, string> = { ...raw };
+      if (mapped.name) {
+        mapped.search = mapped.name;
+        delete mapped.name;
+      }
+      const q = new URLSearchParams(mapped).toString();
+
+      return await request(`/models?${q}`, 'GET', undefined, options);
+    },
+
+    /**
+     * Creates a new model serving configuration
+     *
+     * @param {Object} data - Model serving create data
+     * @returns {Promise<Object>} Response containing created model serving data
+     */
+    postModelServing: async (data: {
+      model_id: string;
+      isvc_name: string;
+      model_name: string;
+      model_version: string;
+      dataset_id?: string;
+      transformer_image?: string;
+      transformer_parameters?: unknown;
+      protocol_version: string;
+      model_format: string;
+      artifact_path?: string;
+    }) => {
+      return request(`/models-serving`, 'POST', data);
+    },
+
+    /**
+     * Updates a model serving configuration
+     *
+     * @param {Object} data - Model serving update data
+     * @returns {Promise<Object>} Response containing updated model serving data
+     */
+    patchModelServing: async (
+      data: {
+        isvc_name: string;
+        canary_traffic_percent?: number;
+        model_id?: string;
+        artifact_path?: string;
+        model_name?: string;
+        model_version?: string;
+        dataset_id?: string;
+        transformer_image?: string;
+        transformer_parameters?: Record<string, unknown>;
+        protocol_version?: string;
+        model_format?: string;
+        enable_tag_routing?: boolean;
+      },
+      options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      return request(`/models-serving`, 'PATCH', data, options);
+    },
+
+    /**
+     * Deletes a model serving by its inference service name
+     *
+     * @param {string} isvc_name - Inference service name to delete
+     * @returns {Promise<Object>} Standard response indicating successful deletion
+     */
+    deleteModelServing: async (isvc_name: string) => {
+      return request(
+        `/models-serving?isvc_name=${encodeURIComponent(isvc_name)}`,
+        'DELETE',
+        undefined,
+        { successMessage: 'model_serving_deleted' },
+      );
+    },
+
+    /**
+     * Retrieves all served models
+     *
+     * @param {Object} params - Query parameters for pagination and filtering
+     * @returns {Promise<ModelServingResponse>} Response containing served models data with pagination
+     */
+    getModelsServing: async (
+      params: Record<string, unknown> = {},
+    ): Promise<
+      | (ModelServingResponse & {
+          pagination: {
+            total_items: number;
+            page: number;
+            limit: number;
+            total_pages: number;
+          };
+        })
+      | null
+    > => {
+      if (mockEnabled) {
+        const data = modelsServingData as ModelServingResponse;
+        const searchParams = params as Record<string, string>;
+        const page = parseInt(searchParams.page || '1');
+        const limit = parseInt(searchParams.limit || '10');
+
+        let filteredData = [...data.data];
+
+        // Apply search filter
+        if (searchParams.search) {
+          const search = searchParams.search.toLowerCase();
+          filteredData = filteredData.filter(
+            (item) =>
+              item.isvc_name?.toLowerCase().includes(search) ||
+              item.model_name?.toLowerCase().includes(search) ||
+              item.status?.toLowerCase().includes(search),
+          );
+        }
+
+        // Apply status filter
+        if (searchParams.status) {
+          filteredData = filteredData.filter(
+            (item) =>
+              item.status?.toLowerCase() === searchParams.status.toLowerCase(),
+          );
+        }
+
+        // Apply sort
+        const sortBy = searchParams.sort_by || 'creation_timestamp';
+        const sortOrder = (searchParams.sort_order || 'desc') as 'asc' | 'desc';
+        if (sortBy === 'creation_timestamp') {
+          filteredData = filteredData.sort((a, b) => {
+            const dateA = new Date(a.creation_timestamp || 0).getTime();
+            const dateB = new Date(b.creation_timestamp || 0).getTime();
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+        }
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+
+        return {
+          status_code: data.status_code,
+          message: data.message,
+          data: paginatedData,
+          pagination: {
+            total_items: filteredData.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(filteredData.length / limit),
+          },
+        };
       }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      const res = await request(`/models?${q}`);
-      return res;
+      const res = (await request(
+        `/models-serving${q ? `?${q}` : ''}`,
+      )) as ModelServingResponse | null;
+      if (res && res.data) {
+        const page = parseInt((params.page as string) || '1');
+        const limit = parseInt((params.limit as string) || '10');
+        return {
+          ...res,
+          pagination: {
+            total_items: res.data.length,
+            page: page,
+            limit: limit,
+            total_pages: Math.ceil(res.data.length / limit),
+          },
+        };
+      }
+      return null;
     },
+
     /**
      * Registers a new model
      *
@@ -1674,7 +1880,6 @@ export const useApi = () => {
         console.log('mockEnabled', datasetsDetailsData);
         return Promise.resolve(datasetsDetailsData);
       }
-      console.log(`/datasets/${id}`);
       return request(`/datasets/${id}`);
     },
 
@@ -2142,8 +2347,6 @@ export const useApi = () => {
     /**
      * Gets pipeline runs list
      *
-     * Retrieves a list of pipeline runs with optional filtering, sorting and pagination.
-     *
      * @param {Object} [params={}] - Query parameters
      * @param {string} [params.run_id] - Run ID to filter by
      * @param {string} [params.run_name] - Run name to filter by
@@ -2157,8 +2360,6 @@ export const useApi = () => {
      * @example
      * ```typescript
      * const runs = await api.getPipelineRunsList();
-     * const specificRun = await api.getPipelineRunsList({ run_id: 'dbe1d349-c117-46d5-9b6f-62ed8efafb2b' });
-     * const sortedRuns = await api.getPipelineRunsList({ sort_by: 'start_time', sort_order: 'asc' });
      * const paginatedRuns = await api.getPipelineRunsList({ page: 1, limit: 10 });
      * ```
      */
@@ -2172,13 +2373,215 @@ export const useApi = () => {
         limit?: number;
       } = {},
     ) => {
-      if (mockEnabled) {
-        return Promise.resolve(runsDetailsData);
-      }
       const q = new URLSearchParams(
         params as Record<string, string>,
       ).toString();
-      return request(`/pipelines/runs?${q}`);
+      return request(`/pipelines/runs${q ? `?${q}` : ''}`);
+    },
+
+    /**
+     * Gets pipeline runs list directly from the KFP API
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API to retrieve a list of pipeline runs
+     * with optional filtering, sorting and pagination. Transforms the KFP response
+     * format to the internal format expected by the frontend table.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.run_id] - Run ID to filter by
+     * @param {string} [params.run_name] - Run name to filter by
+     * @param {string} [params.sort_by] - Attribute to sort by (mapped to KFP sort_by)
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
+     * @param {string} [params.page_token] - KFP cursor token for next page
+     * @param {string} [params.namespace] - Kubernetes namespace (defaults to 'admin')
+     *
+     * @returns {Promise<Object>} Normalised response containing list of pipeline runs
+     *
+     * @example
+     * ```typescript
+     * const runs = await api.getPipelineRunsListV2();
+     * const paginatedRuns = await api.getPipelineRunsListV2({ page: 1, limit: 10 });
+     * ```
+     */
+    getPipelineRunsListV2: async (
+      params: {
+        run_id?: string;
+        run_name?: string;
+        status?: string;
+        storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
+        search?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
+        page_token?: string;
+        namespace?: string;
+      } = {},
+    ) => {
+      const namespace = params.namespace || 'admin';
+      const pageSize = params.limit || 10;
+      const currentPage = params.page || 1;
+
+      const sortBy = params.sort_by
+        ? `${params.sort_by} ${params.sort_order || 'desc'}`
+        : 'created_at desc';
+
+      // Generate cache key for this query context
+      const cacheKey = getPipelineRunsCacheKey({
+        namespace,
+        storage_state: params.storage_state,
+        status: params.status,
+        search: params.search,
+        sort_by: params.sort_by,
+        sort_order: params.sort_order,
+      });
+
+      // Get or create page token cache for this query
+      if (!pipelineRunsTokenCache.has(cacheKey)) {
+        pipelineRunsTokenCache.set(cacheKey, new Map());
+      }
+      const pageTokens = pipelineRunsTokenCache.get(cacheKey)!;
+
+      // If page 1, clear cache and use empty token
+      // Otherwise, look up cached token for this page
+      let pageToken = '';
+      if (currentPage === 1) {
+        pageTokens.clear();
+      } else {
+        pageToken = pageTokens.get(currentPage) || '';
+      }
+
+      // Build filter predicates
+      const predicates: Array<{
+        key: string;
+        operation: string;
+        string_value: string;
+      }> = [];
+
+      // Add search filter if provided
+      if (params.search) {
+        predicates.push({
+          key: 'name',
+          operation: 'IS_SUBSTRING',
+          string_value: params.search,
+        });
+      }
+
+      // Add storage_state filter based on tab selection
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+      if (storageState === 'NOT_ARCHIVED') {
+        predicates.push({
+          key: 'storage_state',
+          operation: 'NOT_EQUALS',
+          string_value: 'ARCHIVED',
+        });
+      } else {
+        predicates.push({
+          key: 'storage_state',
+          operation: 'EQUALS',
+          string_value: 'ARCHIVED',
+        });
+      }
+
+      // Add status filter if provided
+      if (params.status) {
+        predicates.push({
+          key: 'state',
+          operation: 'EQUALS',
+          string_value: params.status.toUpperCase(),
+        });
+      }
+
+      const filter = JSON.stringify({ predicates });
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        page_token: pageToken,
+        page_size: String(pageSize),
+        sort_by: sortBy,
+        filter,
+      });
+
+      const url = `${apiRuns}/runs?${kfpParams.toString()}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        const kfpData = await response.json();
+        const kfpRuns: Record<string, unknown>[] = kfpData.runs || [];
+
+        const runs = kfpRuns.map((run) => {
+          const createdAt = run.created_at as string | undefined;
+          const finishedAt = run.finished_at as string | undefined;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          const experimentRef = run.experiment as
+            | Record<string, unknown>
+            | undefined;
+          const experimentId =
+            experimentRef?.experiment_id ??
+            (run.experiment_id as string | undefined) ??
+            '';
+
+          return {
+            run_id: run.run_id,
+            run_name: (run.display_name as string | undefined) || run.run_id,
+            status:
+              (run.state as string | undefined) ||
+              (run.status as string | undefined) ||
+              '',
+            start_time: createdAt || null,
+            experiment_id: experimentId,
+            duration,
+          };
+        });
+
+        const totalSize =
+          (kfpData.total_size as number | undefined) ?? runs.length;
+
+        // Cache the next_page_token for the next page
+        const nextPageToken =
+          (kfpData.next_page_token as string | undefined) || '';
+        if (nextPageToken) {
+          pageTokens.set(currentPage + 1, nextPageToken);
+        }
+
+        return {
+          status_code: 200,
+          message: 'Pipeline runs',
+          data: runs,
+          pagination: {
+            total_items: totalSize,
+            page: currentPage,
+            limit: pageSize,
+            total_pages: Math.ceil(totalSize / pageSize),
+            next_page_token: nextPageToken || null,
+          },
+        };
+      } catch (err) {
+        console.error('Error fetching pipeline runs from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
     },
     // ============================================================================
     // POD MANAGEMENT API
@@ -2210,6 +2613,49 @@ export const useApi = () => {
         params as unknown as Record<string, string>,
       ).toString();
       return request(`/pod/logs?${q}`);
+    },
+
+    /**
+     * Gets pipeline pod logs from K8s
+     *
+     * Calls /pipeline/k8s/pod/logs with podname, runid, podnamespace.
+     * Uses the pipeline API base (derived from apiRuns).
+     *
+     * @param {Object} params - Log parameters
+     * @param {string} params.podname - Name of the pod
+     * @param {string} params.runid - Run ID
+     * @param {string} [params.podnamespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Object>} Response containing pod logs
+     */
+    getPipelinePodLogs: async (params: {
+      podname: string;
+      runid: string;
+      podnamespace?: string;
+    }) => {
+      const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
+      const q = new URLSearchParams({
+        podname: params.podname,
+        runid: params.runid,
+        podnamespace: params.podnamespace || 'admin',
+      }).toString();
+      const url = `${base}/k8s/pod/logs?${q}`;
+      try {
+        const res = await fetch(url, { headers: getHeaders() });
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `HTTP ${res.status}`);
+        }
+        const contentType = res.headers.get('Content-Type') ?? '';
+        if (contentType.includes('application/json')) {
+          return (await res.json()) as string | Record<string, unknown>;
+        }
+        return (await res.text()) as string;
+      } catch (err) {
+        console.error('Error fetching pipeline pod logs:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      }
     },
 
     /**
@@ -2498,6 +2944,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipeline: async (data: unknown) => {
+      console.log('saving pipeline');
       return request(`/training-builder-pipelines`, 'POST', data, {
         showToast: true,
       });
@@ -2549,6 +2996,7 @@ export const useApi = () => {
      * ```
      */
     postTrainingBuilderPipelineDataspaceFederatedRun: async (data: unknown) => {
+      console.log(data);
       return request(
         `/training-builder-pipelines/dataspace/federated/run`,
         'POST',
@@ -2755,6 +3203,60 @@ export const useApi = () => {
       } catch (error) {
         console.error('Error fetching pipeline run flow:', error);
         throw error;
+      }
+    },
+
+    /**
+     * Archives a pipeline run (KFP v2beta1).
+     * POST `{apiRuns}/runs/{id}:archive`
+     * e.g. `https://localhost:1443/pipeline/apis/v2beta1/runs/<run-id>:archive`
+     *
+     * @param {string} id - Run ID (UUID)
+     */
+    archivePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}:archive`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'POST', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
+     * Restores an archived pipeline run (KFP v2beta1).
+     * POST `{apiRuns}/runs/{id}:unarchive`
+     */
+    unarchivePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}:unarchive`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'POST', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+    },
+
+    /**
+     * Permanently deletes a pipeline run (KFP v2beta1).
+     * DELETE `{apiRuns}/runs/{id}`
+     */
+    deletePipelineRun: async (id: string) => {
+      if (mockEnabled) {
+        return;
+      }
+      const url = `${apiRuns.replace(/\/$/, '')}/runs/${encodeURIComponent(id)}`;
+      const headers = getHeaders();
+      const response = await fetch(url, { method: 'DELETE', headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP error! status: ${response.status}`);
       }
     },
 

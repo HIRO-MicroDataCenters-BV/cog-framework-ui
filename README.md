@@ -167,6 +167,9 @@ NUXT_PUBLIC_API_BASE=http://localhost:8000
 # URL prefix for deployment (leave empty for local dev)
 URL_PREFIX=
 
+# App version label in the sidebar
+NUXT_COG_APP_VERSION=1.0.0
+
 # ============================================
 # Development Options
 # ============================================
@@ -257,7 +260,7 @@ docker build -t cog-framework-ui:latest .
 docker build \
   --build-arg NUXT_PUBLIC_API_BASE=/api \
   --build-arg URL_PREFIX=/app/ \
-  --build-arg NUXT_PUBLIC_APP_VERSION=1.0.0 \
+  --build-arg NUXT_COG_APP_VERSION=1.0.0 \
   -t cog-framework-ui:latest .
 ```
 
@@ -327,7 +330,7 @@ Configure these environment variables based on your deployment method:
 |----------|-------------|---------|----------|
 | `NUXT_PUBLIC_API_BASE` | Backend API base URL | `/apidev` | Yes |
 | `URL_PREFIX` | Application URL prefix | `/uidev/` | No |
-| `NUXT_PUBLIC_APP_VERSION` | Application version | `1.0.0` | No |
+| `NUXT_COG_APP_VERSION` | Application version | `1.0.0` | No |
 | `NUXT_DEX_HOST` | DEX authentication host | - | If using DEX |
 | `NUXT_DEX_USERNAME` | DEX username | - | If using DEX |
 | `NUXT_DEX_PASSWORD` | DEX password | - | If using DEX |

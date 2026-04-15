@@ -1,0 +1,363 @@
+<script setup lang="ts">
+import type { TableRowType } from '@/types/row.types';
+import Badge from '@/components/ui/badge/Badge.vue';
+import DropdownAction from '@/components/app/menu/Actions.vue';
+import { useApi } from '@/composables/api';
+import { usePipelineActions } from '@/composables/usePipelineActions';
+import CopyPaste from '~/components/app/CopyPaste.vue';
+import { shortenUuid } from '~/utils';
+import SimpleTabs from '~/components/app/SimpleTabs.vue';
+
+const { t } = useI18n();
+
+const dayjs = useDayjs();
+const { getPipelineRunsListV2 } = useApi();
+const mock = useMock();
+const { setPage, page } = useApp();
+
+// Active tab state: 'active' or 'archived'
+const activeTab = ref<'active' | 'archived'>('active');
+
+setPage({
+  section: 'pipeline_runs',
+  description: t('description.pipelines'),
+});
+
+const baseUrl = 'pipelines';
+
+const { getPipelineActions } = usePipelineActions();
+const tableRef = ref();
+
+/** After archive: one list refetch updates active total; avoid duplicate count API calls. */
+function afterArchiveSuccess() {
+  if (tableRef.value) {
+    void tableRef.value.fetchData();
+  }
+  if (activeTab.value === 'active') {
+    const prev = activeCounts.value.archived ?? 0;
+    activeCounts.value.archived = prev + 1;
+  }
+}
+
+function afterArchivedListMutation() {
+  if (tableRef.value) {
+    void tableRef.value.fetchData();
+  }
+}
+
+function afterRestoreSuccess() {
+  afterArchivedListMutation();
+  if (activeTab.value === 'archived') {
+    const ar = activeCounts.value.archived ?? 1;
+    activeCounts.value.archived = Math.max(0, ar - 1);
+    const ac = activeCounts.value.active ?? 0;
+    activeCounts.value.active = ac + 1;
+  }
+}
+
+function afterDeleteRunSuccess() {
+  afterArchivedListMutation();
+  if (activeTab.value === 'archived') {
+    const ar = activeCounts.value.archived ?? 1;
+    activeCounts.value.archived = Math.max(0, ar - 1);
+  }
+}
+
+// Tabs definition
+const tabs = [
+  { key: 'active', label: 'Active' },
+  { key: 'archived', label: 'Archived' },
+];
+
+// Store counts for both tabs
+const activeCounts = ref({ active: 0, archived: 0 });
+
+// Wrapper function that adds storage_state filter based on active tab
+const getPipelineRunsWithFilter = async (
+  params: Record<string, unknown> = {},
+) => {
+  const storageState =
+    activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
+  const result = await getPipelineRunsListV2({
+    ...params,
+    storage_state: storageState,
+  });
+
+  // Update count for current tab
+  if (result?.pagination?.total_items !== undefined) {
+    activeCounts.value[activeTab.value] = result.pagination.total_items;
+  }
+
+  return result;
+};
+
+// Counts are updated automatically from table data via getPipelineRunsWithFilter
+// No need to fetch counts separately on mount - saves unnecessary API calls
+
+const columns = [
+  {
+    id: 'run_name',
+    size: 260,
+    cell: ({ row }: { row: TableRowType }) => {
+      const name =
+        (row.getValue<string>('run_name') as string | undefined) ||
+        row.getValue<string>('run_id');
+
+      const link = h(
+        resolveComponent('NuxtLink'),
+        {
+          // Use app route path (Nuxt will prepend baseURL automatically)
+          to: `/${baseUrl}/${row.getValue('run_id')}`,
+          class: 'block truncate max-w-[260px]',
+        },
+        () => name,
+      );
+
+      if (!name || name.length <= 32) {
+        return link;
+      }
+
+      // Wrap long names in a tooltip to show full text on hover
+      return h(
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 200 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(
+                resolveComponent('TooltipTrigger'),
+                { asChild: true },
+                () => link,
+              ),
+              h(
+                resolveComponent('TooltipContent'),
+                { side: 'top' },
+                () => name as string,
+              ),
+            ],
+          }),
+      );
+    },
+  },
+  {
+    id: 'run_id',
+    accessorFn: (row) => row.run_id,
+    size: 200,
+    minSize: 180,
+    maxSize: 260,
+    cell: ({ row }: { row: TableRowType }) => {
+      const runIdValue = String(row.original.run_id);
+      const shortenedId = shortenUuid(runIdValue);
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: runIdValue,
+        },
+        {
+          default: () =>
+            h(
+              resolveComponent('NuxtLink'),
+              {
+                // Use app route path (Nuxt will prepend baseURL automatically)
+                to: `/${baseUrl}/${runIdValue}`,
+              },
+              () => shortenedId,
+            ),
+        },
+      );
+    },
+  },
+  {
+    id: 'experiment_id',
+    accessorFn: (row) => row.experiment_id,
+    size: 220,
+    minSize: 200,
+    maxSize: 280,
+    cell: ({ row }: { row: TableRowType }) => {
+      const experimentIdValue = String(row.original.experiment_id ?? '');
+      if (!experimentIdValue) return '-';
+
+      const shortenedId = shortenUuid(experimentIdValue);
+
+      return h(
+        CopyPaste,
+        {
+          hasCopy: true,
+          copyText: experimentIdValue,
+        },
+        {
+          default: () => shortenedId,
+        },
+      );
+    },
+  },
+  {
+    id: 'status',
+    size: 130,
+    cell: ({ row }: { row: TableRowType }) => {
+      const rawStatus = (row.getValue<string>('status') || '').toLowerCase();
+
+      const normalized =
+        rawStatus === 'succeeded' || rawStatus === 'completed'
+          ? 'succeeded'
+          : rawStatus === 'running'
+            ? 'running'
+            : rawStatus === 'failed'
+              ? 'failed'
+              : rawStatus === 'cancelled' || rawStatus === 'canceled'
+                ? 'cancelled'
+                : 'pending';
+
+      // Use same color style approach as dataset Type badges
+      const statusClasses: Record<string, string> = {
+        // Match xgboost model type badge
+        succeeded:
+          'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        running:
+          'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-100',
+        // Match pytorch model type badge
+        failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
+        pending:
+          'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
+        cancelled:
+          'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100',
+      };
+
+      const classes =
+        statusClasses[normalized] || 'bg-muted text-muted-foreground';
+
+      const baseClass =
+        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium shrink-0';
+
+      const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
+      return h('span', { class: `${baseClass} ${classes}` }, label);
+    },
+  },
+  {
+    id: 'start_time',
+    size: 115,
+    cell: ({ row }: { row: TableRowType }) => {
+      const startedOn = row.getValue<string>('start_time');
+      if (!startedOn) return '-';
+      return h('div', { class: 'flex flex-col' }, [
+        h('div', {}, dayjs(startedOn).format('DD-MMM-YYYY')),
+        h(
+          'div',
+          { class: 'text-xs text-muted-foreground' },
+          dayjs(startedOn).format('HH:mm:ss'),
+        ),
+      ]);
+    },
+  },
+  {
+    id: 'duration',
+    size: 120,
+    cell: ({ row }: { row: TableRowType }) => row.getValue('duration'),
+  },
+  {
+    id: 'actions',
+    size: 80,
+    enableHiding: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      const id = row.getValue<string>('run_id');
+      const name =
+        row.getValue<string>('run_name') || row.getValue<string>('run_id');
+
+      const items = getPipelineActions(id, name, {
+        tab: activeTab.value === 'archived' ? 'archived' : 'active',
+        onArchiveSuccess: afterArchiveSuccess,
+        onRestoreSuccess: afterRestoreSuccess,
+        onDeleteSuccess: afterDeleteRunSuccess,
+      });
+
+      return h(DropdownAction, {
+        title: name,
+        id,
+        items,
+        menuTitle: t('title.pipeline_actions'),
+      });
+    },
+  },
+];
+
+// Watch active tab changes and refetch data
+watch(activeTab, () => {
+  if (tableRef.value) {
+    // Table fetch will update the count via getPipelineRunsWithFilter
+    tableRef.value.fetchData();
+  }
+});
+</script>
+
+<template>
+  <AppTable
+    ref="tableRef"
+    :columns="columns"
+    :data-source="getPipelineRunsWithFilter"
+    :has-stats="true"
+    :has-filters="false"
+    :selectable="false"
+    :filterable-columns="['status']"
+  >
+    <template #header-actions>
+      <!-- Segmented control: h-9 matches Table search Input and refresh icon button -->
+      <div
+        class="relative inline-flex h-9 shrink-0 items-stretch gap-0.5 rounded-lg bg-muted p-0.5"
+      >
+        <div
+          :class="[
+            'pointer-events-none absolute top-0.5 bottom-0.5 rounded-md bg-background shadow-sm transition-[left] duration-300 ease-in-out',
+            activeTab === 'active' ? 'left-0.5' : 'left-(--seg-archived-left)',
+          ]"
+          :style="{
+            /* p-0.5×2 + gap-0.5 → segment = (100% - 0.625rem) / 2 */
+            width: 'calc((100% - 0.625rem) / 2)',
+            '--seg-archived-left':
+              'calc(0.125rem + (100% - 0.625rem) / 2 + 0.125rem)',
+          }"
+        />
+
+        <button
+          type="button"
+          :class="[
+            'relative z-10 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors duration-200',
+            activeTab === 'active'
+              ? 'text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          ]"
+          @click="activeTab = 'active'"
+        >
+          <Icon
+            name="lucide:folder-open-dot"
+            :class="[
+              'size-4 shrink-0 transition-colors duration-300',
+              activeTab === 'active' ? 'text-blue-500' : '',
+            ]"
+          />
+          <span>Active</span>
+        </button>
+        <button
+          type="button"
+          :class="[
+            'relative z-10 inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors duration-200',
+            activeTab === 'archived'
+              ? 'text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          ]"
+          @click="activeTab = 'archived'"
+        >
+          <Icon
+            name="lucide:folder-archive"
+            :class="[
+              'size-4 shrink-0 transition-colors duration-300',
+              activeTab === 'archived' ? 'text-orange-500' : '',
+            ]"
+          />
+          <span>Archived</span>
+        </button>
+      </div>
+    </template>
+  </AppTable>
+</template>
