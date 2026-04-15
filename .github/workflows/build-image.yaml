@@ -80,12 +80,18 @@ jobs:
             echo "✅ NUXT_PUBLIC_API_REMOTE is set"
           fi
           
-          if [ -z "${{ secrets.NUXT_PUBLIC_API_RUNS }}" ]; then
+          if [ -z "${{ vars.NUXT_PUBLIC_API_RUNS }}" ]; then
             echo "⚠️  WARNING: NUXT_PUBLIC_API_RUNS is NOT set (will use default)"
           else
             echo "✅ NUXT_PUBLIC_API_RUNS is set"
           fi
-          
+
+          if [ -z "${{ vars.NUXT_PUBLIC_FEDERATED_ENABLED }}" ]; then
+            echo "⚠️  WARNING: NUXT_PUBLIC_FEDERATED_ENABLED is NOT set (will use default: false)"
+          else
+            echo "✅ NUXT_PUBLIC_FEDERATED_ENABLED is set to: ${{ vars.NUXT_PUBLIC_FEDERATED_ENABLED }}"
+          fi
+
           echo ""
           if [ $MISSING_SECRETS -gt 0 ]; then
             echo "❌❌❌ BUILD FAILED ❌❌❌"
@@ -149,7 +155,8 @@ jobs:
             NUXT_DEX_SKIP_TLS_VERIFY=${{ secrets.NUXT_DEX_SKIP_TLS_VERIFY }}
             NUXT_PUBLIC_API_BASE=${{ vars.NUXT_PUBLIC_API_BASE }}
             NUXT_PUBLIC_API_REMOTE=${{ secrets.NUXT_PUBLIC_API_REMOTE }}
-            NUXT_PUBLIC_API_RUNS=${{ secrets.NUXT_PUBLIC_API_RUNS }}
+            NUXT_PUBLIC_API_RUNS=${{ vars.NUXT_PUBLIC_API_RUNS }}
+            NUXT_PUBLIC_FEDERATED_ENABLED=${{ vars.NUXT_PUBLIC_FEDERATED_ENABLED }}
             URL_PREFIX=${{ vars.URL_PREFIX }}
 
       #      - name: Push docker image for Juju
