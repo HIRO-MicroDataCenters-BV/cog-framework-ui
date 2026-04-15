@@ -88,6 +88,8 @@ RUN --mount=type=secret,id=dex_username \
 
 ################################################################################
 FROM nginx:stable-alpine AS nginx
+ARG URL_PREFIX=/uidev/
+ENV URL_PREFIX=$URL_PREFIX
 
 # Copy static files to /uidev/ path
 # Nuxt generates files in .output/public/, we copy them to nginx /uidev/ directory
