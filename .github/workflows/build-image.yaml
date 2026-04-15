@@ -172,8 +172,14 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Create a github release
-        run: gh release create "${{ env.APP_VERSION }}"
+      - name: Create or update github release
+        run: |
+          if gh release view "${{ env.APP_VERSION }}" >/dev/null 2>&1; then
+            echo "Release ${{ env.APP_VERSION }} already exists, updating it."
+            gh release edit "${{ env.APP_VERSION }}" --latest
+          else
+            gh release create "${{ env.APP_VERSION }}"
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
           NUXT_COG_APP_VERSION: ${{ vars.NUXT_COG_APP_VERSION }}
