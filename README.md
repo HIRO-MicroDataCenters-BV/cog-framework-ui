@@ -175,15 +175,6 @@ NUXT_COG_APP_VERSION=1.0.0
 # ============================================
 # Enable mock data mode (use 'true' when backend is unavailable)
 NUXT_PUBLIC_MOCK_ENABLED=false
-
-# ============================================
-# Optional: DEX Authentication (for development)
-# ============================================
-# NUXT_DEX_HOST=https://dex.example.com
-# NUXT_DEX_USERNAME=your-username
-# NUXT_DEX_PASSWORD=your-password
-# NUXT_DEX_AUTH_TYPE=local
-# NUXT_DEX_SKIP_TLS_VERIFY=false
 ```
 
 📖 **For detailed information, see [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)**
