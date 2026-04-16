@@ -175,15 +175,6 @@ NUXT_COG_APP_VERSION=1.0.0
 # ============================================
 # Enable mock data mode (use 'true' when backend is unavailable)
 NUXT_PUBLIC_MOCK_ENABLED=false
-
-# ============================================
-# Optional: DEX Authentication (for development)
-# ============================================
-# NUXT_DEX_HOST=https://dex.example.com
-# NUXT_DEX_USERNAME=your-username
-# NUXT_DEX_PASSWORD=your-password
-# NUXT_DEX_AUTH_TYPE=local
-# NUXT_DEX_SKIP_TLS_VERIFY=false
 ```
 
 📖 **For detailed information, see [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)**
@@ -264,6 +255,9 @@ docker build \
   -t cog-framework-ui:latest .
 ```
 
+> `URL_PREFIX` should start and end with `/` (for example `/uidev/`, `/cogui/`, `/uiprod/`).
+> Set it at build time to match the path where the app will be served.
+
 **Build with DEX authentication secrets:**
 ```bash
 docker build \
@@ -291,6 +285,7 @@ docker run -p 80:80 \
 **Access the application:**
 - Open `http://localhost` in your browser
 - The app will be available at the configured `URL_PREFIX` (default: `/uidev/`)
+- Example: if `URL_PREFIX=/cogui/`, open `http://localhost/cogui/`
 
 #### 3. Docker Compose (Recommended for Production)
 
@@ -329,13 +324,23 @@ Configure these environment variables based on your deployment method:
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `NUXT_PUBLIC_API_BASE` | Backend API base URL | `/apidev` | Yes |
-| `URL_PREFIX` | Application URL prefix | `/uidev/` | No |
+| `URL_PREFIX` | Application URL prefix (must include leading and trailing slash) | `/uidev/` | No |
 | `NUXT_COG_APP_VERSION` | Application version | `1.0.0` | No |
 | `NUXT_DEX_HOST` | DEX authentication host | - | If using DEX |
 | `NUXT_DEX_USERNAME` | DEX username | - | If using DEX |
 | `NUXT_DEX_PASSWORD` | DEX password | - | If using DEX |
 | `NUXT_DEX_AUTH_TYPE` | DEX auth type | `local` | If using DEX |
 | `NUXT_DEX_SKIP_TLS_VERIFY` | Skip TLS verification | `false` | No |
+
+#### URL Prefix Checklist
+
+When deploying under a custom path such as `/cogui/`:
+
+1. Set `URL_PREFIX` in build args (CI variable) to the same value.
+2. Keep the trailing slash, for example `/cogui/`.
+3. After deploy, verify:
+   - `GET /` redirects to `/<prefix>/`
+   - `GET /<prefix>/` returns `200`
 
 ---
 
@@ -365,12 +370,5 @@ pnpm lint:inspector
 ```bash
 pnpm format
 ```
-
----
-
-
-## 📄 License
-
-This project is proprietary and confidential. All rights reserved.
 
 ---
