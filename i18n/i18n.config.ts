@@ -97,6 +97,7 @@ export default defineI18nConfig(() => ({
         'model-serving': 'Model Serving',
         pipelines: 'Flow',
         pipeline_runs: 'Run',
+        pipeline_experiments: 'Experiments',
         platform: 'Platform',
         actions: 'Actions',
         dataset_actions: 'Dataset Actions',
@@ -151,6 +152,8 @@ export default defineI18nConfig(() => ({
       description: {
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
+        pipeline_experiments:
+          'Organise and track pipeline runs grouped by experiment. Browse, search and compare experiments across your workspace.',
         edit_model_serving: 'Update traffic percentage for {name}',
       },
       builder: {
@@ -383,6 +386,7 @@ export default defineI18nConfig(() => ({
         upload: 'Upload',
         run: 'Run',
         add_pipelines: 'New Pipeline',
+        add_pipeline_experiments: 'New Experiment',
         previous: 'Previous',
         next: 'Next',
         first: 'First',
@@ -533,6 +537,7 @@ export default defineI18nConfig(() => ({
         training_builder: 'Training Builder',
         runs: 'Runs',
         pipeline_runs: 'Run',
+        pipeline_experiments: 'Experiments',
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
@@ -559,6 +564,7 @@ export default defineI18nConfig(() => ({
       },
       column: {
         experiment_id: 'Experiment ID',
+        experiment_name: 'Name',
         start_time: 'Start Time',
         id: 'ID',
         dataset_id: 'ID',

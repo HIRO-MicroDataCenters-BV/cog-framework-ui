@@ -592,6 +592,7 @@ const breadcrumbSectionTo = computed(() => {
   if (section === 'pipeline_runs' || section === 'pipelines') {
     return '/pipelines/run';
   }
+  if (section === 'pipeline_experiments') return '/pipelines/experiments';
   if (!section) return '/';
   return `/${section}`;
 });

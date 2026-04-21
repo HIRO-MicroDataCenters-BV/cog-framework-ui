@@ -2583,6 +2583,133 @@ export const useApi = () => {
         setPage({ ...page.value, isLoading: false });
       }
     },
+
+    /**
+     * Gets pipeline experiments list directly from the KFP API.
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API
+     * (`GET {apiRuns}/experiments`) to retrieve a list of experiments with
+     * optional search, sorting and pagination. The response is normalised to
+     * the internal shape expected by the app table.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.search] - Substring search on experiment name
+     * @param {string} [params.sort_by] - Attribute to sort by
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page=1] - 1-based page number
+     * @param {number} [params.limit=10] - Page size
+     * @param {string} [params.namespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Object>} Normalised response with experiments list
+     */
+    getExperimentsListV2: async (
+      params: {
+        search?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
+        namespace?: string;
+      } = {},
+    ) => {
+      if (mockEnabled) {
+        return {
+          status_code: 200,
+          message: 'Experiments',
+          data: [],
+          pagination: {
+            total_items: 0,
+            page: 1,
+            limit: params.limit || 10,
+            total_pages: 0,
+            next_page_token: null,
+          },
+        };
+      }
+
+      const namespace = params.namespace || 'admin';
+      const pageSize = params.limit || 10;
+      const currentPage = params.page || 1;
+
+      const sortBy = params.sort_by
+        ? `${params.sort_by} ${params.sort_order || 'desc'}`
+        : 'created_at desc';
+
+      const predicates: Array<{
+        key: string;
+        operation: string;
+        string_value: string;
+      }> = [];
+
+      if (params.search) {
+        predicates.push({
+          key: 'name',
+          operation: 'IS_SUBSTRING',
+          string_value: params.search,
+        });
+      }
+
+      const filter =
+        predicates.length > 0 ? JSON.stringify({ predicates }) : '';
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        page_size: String(pageSize),
+        sort_by: sortBy,
+      });
+      if (filter) kfpParams.set('filter', filter);
+
+      const url = `${apiRuns.replace(/\/$/, '')}/experiments?${kfpParams.toString()}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        const kfpData = await response.json();
+        const kfpExperiments: Record<string, unknown>[] =
+          kfpData.experiments || [];
+
+        const experiments = kfpExperiments.map((exp) => ({
+          experiment_id: exp.experiment_id,
+          experiment_name:
+            (exp.display_name as string | undefined) ||
+            (exp.experiment_id as string),
+          description: (exp.description as string | undefined) || '',
+          namespace: (exp.namespace as string | undefined) || '',
+          created_at: (exp.created_at as string | undefined) || null,
+          storage_state: (exp.storage_state as string | undefined) || '',
+        }));
+
+        const totalSize =
+          (kfpData.total_size as number | undefined) ?? experiments.length;
+        const nextPageToken =
+          (kfpData.next_page_token as string | undefined) || '';
+
+        return {
+          status_code: 200,
+          message: 'Experiments',
+          data: experiments,
+          pagination: {
+            total_items: totalSize,
+            page: currentPage,
+            limit: pageSize,
+            total_pages: Math.ceil(totalSize / pageSize),
+            next_page_token: nextPageToken || null,
+          },
+        };
+      } catch (err) {
+        console.error('Error fetching experiments from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
+    },
     // ============================================================================
     // POD MANAGEMENT API
     // ============================================================================

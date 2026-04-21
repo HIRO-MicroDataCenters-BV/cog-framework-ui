@@ -393,6 +393,9 @@ const getSectionIcon = (section: string | undefined) => {
   if (section === 'pipeline_runs') {
     return 'lucide:gauge';
   }
+  if (section === 'pipeline_experiments') {
+    return 'lucide:flask-conical';
+  }
   return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
