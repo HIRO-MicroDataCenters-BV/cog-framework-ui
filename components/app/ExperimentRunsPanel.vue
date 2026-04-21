@@ -47,6 +47,7 @@ const dayjs = useDayjs();
 const router = useRouter();
 const api = useApi();
 const toaster = useToaster();
+const { t } = useI18n();
 
 const goToRun = (runId: string) => {
   void router.push(`/pipelines/${runId}`);
@@ -133,15 +134,30 @@ const executeBulkAction = async (action: BulkAction, ids: string[]) => {
   const failed = results.length - ok;
 
   if (failed === 0) {
-    toaster.show('success', 'operation_completed');
+    const plural = ok === 1 ? 'one' : 'other';
+    const key =
+      action === 'archive'
+        ? (`bulk_runs_archived_${plural}` as const)
+        : action === 'restore'
+          ? (`bulk_runs_restored_${plural}` as const)
+          : (`bulk_runs_deleted_${plural}` as const);
+    toaster.show(
+      'success',
+      key,
+      ok === 1 ? undefined : { count: ok },
+    );
   } else if (ok === 0) {
     sonnerToast.error(
-      `Failed to ${action} ${failed} ${pluralRun(failed)}.`,
+      t('message.error.bulk_runs_all_failed', { count: failed }),
       { duration: 5000 },
     );
   } else {
     sonnerToast.warning(
-      `${ok} ${pluralRun(ok)} ${action}d, ${failed} failed.`,
+      t('message.warning.bulk_runs_partial', {
+        ok,
+        failed,
+        total: ok + failed,
+      }),
       { duration: 5000 },
     );
   }
