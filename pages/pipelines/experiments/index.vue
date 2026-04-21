@@ -225,6 +225,8 @@ const columns = [
         :runs="row.last_runs || []"
         :experiment-id="row.experiment_id"
         :experiment-name="row.experiment_name"
+        :tab="activeTab"
+        @mutated="() => tableRef?.fetchData?.()"
       />
     </template>
   </AppTable>
