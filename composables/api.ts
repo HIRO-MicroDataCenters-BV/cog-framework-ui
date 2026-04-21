@@ -2610,6 +2610,14 @@ export const useApi = () => {
         page?: number;
         limit?: number;
         namespace?: string;
+        /**
+         * Controls the `storage_state` filter predicate.
+         * - `'NOT_ARCHIVED'` (default): lists active experiments
+         *   (`storage_state != ARCHIVED`, matches KFP dashboard behavior).
+         * - `'ARCHIVED'`: lists archived experiments only
+         *   (`storage_state == ARCHIVED`).
+         */
+        storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
       } = {},
     ) => {
       if (mockEnabled) {
@@ -2641,6 +2649,16 @@ export const useApi = () => {
         string_value: string;
       }> = [];
 
+      // Archived vs active filter — mirrors the KFP dashboard's default
+      // behavior of hiding archived rows and exposing them under a separate
+      // tab. Defaults to NOT_ARCHIVED to match KFP UI out of the box.
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+      predicates.push({
+        key: 'storage_state',
+        operation: storageState === 'ARCHIVED' ? 'EQUALS' : 'NOT_EQUALS',
+        string_value: 'ARCHIVED',
+      });
+
       if (params.search) {
         predicates.push({
           key: 'name',
@@ -2649,15 +2667,14 @@ export const useApi = () => {
         });
       }
 
-      const filter =
-        predicates.length > 0 ? JSON.stringify({ predicates }) : '';
+      const filter = JSON.stringify({ predicates });
 
       const kfpParams = new URLSearchParams({
         namespace,
         page_size: String(pageSize),
         sort_by: sortBy,
+        filter,
       });
-      if (filter) kfpParams.set('filter', filter);
 
       const url = `${apiRuns.replace(/\/$/, '')}/experiments?${kfpParams.toString()}`;
 
