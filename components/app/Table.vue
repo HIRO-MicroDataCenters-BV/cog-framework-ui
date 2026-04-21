@@ -102,6 +102,10 @@ const props = defineProps({
     type: String as PropType<string | null>,
     default: null,
   },
+  expandable: {
+    type: Boolean,
+    default: false,
+  },
   hideHeader: {
     type: Boolean,
     default: false,
@@ -567,6 +571,8 @@ const table = useVueTable({
   getSubRows: props.groupBy
     ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
     : undefined,
+  getRowCanExpand:
+    props.expandable && !props.groupBy ? () => true : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -1031,7 +1037,11 @@ defineExpose({ fetchData, totalItems });
                   }"
                 >
                   <div
-                    v-if="cellIndex === 0 && groupBy && row.getCanExpand()"
+                    v-if="
+                      cellIndex === 0 &&
+                      (groupBy || expandable) &&
+                      row.getCanExpand()
+                    "
                     class="flex items-center gap-1.5"
                   >
                     <button
@@ -1104,9 +1114,13 @@ defineExpose({ fetchData, totalItems });
               <TableRow v-if="!groupBy && row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
-                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  class="border-l border-r border-border p-0 text-sm bg-muted/20"
                 >
-                  {{ JSON.stringify(row.original) }}
+                  <slot name="expanded" :row="row.original">
+                    <div class="p-3 text-muted-foreground">
+                      {{ JSON.stringify(row.original) }}
+                    </div>
+                  </slot>
                 </TableCell>
               </TableRow>
             </template>

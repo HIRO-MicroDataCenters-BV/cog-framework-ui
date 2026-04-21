@@ -22,6 +22,8 @@ type RunSummary = {
   run_name: string;
   status: string;
   created_at: string | null;
+  finished_at?: string | null;
+  duration?: string;
 };
 
 type ExperimentRow = {
@@ -135,5 +137,60 @@ const columns = [
     :has-stats="true"
     :has-filters="false"
     :selectable="false"
-  />
+    :expandable="true"
+  >
+    <template #expanded="{ row }">
+      <div class="px-4 py-3">
+        <div
+          v-if="!row.last_runs || row.last_runs.length === 0"
+          class="text-sm text-muted-foreground py-2"
+        >
+          {{ t('hint.no_results') }}
+        </div>
+        <table v-else class="w-full text-sm">
+          <thead>
+            <tr class="text-muted-foreground text-xs uppercase tracking-wide">
+              <th class="text-left font-medium py-1.5 pr-4">Run name</th>
+              <th class="text-left font-medium py-1.5 pr-4 w-[90px]">Status</th>
+              <th class="text-left font-medium py-1.5 pr-4 w-[110px]">
+                Duration
+              </th>
+              <th class="text-left font-medium py-1.5 pr-4 w-[180px]">
+                Start time
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="run in row.last_runs"
+              :key="run.run_id"
+              class="border-t border-border/60 hover:bg-background/60"
+            >
+              <td class="py-1.5 pr-4">
+                <NuxtLink
+                  :to="`/pipelines/${run.run_id}`"
+                  class="font-medium text-primary hover:underline"
+                >
+                  {{ run.run_name }}
+                </NuxtLink>
+              </td>
+              <td class="py-1.5 pr-4">
+                <RunStatusDots :runs="[run]" />
+              </td>
+              <td class="py-1.5 pr-4 tabular-nums">
+                {{ run.duration || '-' }}
+              </td>
+              <td class="py-1.5 pr-4 text-muted-foreground">
+                {{
+                  run.created_at
+                    ? dayjs(run.created_at).format('DD/MM/YYYY, HH:mm:ss')
+                    : '-'
+                }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </AppTable>
 </template>

@@ -2768,18 +2768,36 @@ export const useApi = () => {
         const kfpData = await response.json();
         const kfpRuns: Record<string, unknown>[] = kfpData.runs || [];
 
-        return kfpRuns.map((run) => ({
-          run_id: (run.run_id as string) || '',
-          run_name:
-            (run.display_name as string | undefined) ||
-            (run.run_id as string) ||
-            '',
-          status:
-            (run.state as string | undefined) ||
-            (run.status as string | undefined) ||
-            '',
-          created_at: (run.created_at as string | undefined) || null,
-        }));
+        return kfpRuns.map((run) => {
+          const createdAt = (run.created_at as string | undefined) || null;
+          const finishedAt = (run.finished_at as string | undefined) || null;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          return {
+            run_id: (run.run_id as string) || '',
+            run_name:
+              (run.display_name as string | undefined) ||
+              (run.run_id as string) ||
+              '',
+            status:
+              (run.state as string | undefined) ||
+              (run.status as string | undefined) ||
+              '',
+            created_at: createdAt,
+            finished_at: finishedAt,
+            duration,
+          };
+        });
       } catch (err) {
         console.error(
           `Error fetching runs for experiment ${experimentId}:`,
