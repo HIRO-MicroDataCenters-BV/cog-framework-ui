@@ -880,7 +880,12 @@ watch(
   },
 );
 
-defineExpose({ fetchData, totalItems });
+const resetExpanded = () => {
+  expanded.value = {};
+  table.resetExpanded();
+};
+
+defineExpose({ fetchData, totalItems, resetExpanded });
 </script>
 
 <template>

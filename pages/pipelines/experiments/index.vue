@@ -74,6 +74,10 @@ const getExperiments = async (params: Record<string, unknown> = {}) => {
 
 watch(activeTab, () => {
   if (tableRef.value) {
+    // Collapse any rows left open from the previous tab; otherwise TanStack
+    // Table keeps the expanded state keyed by row index and an unrelated
+    // experiment in the other tab inherits the open state.
+    tableRef.value.resetExpanded?.();
     void tableRef.value.fetchData();
   }
 });
