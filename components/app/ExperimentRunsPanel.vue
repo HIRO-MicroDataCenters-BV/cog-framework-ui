@@ -8,15 +8,8 @@ import {
   Loader2,
   Pause,
   ChevronRight,
-  ArrowRight,
   Inbox,
 } from 'lucide-vue-next';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '~/components/ui/tooltip';
 
 type RunSummary = {
   run_id: string;
@@ -34,6 +27,59 @@ const props = defineProps<{
 }>();
 
 const dayjs = useDayjs();
+
+/**
+ * Human-readable "time ago" helper. Uses dayjs's calendar-aware `.diff()`
+ * so month/year boundaries respect the actual calendar. For longer spans
+ * (months, years) it includes the next smaller unit for precision — e.g.
+ * "1 month 5 days ago" instead of a coarse "1mo ago". Avoids the dayjs
+ * `relativeTime` plugin (not configured in this app).
+ *
+ * Thresholds:
+ *   < 60s  → "Ns ago"
+ *   < 60m  → "Nm ago"
+ *   < 24h  → "Nh ago"
+ *   < 30d  → "Nd ago"                   (keeps "28 days ago" from becoming "0mo ago")
+ *   < 12mo → "N month[s] M day[s] ago"
+ *   else   → "N year[s] M month[s] ago"
+ */
+const pluralize = (n: number, unit: string): string =>
+  `${n} ${unit}${n === 1 ? '' : 's'}`;
+
+const relativeTime = (iso: string): string => {
+  const target = dayjs(iso);
+  const now = dayjs();
+
+  if (now.diff(target) < 0) return 'just now';
+
+  const sec = now.diff(target, 'second');
+  if (sec < 60) return `${sec}s ago`;
+
+  const min = now.diff(target, 'minute');
+  if (min < 60) return `${min}m ago`;
+
+  const hr = now.diff(target, 'hour');
+  if (hr < 24) return `${hr}h ago`;
+
+  const day = now.diff(target, 'day');
+  if (day < 30) return `${day}d ago`;
+
+  const months = now.diff(target, 'month');
+  if (months < 12) {
+    // Calendar-accurate leftover days after the whole months.
+    const remDays = now.diff(target.add(months, 'month'), 'day');
+    if (months === 0) return `${day}d ago`;
+    return remDays > 0
+      ? `${pluralize(months, 'month')} ${pluralize(remDays, 'day')} ago`
+      : `${pluralize(months, 'month')} ago`;
+  }
+
+  const years = now.diff(target, 'year');
+  const remMonths = now.diff(target.add(years, 'year'), 'month');
+  return remMonths > 0
+    ? `${pluralize(years, 'year')} ${pluralize(remMonths, 'month')} ago`
+    : `${pluralize(years, 'year')} ago`;
+};
 
 type StatusTone = {
   dot: string;
@@ -129,33 +175,6 @@ const active = computed(
   () => props.runs.filter((r) => toneFor(r.status).bucket === 'active').length,
 );
 
-/**
- * Compact, human-readable "time ago" helper. Avoids pulling in the dayjs
- * relativeTime plugin (not configured in this app) and keeps output short
- * enough for a dense table cell.
- */
-const relativeTime = (iso: string): string => {
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 0) return 'just now';
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return `${sec}s ago`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day}d ago`;
-  const wk = Math.floor(day / 7);
-  if (wk < 4) return `${wk}w ago`;
-  const mo = Math.floor(day / 30);
-  if (mo < 12) return `${mo}mo ago`;
-  const yr = Math.floor(day / 365);
-  return `${yr}y ago`;
-};
-
-const runsPageHref = computed(
-  () => `/pipelines/runs?experiment_id=${props.experimentId}`,
-);
 </script>
 
 <template>
@@ -202,14 +221,6 @@ const runsPageHref = computed(
           </div>
         </div>
 
-        <NuxtLink
-          v-if="total > 0"
-          :to="runsPageHref"
-          class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-        >
-          View all runs
-          <ArrowRight class="h-3 w-3" :stroke-width="2.5" />
-        </NuxtLink>
       </div>
 
       <!-- Empty state -->
@@ -270,23 +281,21 @@ const runsPageHref = computed(
                 {{ run.duration && run.duration !== '-' ? run.duration : '—' }}
               </span>
 
-              <!-- Start time (relative + absolute tooltip) -->
-              <Tooltip v-if="run.created_at">
-                <TooltipTrigger as-child>
-                  <span
-                    class="text-xs text-muted-foreground tabular-nums w-[84px] text-right shrink-0"
-                  >
-                    {{ relativeTime(run.created_at) }}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="top" class="px-3 py-2 text-xs">
-                  Start:
-                  {{ dayjs(run.created_at).format('DD/MM/YYYY, HH:mm:ss') }}
-                </TooltipContent>
-              </Tooltip>
+              <!-- Start time (date + time on one line, relative label below) -->
+              <span
+                v-if="run.created_at"
+                class="flex flex-col items-end text-xs w-[200px] shrink-0 leading-tight"
+              >
+                <span class="text-foreground tabular-nums">
+                  {{ dayjs(run.created_at).format('DD-MMM-YYYY HH:mm:ss') }}
+                </span>
+                <span class="text-muted-foreground/80 text-[11px] mt-0.5">
+                  {{ relativeTime(run.created_at) }}
+                </span>
+              </span>
               <span
                 v-else
-                class="text-xs text-muted-foreground w-[84px] text-right shrink-0"
+                class="text-xs text-muted-foreground w-[200px] text-right shrink-0"
               >
                 —
               </span>
