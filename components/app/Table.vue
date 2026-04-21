@@ -571,8 +571,7 @@ const table = useVueTable({
   getSubRows: props.groupBy
     ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
     : undefined,
-  getRowCanExpand:
-    props.expandable && !props.groupBy ? () => true : undefined,
+  getRowCanExpand: props.expandable && !props.groupBy ? () => true : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),

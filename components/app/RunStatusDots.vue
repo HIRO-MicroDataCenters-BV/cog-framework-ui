@@ -132,10 +132,7 @@ const ordered = computed(() => [...(props.runs || [])].reverse());
             <component
               :is="getStyle(run.status).icon"
               v-if="getStyle(run.status).icon"
-              :class="[
-                'h-2.5 w-2.5',
-                getStyle(run.status).iconClass,
-              ]"
+              :class="['h-2.5 w-2.5', getStyle(run.status).iconClass]"
               :stroke-width="3"
             />
             <span

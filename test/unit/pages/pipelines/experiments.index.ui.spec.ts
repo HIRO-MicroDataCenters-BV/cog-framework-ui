@@ -3,6 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
 import dayjs from 'dayjs';
 
+import ExperimentsPage from '~/pages/pipelines/experiments/index.vue';
+
 const apiMocks = vi.hoisted(() => ({
   getExperimentsListV2: vi.fn().mockResolvedValue({
     status_code: 200,
@@ -30,8 +32,6 @@ beforeAll(() => {
   }));
 });
 
-import ExperimentsPage from '~/pages/pipelines/experiments/index.vue';
-
 const AppTableStub = defineComponent({
   name: 'AppTable',
   props: {
@@ -39,14 +39,13 @@ const AppTableStub = defineComponent({
   },
   methods: {
     fetchData() {
-      return (this as { dataSource: (p: unknown) => Promise<unknown> }).dataSource(
-        {},
-      );
+      return (
+        this as { dataSource: (p: unknown) => Promise<unknown> }
+      ).dataSource({});
     },
     resetExpanded() {},
   },
-  template:
-    '<div data-testid="app-table"><slot name="header-actions" /></div>',
+  template: '<div data-testid="app-table"><slot name="header-actions" /></div>',
 });
 
 describe('pages/pipelines/experiments/index.vue', () => {
@@ -74,7 +73,9 @@ describe('pages/pipelines/experiments/index.vue', () => {
         },
         stubs: {
           AppTable: AppTableStub,
-          ExperimentRunsPanel: { template: '<div data-testid="runs-panel-stub" />' },
+          ExperimentRunsPanel: {
+            template: '<div data-testid="runs-panel-stub" />',
+          },
           CopyPaste: { template: '<span><slot /></span>' },
           RunStatusDots: { template: '<span data-testid="dots-stub" />' },
           Icon: { template: '<i />' },

@@ -14,9 +14,9 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next';
-import { type PipelineRunsTab } from '@/composables/usePipelineActions';
-import { useApi } from '@/composables/api';
 import { toast as sonnerToast } from 'vue-sonner';
+import type { PipelineRunsTab } from '@/composables/usePipelineActions';
+import { useApi } from '@/composables/api';
 
 type RunSummary = {
   run_id: string;
@@ -83,8 +83,7 @@ const toggleOne = (id: string, value: boolean | 'indeterminate') => {
 };
 
 const allSelected = computed(
-  () =>
-    props.runs.length > 0 && selectedIds.value.size === props.runs.length,
+  () => props.runs.length > 0 && selectedIds.value.size === props.runs.length,
 );
 
 const headerCheckboxState = computed<boolean | 'indeterminate'>(() => {
@@ -141,11 +140,7 @@ const executeBulkAction = async (action: BulkAction, ids: string[]) => {
         : action === 'restore'
           ? (`bulk_runs_restored_${plural}` as const)
           : (`bulk_runs_deleted_${plural}` as const);
-    toaster.show(
-      'success',
-      key,
-      ok === 1 ? undefined : { count: ok },
-    );
+    toaster.show('success', key, ok === 1 ? undefined : { count: ok });
   } else if (ok === 0) {
     sonnerToast.error(
       t('message.error.bulk_runs_all_failed', { count: failed }),
@@ -382,7 +377,6 @@ const failed = computed(
 const active = computed(
   () => props.runs.filter((r) => toneFor(r.status).bucket === 'active').length,
 );
-
 </script>
 
 <template>
@@ -434,10 +428,7 @@ const active = computed(
         </div>
 
         <!-- Right-side bulk actions (selection summary + buttons) -->
-        <div
-          v-if="selectedCount > 0"
-          class="flex items-center gap-2 shrink-0"
-        >
+        <div v-if="selectedCount > 0" class="flex items-center gap-2 shrink-0">
           <span class="text-[11px] font-medium text-foreground">
             <span class="tabular-nums">{{ selectedCount }}</span>
             <span class="text-muted-foreground">
@@ -629,7 +620,12 @@ const active = computed(
     <!-- Bulk action confirmation dialog -->
     <AlertDialog
       :open="isBulkDialogOpen"
-      @update:open="(v) => { isBulkDialogOpen = v; if (!v) closeBulkDialog(); }"
+      @update:open="
+        (v) => {
+          isBulkDialogOpen = v;
+          if (!v) closeBulkDialog();
+        }
+      "
     >
       <AlertDialogContent>
         <AlertDialogHeader>
