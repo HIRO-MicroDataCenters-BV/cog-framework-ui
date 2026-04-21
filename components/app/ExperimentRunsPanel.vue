@@ -82,10 +82,14 @@ const relativeTime = (iso: string): string => {
 };
 
 type StatusTone = {
+  /** Background color for the small status circle. */
   dot: string;
-  pill: string;
+  /** Text color for the status label. */
+  text: string;
   icon: typeof Check | null;
   iconClass?: string;
+  /** Glyph shown inside the dot when no icon is set (e.g. "!"). */
+  glyph?: string;
   label: string;
   /** Coarse bucket for aggregate stats. */
   bucket: 'success' | 'failure' | 'active' | 'neutral';
@@ -94,21 +98,22 @@ type StatusTone = {
 const STATUS_TONES: Record<string, StatusTone> = {
   SUCCEEDED: {
     dot: 'bg-emerald-500',
-    pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/30',
+    text: 'text-emerald-600 dark:text-emerald-400',
     icon: Check,
     label: 'Succeeded',
     bucket: 'success',
   },
   FAILED: {
     dot: 'bg-rose-500',
-    pill: 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/30',
+    text: 'text-rose-600 dark:text-rose-400',
     icon: null,
+    glyph: '!',
     label: 'Failed',
     bucket: 'failure',
   },
   RUNNING: {
     dot: 'bg-sky-500',
-    pill: 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/30',
+    text: 'text-sky-600 dark:text-sky-400',
     icon: Loader2,
     iconClass: 'animate-spin',
     label: 'Running',
@@ -116,35 +121,35 @@ const STATUS_TONES: Record<string, StatusTone> = {
   },
   PENDING: {
     dot: 'bg-slate-400',
-    pill: 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+    text: 'text-slate-600 dark:text-slate-300',
     icon: Clock,
     label: 'Pending',
     bucket: 'active',
   },
   CANCELED: {
     dot: 'bg-slate-400',
-    pill: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+    text: 'text-slate-500 dark:text-slate-400',
     icon: Ban,
     label: 'Canceled',
     bucket: 'neutral',
   },
   CANCELING: {
     dot: 'bg-slate-400',
-    pill: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+    text: 'text-slate-500 dark:text-slate-400',
     icon: Ban,
     label: 'Canceling',
     bucket: 'neutral',
   },
   SKIPPED: {
     dot: 'bg-slate-300',
-    pill: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+    text: 'text-slate-500 dark:text-slate-400',
     icon: SkipForward,
     label: 'Skipped',
     bucket: 'neutral',
   },
   PAUSED: {
     dot: 'bg-slate-400',
-    pill: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+    text: 'text-slate-500 dark:text-slate-400',
     icon: Pause,
     label: 'Paused',
     bucket: 'neutral',
@@ -153,7 +158,7 @@ const STATUS_TONES: Record<string, StatusTone> = {
 
 const FALLBACK: StatusTone = {
   dot: 'bg-slate-300',
-  pill: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/30',
+  text: 'text-slate-500 dark:text-slate-400',
   icon: null,
   label: 'Unknown',
   bucket: 'neutral',
@@ -181,7 +186,7 @@ const active = computed(
   <div class="pl-6 pr-4 py-3">
     <!-- Nested card -->
     <div
-      class="relative rounded-md border border-border/70 bg-background shadow-sm overflow-hidden"
+      class="relative rounded-md border border-border/70 bg-background shadow-md ring-1 ring-black/5 dark:ring-white/5 overflow-hidden"
     >
       <!-- Accent bar -->
       <div
@@ -238,40 +243,60 @@ const active = computed(
         </p>
       </div>
 
+      <!-- Column headers -->
+      <div
+        v-if="total > 0"
+        class="flex items-center gap-4 px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground bg-muted/20 border-b border-border/70"
+      >
+        <span class="flex-1 min-w-0">Run name</span>
+        <span class="w-[92px] shrink-0">Status</span>
+        <span class="w-[72px] text-right shrink-0">Duration</span>
+        <span class="w-[200px] text-right shrink-0">Start time</span>
+        <span class="w-4 shrink-0" aria-hidden="true" />
+      </div>
+
       <!-- Runs list -->
-      <ul v-else class="divide-y divide-border/70">
+      <ul v-if="total > 0" class="divide-y divide-border/70">
         <TooltipProvider :delay-duration="200">
           <li v-for="run in runs" :key="run.run_id">
             <NuxtLink
               :to="`/pipelines/${run.run_id}`"
               class="group flex items-center gap-4 px-4 py-2 text-sm hover:bg-muted/40 transition-colors"
             >
-              <!-- Status pill -->
+              <!-- Run name (primary visual anchor) -->
               <span
-                :class="[
-                  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset shrink-0 w-[96px] justify-center',
-                  toneFor(run.status).pill,
-                ]"
-              >
-                <component
-                  :is="toneFor(run.status).icon"
-                  v-if="toneFor(run.status).icon"
-                  :class="['h-2.5 w-2.5', toneFor(run.status).iconClass]"
-                  :stroke-width="3"
-                />
-                <span
-                  v-else
-                  :class="['h-1.5 w-1.5 rounded-full', toneFor(run.status).dot]"
-                />
-                {{ toneFor(run.status).label }}
-              </span>
-
-              <!-- Run name -->
-              <span
-                class="flex-1 min-w-0 font-medium text-foreground truncate group-hover:text-primary"
+                class="flex-1 min-w-0 font-semibold text-foreground text-[13px] truncate group-hover:text-primary"
                 :title="run.run_name"
               >
                 {{ run.run_name }}
+              </span>
+
+              <!-- Status chip: dot + tinted label, no background fill -->
+              <span
+                class="inline-flex items-center gap-1.5 shrink-0 w-[92px] text-[11px] font-medium"
+              >
+                <span
+                  :class="[
+                    'inline-flex h-3.5 w-3.5 items-center justify-center rounded-full text-white shrink-0',
+                    toneFor(run.status).dot,
+                  ]"
+                >
+                  <component
+                    :is="toneFor(run.status).icon"
+                    v-if="toneFor(run.status).icon"
+                    :class="['h-2 w-2', toneFor(run.status).iconClass]"
+                    :stroke-width="3"
+                  />
+                  <span
+                    v-else-if="toneFor(run.status).glyph"
+                    class="text-[9px] font-bold leading-none"
+                  >
+                    {{ toneFor(run.status).glyph }}
+                  </span>
+                </span>
+                <span :class="toneFor(run.status).text">
+                  {{ toneFor(run.status).label }}
+                </span>
               </span>
 
               <!-- Duration -->
