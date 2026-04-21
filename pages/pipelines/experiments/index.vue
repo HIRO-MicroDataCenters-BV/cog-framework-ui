@@ -62,22 +62,6 @@ const columns = [
     },
   },
   {
-    id: 'description',
-    size: 320,
-    cell: ({ row }: { row: TableRowType }) => {
-      const desc = row.getValue<string>('description') || '';
-      if (!desc) return '-';
-      return h(
-        'span',
-        {
-          class: 'block truncate max-w-[320px] text-sm text-muted-foreground',
-          title: desc,
-        },
-        desc,
-      );
-    },
-  },
-  {
     id: 'created_at',
     size: 140,
     cell: ({ row }: { row: TableRowType }) => {
