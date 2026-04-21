@@ -1116,11 +1116,13 @@ defineExpose({ fetchData, totalItems });
                   :colspan="row.getAllCells().length"
                   class="border-l border-r border-border p-0 text-sm bg-muted/20"
                 >
-                  <slot name="expanded" :row="row.original">
-                    <div class="p-3 text-muted-foreground">
-                      {{ JSON.stringify(row.original) }}
-                    </div>
-                  </slot>
+                  <div class="expanded-row-content">
+                    <slot name="expanded" :row="row.original">
+                      <div class="p-3 text-muted-foreground">
+                        {{ JSON.stringify(row.original) }}
+                      </div>
+                    </slot>
+                  </div>
                 </TableCell>
               </TableRow>
             </template>
@@ -1218,3 +1220,20 @@ defineExpose({ fetchData, totalItems });
     "
   />
 </template>
+
+<style scoped>
+.expanded-row-content {
+  animation: expand-fade-in 180ms ease-out;
+}
+
+@keyframes expand-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
