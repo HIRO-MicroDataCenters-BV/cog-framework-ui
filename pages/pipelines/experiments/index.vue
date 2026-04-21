@@ -2,11 +2,12 @@
 import type { TableRowType } from '@/types/row.types';
 import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
+import RunStatusDots from '~/components/app/RunStatusDots.vue';
 import { shortenUuid } from '~/utils';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
-const { getExperimentsListV2 } = useApi();
+const { getExperimentsListV2, getRunsByExperimentV2 } = useApi();
 const { setPage } = useApp();
 
 setPage({
@@ -16,9 +17,45 @@ setPage({
 
 const tableRef = ref();
 
-/** Wrapper that forwards AppTable params straight to the KFP experiments API. */
+type RunSummary = {
+  run_id: string;
+  run_name: string;
+  status: string;
+  created_at: string | null;
+};
+
+type ExperimentRow = {
+  experiment_id: string;
+  experiment_name?: string;
+  description?: string;
+  namespace?: string;
+  created_at?: string | null;
+  storage_state?: string;
+  last_runs?: RunSummary[];
+};
+
+/**
+ * Wrapper that forwards AppTable params to the KFP experiments API, then
+ * enriches each row with its most recent runs (mirroring the KFP dashboard's
+ * "Last 5 runs" column).
+ */
 const getExperiments = async (params: Record<string, unknown> = {}) => {
-  return getExperimentsListV2(params);
+  const res = await getExperimentsListV2(params);
+  if (!res || !Array.isArray(res.data)) return res;
+
+  const experiments = res.data as ExperimentRow[];
+
+  const enriched = await Promise.all(
+    experiments.map(async (exp) => {
+      const last_runs = await getRunsByExperimentV2(exp.experiment_id, {
+        limit: 5,
+        namespace: exp.namespace || undefined,
+      });
+      return { ...exp, last_runs };
+    }),
+  );
+
+  return { ...res, data: enriched };
 };
 
 const columns = [
@@ -59,6 +96,16 @@ const columns = [
           default: () => shortenedId,
         },
       );
+    },
+  },
+  {
+    id: 'last_runs',
+    accessorFn: (row: ExperimentRow) => row.last_runs,
+    size: 180,
+    enableSorting: false,
+    cell: ({ row }: { row: TableRowType }) => {
+      const runs = (row.original.last_runs as RunSummary[] | undefined) || [];
+      return h(RunStatusDots, { runs });
     },
   },
   {

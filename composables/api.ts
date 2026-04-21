@@ -2710,6 +2710,84 @@ export const useApi = () => {
         setPage({ ...page.value, isLoading: false });
       }
     },
+
+    /**
+     * Gets the most recent runs for a given experiment.
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API
+     * (`GET {apiRuns}/runs?experiment_id=...`) with a small `page_size` so it
+     * can be used to render e.g. a "last 5 runs" summary next to each
+     * experiment in a list. Archived runs are excluded via the standard
+     * `storage_state != ARCHIVED` predicate used by the KFP dashboard.
+     *
+     * Unlike `getPipelineRunsListV2`, this method does not manage any
+     * pagination/toast/loading side effects — it is intended to be called in
+     * parallel for many experiments and stay silent on failure.
+     *
+     * @param {string} experimentId - Experiment UUID to list runs for
+     * @param {Object} [opts]
+     * @param {number} [opts.limit=5] - Max runs to fetch
+     * @param {string} [opts.namespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Array<{run_id: string, run_name: string, status: string, created_at: string|null}>>}
+     *   List of runs (newest first) or an empty array on error.
+     */
+    getRunsByExperimentV2: async (
+      experimentId: string,
+      opts: { limit?: number; namespace?: string } = {},
+    ) => {
+      if (!experimentId) return [];
+
+      const namespace = opts.namespace || 'admin';
+      const pageSize = opts.limit ?? 5;
+
+      const filter = JSON.stringify({
+        predicates: [
+          {
+            key: 'storage_state',
+            operation: 'NOT_EQUALS',
+            string_value: 'ARCHIVED',
+          },
+        ],
+      });
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        experiment_id: experimentId,
+        page_size: String(pageSize),
+        sort_by: 'created_at desc',
+        filter,
+      });
+
+      const url = `${apiRuns.replace(/\/$/, '')}/runs?${kfpParams.toString()}`;
+
+      try {
+        const response = await fetch(url, { headers: getHeaders() });
+        if (!response.ok) return [];
+
+        const kfpData = await response.json();
+        const kfpRuns: Record<string, unknown>[] = kfpData.runs || [];
+
+        return kfpRuns.map((run) => ({
+          run_id: (run.run_id as string) || '',
+          run_name:
+            (run.display_name as string | undefined) ||
+            (run.run_id as string) ||
+            '',
+          status:
+            (run.state as string | undefined) ||
+            (run.status as string | undefined) ||
+            '',
+          created_at: (run.created_at as string | undefined) || null,
+        }));
+      } catch (err) {
+        console.error(
+          `Error fetching runs for experiment ${experimentId}:`,
+          err,
+        );
+        return [];
+      }
+    },
     // ============================================================================
     // POD MANAGEMENT API
     // ============================================================================

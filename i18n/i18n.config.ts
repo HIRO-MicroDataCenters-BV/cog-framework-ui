@@ -565,6 +565,7 @@ export default defineI18nConfig(() => ({
       column: {
         experiment_id: 'Experiment ID',
         experiment_name: 'Name',
+        last_runs: 'Last 5 runs',
         start_time: 'Start Time',
         id: 'ID',
         dataset_id: 'ID',
