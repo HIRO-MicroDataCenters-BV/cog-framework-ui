@@ -160,6 +160,7 @@ const columns = [
     :has-filters="false"
     :selectable="false"
     :expandable="true"
+    :sortable-columns="['created_at']"
   >
     <template #header-actions>
       <!-- Segmented Active/Archived control (matches the runs list page). -->
