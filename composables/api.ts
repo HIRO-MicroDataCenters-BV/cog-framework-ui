@@ -45,6 +45,12 @@ import modelsServingData from '@/mocks/get.models-serving.json';
 const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
 
 /**
+ * Token cache for KFP experiments list pagination (cursor-based).
+ * Same pattern as {@link pipelineRunsTokenCache} / `getPipelineRunsListV2`.
+ */
+const experimentsListTokenCache = new Map<string, Map<number, string>>();
+
+/**
  * Generate a cache key for pipeline runs pagination tokens
  */
 function getPipelineRunsCacheKey(params: {
@@ -56,6 +62,19 @@ function getPipelineRunsCacheKey(params: {
   sort_order?: string;
 }): string {
   return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+}
+
+/**
+ * Generate a cache key for experiments list pagination tokens
+ */
+function getExperimentsListCacheKey(params: {
+  namespace?: string;
+  storage_state?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+}): string {
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
 }
 
 /**
@@ -2581,6 +2600,278 @@ export const useApi = () => {
         return null;
       } finally {
         setPage({ ...page.value, isLoading: false });
+      }
+    },
+
+    /**
+     * Gets pipeline experiments list directly from the KFP API.
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API
+     * (`GET {apiRuns}/experiments`) to retrieve a list of experiments with
+     * optional search, sorting and pagination. The response is normalised to
+     * the internal shape expected by the app table.
+     *
+     * @param {Object} [params={}] - Query parameters
+     * @param {string} [params.search] - Substring search on experiment name
+     * @param {string} [params.sort_by] - Attribute to sort by
+     * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
+     * @param {number} [params.page=1] - 1-based page number
+     * @param {number} [params.limit=10] - Page size
+     * @param {string} [params.page_token] - Optional KFP cursor; when omitted,
+     *   page 2+ uses tokens cached from prior responses (same pattern as runs).
+     * @param {string} [params.namespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Object>} Normalised response with experiments list
+     */
+    getExperimentsListV2: async (
+      params: {
+        search?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        page?: number;
+        limit?: number;
+        page_token?: string;
+        namespace?: string;
+        /**
+         * Controls the `storage_state` filter predicate.
+         * - `'NOT_ARCHIVED'` (default): lists active experiments
+         *   (`storage_state != ARCHIVED`, matches KFP dashboard behavior).
+         * - `'ARCHIVED'`: lists archived experiments only
+         *   (`storage_state == ARCHIVED`).
+         */
+        storage_state?: 'ARCHIVED' | 'NOT_ARCHIVED';
+      } = {},
+    ) => {
+      if (mockEnabled) {
+        return {
+          status_code: 200,
+          message: 'Experiments',
+          data: [],
+          pagination: {
+            total_items: 0,
+            page: 1,
+            limit: params.limit || 10,
+            total_pages: 0,
+            next_page_token: null,
+          },
+        };
+      }
+
+      const namespace = params.namespace || 'admin';
+      const pageSize = params.limit || 10;
+      const currentPage = params.page || 1;
+
+      const sortBy = params.sort_by
+        ? `${params.sort_by} ${params.sort_order || 'desc'}`
+        : 'created_at desc';
+
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+
+      const cacheKey = getExperimentsListCacheKey({
+        namespace,
+        storage_state: storageState,
+        search: params.search,
+        sort_by: params.sort_by,
+        sort_order: params.sort_order,
+      });
+
+      if (!experimentsListTokenCache.has(cacheKey)) {
+        experimentsListTokenCache.set(cacheKey, new Map());
+      }
+      const pageTokens = experimentsListTokenCache.get(cacheKey)!;
+
+      let pageToken = '';
+      if (currentPage === 1) {
+        pageTokens.clear();
+      } else {
+        pageToken = pageTokens.get(currentPage) || '';
+      }
+      if (params.page_token) {
+        pageToken = params.page_token;
+      }
+
+      const predicates: Array<{
+        key: string;
+        operation: string;
+        string_value: string;
+      }> = [];
+
+      // Archived vs active filter — mirrors the KFP dashboard's default
+      // behavior of hiding archived rows and exposing them under a separate
+      // tab. Defaults to NOT_ARCHIVED to match KFP UI out of the box.
+      predicates.push({
+        key: 'storage_state',
+        operation: storageState === 'ARCHIVED' ? 'EQUALS' : 'NOT_EQUALS',
+        string_value: 'ARCHIVED',
+      });
+
+      if (params.search) {
+        predicates.push({
+          key: 'name',
+          operation: 'IS_SUBSTRING',
+          string_value: params.search,
+        });
+      }
+
+      const filter = JSON.stringify({ predicates });
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        page_token: pageToken,
+        page_size: String(pageSize),
+        sort_by: sortBy,
+        filter,
+      });
+
+      const url = `${apiRuns.replace(/\/$/, '')}/experiments?${kfpParams.toString()}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        const kfpData = await response.json();
+        const kfpExperiments: Record<string, unknown>[] =
+          kfpData.experiments || [];
+
+        const experiments = kfpExperiments.map((exp) => ({
+          experiment_id: exp.experiment_id,
+          experiment_name:
+            (exp.display_name as string | undefined) ||
+            (exp.experiment_id as string),
+          description: (exp.description as string | undefined) || '',
+          namespace: (exp.namespace as string | undefined) || '',
+          created_at: (exp.created_at as string | undefined) || null,
+          storage_state: (exp.storage_state as string | undefined) || '',
+        }));
+
+        const totalSize =
+          (kfpData.total_size as number | undefined) ?? experiments.length;
+        const nextPageToken =
+          (kfpData.next_page_token as string | undefined) || '';
+
+        if (nextPageToken) {
+          pageTokens.set(currentPage + 1, nextPageToken);
+        }
+
+        return {
+          status_code: 200,
+          message: 'Experiments',
+          data: experiments,
+          pagination: {
+            total_items: totalSize,
+            page: currentPage,
+            limit: pageSize,
+            total_pages: Math.ceil(totalSize / pageSize),
+            next_page_token: nextPageToken || null,
+          },
+        };
+      } catch (err) {
+        console.error('Error fetching experiments from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
+    },
+
+    /**
+     * Gets the most recent runs for a given experiment.
+     *
+     * Calls the KubeFlow Pipelines v2beta1 API
+     * (`GET {apiRuns}/runs?experiment_id=...`) with a small `page_size` so it
+     * can be used to render e.g. a "last 5 runs" summary next to each
+     * experiment in a list. Archived runs are excluded via the standard
+     * `storage_state != ARCHIVED` predicate used by the KFP dashboard.
+     *
+     * Unlike `getPipelineRunsListV2`, this method does not manage any
+     * pagination/toast/loading side effects — it is intended to be called in
+     * parallel for many experiments and stay silent on failure.
+     *
+     * @param {string} experimentId - Experiment UUID to list runs for
+     * @param {Object} [opts]
+     * @param {number} [opts.limit=5] - Max runs to fetch
+     * @param {string} [opts.namespace='admin'] - Kubernetes namespace
+     *
+     * @returns {Promise<Array<{run_id: string, run_name: string, status: string, created_at: string|null}>>}
+     *   List of runs (newest first) or an empty array on error.
+     */
+    getRunsByExperiment: async (
+      experimentId: string,
+      opts: { limit?: number; namespace?: string } = {},
+    ) => {
+      if (!experimentId) return [];
+
+      const namespace = opts.namespace || 'admin';
+      const pageSize = opts.limit ?? 5;
+
+      const filter = JSON.stringify({
+        predicates: [
+          {
+            key: 'storage_state',
+            operation: 'NOT_EQUALS',
+            string_value: 'ARCHIVED',
+          },
+        ],
+      });
+
+      const kfpParams = new URLSearchParams({
+        namespace,
+        experiment_id: experimentId,
+        page_size: String(pageSize),
+        sort_by: 'created_at desc',
+        filter,
+      });
+
+      const url = `${apiRuns.replace(/\/$/, '')}/runs?${kfpParams.toString()}`;
+
+      try {
+        const response = await fetch(url, { headers: getHeaders() });
+        if (!response.ok) return [];
+
+        const kfpData = await response.json();
+        const kfpRuns: Record<string, unknown>[] = kfpData.runs || [];
+
+        return kfpRuns.map((run) => {
+          const createdAt = (run.created_at as string | undefined) || null;
+          const finishedAt = (run.finished_at as string | undefined) || null;
+
+          let duration = '-';
+          if (createdAt && finishedAt) {
+            const ms =
+              new Date(finishedAt).getTime() - new Date(createdAt).getTime();
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            duration = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+          }
+
+          return {
+            run_id: (run.run_id as string) || '',
+            run_name:
+              (run.display_name as string | undefined) ||
+              (run.run_id as string) ||
+              '',
+            status:
+              (run.state as string | undefined) ||
+              (run.status as string | undefined) ||
+              '',
+            created_at: createdAt,
+            finished_at: finishedAt,
+            duration,
+          };
+        });
+      } catch (err) {
+        console.error(
+          `Error fetching runs for experiment ${experimentId}:`,
+          err,
+        );
+        return [];
       }
     },
     // ============================================================================

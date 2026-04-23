@@ -102,6 +102,10 @@ const props = defineProps({
     type: String as PropType<string | null>,
     default: null,
   },
+  expandable: {
+    type: Boolean,
+    default: false,
+  },
   hideHeader: {
     type: Boolean,
     default: false,
@@ -393,6 +397,9 @@ const getSectionIcon = (section: string | undefined) => {
   if (section === 'pipeline_runs') {
     return 'lucide:gauge';
   }
+  if (section === 'pipeline_experiments') {
+    return 'lucide:flask-conical';
+  }
   return menu.value.main.find((item) => item.key === section)?.icon;
 };
 
@@ -564,6 +571,7 @@ const table = useVueTable({
   getSubRows: props.groupBy
     ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
     : undefined,
+  getRowCanExpand: props.expandable && !props.groupBy ? () => true : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -871,7 +879,12 @@ watch(
   },
 );
 
-defineExpose({ fetchData, totalItems });
+const resetExpanded = () => {
+  expanded.value = {};
+  table.resetExpanded();
+};
+
+defineExpose({ fetchData, totalItems, resetExpanded });
 </script>
 
 <template>
@@ -1028,7 +1041,11 @@ defineExpose({ fetchData, totalItems });
                   }"
                 >
                   <div
-                    v-if="cellIndex === 0 && groupBy && row.getCanExpand()"
+                    v-if="
+                      cellIndex === 0 &&
+                      (groupBy || expandable) &&
+                      row.getCanExpand()
+                    "
                     class="flex items-center gap-1.5"
                   >
                     <button
@@ -1101,9 +1118,15 @@ defineExpose({ fetchData, totalItems });
               <TableRow v-if="!groupBy && row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
-                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  class="border-l border-r border-border p-0 text-sm bg-muted/20"
                 >
-                  {{ JSON.stringify(row.original) }}
+                  <div class="expanded-row-content">
+                    <slot name="expanded" :row="row.original">
+                      <div class="p-3 text-muted-foreground">
+                        {{ JSON.stringify(row.original) }}
+                      </div>
+                    </slot>
+                  </div>
                 </TableCell>
               </TableRow>
             </template>
@@ -1201,3 +1224,20 @@ defineExpose({ fetchData, totalItems });
     "
   />
 </template>
+
+<style scoped>
+.expanded-row-content {
+  animation: expand-fade-in 180ms ease-out;
+}
+
+@keyframes expand-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

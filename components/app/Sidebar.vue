@@ -28,12 +28,16 @@ const isMainActive = (url: string, hasChildren: boolean) => {
 const isSubActive = (subUrl: string) => {
   const fullPath = route.path;
 
-  // Special handling for Pipelines "Runs" vs "Builder"
+  // Special handling for Pipelines "Runs" vs "Builder" / "Experiments":
+  // run detail pages (e.g. /pipelines/<run-id>) don't match any sub-url
+  // explicitly, so treat bare `/pipelines/...` (that is not builder or
+  // experiments) as "Runs".
   if (subUrl === 'pipelines/run') {
     return (
       fullPath.startsWith('/pipelines/run') ||
       (fullPath.startsWith('/pipelines') &&
         !fullPath.startsWith('/pipelines/builder') &&
+        !fullPath.startsWith('/pipelines/experiments') &&
         !fullPath.startsWith('/pipelines/run'))
     );
   }

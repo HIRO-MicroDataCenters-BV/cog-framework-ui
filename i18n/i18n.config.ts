@@ -13,6 +13,12 @@ export default defineI18nConfig(() => ({
           model_added: 'Model successfully added',
           component_uploaded: 'Component successfully uploaded',
           operation_completed: 'Operation completed successfully',
+          bulk_runs_archived_one: 'Archived 1 run successfully.',
+          bulk_runs_archived_other: 'Archived {count} runs successfully.',
+          bulk_runs_restored_one: 'Restored 1 run successfully.',
+          bulk_runs_restored_other: 'Restored {count} runs successfully.',
+          bulk_runs_deleted_one: 'Deleted 1 run permanently.',
+          bulk_runs_deleted_other: 'Deleted {count} runs permanently.',
           dataset_created: 'Dataset created successfully',
           dataset_deleted: 'Dataset deleted successfully',
           model_deleted: 'Model deleted successfully',
@@ -72,11 +78,15 @@ export default defineI18nConfig(() => ({
           connection_failed: 'Connection failed',
           canary_traffic_update_failed: 'Failed to update canary traffic',
           canary_serving_create_failed: 'Failed to create canary serving',
+          bulk_runs_all_failed:
+            'Could not complete the update for {count} selected run(s).',
         },
         info: {
           operation_in_progress: 'Operation in progress',
         },
         warning: {
+          bulk_runs_partial:
+            '{ok} of {total} runs completed successfully; {failed} failed.',
           validation_error: 'Please check the form for errors',
           test_connection: 'Connection successful, but table not found',
           canary_no_versions_title: 'Cannot create canary rollout',
@@ -97,6 +107,7 @@ export default defineI18nConfig(() => ({
         'model-serving': 'Model Serving',
         pipelines: 'Flow',
         pipeline_runs: 'Run',
+        pipeline_experiments: 'Experiments',
         platform: 'Platform',
         actions: 'Actions',
         dataset_actions: 'Dataset Actions',
@@ -151,6 +162,8 @@ export default defineI18nConfig(() => ({
       description: {
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
+        pipeline_experiments:
+          'Organise and track pipeline runs grouped by experiment. Browse, search and compare experiments across your workspace.',
         edit_model_serving: 'Update traffic percentage for {name}',
       },
       builder: {
@@ -383,6 +396,7 @@ export default defineI18nConfig(() => ({
         upload: 'Upload',
         run: 'Run',
         add_pipelines: 'New Pipeline',
+        add_pipeline_experiments: 'New Experiment',
         previous: 'Previous',
         next: 'Next',
         first: 'First',
@@ -463,6 +477,12 @@ export default defineI18nConfig(() => ({
           dataset_added: 'Dataset {name} successfully added',
           model_added: 'Model successfully added',
           operation_completed: 'Operation completed successfully',
+          bulk_runs_archived_one: 'Archived 1 run successfully.',
+          bulk_runs_archived_other: 'Archived {count} runs successfully.',
+          bulk_runs_restored_one: 'Restored 1 run successfully.',
+          bulk_runs_restored_other: 'Restored {count} runs successfully.',
+          bulk_runs_deleted_one: 'Deleted 1 run permanently.',
+          bulk_runs_deleted_other: 'Deleted {count} runs permanently.',
           dataset_deleted: 'Dataset deleted successfully',
           model_deleted: 'Model deleted successfully',
           pipeline_deleted: 'Pipeline deleted successfully',
@@ -533,6 +553,7 @@ export default defineI18nConfig(() => ({
         training_builder: 'Training Builder',
         runs: 'Runs',
         pipeline_runs: 'Run',
+        pipeline_experiments: 'Experiments',
         model_management: 'Model Management',
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
@@ -559,6 +580,8 @@ export default defineI18nConfig(() => ({
       },
       column: {
         experiment_id: 'Experiment ID',
+        experiment_name: 'Name',
+        last_runs: 'Last 5 runs',
         start_time: 'Start Time',
         id: 'ID',
         dataset_id: 'ID',
