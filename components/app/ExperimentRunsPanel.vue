@@ -446,35 +446,37 @@ const active = computed(
             Clear
           </button>
 
-          <Button
-            v-if="props.tab === 'active' && props.experimentTab === 'active'"
-            size="sm"
-            variant="outline"
-            class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer"
-            @click="openBulkDialog('archive')"
-          >
-            <ArchiveIcon class="h-3 w-3 text-orange-500" />
-            Archive {{ selectedCount }} {{ pluralRun(selectedCount) }}
-          </Button>
-          <template v-else>
+          <template v-if="props.experimentTab === 'active'">
             <Button
+              v-if="props.tab === 'active'"
               size="sm"
               variant="outline"
               class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer"
-              @click="openBulkDialog('restore')"
+              @click="openBulkDialog('archive')"
             >
-              <RotateCcw class="h-3 w-3 text-emerald-500" />
-              Restore {{ selectedCount }} {{ pluralRun(selectedCount) }}
+              <ArchiveIcon class="h-3 w-3 text-orange-500" />
+              Archive {{ selectedCount }} {{ pluralRun(selectedCount) }}
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer text-destructive hover:text-destructive"
-              @click="openBulkDialog('delete')"
-            >
-              <Trash2 class="h-3 w-3" />
-              Delete {{ selectedCount }} {{ pluralRun(selectedCount) }}
-            </Button>
+            <template v-else>
+              <Button
+                size="sm"
+                variant="outline"
+                class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer"
+                @click="openBulkDialog('restore')"
+              >
+                <RotateCcw class="h-3 w-3 text-emerald-500" />
+                Restore {{ selectedCount }} {{ pluralRun(selectedCount) }}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer text-destructive hover:text-destructive"
+                @click="openBulkDialog('delete')"
+              >
+                <Trash2 class="h-3 w-3" />
+                Delete {{ selectedCount }} {{ pluralRun(selectedCount) }}
+              </Button>
+            </template>
           </template>
         </div>
       </div>
