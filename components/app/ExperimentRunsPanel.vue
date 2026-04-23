@@ -35,8 +35,9 @@ const props = withDefaults(
     experimentId: string;
     experimentName?: string;
     tab?: PipelineRunsTab;
+    experimentTab?: 'active' | 'archived';
   }>(),
-  { tab: 'active' },
+  { tab: 'active', experimentTab: 'active' },
 );
 
 const emit = defineEmits<{
@@ -446,7 +447,7 @@ const active = computed(
           </button>
 
           <Button
-            v-if="props.tab === 'active'"
+            v-if="props.tab === 'active' && props.experimentTab === 'active'"
             size="sm"
             variant="outline"
             class="h-7 px-2.5 text-xs gap-1.5 cursor-pointer"
@@ -622,8 +623,11 @@ const active = computed(
       :open="isBulkDialogOpen"
       @update:open="
         (v) => {
+          if (!v) {
+            closeBulkDialog();
+            return;
+          }
           isBulkDialogOpen = v;
-          if (!v) closeBulkDialog();
         }
       "
     >

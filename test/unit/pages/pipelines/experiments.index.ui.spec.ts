@@ -17,7 +17,7 @@ const apiMocks = vi.hoisted(() => ({
       next_page_token: null,
     },
   }),
-  getRunsByExperimentV2: vi.fn().mockResolvedValue([]),
+  getRunsByExperiment: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('@/composables/api', () => ({
@@ -51,7 +51,7 @@ const AppTableStub = defineComponent({
 describe('pages/pipelines/experiments/index.vue', () => {
   beforeEach(() => {
     apiMocks.getExperimentsListV2.mockClear();
-    apiMocks.getRunsByExperimentV2.mockClear();
+    apiMocks.getRunsByExperiment.mockClear();
     apiMocks.getExperimentsListV2.mockResolvedValue({
       status_code: 200,
       data: [],

@@ -8,7 +8,7 @@ import { shortenUuid } from '~/utils';
 
 const { t } = useI18n();
 const dayjs = useDayjs();
-const { getExperimentsListV2, getRunsByExperimentV2 } = useApi();
+const { getExperimentsListV2, getRunsByExperiment } = useApi();
 const { setPage } = useApp();
 
 setPage({
@@ -61,7 +61,7 @@ const getExperiments = async (params: Record<string, unknown> = {}) => {
 
   const enriched = await Promise.all(
     experiments.map(async (exp) => {
-      const last_runs = await getRunsByExperimentV2(exp.experiment_id, {
+      const last_runs = await getRunsByExperiment(exp.experiment_id, {
         limit: 5,
         namespace: exp.namespace || undefined,
       });
@@ -225,7 +225,8 @@ const columns = [
         :runs="row.last_runs || []"
         :experiment-id="row.experiment_id"
         :experiment-name="row.experiment_name"
-        :tab="activeTab"
+        tab="active"
+        :experiment-tab="activeTab"
         @mutated="() => tableRef?.fetchData?.()"
       />
     </template>
