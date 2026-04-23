@@ -45,6 +45,12 @@ import modelsServingData from '@/mocks/get.models-serving.json';
 const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
 
 /**
+ * Token cache for KFP experiments list pagination (cursor-based).
+ * Same pattern as {@link pipelineRunsTokenCache} / `getPipelineRunsListV2`.
+ */
+const experimentsListTokenCache = new Map<string, Map<number, string>>();
+
+/**
  * Generate a cache key for pipeline runs pagination tokens
  */
 function getPipelineRunsCacheKey(params: {
@@ -56,6 +62,19 @@ function getPipelineRunsCacheKey(params: {
   sort_order?: string;
 }): string {
   return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+}
+
+/**
+ * Generate a cache key for experiments list pagination tokens
+ */
+function getExperimentsListCacheKey(params: {
+  namespace?: string;
+  storage_state?: string;
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+}): string {
+  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
 }
 
 /**
@@ -2598,6 +2617,8 @@ export const useApi = () => {
      * @param {'asc'|'desc'} [params.sort_order='desc'] - Sort order
      * @param {number} [params.page=1] - 1-based page number
      * @param {number} [params.limit=10] - Page size
+     * @param {string} [params.page_token] - Optional KFP cursor; when omitted,
+     *   page 2+ uses tokens cached from prior responses (same pattern as runs).
      * @param {string} [params.namespace='admin'] - Kubernetes namespace
      *
      * @returns {Promise<Object>} Normalised response with experiments list
@@ -2609,6 +2630,7 @@ export const useApi = () => {
         sort_order?: 'asc' | 'desc';
         page?: number;
         limit?: number;
+        page_token?: string;
         namespace?: string;
         /**
          * Controls the `storage_state` filter predicate.
@@ -2643,6 +2665,31 @@ export const useApi = () => {
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
         : 'created_at desc';
 
+      const storageState = params.storage_state || 'NOT_ARCHIVED';
+
+      const cacheKey = getExperimentsListCacheKey({
+        namespace,
+        storage_state: storageState,
+        search: params.search,
+        sort_by: params.sort_by,
+        sort_order: params.sort_order,
+      });
+
+      if (!experimentsListTokenCache.has(cacheKey)) {
+        experimentsListTokenCache.set(cacheKey, new Map());
+      }
+      const pageTokens = experimentsListTokenCache.get(cacheKey)!;
+
+      let pageToken = '';
+      if (currentPage === 1) {
+        pageTokens.clear();
+      } else {
+        pageToken = pageTokens.get(currentPage) || '';
+      }
+      if (params.page_token) {
+        pageToken = params.page_token;
+      }
+
       const predicates: Array<{
         key: string;
         operation: string;
@@ -2652,7 +2699,6 @@ export const useApi = () => {
       // Archived vs active filter — mirrors the KFP dashboard's default
       // behavior of hiding archived rows and exposing them under a separate
       // tab. Defaults to NOT_ARCHIVED to match KFP UI out of the box.
-      const storageState = params.storage_state || 'NOT_ARCHIVED';
       predicates.push({
         key: 'storage_state',
         operation: storageState === 'ARCHIVED' ? 'EQUALS' : 'NOT_EQUALS',
@@ -2671,6 +2717,7 @@ export const useApi = () => {
 
       const kfpParams = new URLSearchParams({
         namespace,
+        page_token: pageToken,
         page_size: String(pageSize),
         sort_by: sortBy,
         filter,
@@ -2706,6 +2753,10 @@ export const useApi = () => {
           (kfpData.total_size as number | undefined) ?? experiments.length;
         const nextPageToken =
           (kfpData.next_page_token as string | undefined) || '';
+
+        if (nextPageToken) {
+          pageTokens.set(currentPage + 1, nextPageToken);
+        }
 
         return {
           status_code: 200,
