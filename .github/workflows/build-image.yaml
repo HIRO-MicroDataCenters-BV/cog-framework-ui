@@ -17,10 +17,11 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     # Specify which environment to use for secrets
-    # nuxt branch → Preview environment
-    # main branch → Production environment
-    # develop branch → Production environment (fallback)
-    environment: ${{ github.ref == 'refs/heads/nuxt' && 'Preview' || (github.ref == 'refs/heads/main' && 'Production' || 'Production') }}
+    # main branch        → Production
+    # develop branch     → Preview
+    # nuxt branch (temp) → Preview
+    # tags / other       → Preview
+    environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
 
     env:
       JUJU_IMAGE_TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || 'dev' }}
@@ -33,7 +34,7 @@ jobs:
       - name: Validate Required Secrets
         run: |
           echo "=== VALIDATING REQUIRED SECRETS ==="
-          echo "Environment: ${{ github.ref == 'refs/heads/nuxt' && 'Preview' || (github.ref == 'refs/heads/main' && 'Production' || 'Production') }}"
+          echo "Environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}"
           echo "Branch: ${{ github.ref_name }}"
           echo ""
           
@@ -98,7 +99,7 @@ jobs:
             echo "$MISSING_SECRETS critical secret(s) are missing!"
             echo ""
             echo "Please set the missing secrets in:"
-            echo "Repository → Settings → Secrets and variables → Actions → Environments → ${{ github.ref == 'refs/heads/nuxt' && 'Preview' || (github.ref == 'refs/heads/main' && 'Production' || 'Production') }}"
+            echo "Repository → Settings → Secrets and variables → Actions → Environments → ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}"
             echo ""
             exit 1
           fi
