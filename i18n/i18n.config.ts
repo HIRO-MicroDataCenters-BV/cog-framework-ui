@@ -24,6 +24,7 @@ export default defineI18nConfig(() => ({
           model_deleted: 'Model deleted successfully',
           pipeline_deleted: 'Pipeline deleted successfully',
           model_serving_deleted: 'Model service deleted successfully',
+          model_serving_created: 'Model serving created successfully',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',

@@ -7,6 +7,7 @@ import CopyPaste from '~/components/app/CopyPaste.vue';
 import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
 import ModelServingCanaryDialog from '~/components/app/dialog/ModelServingCanaryDialog.vue';
+import ServeModelDialog from '~/components/app/dialog/ServeModelDialog.vue';
 import AppTable from '~/components/app/Table.vue';
 import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
@@ -473,8 +474,18 @@ async function onCardRefreshStatus(isvcName: string) {
   }
 }
 
+const serveDialogOpen = ref(false);
+
 function onServeModel() {
-  // TODO: Open serve-model dialog or navigate to serve flow
+  serveDialogOpen.value = true;
+}
+
+function closeServeDialog() {
+  serveDialogOpen.value = false;
+}
+
+function onServeCreated() {
+  fetchList();
 }
 
 onMounted(() => {
@@ -779,6 +790,12 @@ onMounted(() => {
       :base-serving="canaryBaseServing"
       @close="closeCanaryDialog"
       @created="fetchList"
+    />
+
+    <ServeModelDialog
+      :open="serveDialogOpen"
+      @close="closeServeDialog"
+      @created="onServeCreated"
     />
   </div>
 </template>
