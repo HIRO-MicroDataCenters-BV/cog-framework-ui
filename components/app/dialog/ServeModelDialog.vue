@@ -638,9 +638,7 @@ const submit = async () => {
   isSubmitting.value = true;
   try {
     const payload =
-      mode.value === 'classical'
-        ? buildClassicalPayload()
-        : buildLlmPayload();
+      mode.value === 'classical' ? buildClassicalPayload() : buildLlmPayload();
     // DEBUG: inspect request body before sending to the backend
     console.log('[ServeModelDialog] POST /models-serving', {
       mode: mode.value,
