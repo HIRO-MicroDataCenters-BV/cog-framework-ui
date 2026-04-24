@@ -335,19 +335,46 @@ export const useApi = () => {
      * @param {Object} data - Model serving create data
      * @returns {Promise<Object>} Response containing created model serving data
      */
-    postModelServing: async (data: {
-      model_id: string;
-      isvc_name: string;
-      model_name: string;
-      model_version: string;
-      dataset_id?: string;
-      transformer_image?: string;
-      transformer_parameters?: unknown;
-      protocol_version: string;
-      model_format: string;
-      artifact_path?: string;
-    }) => {
-      return request(`/models-serving`, 'POST', data);
+    postModelServing: async (
+      data:
+        | {
+            model_id: string;
+            isvc_name?: string;
+            model_name?: string;
+            model_version?: string;
+            dataset_id?: string;
+            transformer_image?: string;
+            transformer_parameters?: Record<string, unknown>;
+            protocol_version?: string;
+            model_format?: string;
+            artifact_path?: string;
+            lora_model_ids?: string[];
+          }
+        | {
+            hf_model_id: string;
+            isvc_name?: string;
+            served_model_name?: string;
+            hf_token?: string;
+            max_model_len?: number;
+            dtype?: string;
+            tensor_parallel_size?: number;
+            resources?: {
+              requests?: Record<string, string>;
+              limits?: Record<string, string>;
+            };
+            tolerations?: Array<{
+              key?: string;
+              operator?: string;
+              value?: string;
+              effect?: string;
+            }>;
+            min_replicas?: number;
+            max_replicas?: number;
+          },
+      options?: { showToast?: boolean; successMessage?: string },
+    ) => {
+      console.log(data);
+      return request(`/models-serving`, 'POST', data, options);
     },
 
     /**
