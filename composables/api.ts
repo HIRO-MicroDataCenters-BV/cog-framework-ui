@@ -339,7 +339,7 @@ export const useApi = () => {
       data:
         | {
             model_id: string;
-            isvc_name: string;
+            isvc_name?: string;
             model_name?: string;
             model_version?: string;
             dataset_id?: string;
@@ -351,8 +351,8 @@ export const useApi = () => {
             lora_model_ids?: string[];
           }
         | {
-            isvc_name: string;
             hf_model_id: string;
+            isvc_name?: string;
             served_model_name?: string;
             hf_token?: string;
             max_model_len?: number;
@@ -373,6 +373,7 @@ export const useApi = () => {
           },
       options?: { showToast?: boolean; successMessage?: string },
     ) => {
+      console.log(data);
       return request(`/models-serving`, 'POST', data, options);
     },
 

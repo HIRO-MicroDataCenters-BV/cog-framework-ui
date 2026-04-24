@@ -100,27 +100,27 @@ describe('ServeModelDialog', () => {
     expect(wrapper.text()).toContain('Advanced');
   });
 
-  it('disables Serve until required classical fields are valid', async () => {
+  it('disables Serve until model_id is filled; still validates isvc format when typed', async () => {
     const wrapper = mountDialog();
-    const serve = findButton(wrapper, 'Serve')!;
-    expect(serve.attributes('disabled')).toBeDefined();
+    expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
 
+    // Input order: [0] isvc_name, [1] model_id
     const inputs = wrapper.findAll('input');
     await inputs[0].setValue('Invalid_Name');
     await inputs[1].setValue('uuid');
     expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
 
-    await inputs[0].setValue('hp3');
+    // Clear the invalid isvc — model_id alone should enable Serve
+    await inputs[0].setValue('');
     await flushPromises();
     expect(
       findButton(wrapper, 'Serve')!.attributes('disabled'),
     ).toBeUndefined();
   });
 
-  it('submits classical minimum payload', async () => {
+  it('submits classical minimum payload (only model_id)', async () => {
     const wrapper = mountDialog();
     const inputs = wrapper.findAll('input');
-    await inputs[0].setValue('hp3');
     await inputs[1].setValue('550e8400-e29b-41d4-a716-446655440002');
 
     await findButton(wrapper, 'Serve')!.trigger('click');
@@ -130,10 +130,21 @@ describe('ServeModelDialog', () => {
     const [body, options] = postModelServing.mock.calls[0];
     expect(body).toEqual({
       model_id: '550e8400-e29b-41d4-a716-446655440002',
-      isvc_name: 'hp3',
       protocol_version: 'v2',
     });
     expect(options).toEqual({ successMessage: 'model_serving_created' });
+  });
+
+  it('classical includes isvc_name only when filled', async () => {
+    const wrapper = mountDialog();
+    const inputs = wrapper.findAll('input');
+    await inputs[0].setValue('hp3');
+    await inputs[1].setValue('uuid');
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({ model_id: 'uuid', isvc_name: 'hp3' });
   });
 
   it('blocks classical submit when transformer JSON is invalid', async () => {
@@ -147,7 +158,7 @@ describe('ServeModelDialog', () => {
     expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
   });
 
-  it('switches to LLM mode: only isvc and hf_model_id are required', async () => {
+  it('LLM mode: only hf_model_id is required; Serve enabled as soon as it is filled', async () => {
     const wrapper = mountDialog();
     await clickLlmTab(wrapper);
 
@@ -163,34 +174,36 @@ describe('ServeModelDialog', () => {
     const inputs = wrapper.findAll('input');
     await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
     await flushPromises();
-    expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
-
-    await inputs[1].setValue('qwen25-coder');
-    await flushPromises();
     expect(
       findButton(wrapper, 'Serve')!.attributes('disabled'),
     ).toBeUndefined();
   });
 
-  it('submits LLM minimum payload (only isvc + hf_model_id)', async () => {
+  it('submits LLM minimum payload (only hf_model_id + default tolerations)', async () => {
     const wrapper = mountDialog();
     await clickLlmTab(wrapper);
 
     const inputs = wrapper.findAll('input');
     await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
-    await inputs[1].setValue('qwen25-coder');
 
     await findButton(wrapper, 'Serve')!.trigger('click');
     await flushPromises();
 
     const [body] = postModelServing.mock.calls[0];
     expect(body).toEqual({
-      isvc_name: 'qwen25-coder',
       hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct',
+      tolerations: [
+        {
+          key: 'storage-type',
+          operator: 'Equal',
+          value: 'local',
+          effect: 'NoSchedule',
+        },
+      ],
     });
   });
 
-  it('includes served_model_name only when user fills it', async () => {
+  it('includes isvc_name and served_model_name only when filled', async () => {
     const wrapper = mountDialog();
     await clickLlmTab(wrapper);
 
@@ -203,9 +216,9 @@ describe('ServeModelDialog', () => {
     await flushPromises();
 
     const [body] = postModelServing.mock.calls[0];
-    expect(body).toEqual({
-      isvc_name: 'qwen25-coder',
+    expect(body).toMatchObject({
       hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct',
+      isvc_name: 'qwen25-coder',
       served_model_name: 'my-served-name',
     });
   });

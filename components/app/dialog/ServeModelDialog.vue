@@ -77,7 +77,7 @@
         <template v-if="mode === 'classical'">
           <SectionHeader title="Basics" />
           <div class="space-y-3">
-            <FieldRow label="Service name" required>
+            <FieldRow label="Service name">
               <Input
                 v-model="classical.isvc_name"
                 placeholder="e.g. hp3"
@@ -180,7 +180,7 @@
                 Format: <code class="font-mono">org/model</code>
               </p>
             </FieldRow>
-            <FieldRow label="Service name" required>
+            <FieldRow label="Service name">
               <Input
                 v-model="llm.isvc_name"
                 placeholder="e.g. qwen25-coder"
@@ -436,7 +436,14 @@ const blankLlm = () => ({
   res_gpu_lim: '',
   min_replicas: undefined as number | undefined,
   max_replicas: undefined as number | undefined,
-  tolerations: [] as Array<{
+  tolerations: [
+    {
+      key: 'storage-type',
+      operator: 'Equal',
+      value: 'local',
+      effect: 'NoSchedule',
+    },
+  ] as Array<{
     key: string;
     operator: string;
     value: string;
@@ -462,13 +469,16 @@ const isValidJson = (raw: string) => {
 const isValid = computed(() => {
   if (mode.value === 'classical') {
     return (
-      isValidIsvcName(classical.isvc_name) &&
       !!classical.model_id.trim() &&
+      (!classical.isvc_name.trim() || isValidIsvcName(classical.isvc_name)) &&
       (!classical.transformer_parameters_json.trim() ||
         isValidJson(classical.transformer_parameters_json))
     );
   }
-  return isValidIsvcName(llm.isvc_name) && !!llm.hf_model_id.trim();
+  return (
+    !!llm.hf_model_id.trim() &&
+    (!llm.isvc_name.trim() || isValidIsvcName(llm.isvc_name))
+  );
 });
 
 const setMode = (next: Mode) => {
@@ -512,7 +522,7 @@ const close = () => {
 
 type ClassicalPayload = {
   model_id: string;
-  isvc_name: string;
+  isvc_name?: string;
   model_name?: string;
   model_version?: string;
   protocol_version?: string;
@@ -523,8 +533,8 @@ type ClassicalPayload = {
 };
 
 type LlmPayload = {
-  isvc_name: string;
   hf_model_id: string;
+  isvc_name?: string;
   served_model_name?: string;
   hf_token?: string;
   dtype?: string;
@@ -547,8 +557,9 @@ type LlmPayload = {
 const buildClassicalPayload = (): ClassicalPayload => {
   const payload: ClassicalPayload = {
     model_id: classical.model_id.trim(),
-    isvc_name: classical.isvc_name.trim(),
   };
+  if (classical.isvc_name.trim())
+    payload.isvc_name = classical.isvc_name.trim();
   if (classical.model_name.trim())
     payload.model_name = classical.model_name.trim();
   if (classical.model_version.trim())
@@ -577,9 +588,9 @@ const buildClassicalPayload = (): ClassicalPayload => {
 
 const buildLlmPayload = (): LlmPayload => {
   const payload: LlmPayload = {
-    isvc_name: llm.isvc_name.trim(),
     hf_model_id: llm.hf_model_id.trim(),
   };
+  if (llm.isvc_name.trim()) payload.isvc_name = llm.isvc_name.trim();
   if (llm.served_model_name.trim())
     payload.served_model_name = llm.served_model_name.trim();
   if (llm.hf_token.trim()) payload.hf_token = llm.hf_token.trim();
@@ -626,15 +637,18 @@ const submit = async () => {
   if (!isValid.value || isSubmitting.value) return;
   isSubmitting.value = true;
   try {
-    if (mode.value === 'classical') {
-      await postModelServing(buildClassicalPayload(), {
-        successMessage: 'model_serving_created',
-      });
-    } else {
-      await postModelServing(buildLlmPayload(), {
-        successMessage: 'model_serving_created',
-      });
-    }
+    const payload =
+      mode.value === 'classical'
+        ? buildClassicalPayload()
+        : buildLlmPayload();
+    // DEBUG: inspect request body before sending to the backend
+    console.log('[ServeModelDialog] POST /models-serving', {
+      mode: mode.value,
+      body: payload,
+    });
+    await postModelServing(payload, {
+      successMessage: 'model_serving_created',
+    });
     emit('created');
     emit('close');
   } catch (err) {
