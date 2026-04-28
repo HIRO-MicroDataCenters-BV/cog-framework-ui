@@ -944,7 +944,15 @@ defineExpose({ fetchData, totalItems, resetExpanded });
                 />
               </Button>
 
-              <Button class="cursor-pointer" @click="() => add()">
+              <Button
+                v-if="
+                  ['datasets', 'models', 'pipelines', 'pipeline_runs'].includes(
+                    page.section,
+                  )
+                "
+                class="cursor-pointer"
+                @click="() => add()"
+              >
                 <Icon name="lucide:plus" />
                 {{
                   t(
