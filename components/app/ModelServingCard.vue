@@ -43,22 +43,32 @@
               <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
                 {{ serving.status }}
               </Badge>
-              <Button
+              <TooltipProvider
                 v-if="
                   serving.status && serving.status.toLowerCase() !== 'ready'
                 "
-                variant="ghost"
-                size="icon"
-                class="h-5 w-5 text-muted-foreground hover:text-foreground"
-                title="Refresh status"
-                :disabled="refreshing"
-                @click.stop="emit('refresh-status', serving.isvc_name)"
+                :delay-duration="300"
               >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="['h-3 w-3', refreshing && 'animate-spin']"
-                />
-              </Button>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="h-5 w-5 text-muted-foreground hover:text-foreground"
+                      :disabled="refreshing"
+                      @click.stop="emit('refresh-status', serving.isvc_name)"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="['h-3 w-3', refreshing && 'animate-spin']"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="text-[11px] px-2 py-1">
+                    Refresh status
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <span
               v-if="serving.age"
