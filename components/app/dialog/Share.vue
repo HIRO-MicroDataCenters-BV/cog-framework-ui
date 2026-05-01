@@ -125,12 +125,6 @@
                     {{ t('share.permission_view') }}
                   </div>
                 </SelectItem>
-                <SelectItem value="edit" disabled>
-                  <div class="flex items-center gap-2">
-                    <Icon name="lucide:pencil" class="h-4 w-4" />
-                    {{ t('share.permission_edit') }}
-                  </div>
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -180,9 +174,6 @@
                   <SelectContent>
                     <SelectItem value="view">
                       {{ t('share.permission_view') }}
-                    </SelectItem>
-                    <SelectItem value="edit" disabled>
-                      {{ t('share.permission_edit') }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
