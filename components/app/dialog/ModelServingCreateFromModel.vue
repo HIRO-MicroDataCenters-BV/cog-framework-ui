@@ -126,7 +126,7 @@
           </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_format" class="text-right">Model format</Label>
+            <Label for="model_format" class="text-right">Model format *</Label>
             <div class="col-span-3">
               <Select v-model="form.model_format">
                 <SelectTrigger id="model_format" class="w-full">
@@ -390,7 +390,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing, getModelArtifacts } = useApi();
+const { postModelServing, getModelAssociationsById } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -509,6 +509,7 @@ const canGoNext = computed(() => {
       isValidIsvcName.value &&
       !!form.model_name &&
       !!form.model_version &&
+      !!form.model_format &&
       (!artifactPaths.value.length || !!selectedArtifactPath.value)
     );
   }
@@ -584,7 +585,7 @@ const fetchModelArtifacts = async (modelId: string) => {
   artifactPaths.value = [];
   selectedArtifactPath.value = '';
   try {
-    const res = await getModelArtifacts(modelId, { showToast: false });
+    const res = await getModelAssociationsById(modelId);
     if (res?.data?.length && res.data[0]?.artifacts?.model_files) {
       const modelFiles = res.data[0].artifacts.model_files;
       const folders = new Set<string>();
