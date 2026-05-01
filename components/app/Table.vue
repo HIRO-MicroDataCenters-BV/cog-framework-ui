@@ -37,6 +37,12 @@ import type {
 import AppDialogDataset from '~/components/app/dialog/Dataset.vue';
 import AppDialogModel from '~/components/app/dialog/Model.vue';
 import ColumnFilter from '~/components/app/table/ColumnFilter.vue';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 const props = defineProps({
   dataSource: {
@@ -927,22 +933,30 @@ defineExpose({ fetchData, totalItems, resetExpanded });
             <div class="flex gap-2 items-center">
               <slot name="header-actions" />
 
-              <Button
-                variant="outline"
-                size="icon"
-                class="cursor-pointer shrink-0"
-                :title="t('action.refresh')"
-                :disabled="isRefreshing"
-                @click="fetchData()"
-              >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    isRefreshing && 'animate-spin',
-                  ]"
-                />
-              </Button>
+              <TooltipProvider :delay-duration="300">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="cursor-pointer shrink-0"
+                      :disabled="isRefreshing"
+                      @click="fetchData()"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="[
+                          'h-4 w-4 transition-transform duration-300',
+                          isRefreshing && 'animate-spin',
+                        ]"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {{ t('action.refresh') }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <Button
                 v-if="
@@ -960,6 +974,8 @@ defineExpose({ fetchData, totalItems, resetExpanded });
                   )
                 }}
               </Button>
+
+              <slot name="header-actions-end" />
             </div>
           </div>
         </div>

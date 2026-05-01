@@ -6,15 +6,21 @@
     >
       <AppPanel :title="$t('builder.components')">
         <template #actions>
-          <button
-            v-for="action in menuActions"
-            :key="action.key"
-            class="p-1 rounded hover:bg-muted"
-            :title="$t(action.titleKey)"
-            @click="action.action"
-          >
-            <Icon :name="action.icon" class="w-4 h-4" />
-          </button>
+          <TooltipProvider :delay-duration="300">
+            <Tooltip v-for="action in menuActions" :key="action.key">
+              <TooltipTrigger as-child>
+                <button
+                  class="p-1 rounded hover:bg-muted"
+                  @click="action.action"
+                >
+                  <Icon :name="action.icon" class="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {{ $t(action.titleKey) }}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </template>
         <LibrarySidebar ref="librarySidebar" @drag-start="onDragStart" />
       </AppPanel>
@@ -27,15 +33,21 @@
         <h3 class="text-sm font-medium text-muted-foreground flex-1">
           {{ $t('builder.components') }}
         </h3>
-        <button
-          v-for="action in menuActions"
-          :key="action.key"
-          class="p-1 rounded hover:bg-muted pointer-events-auto"
-          :title="$t(action.titleKey)"
-          @click="action.action"
-        >
-          <Icon :name="action.icon" class="w-4 h-4" />
-        </button>
+        <TooltipProvider :delay-duration="300">
+          <Tooltip v-for="action in menuActions" :key="action.key">
+            <TooltipTrigger as-child>
+              <button
+                class="p-1 rounded hover:bg-muted pointer-events-auto"
+                @click="action.action"
+              >
+                <Icon :name="action.icon" class="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {{ $t(action.titleKey) }}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
 
@@ -113,6 +125,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import type {
   Node,
   Edge,

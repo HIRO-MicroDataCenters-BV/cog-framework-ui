@@ -31,6 +31,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
@@ -508,27 +514,44 @@ onMounted(() => {
       class="grow"
     >
       <template #header-actions>
-        <div
-          class="flex rounded-md border border-border overflow-hidden shrink-0"
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            class="rounded-none h-8 px-2.5 bg-muted"
-            title="Table view"
+        <TooltipProvider :delay-duration="300">
+          <div
+            class="flex rounded-md border border-border overflow-hidden shrink-0"
           >
-            <Icon name="lucide:table-2" class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            class="rounded-none h-8 px-2.5"
-            title="Cards view"
-            @click="viewMode = 'cards'"
-          >
-            <Icon name="lucide:layout-grid" class="h-4 w-4" />
-          </Button>
-        </div>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5 bg-muted"
+                >
+                  <Icon name="lucide:table-2" class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Table view</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5"
+                  @click="viewMode = 'cards'"
+                >
+                  <Icon name="lucide:layout-grid" class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Cards view</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      </template>
+
+      <template #header-actions-end>
+        <Button class="cursor-pointer gap-2" @click="onServeModel">
+          <Icon name="lucide:plus" class="h-4 w-4" />
+          {{ t(`action.add_${page.section}`) }}
+        </Button>
       </template>
     </AppTable>
 
@@ -590,47 +613,65 @@ onMounted(() => {
             </Select>
 
             <div class="flex gap-2 items-center">
-              <div
-                class="flex rounded-md border border-border overflow-hidden shrink-0"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-none h-8 px-2.5"
-                  :class="viewMode === 'table' ? 'bg-muted' : ''"
-                  title="Table view"
-                  @click="viewMode = 'table'"
+              <TooltipProvider :delay-duration="300">
+                <div
+                  class="flex rounded-md border border-border overflow-hidden shrink-0"
                 >
-                  <Icon name="lucide:table-2" class="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-none h-8 px-2.5"
-                  :class="viewMode === 'cards' ? 'bg-muted' : ''"
-                  title="Cards view"
-                  @click="viewMode = 'cards'"
-                >
-                  <Icon name="lucide:layout-grid" class="h-4 w-4" />
-                </Button>
-              </div>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="rounded-none h-8 px-2.5"
+                        :class="viewMode === 'table' ? 'bg-muted' : ''"
+                        @click="viewMode = 'table'"
+                      >
+                        <Icon name="lucide:table-2" class="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Table view</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="rounded-none h-8 px-2.5"
+                        :class="viewMode === 'cards' ? 'bg-muted' : ''"
+                        @click="viewMode = 'cards'"
+                      >
+                        <Icon name="lucide:layout-grid" class="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Cards view</TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
 
-              <Button
-                variant="outline"
-                size="icon"
-                class="cursor-pointer shrink-0"
-                :title="t('action.refresh')"
-                :disabled="isRefreshing"
-                @click="refresh()"
-              >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    isRefreshing && 'animate-spin',
-                  ]"
-                />
-              </Button>
+              <TooltipProvider :delay-duration="300">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="cursor-pointer shrink-0"
+                      :disabled="isRefreshing"
+                      @click="refresh()"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="[
+                          'h-4 w-4 transition-transform duration-300',
+                          isRefreshing && 'animate-spin',
+                        ]"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {{ t('action.refresh') }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <Button class="cursor-pointer gap-2" @click="onServeModel">
                 <Icon name="lucide:plus" class="h-4 w-4" />
