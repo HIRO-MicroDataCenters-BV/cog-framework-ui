@@ -379,6 +379,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup } from '~/components/ui/radio-group';
 import RadioGroupItem from '~/components/ui/radio-group/RadioGroupItem.vue';
+import { sanitizeIsvcName } from '~/utils/sanitizeIsvcName';
 
 const props = defineProps<{
   open: boolean;
@@ -473,10 +474,8 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    // Initial service name must follow RFC 1123: lowercase, no underscores
-    form.isvc_name = form.model_name
-      ? `${form.model_name.replace(/_/g, '-').toLowerCase()}-serving`
-      : '';
+    const sanitized = sanitizeIsvcName(form.model_name);
+    form.isvc_name = sanitized ? `${sanitized}-serving` : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);
     }
@@ -566,7 +565,7 @@ const handleSubmit = async () => {
         model_format: form.model_format,
         artifact_path: selectedArtifactPath.value || undefined,
       },
-      { successMessage: 'operation_completed' },
+      { useResponseMessage: true },
     );
     emit('created');
     resetState();
