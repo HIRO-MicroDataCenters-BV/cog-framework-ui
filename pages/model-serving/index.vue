@@ -260,8 +260,27 @@ watch(sortOrder, () => {
 const tableColumns = [
   {
     id: 'isvc_name',
-    size: 180,
-    cell: ({ row }: { row: TableRowType }) => row.getValue('isvc_name'),
+    size: 240,
+    cell: ({ row }: { row: TableRowType }) => {
+      const name = row.getValue<string>('isvc_name') ?? '';
+      return h(
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  'span',
+                  { class: 'truncate block max-w-[220px] text-sm' },
+                  name || '—',
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => name),
+            ],
+          }),
+      );
+    },
   },
   {
     id: 'model_name',
