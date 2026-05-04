@@ -379,6 +379,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup } from '~/components/ui/radio-group';
 import RadioGroupItem from '~/components/ui/radio-group/RadioGroupItem.vue';
+import { sanitizeIsvcName } from '~/utils/sanitizeIsvcName';
 
 const props = defineProps<{
   open: boolean;
@@ -473,14 +474,7 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    // Initial service name must be RFC 1123 compliant: lowercase a-z, 0-9,
-    // hyphens; start/end alphanumeric. Replace any other char (".", "_",
-    // spaces, etc.) with "-", collapse runs, trim edges.
-    const sanitized = form.model_name
-      .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    const sanitized = sanitizeIsvcName(form.model_name);
     form.isvc_name = sanitized ? `${sanitized}-serving` : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);
