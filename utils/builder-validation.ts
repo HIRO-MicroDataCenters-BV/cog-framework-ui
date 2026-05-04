@@ -212,14 +212,16 @@ export function validateConstant(source: string, type: string): string | null {
   switch (normalizedType) {
     case 'integer':
     case 'int':
+      if (!/^-?\d+$/.test(source)) {
+        return 'validation.input.constant_integer';
+      }
+      break;
+
     case 'float':
     case 'double':
     case 'number':
-      // Allow any number format for these types since we treat them as compatible
       if (!/^-?\d+(\.\d+)?$/.test(source)) {
-        return normalizedType.includes('int')
-          ? 'validation.input.constant_integer'
-          : 'validation.input.constant_float';
+        return 'validation.input.constant_float';
       }
       break;
 
