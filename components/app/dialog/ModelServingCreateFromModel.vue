@@ -566,7 +566,7 @@ const handleSubmit = async () => {
         model_format: form.model_format,
         artifact_path: selectedArtifactPath.value || undefined,
       },
-      { successMessage: 'operation_completed' },
+      { useResponseMessage: true },
     );
     emit('created');
     resetState();

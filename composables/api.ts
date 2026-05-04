@@ -147,11 +147,16 @@ export const useApi = () => {
     url: string,
     method: string = 'GET',
     body?: unknown,
-    options?: { showToast?: boolean; successMessage?: string },
+    options?: {
+      showToast?: boolean;
+      successMessage?: string;
+      useResponseMessage?: boolean;
+    },
   ) => {
     const isFormData = body instanceof FormData;
     const showToast = options?.showToast ?? true;
     const customSuccessMessage = options?.successMessage;
+    const useResponseMessage = options?.useResponseMessage ?? false;
     const isModifyingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
       method,
     );
@@ -248,8 +253,13 @@ export const useApi = () => {
       } else {
         // Show success toast only for modifying requests (POST, PUT, PATCH, DELETE) and if enabled
         if (isModifyingRequest && showToast) {
-          const successMessage = customSuccessMessage || 'operation_completed';
-          toaster.show('success', successMessage);
+          if (useResponseMessage && typeof data?.message === 'string') {
+            toaster.show('success', data.message, undefined, { raw: true });
+          } else {
+            const successMessage =
+              customSuccessMessage || 'operation_completed';
+            toaster.show('success', successMessage);
+          }
         }
       }
 
@@ -371,7 +381,11 @@ export const useApi = () => {
             min_replicas?: number;
             max_replicas?: number;
           },
-      options?: { showToast?: boolean; successMessage?: string },
+      options?: {
+        showToast?: boolean;
+        successMessage?: string;
+        useResponseMessage?: boolean;
+      },
     ) => {
       console.log(data);
       return request(`/models-serving`, 'POST', data, options);
@@ -398,7 +412,11 @@ export const useApi = () => {
         model_format?: string;
         enable_tag_routing?: boolean;
       },
-      options?: { showToast?: boolean; successMessage?: string },
+      options?: {
+        showToast?: boolean;
+        successMessage?: string;
+        useResponseMessage?: boolean;
+      },
     ) => {
       return request(`/models-serving`, 'PATCH', data, options);
     },
