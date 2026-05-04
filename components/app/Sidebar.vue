@@ -187,10 +187,7 @@ const toggleTheme = () => {
           </template>
 
           <SidebarMenuItem>
-            <SidebarMenuButton
-              as-child
-              :tooltip="t('menu.infra_dashboard')"
-            >
+            <SidebarMenuButton as-child :tooltip="t('menu.infra_dashboard')">
               <a
                 :href="infraDashboardUrl"
                 target="_blank"
