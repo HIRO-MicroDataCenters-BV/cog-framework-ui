@@ -9,7 +9,11 @@ const config = useRuntimeConfig();
 const menu = uselistMenus();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
-// const urlOrigin = window.location.origin;
+
+// Infra Dashboard lives at the bare origin (e.g. https://dashboard.cog.hiro-develop.nl/).
+// Our UI is mounted under a context path (/uidev or /cogui), so strip the path
+// by using only the origin from the current request URL.
+const infraDashboardUrl = computed(() => useRequestURL().origin);
 
 const route = useRoute();
 const query = computed(() => route.query);
@@ -181,6 +185,21 @@ const toggleTheme = () => {
               </SidebarMenuItem>
             </Collapsible>
           </template>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton as-child :tooltip="t('menu.infra_dashboard')">
+              <a
+                :href="infraDashboardUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="text-lg">
+                  <Icon name="lucide:layout-dashboard" />
+                </span>
+                <span>{{ t('menu.infra_dashboard') }}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
     </SidebarContent>

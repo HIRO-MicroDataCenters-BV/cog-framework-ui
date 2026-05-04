@@ -562,6 +562,7 @@ export default defineI18nConfig(() => ({
         pipelines_builder: 'Builder',
         datasets: 'Datasets',
         models: 'Models',
+        infra_dashboard: 'Infra Dashboard',
       },
       step: {
         type: 'Type',
