@@ -66,8 +66,18 @@
             v-model="formData.default"
             type="text"
             :placeholder="getDefaultPlaceholder()"
-            @input="inferType"
+            :aria-invalid="!!errors.default"
+            @input="validateDefault"
           />
+          <div class="h-1 -mt-1" aria-live="polite">
+            <p
+              v-if="errors.default"
+              class="text-xs text-destructive leading-tight"
+              role="alert"
+            >
+              {{ errors.default }}
+            </p>
+          </div>
         </div>
 
         <!-- Description -->
@@ -117,6 +127,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { PipelineInputParam } from '~/types/canvas.types';
+import { validateConstant } from '~/utils/builder-validation';
 
 interface Props {
   open: boolean;
@@ -147,6 +158,7 @@ const formData = ref({
 
 const errors = ref({
   name: '',
+  default: '',
 });
 
 // Auto-focus name input when dialog opens
@@ -161,7 +173,7 @@ watch(
         default: '',
         description: '',
       };
-      errors.value = { name: '' };
+      errors.value = { name: '', default: '' };
 
       // Focus name input - use getElementById as fallback
       nextTick(() => {
@@ -203,27 +215,30 @@ const validateName = () => {
   return true;
 };
 
-// Infer type from default value
-const inferType = () => {
+// Validate default value against the selected type. Default is optional, so
+// empty is fine; non-empty must satisfy the type-specific rule (e.g. an
+// Integer parameter cannot have "1.0" as its default).
+const validateDefault = () => {
   const value = formData.value.default.trim();
 
-  if (!value) return;
-
-  // Check if it's a number
-  if (!isNaN(Number(value))) {
-    formData.value.type = value.includes('.') ? 'Float' : 'Integer';
-    return;
+  if (!value) {
+    errors.value.default = '';
+    return true;
   }
 
-  // Check if it's a boolean
-  if (value === 'true' || value === 'false') {
-    formData.value.type = 'Boolean';
-    return;
+  const errorKey = validateConstant(value, formData.value.type);
+
+  if (errorKey && errorKey !== 'validation.input.constant_required') {
+    errors.value.default = t(errorKey);
+    return false;
   }
 
-  // Default to String
-  formData.value.type = 'String';
+  errors.value.default = '';
+  return true;
 };
+
+// Re-validate whenever the user changes the type via the dropdown.
+watch(() => formData.value.type, validateDefault);
 
 // Get placeholder based on type
 const getDefaultPlaceholder = (): string => {
@@ -245,13 +260,14 @@ const isValid = computed(() => {
   return (
     formData.value.name.trim() !== '' &&
     formData.value.type !== '' &&
-    !errors.value.name
+    !errors.value.name &&
+    !errors.value.default
   );
 });
 
 // Handle create
 const handleCreate = () => {
-  if (!validateName() || !isValid.value) return;
+  if (!validateName() || !validateDefault() || !isValid.value) return;
 
   const newParameter: PipelineInputParam = {
     name: formData.value.name.trim(),

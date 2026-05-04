@@ -53,7 +53,10 @@
                   {{ param.name }}
                 </div>
                 <template v-if="editingIndex === index">
-                  <Select v-model="editingParam.type">
+                  <Select
+                    v-model="editingParam.type"
+                    @update:model-value="validateEditingDefault"
+                  >
                     <SelectTrigger class="h-7 w-28 text-[10px]">
                       <SelectValue
                         :placeholder="$t('placeholder.select_type')"
@@ -77,11 +80,23 @@
               </div>
 
               <div v-if="editingIndex === index" class="space-y-2">
-                <Input
-                  v-model="editingParam.default"
-                  class="h-8 text-sm"
-                  :placeholder="$t('builder.default_value')"
-                />
+                <div>
+                  <Input
+                    v-model="editingParam.default"
+                    class="h-8 text-sm"
+                    :placeholder="$t('builder.default_value')"
+                    :aria-invalid="!!editError"
+                    @input="validateEditingDefault"
+                  />
+                  <p
+                    v-if="editError"
+                    class="mt-1 text-xs text-destructive leading-tight"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {{ editError }}
+                  </p>
+                </div>
                 <Input
                   v-model="editingParam.description"
                   class="h-8 text-sm"
@@ -149,6 +164,7 @@
                   size="sm"
                   variant="outline"
                   class="h-7 w-8 px-0"
+                  :disabled="!!editError"
                   @click="saveEdit"
                 >
                   <Tooltip>
@@ -240,6 +256,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import { validateConstant } from '~/utils/builder-validation';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -265,6 +284,28 @@ const editingParam = ref<PipelineInputParam>({
   default: '',
   description: '',
 });
+const editError = ref('');
+
+// Validate the in-edit default value against the in-edit type. Empty default
+// is fine (it's optional); non-empty must satisfy the type-specific rule.
+const validateEditingDefault = (): boolean => {
+  const value = (editingParam.value.default ?? '').trim();
+
+  if (!value) {
+    editError.value = '';
+    return true;
+  }
+
+  const errorKey = validateConstant(value, editingParam.value.type ?? '');
+
+  if (errorKey && errorKey !== 'validation.input.constant_required') {
+    editError.value = t(errorKey);
+    return false;
+  }
+
+  editError.value = '';
+  return true;
+};
 
 const deleteConfirmation = ref<{
   index: number;
@@ -301,10 +342,12 @@ const handleParameterCreated = (parameter: PipelineInputParam) => {
 const startEdit = (index: number) => {
   editingIndex.value = index;
   editingParam.value = { type: 'String', ...props.parameters[index] };
+  editError.value = '';
 };
 
 const saveEdit = () => {
   if (editingIndex.value === null) return;
+  if (!validateEditingDefault()) return;
 
   const oldName = props.parameters[editingIndex.value].name;
   const newName = editingParam.value.name;
@@ -321,10 +364,12 @@ const saveEdit = () => {
   }
 
   editingIndex.value = null;
+  editError.value = '';
 };
 
 const cancelEdit = () => {
   editingIndex.value = null;
+  editError.value = '';
 };
 
 const deleteParameter = (index: number) => {
