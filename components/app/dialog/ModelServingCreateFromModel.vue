@@ -473,10 +473,15 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    // Initial service name must follow RFC 1123: lowercase, no underscores
-    form.isvc_name = form.model_name
-      ? `${form.model_name.replace(/_/g, '-').toLowerCase()}-serving`
-      : '';
+    // Initial service name must be RFC 1123 compliant: lowercase a-z, 0-9,
+    // hyphens; start/end alphanumeric. Replace any other char (".", "_",
+    // spaces, etc.) with "-", collapse runs, trim edges.
+    const sanitized = form.model_name
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    form.isvc_name = sanitized ? `${sanitized}-serving` : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);
     }
