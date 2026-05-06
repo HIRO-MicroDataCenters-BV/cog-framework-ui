@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="relative px-4 pt-3 pb-2">
       <!-- Icon and name -->
-      <div class="flex items-start gap-2.5">
+      <div class="flex items-center gap-2.5">
         <div
           class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
         >
@@ -40,7 +40,10 @@
           </div>
           <div class="flex items-center justify-between gap-2 mt-0.5">
             <div class="flex items-center gap-1.5">
-              <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
+              <Badge
+                :class="statusBadgeClass"
+                class="text-[10px] font-medium px-1 py-0"
+              >
                 {{ serving.status }}
               </Badge>
               <TooltipProvider
