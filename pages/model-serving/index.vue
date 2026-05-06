@@ -72,37 +72,24 @@ const sortOrder = ref<'asc' | 'desc'>(
     ? route.query.sort_order
     : 'desc') as 'asc' | 'desc',
 );
-// Search + sort run client-side over the fetched `list` (backend doesn't
-// support these query params). Status is still backend-driven via fetchList.
-const filteredAndSortedList = computed(() => {
-  let items = [...list.value];
-
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
-    items = items.filter(
-      (item) =>
-        item.isvc_name?.toLowerCase().includes(q) ||
-        item.model_name?.toLowerCase().includes(q) ||
-        item.status?.toLowerCase().includes(q),
-    );
-  }
-
-  const order = sortOrder.value;
-  items.sort((a, b) => {
-    const dateA = new Date(a.creation_timestamp || 0).getTime();
-    const dateB = new Date(b.creation_timestamp || 0).getTime();
-    return order === 'desc' ? dateB - dateA : dateA - dateB;
-  });
-
-  return items;
-});
-
-const cardsTotalItems = computed(() => filteredAndSortedList.value.length);
-
-const paginatedList = computed(() => {
-  const start = (cardsCurrentPage.value - 1) * cardsPageSize.value;
-  return filteredAndSortedList.value.slice(start, start + cardsPageSize.value);
-});
+// Search + sort + pagination run client-side over the fetched `list`
+// (backend doesn't support these query params). Status is still backend-driven
+// via fetchList.
+const {
+  filteredAndSorted: filteredAndSortedList,
+  paginated: paginatedList,
+  totalItems: cardsTotalItems,
+} = useFilteredSortedPagination(
+  list,
+  searchQuery,
+  sortOrder,
+  cardsCurrentPage,
+  cardsPageSize,
+  {
+    searchFields: ['isvc_name', 'model_name', 'status'],
+    sortField: 'creation_timestamp',
+  },
+);
 
 const SORT_OPTIONS = [
   { value: 'desc', label: 'Newest first' },
