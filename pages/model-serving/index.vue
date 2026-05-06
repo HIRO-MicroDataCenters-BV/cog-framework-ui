@@ -72,7 +72,24 @@ const sortOrder = ref<'asc' | 'desc'>(
     ? route.query.sort_order
     : 'desc') as 'asc' | 'desc',
 );
-const cardsTotalItems = ref(0);
+// Search + sort + pagination run client-side over the fetched `list`
+// (backend doesn't support these query params). Status is still backend-driven
+// via fetchList.
+const {
+  filteredAndSorted: filteredAndSortedList,
+  paginated: paginatedList,
+  totalItems: cardsTotalItems,
+} = useFilteredSortedPagination(
+  list,
+  searchQuery,
+  sortOrder,
+  cardsCurrentPage,
+  cardsPageSize,
+  {
+    searchFields: ['isvc_name', 'model_name', 'status'],
+    sortField: 'creation_timestamp',
+  },
+);
 
 const SORT_OPTIONS = [
   { value: 'desc', label: 'Newest first' },
@@ -210,7 +227,8 @@ watch(searchQuery, () => {
   }, 300);
 });
 
-// Watch route.query - sync cards state and fetch when URL changes (e.g. pagination, back button)
+// Watch route.query - sync cards state when URL changes (back button, deep link).
+// Search/sort/page are now derived client-side, so no fetch is needed for them.
 watch(
   () => route.query,
   (query) => {
@@ -229,10 +247,18 @@ watch(
     if (search !== searchQuery.value) searchQuery.value = search;
     if (status !== statusFilter.value) statusFilter.value = status;
     if (order !== sortOrder.value) sortOrder.value = order;
+  },
+  { deep: true },
+);
+
+// Status filter still goes to the backend, so refetch when it changes.
+watch(
+  () => route.query.status,
+  () => {
+    if (viewMode.value !== 'cards') return;
     isRefreshing.value = true;
     fetchList();
   },
-  { deep: true },
 );
 
 // Watch status filter - update route
@@ -421,18 +447,15 @@ async function fetchList() {
   if (!isRefreshing.value) loading.value = true;
   error.value = null;
   try {
+    // Backend /models-serving does not support page/limit/search/sort_by/sort_order
+    // query params, so we don't send them. Status is kept conditionally because
+    // it's only added when the user picks a non-"all" filter.
     const res = await getModelsServing({
-      page: cardsCurrentPage.value,
-      limit: cardsPageSize.value,
-      search: searchQuery.value || undefined,
-      sort_by: 'creation_timestamp',
-      sort_order: sortOrder.value,
       ...(statusFilter.value &&
         statusFilter.value !== 'all' && { status: statusFilter.value }),
     });
     const data = res?.data;
     list.value = Array.isArray(data) ? data : [];
-    cardsTotalItems.value = res?.pagination?.total_items ?? 0;
   } catch (e) {
     console.error(e);
     error.value = 'Failed to load model serving list.';
@@ -726,7 +749,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="list.length === 0 && !searchQuery"
+          v-else-if="filteredAndSortedList.length === 0 && !searchQuery"
           class="flex flex-col items-center justify-center min-h-[280px] text-center"
         >
           <div class="rounded-full bg-muted/50 p-4 mb-4">
@@ -743,7 +766,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="list.length === 0 && searchQuery"
+          v-else-if="filteredAndSortedList.length === 0 && searchQuery"
           class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
         >
           <p class="text-sm text-muted-foreground">
@@ -766,7 +789,7 @@ onMounted(() => {
               class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               <ModelServingCard
-                v-for="item in list"
+                v-for="item in paginatedList"
                 :key="item.isvc_name"
                 :serving="item"
                 :refreshing="refreshingStatusIsvcName === item.isvc_name"
