@@ -727,6 +727,24 @@
       "canary_revision": null,
       "stable_traffic_percent": 100,
       "canary_traffic_percent": null
+    },
+    {
+      "isvc_name": "session-tracker",
+      "served_model_url": "http://session-tracker.admin.dashboard.cog.hiro-develop.nl",
+      "status": "not_ready",
+      "model_id": "f0a1b2c3-d4e5-6789-1234-012345678901",
+      "model_name": "session-classifier",
+      "model_version": "2",
+      "dataset_id": null,
+      "creation_timestamp": "2025-06-20T14:00:00Z",
+      "age": "258 days, 1:38:30",
+      "latest_ready_revision": "session-tracker-predictor-00001",
+      "traffic_percentage": 0,
+      "has_canary": false,
+      "stable_revision": null,
+      "canary_revision": null,
+      "stable_traffic_percent": 100,
+      "canary_traffic_percent": null
     }
   ]
 }

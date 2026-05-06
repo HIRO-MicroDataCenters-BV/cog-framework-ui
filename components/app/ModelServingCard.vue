@@ -241,10 +241,10 @@
         </div>
       </div>
 
-      <!-- Traffic split (stop propagation so slider doesn't open sheet) -->
+      <!-- Traffic split: section-level clicks bubble (open the sheet); only
+           the interactive slider/button row stops propagation. -->
       <div
         class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/10 dark:bg-zinc-800/20"
-        @click.stop
       >
         <div class="flex items-center justify-between gap-2 mb-2">
           <span class="text-xs font-medium text-muted-foreground"
@@ -277,7 +277,7 @@
         </div>
 
         <!-- Slider, step controls, and update (enabled only when has_canary) -->
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5" @click.stop>
           <Button
             variant="outline"
             size="icon"
@@ -393,6 +393,8 @@ const localCanaryPercent = ref(initialCanaryPercent);
 const statusDotClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
   if (s === 'ready') return 'bg-green-500 shadow-green-500/50 shadow-sm';
+  if (s === 'not_ready')
+    return 'bg-orange-500 shadow-orange-500/50 shadow-sm animate-pulse';
   if (s === 'pending')
     return 'bg-amber-500 shadow-amber-500/50 shadow-sm animate-pulse';
   if (s === 'failed') return 'bg-red-500 shadow-red-500/50 shadow-sm';
@@ -406,6 +408,8 @@ const statusBadgeClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
   if (s === 'ready')
     return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+  if (s === 'not_ready')
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
   if (s === 'pending')
     return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
   if (s === 'failed')

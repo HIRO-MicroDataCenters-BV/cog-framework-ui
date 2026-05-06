@@ -72,9 +72,9 @@ const sortOrder = ref<'asc' | 'desc'>(
     ? route.query.sort_order
     : 'desc') as 'asc' | 'desc',
 );
-// Search + sort + pagination run client-side over the fetched `list`
-// (backend doesn't support these query params). Status is still backend-driven
-// via fetchList.
+// Backend /models-serving doesn't support any filter/sort/page params, so the
+// full pipeline runs client-side: status (exact match) → search → sort →
+// paginate.
 const {
   filteredAndSorted: filteredAndSortedList,
   paginated: paginatedList,
@@ -88,6 +88,7 @@ const {
   {
     searchFields: ['isvc_name', 'model_name', 'status'],
     sortField: 'creation_timestamp',
+    exactFilters: [{ field: 'status', value: statusFilter, allValue: 'all' }],
   },
 );
 
@@ -99,6 +100,7 @@ const SORT_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All status' },
   { value: 'ready', label: 'Ready' },
+  { value: 'not_ready', label: 'Not ready' },
   { value: 'pending', label: 'Pending' },
   { value: 'failed', label: 'Failed' },
   { value: 'terminating', label: 'Terminating' },
@@ -251,16 +253,6 @@ watch(
   { deep: true },
 );
 
-// Status filter still goes to the backend, so refetch when it changes.
-watch(
-  () => route.query.status,
-  () => {
-    if (viewMode.value !== 'cards') return;
-    isRefreshing.value = true;
-    fetchList();
-  },
-);
-
 // Watch status filter - update route
 watch(statusFilter, () => {
   const query = { ...route.query } as Record<string, string>;
@@ -368,6 +360,8 @@ const tableColumns = [
       const statusClasses: Record<string, string> = {
         ready:
           'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        not_ready:
+          'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-100',
         pending:
           'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
         failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
@@ -447,13 +441,9 @@ async function fetchList() {
   if (!isRefreshing.value) loading.value = true;
   error.value = null;
   try {
-    // Backend /models-serving does not support page/limit/search/sort_by/sort_order
-    // query params, so we don't send them. Status is kept conditionally because
-    // it's only added when the user picks a non-"all" filter.
-    const res = await getModelsServing({
-      ...(statusFilter.value &&
-        statusFilter.value !== 'all' && { status: statusFilter.value }),
-    });
+    // Backend /models-serving doesn't support any filter/sort/page params,
+    // so we just fetch the full list and do everything client-side.
+    const res = await getModelsServing({});
     const data = res?.data;
     list.value = Array.isArray(data) ? data : [];
   } catch (e) {
@@ -463,6 +453,53 @@ async function fetchList() {
     loading.value = false;
     isRefreshing.value = false;
   }
+}
+
+// Table view's `dataSource`. AppTable calls this with route-derived params
+// (page, limit, search, sort_by, sort_order, status, isvc_name, etc.); we
+// run the same client-side pipeline as the cards view over `list.value` and
+// return the slice in AppTable's expected shape. Performs a lazy fetch on
+// the first call so the table view also works on direct entry.
+async function tableDataSource(params: Record<string, unknown> = {}): Promise<{
+  status_code: number;
+  data: ModelServing[];
+  pagination: {
+    total_items: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+  };
+}> {
+  if (list.value.length === 0) await fetchList();
+
+  const page = parseInt(String(params.page ?? 1)) || 1;
+  const pageSizeParam = parseInt(String(params.limit ?? 10)) || 10;
+  const order: 'asc' | 'desc' =
+    String(params.sort_order ?? 'desc') === 'asc' ? 'asc' : 'desc';
+  const search =
+    (params.isvc_name as string) || (params.search as string) || '';
+  const status = (params.status as string) || 'all';
+
+  const { data, total } = filterSortPaginate<ModelServing>(list.value, {
+    search,
+    searchFields: ['isvc_name', 'model_name', 'status'],
+    sortField: 'creation_timestamp',
+    sortOrder: order,
+    page,
+    pageSize: pageSizeParam,
+    exactFilters: [{ field: 'status', value: status, allValue: 'all' }],
+  });
+
+  return {
+    status_code: 200,
+    data,
+    pagination: {
+      total_items: total,
+      page,
+      limit: pageSizeParam,
+      total_pages: Math.max(1, Math.ceil(total / pageSizeParam)),
+    },
+  };
 }
 
 const cardsTotalPages = computed(() =>
@@ -548,7 +585,7 @@ onMounted(() => {
       v-if="viewMode === 'table'"
       ref="tableRef"
       :columns="tableColumns"
-      :data-source="getModelsServing"
+      :data-source="tableDataSource"
       :sortable-columns="['creation_timestamp']"
       :filterable-columns="['status']"
       :page-size="10"
