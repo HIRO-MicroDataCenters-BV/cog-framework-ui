@@ -266,6 +266,8 @@ const statusBadgeClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
   if (s === 'ready')
     return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+  if (s === 'not_ready')
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
   if (s === 'pending')
     return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
   if (s === 'failed')
