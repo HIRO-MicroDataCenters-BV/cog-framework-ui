@@ -761,7 +761,7 @@ const fetchPodLogs = async () => {
       podnamespace: POD_NAMESPACE,
     });
     if (data == null) {
-      logsError.value = 'Failed to load logs';
+      logsError.value = t('description.logs_unavailable');
       return;
     }
     // Handle various response shapes: { content }, { logs }, or plain string
@@ -776,8 +776,10 @@ const fetchPodLogs = async () => {
         null;
     }
   } catch (err) {
-    logsError.value =
-      err instanceof Error ? err.message : 'Failed to load logs';
+    // KFP `/k8s/pod/logs` errors aren't useful to surface (404 for compilation
+    // pods, 500 for gc'd pods, etc.). Show a friendly fallback either way.
+    console.error('Error fetching pod logs:', err);
+    logsError.value = t('description.logs_unavailable');
   } finally {
     logsLoading.value = false;
   }

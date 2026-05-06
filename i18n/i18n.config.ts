@@ -166,6 +166,7 @@ export default defineI18nConfig(() => ({
         pipeline_experiments:
           'Organise and track pipeline runs grouped by experiment. Browse, search and compare experiments across your workspace.',
         edit_model_serving: 'Update traffic percentage for {name}',
+        logs_unavailable: 'Logs are not available for this component',
       },
       builder: {
         components: 'Components',
