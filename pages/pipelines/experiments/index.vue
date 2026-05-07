@@ -9,7 +9,7 @@ import { shortenUuid } from '~/utils';
 const { t } = useI18n();
 const dayjs = useDayjs();
 const { getExperimentsListV2, getRunsByExperiment } = useApi();
-const { setPage } = useApp();
+const { page, setPage } = useApp();
 
 setPage({
   section: 'pipeline_experiments',
@@ -48,28 +48,40 @@ type ExperimentRow = {
  * "Last 5 runs" column).
  */
 const getExperiments = async (params: Record<string, unknown> = {}) => {
-  const storageState =
-    activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
+  // Drive the global LoadingBar in the default layout while we wait for the
+  // KFP API + per-experiment run enrichment to come back.
+  page.value.isLoading = true;
+  try {
+    const storageState =
+      activeTab.value === 'active' ? 'NOT_ARCHIVED' : 'ARCHIVED';
 
-  const res = await getExperimentsListV2({
-    ...params,
-    storage_state: storageState,
-  });
-  if (!res || !Array.isArray(res.data)) return res;
+    const res = await getExperimentsListV2({
+      ...params,
+      storage_state: storageState,
+    });
+    if (!res || !Array.isArray(res.data)) return res;
 
-  const experiments = res.data as ExperimentRow[];
+    // getExperimentsListV2's internal `finally` flips page.isLoading back to
+    // false on success. Re-enable it for the per-experiment run enrichment
+    // phase below so the LoadingBar stays visible until everything resolves.
+    page.value.isLoading = true;
 
-  const enriched = await Promise.all(
-    experiments.map(async (exp) => {
-      const last_runs = await getRunsByExperiment(exp.experiment_id, {
-        limit: 5,
-        namespace: exp.namespace || undefined,
-      });
-      return { ...exp, last_runs };
-    }),
-  );
+    const experiments = res.data as ExperimentRow[];
 
-  return { ...res, data: enriched };
+    const enriched = await Promise.all(
+      experiments.map(async (exp) => {
+        const last_runs = await getRunsByExperiment(exp.experiment_id, {
+          limit: 5,
+          namespace: exp.namespace || undefined,
+        });
+        return { ...exp, last_runs };
+      }),
+    );
+
+    return { ...res, data: enriched };
+  } finally {
+    page.value.isLoading = false;
+  }
 };
 
 watch(activeTab, () => {

@@ -2988,8 +2988,10 @@ export const useApi = () => {
         }
         return (await res.text()) as string;
       } catch (err) {
+        // Stay silent — the KFP `/k8s/pod/logs` proxy returns errors for
+        // compilation pods, gc'd pods, and anything without a live container.
+        // The caller renders a graceful inline message instead of a toast.
         console.error('Error fetching pipeline pod logs:', err);
-        toaster.show('error', 'connection_error');
         return null;
       }
     },
