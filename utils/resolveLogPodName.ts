@@ -61,10 +61,7 @@ const splitWorkflowOrdinal = (
   return { workflow: m[1], ordinal: m[2] };
 };
 
-const insertSlug = (
-  raw: string,
-  slug: string,
-): string => {
+const insertSlug = (raw: string, slug: string): string => {
   const parsed = splitWorkflowOrdinal(raw);
   if (!parsed) return raw;
   const { workflow, ordinal } = parsed;

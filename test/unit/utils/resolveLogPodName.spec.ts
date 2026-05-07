@@ -86,7 +86,7 @@ const findTask = (name: string) =>
 
 describe('resolveLogPodName', () => {
   describe('the user-reported scenarios from the real run', () => {
-    it('add-ten (no deps) → uses workflow root\'s ordinal', () => {
+    it("add-ten (no deps) → uses workflow root's ordinal", () => {
       expect(resolveLogPodName(findTask('add-ten'), tasks, templates)).toBe(
         `${WF}-add-ten-2282402453`,
       );
@@ -118,7 +118,7 @@ describe('resolveLogPodName', () => {
   });
 
   describe('selecting the workflow root itself', () => {
-    it('returns the root\'s child pod as-is (no slug to insert)', () => {
+    it("returns the root's child pod as-is (no slug to insert)", () => {
       expect(resolveLogPodName(findTask(WF), tasks, templates)).toBe(
         `${WF}-2282402453`,
       );
@@ -170,7 +170,7 @@ describe('resolveLogPodName', () => {
   });
 
   describe('fallback when DAG / templates are empty', () => {
-    it('slug-injects the task\'s own first child_task pod', () => {
+    it("slug-injects the task's own first child_task pod", () => {
       const task: TaskDetailShape = {
         display_name: 'lonely-task',
         child_tasks: [{ pod_name: `${WF}-9999999999` }],
@@ -213,9 +213,7 @@ describe('resolveLogPodName', () => {
         display_name: 'My Task_Name!',
         child_tasks: [{ pod_name: 'wf-12345' }],
       };
-      expect(resolveLogPodName(task, [task], [])).toBe(
-        'wf-my-task-name-12345',
-      );
+      expect(resolveLogPodName(task, [task], [])).toBe('wf-my-task-name-12345');
     });
   });
 });
