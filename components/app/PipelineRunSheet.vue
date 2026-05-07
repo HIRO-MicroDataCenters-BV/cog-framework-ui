@@ -751,133 +751,16 @@ const stateHistory = computed<StateHistoryEntry[]>(
   () => run.value?.state_history ?? [],
 );
 
-// Pod name for logs.
-//
-// In KFP v1.8 / v2beta1 the actual k8s pod is named
-// `{workflow}-{template-name}-{ordinal}`. The non-obvious bit is where the
-// ordinal comes from in the run-details response:
-//
-//   Each task's `child_tasks[]` does NOT list its own pod. It lists the
-//   executor pods of the DOWNSTREAM tasks that depend on it. So to find a
-//   task X's executor pod ordinal, look at the `child_tasks[]` of X's DAG
-//   parent (the task X depends on) and pick the entry that corresponds to X.
-//
-//   Multiple downstream tasks can share the same parent — the entries in
-//   the parent's `child_tasks[]` are in DAG-declaration order of those
-//   downstream siblings. So we map by index.
-//
-//   Tasks with no DAG dependencies (e.g. the entrypoint `add-ten`) use the
-//   workflow ROOT task's `child_tasks[0]` as their ordinal source. The
-//   workflow root task is the one whose `display_name` matches the prefix
-//   of its own child pod's name.
-//
-// Resolution order:
-//   a) `task.executor_detail.main_job` — canonical KFP v2beta1 field
-//   b) `task.pod_name` — direct pod name if surfaced
-//   c) Construct from the task's DAG parent's `child_tasks[]` indexed by
-//      position among siblings (DAG-declaration order)
-//   d) Fall back to the task's own first child pod_name
-const logPodName = computed(() => {
-  const task = selectedTask.value;
-  if (!task) return null;
-
-  if (task.executor_detail?.main_job) return task.executor_detail.main_job;
-  if (task.pod_name) return task.pod_name;
-
-  const slug = task.display_name
-    ?.toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  if (!slug) return task.child_tasks?.[0]?.pod_name ?? null;
-
-  const allTasks = run.value?.run_details?.task_details ?? [];
-
-  // Workflow root task: its display_name is also the workflow name,
-  // and is the prefix of its own child pod's name.
-  const rootTask = allTasks.find((t) => {
-    const childPod = t.child_tasks?.[0]?.pod_name;
-    if (!childPod || !t.display_name) return false;
-    return childPod.startsWith(`${t.display_name}-`);
-  });
-
-  // Selecting the workflow root itself — just return its single child.
-  if (rootTask && rootTask.display_name === task.display_name) {
-    return rootTask.child_tasks?.[0]?.pod_name ?? null;
-  }
-
-  // Find the selected task's entry in the DAG so we can read its dependencies.
-  const templates = run.value?.pipeline_spec?.spec?.templates ?? [];
-  const dagTasks = templates.flatMap((tpl) => tpl.dag?.tasks ?? []);
-  const myDagEntry = dagTasks.find(
-    (t) => t.template === task.display_name || t.name === task.display_name,
-  );
-  const myDagName = myDagEntry?.name ?? task.display_name;
-  const myDeps =
-    (myDagEntry as { dependencies?: string[] } | undefined)?.dependencies ?? [];
-
-  // Parent task whose child_tasks[] contains our executor pod:
-  //   • If we have DAG dependencies, the first one (any will do — siblings
-  //     under a multi-parent task share the same pod listed under all parents).
-  //   • Otherwise the workflow root.
-  const parentTask =
-    (myDeps.length > 0
-      ? allTasks.find((t) => t.display_name === myDeps[0])
-      : rootTask) ?? null;
-
-  if (parentTask) {
-    const parentChildren = parentTask.child_tasks ?? [];
-
-    // Find our index among the siblings that share this parent. For
-    // workflow-root parents the "siblings" are the no-dependency tasks
-    // (entry-point tasks), in DAG-declaration order.
-    const siblingNames =
-      parentTask === rootTask
-        ? dagTasks
-            .filter((t) => {
-              const deps =
-                (t as { dependencies?: string[] }).dependencies ?? [];
-              return deps.length === 0;
-            })
-            .map((t) => t.name)
-        : dagTasks
-            .filter((t) => {
-              const deps =
-                (t as { dependencies?: string[] }).dependencies ?? [];
-              return deps.includes(parentTask.display_name);
-            })
-            .map((t) => t.name);
-
-    const index = siblingNames.indexOf(myDagName);
-    if (index >= 0 && index < parentChildren.length) {
-      const podRaw = parentChildren[index].pod_name;
-      if (podRaw) {
-        const m = podRaw.match(/^(.+)-(\d+)$/);
-        if (m) {
-          const [, workflow, ordinal] = m;
-          if (workflow !== slug && !workflow.endsWith(`-${slug}`)) {
-            return `${workflow}-${slug}-${ordinal}`;
-          }
-          return podRaw;
-        }
-      }
-    }
-  }
-
-  // Last resort: insert the slug into our own first child_task.
-  const myChild = task.child_tasks?.[0]?.pod_name;
-  if (myChild) {
-    const m = myChild.match(/^(.+)-(\d+)$/);
-    if (m) {
-      const [, workflow, ordinal] = m;
-      if (workflow !== slug && !workflow.endsWith(`-${slug}`)) {
-        return `${workflow}-${slug}-${ordinal}`;
-      }
-    }
-    return myChild;
-  }
-
-  return null;
-});
+// Pod name for logs. Pure resolution lives in `utils/resolveLogPodName` so
+// it can be unit-tested without mounting this component. See that file for
+// the full explanation of the KFP v1.8 / v2beta1 pod-naming heuristic.
+const logPodName = computed(() =>
+  resolveLogPodName(
+    selectedTask.value,
+    run.value?.run_details?.task_details ?? [],
+    run.value?.pipeline_spec?.spec?.templates ?? [],
+  ),
+);
 
 const logsLoading = ref(false);
 const logsError = ref<string | null>(null);
