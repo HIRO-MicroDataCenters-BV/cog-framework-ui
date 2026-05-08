@@ -339,7 +339,13 @@ const handleSort = (columnId: string) => {
   const query = { ...route.query };
 
   if (currentSortBy.value === columnId) {
-    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+    if (currentSortOrder.value === 'asc') {
+      query.sort_order = 'desc';
+    } else {
+      // Tri-state: asc → desc → cleared (back to default sort).
+      delete query.sort_by;
+      delete query.sort_order;
+    }
   } else {
     query.sort_by = columnId;
     query.sort_order = 'asc';
