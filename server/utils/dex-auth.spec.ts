@@ -14,7 +14,7 @@ import {
   getDexSessionCookie,
   validateDexSession,
   getCookieExpiration,
-} from '../dex-auth';
+} from './dex-auth';
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -30,6 +30,12 @@ describe('DEX Authentication Utility', () => {
 
   describe('getDexSessionCookie', () => {
     it('should successfully retrieve session cookie with valid credentials', async () => {
+      // Use a relative future date so the test doesn't bit-rot when the
+      // calendar passes the previously hardcoded expiry.
+      const futureExpires = new Date(
+        Date.now() + 24 * 60 * 60 * 1000,
+      ).toUTCString();
+
       // Mock the OAuth flow responses
       const mockResponses = [
         // Initial request - 403 redirect
@@ -70,8 +76,7 @@ describe('DEX Authentication Utility', () => {
           status: 302,
           headers: new Headers({
             location: '/authservice/oidc/callback?code=test',
-            'set-cookie':
-              'authservice_session=test_session_token; expires=Wed, 17 Dec 2025 19:00:00 GMT',
+            'set-cookie': `authservice_session=test_session_token; expires=${futureExpires}`,
           }),
           url: 'https://test.example.com/dex/auth/local/login',
         },
@@ -137,6 +142,9 @@ describe('DEX Authentication Utility', () => {
     });
 
     it('should handle missing session cookie', async () => {
+      // Walk the full successful redirect chain (so we get past the
+      // "no redirect after credentials submission" early-out) but never set
+      // the authservice_session cookie — that's the path under test.
       const mockResponses = [
         {
           status: 302,
@@ -145,12 +153,30 @@ describe('DEX Authentication Utility', () => {
         },
         {
           status: 302,
-          headers: new Headers({ location: '/callback' }),
+          headers: new Headers({ location: '/dex/auth' }),
           url: 'https://test.example.com/oauth2/start',
         },
         {
+          status: 302,
+          headers: new Headers({ location: '/dex/auth/local/login' }),
+          url: 'https://test.example.com/dex/auth',
+        },
+        {
           status: 200,
-          headers: new Headers(), // No session cookie
+          headers: new Headers(),
+          url: 'https://test.example.com/dex/auth/local/login',
+        },
+        // POST credentials → redirect (so we don't bail at the "no redirect" check)
+        // but no `authservice_session` cookie is set.
+        {
+          status: 302,
+          headers: new Headers({ location: '/callback' }),
+          url: 'https://test.example.com/dex/auth/local/login',
+        },
+        // Callback — still no session cookie.
+        {
+          status: 200,
+          headers: new Headers(),
           url: 'https://test.example.com/callback',
         },
       ];
@@ -309,8 +335,11 @@ describe('DEX Authentication Utility', () => {
 
   describe('getCookieExpiration', () => {
     it('should extract expiration from cookie string', () => {
-      const cookie =
-        'authservice_session=token; expires=Wed, 17 Dec 2025 19:00:00 GMT; path=/';
+      // Use a relative future date so the test doesn't go stale.
+      const futureExpires = new Date(
+        Date.now() + 24 * 60 * 60 * 1000,
+      ).toUTCString();
+      const cookie = `authservice_session=token; expires=${futureExpires}; path=/`;
       const expiration = getCookieExpiration(cookie);
 
       expect(expiration).toBeDefined();

@@ -3,7 +3,9 @@
     <AppSidebar />
     <SidebarInset class="overflow-hidden flex flex-col">
       <AppHeader
-        v-if="page.title !== '' || page.section === 'pipelines_builder'"
+        v-if="
+          isMobile || page.title !== '' || page.section === 'pipelines_builder'
+        "
         :page="page"
         class="flex-shrink-0"
       />
@@ -32,8 +34,11 @@
 </template>
 
 <script lang="ts" setup>
+import { useMediaQuery } from '@vueuse/core';
+
 const { t } = useI18n();
 const { page } = useApp();
+const isMobile = useMediaQuery('(max-width: 768px)');
 </script>
 
 <style>

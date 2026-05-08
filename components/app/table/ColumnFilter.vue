@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-import { Check } from 'lucide-vue-next';
 import type { Table } from '@tanstack/vue-table';
 import type { DataItem } from '~/types/table.types';
 import {
@@ -196,11 +195,7 @@ const isSelected = (value: string | number | (string | number)[]) => {
                 (checked) => toggleValue(option.value, checked)
               "
               @click.stop
-            >
-              <template #default>
-                <Check class="size-3.5 text-white" />
-              </template>
-            </Checkbox>
+            />
             <div
               class="flex items-center justify-between flex-1 cursor-pointer"
               @click.stop="() => handleItemClick(option.value)"

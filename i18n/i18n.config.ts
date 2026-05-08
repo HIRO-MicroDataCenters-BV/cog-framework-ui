@@ -645,7 +645,7 @@ export default defineI18nConfig(() => ({
           required: 'This field is required',
           too_small: {
             string: {
-              inclusive: 'This field must be at least {min} characters',
+              inclusive: 'This field must be at least {minimum} characters',
             },
           },
           too_big: {

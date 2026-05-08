@@ -339,7 +339,13 @@ const handleSort = (columnId: string) => {
   const query = { ...route.query };
 
   if (currentSortBy.value === columnId) {
-    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+    if (currentSortOrder.value === 'asc') {
+      query.sort_order = 'desc';
+    } else {
+      // Tri-state: asc → desc → cleared (back to default sort).
+      delete query.sort_by;
+      delete query.sort_order;
+    }
   } else {
     query.sort_by = columnId;
     query.sort_order = 'asc';
@@ -984,52 +990,9 @@ defineExpose({ fetchData, totalItems, resetExpanded });
       <!-- Slot for custom tabs or additional header content -->
       <slot name="header-tabs" />
     </div>
-    <!-- Non-scrollable table header -->
-    <div class="overflow-x-auto w-full bg-sidebar-background">
-      <table
-        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
-      >
-        <colgroup>
-          <col
-            v-for="header in visibleHeaders"
-            :key="header.id"
-            :style="{
-              width:
-                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
-            }"
-          />
-        </colgroup>
-        <TableHeader
-          class="border-b border-t border-border shadow-xs bg-sidebar"
-        >
-          <TableRow
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-            class="h-10 min-h-10 border-0"
-          >
-            <TableHead
-              v-for="header in visibleHeaders"
-              :key="header.id"
-              :class="'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10'"
-              :style="{
-                width:
-                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
-              }"
-            >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-      </table>
-    </div>
-
-    <!-- Scrollable table body -->
+    <!-- Scrollable table with sticky header (header + body share scroll) -->
     <div
-      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative pb-10"
+      class="overflow-auto w-full flex-1 bg-sidebar-background relative pb-10"
     >
       <table
         class="border-b w-full border-collapse table-fixed bg-sidebar-background"
@@ -1044,6 +1007,34 @@ defineExpose({ fetchData, totalItems, resetExpanded });
             }"
           />
         </colgroup>
+        <TableHeader
+          class="border-b border-t border-border shadow-xs bg-sidebar sticky top-0 z-20"
+        >
+          <TableRow
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="headerGroup.id"
+            class="h-10 min-h-10 border-0"
+          >
+            <TableHead
+              v-for="(header, hIdx) in visibleHeaders"
+              :key="header.id"
+              :class="[
+                'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10 overflow-hidden bg-sidebar',
+                hIdx === 0 && 'sticky left-0 z-30',
+              ]"
+              :style="{
+                width:
+                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+              }"
+            >
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           <template v-if="table.getFilteredRowModel().rows?.length">
             <template
@@ -1056,7 +1047,11 @@ defineExpose({ fetchData, totalItems, resetExpanded });
                     .getVisibleCells()
                     .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                   :key="cell.id"
-                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  :class="[
+                    'border-l border-r border-border py-1 px-3 text-sm',
+                    cellIndex === 0 &&
+                      'sticky left-0 z-10 bg-sidebar-background',
+                  ]"
                   :style="{
                     width:
                       cell.column.getSize() !== 150
@@ -1116,7 +1111,11 @@ defineExpose({ fetchData, totalItems, resetExpanded });
                       .getVisibleCells()
                       .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                     :key="cell.id"
-                    class="border-l border-r border-border py-1 px-3 text-sm"
+                    :class="[
+                      'border-l border-r border-border py-1 px-3 text-sm',
+                      cellIndex === 0 &&
+                        'sticky left-0 z-10 bg-sidebar-background',
+                    ]"
                     :style="{
                       width:
                         cell.column.getSize() !== 150
