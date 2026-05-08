@@ -199,7 +199,7 @@ const columns = [
   },
   {
     id: 'actions',
-    size: 56,
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       const { getDatasetActions } = useDatasetActions();

@@ -418,7 +418,7 @@ const tableColumns = [
   },
   {
     id: 'actions',
-    size: 56,
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       return h(DropdownAction, {
