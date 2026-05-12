@@ -8,8 +8,9 @@ export const useToaster = () => {
       type: 'success' | 'error' | 'info' | 'warning',
       message: string,
       data?: Record<string, string | number>,
+      opts?: { raw?: boolean },
     ) => {
-      const msg = t(`message.${type}.${message}`, data);
+      const msg = opts?.raw ? message : t(`message.${type}.${message}`, data);
       const options = { duration: 3000, ...data };
       switch (type) {
         case 'success':

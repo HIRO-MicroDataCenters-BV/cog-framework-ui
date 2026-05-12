@@ -7,6 +7,7 @@ import CopyPaste from '~/components/app/CopyPaste.vue';
 import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
 import ModelServingCanaryDialog from '~/components/app/dialog/ModelServingCanaryDialog.vue';
+import ServeModelDialog from '~/components/app/dialog/ServeModelDialog.vue';
 import AppTable from '~/components/app/Table.vue';
 import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
@@ -30,6 +31,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 const dayjs = useDayjs();
 const { t } = useI18n();
@@ -65,7 +72,25 @@ const sortOrder = ref<'asc' | 'desc'>(
     ? route.query.sort_order
     : 'desc') as 'asc' | 'desc',
 );
-const cardsTotalItems = ref(0);
+// Backend /models-serving doesn't support any filter/sort/page params, so the
+// full pipeline runs client-side: status (exact match) → search → sort →
+// paginate.
+const {
+  filteredAndSorted: filteredAndSortedList,
+  paginated: paginatedList,
+  totalItems: cardsTotalItems,
+} = useFilteredSortedPagination(
+  list,
+  searchQuery,
+  sortOrder,
+  cardsCurrentPage,
+  cardsPageSize,
+  {
+    searchFields: ['isvc_name', 'model_name', 'status'],
+    sortField: 'creation_timestamp',
+    exactFilters: [{ field: 'status', value: statusFilter, allValue: 'all' }],
+  },
+);
 
 const SORT_OPTIONS = [
   { value: 'desc', label: 'Newest first' },
@@ -75,6 +100,7 @@ const SORT_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All status' },
   { value: 'ready', label: 'Ready' },
+  { value: 'not_ready', label: 'Not ready' },
   { value: 'pending', label: 'Pending' },
   { value: 'failed', label: 'Failed' },
   { value: 'terminating', label: 'Terminating' },
@@ -203,7 +229,8 @@ watch(searchQuery, () => {
   }, 300);
 });
 
-// Watch route.query - sync cards state and fetch when URL changes (e.g. pagination, back button)
+// Watch route.query - sync cards state when URL changes (back button, deep link).
+// Search/sort/page are now derived client-side, so no fetch is needed for them.
 watch(
   () => route.query,
   (query) => {
@@ -222,8 +249,6 @@ watch(
     if (search !== searchQuery.value) searchQuery.value = search;
     if (status !== statusFilter.value) statusFilter.value = status;
     if (order !== sortOrder.value) sortOrder.value = order;
-    isRefreshing.value = true;
-    fetchList();
   },
   { deep: true },
 );
@@ -253,8 +278,27 @@ watch(sortOrder, () => {
 const tableColumns = [
   {
     id: 'isvc_name',
-    size: 180,
-    cell: ({ row }: { row: TableRowType }) => row.getValue('isvc_name'),
+    size: 240,
+    cell: ({ row }: { row: TableRowType }) => {
+      const name = row.getValue<string>('isvc_name') ?? '';
+      return h(
+        resolveComponent('TooltipProvider'),
+        { delayDuration: 300 },
+        () =>
+          h(resolveComponent('Tooltip'), null, {
+            default: () => [
+              h(resolveComponent('TooltipTrigger'), { asChild: true }, () =>
+                h(
+                  'span',
+                  { class: 'truncate block max-w-[220px] text-sm' },
+                  name || '—',
+                ),
+              ),
+              h(resolveComponent('TooltipContent'), null, () => name),
+            ],
+          }),
+      );
+    },
   },
   {
     id: 'model_name',
@@ -316,6 +360,8 @@ const tableColumns = [
       const statusClasses: Record<string, string> = {
         ready:
           'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100',
+        not_ready:
+          'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-100',
         pending:
           'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-100',
         failed: 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100',
@@ -372,7 +418,7 @@ const tableColumns = [
   },
   {
     id: 'actions',
-    size: 56,
+    size: 80,
     enableHiding: false,
     cell: ({ row }: { row: TableRowType }) => {
       return h(DropdownAction, {
@@ -395,18 +441,11 @@ async function fetchList() {
   if (!isRefreshing.value) loading.value = true;
   error.value = null;
   try {
-    const res = await getModelsServing({
-      page: cardsCurrentPage.value,
-      limit: cardsPageSize.value,
-      search: searchQuery.value || undefined,
-      sort_by: 'creation_timestamp',
-      sort_order: sortOrder.value,
-      ...(statusFilter.value &&
-        statusFilter.value !== 'all' && { status: statusFilter.value }),
-    });
+    // Backend /models-serving doesn't support any filter/sort/page params,
+    // so we just fetch the full list and do everything client-side.
+    const res = await getModelsServing({});
     const data = res?.data;
     list.value = Array.isArray(data) ? data : [];
-    cardsTotalItems.value = res?.pagination?.total_items ?? 0;
   } catch (e) {
     console.error(e);
     error.value = 'Failed to load model serving list.';
@@ -414,6 +453,53 @@ async function fetchList() {
     loading.value = false;
     isRefreshing.value = false;
   }
+}
+
+// Table view's `dataSource`. AppTable calls this with route-derived params
+// (page, limit, search, sort_by, sort_order, status, isvc_name, etc.); we
+// run the same client-side pipeline as the cards view over `list.value` and
+// return the slice in AppTable's expected shape. Performs a lazy fetch on
+// the first call so the table view also works on direct entry.
+async function tableDataSource(params: Record<string, unknown> = {}): Promise<{
+  status_code: number;
+  data: ModelServing[];
+  pagination: {
+    total_items: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+  };
+}> {
+  if (list.value.length === 0) await fetchList();
+
+  const page = parseInt(String(params.page ?? 1)) || 1;
+  const pageSizeParam = parseInt(String(params.limit ?? 10)) || 10;
+  const order: 'asc' | 'desc' =
+    String(params.sort_order ?? 'desc') === 'asc' ? 'asc' : 'desc';
+  const search =
+    (params.isvc_name as string) || (params.search as string) || '';
+  const status = (params.status as string) || 'all';
+
+  const { data, total } = filterSortPaginate<ModelServing>(list.value, {
+    search,
+    searchFields: ['isvc_name', 'model_name', 'status'],
+    sortField: 'creation_timestamp',
+    sortOrder: order,
+    page,
+    pageSize: pageSizeParam,
+    exactFilters: [{ field: 'status', value: status, allValue: 'all' }],
+  });
+
+  return {
+    status_code: 200,
+    data,
+    pagination: {
+      total_items: total,
+      page,
+      limit: pageSizeParam,
+      total_pages: Math.max(1, Math.ceil(total / pageSizeParam)),
+    },
+  };
 }
 
 const cardsTotalPages = computed(() =>
@@ -473,8 +559,18 @@ async function onCardRefreshStatus(isvcName: string) {
   }
 }
 
+const serveDialogOpen = ref(false);
+
 function onServeModel() {
-  // TODO: Open serve-model dialog or navigate to serve flow
+  serveDialogOpen.value = true;
+}
+
+function closeServeDialog() {
+  serveDialogOpen.value = false;
+}
+
+function onServeCreated() {
+  fetchList();
 }
 
 onMounted(() => {
@@ -489,7 +585,7 @@ onMounted(() => {
       v-if="viewMode === 'table'"
       ref="tableRef"
       :columns="tableColumns"
-      :data-source="getModelsServing"
+      :data-source="tableDataSource"
       :sortable-columns="['creation_timestamp']"
       :filterable-columns="['status']"
       :page-size="10"
@@ -497,27 +593,44 @@ onMounted(() => {
       class="grow"
     >
       <template #header-actions>
-        <div
-          class="flex rounded-md border border-border overflow-hidden shrink-0"
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            class="rounded-none h-8 px-2.5 bg-muted"
-            title="Table view"
+        <TooltipProvider :delay-duration="300">
+          <div
+            class="flex rounded-md border border-border overflow-hidden shrink-0"
           >
-            <Icon name="lucide:table-2" class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            class="rounded-none h-8 px-2.5"
-            title="Cards view"
-            @click="viewMode = 'cards'"
-          >
-            <Icon name="lucide:layout-grid" class="h-4 w-4" />
-          </Button>
-        </div>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5 bg-muted"
+                >
+                  <Icon name="lucide:table-2" class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Table view</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-none h-8 px-2.5"
+                  @click="viewMode = 'cards'"
+                >
+                  <Icon name="lucide:layout-grid" class="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Cards view</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      </template>
+
+      <template #header-actions-end>
+        <Button class="cursor-pointer gap-2" @click="onServeModel">
+          <Icon name="lucide:plus" class="h-4 w-4" />
+          {{ t(`action.add_${page.section}`) }}
+        </Button>
       </template>
     </AppTable>
 
@@ -579,47 +692,65 @@ onMounted(() => {
             </Select>
 
             <div class="flex gap-2 items-center">
-              <div
-                class="flex rounded-md border border-border overflow-hidden shrink-0"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-none h-8 px-2.5"
-                  :class="viewMode === 'table' ? 'bg-muted' : ''"
-                  title="Table view"
-                  @click="viewMode = 'table'"
+              <TooltipProvider :delay-duration="300">
+                <div
+                  class="flex rounded-md border border-border overflow-hidden shrink-0"
                 >
-                  <Icon name="lucide:table-2" class="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-none h-8 px-2.5"
-                  :class="viewMode === 'cards' ? 'bg-muted' : ''"
-                  title="Cards view"
-                  @click="viewMode = 'cards'"
-                >
-                  <Icon name="lucide:layout-grid" class="h-4 w-4" />
-                </Button>
-              </div>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="rounded-none h-8 px-2.5"
+                        :class="viewMode === 'table' ? 'bg-muted' : ''"
+                        @click="viewMode = 'table'"
+                      >
+                        <Icon name="lucide:table-2" class="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Table view</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="rounded-none h-8 px-2.5"
+                        :class="viewMode === 'cards' ? 'bg-muted' : ''"
+                        @click="viewMode = 'cards'"
+                      >
+                        <Icon name="lucide:layout-grid" class="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Cards view</TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
 
-              <Button
-                variant="outline"
-                size="icon"
-                class="cursor-pointer shrink-0"
-                :title="t('action.refresh')"
-                :disabled="isRefreshing"
-                @click="refresh()"
-              >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    isRefreshing && 'animate-spin',
-                  ]"
-                />
-              </Button>
+              <TooltipProvider :delay-duration="300">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="cursor-pointer shrink-0"
+                      :disabled="isRefreshing"
+                      @click="refresh()"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="[
+                          'h-4 w-4 transition-transform duration-300',
+                          isRefreshing && 'animate-spin',
+                        ]"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {{ t('action.refresh') }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <Button class="cursor-pointer gap-2" @click="onServeModel">
                 <Icon name="lucide:plus" class="h-4 w-4" />
@@ -655,7 +786,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="list.length === 0 && !searchQuery"
+          v-else-if="filteredAndSortedList.length === 0 && !searchQuery"
           class="flex flex-col items-center justify-center min-h-[280px] text-center"
         >
           <div class="rounded-full bg-muted/50 p-4 mb-4">
@@ -672,7 +803,7 @@ onMounted(() => {
         </div>
 
         <div
-          v-else-if="list.length === 0 && searchQuery"
+          v-else-if="filteredAndSortedList.length === 0 && searchQuery"
           class="flex flex-col items-center justify-center min-h-[200px] text-center rounded-lg border border-dashed bg-muted/20"
         >
           <p class="text-sm text-muted-foreground">
@@ -695,7 +826,7 @@ onMounted(() => {
               class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               <ModelServingCard
-                v-for="item in list"
+                v-for="item in paginatedList"
                 :key="item.isvc_name"
                 :serving="item"
                 :refreshing="refreshingStatusIsvcName === item.isvc_name"
@@ -779,6 +910,12 @@ onMounted(() => {
       :base-serving="canaryBaseServing"
       @close="closeCanaryDialog"
       @created="fetchList"
+    />
+
+    <ServeModelDialog
+      :open="serveDialogOpen"
+      @close="closeServeDialog"
+      @created="onServeCreated"
     />
   </div>
 </template>

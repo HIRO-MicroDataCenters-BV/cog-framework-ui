@@ -40,6 +40,12 @@ export const uselistMenus = () => {
               icon: 'lucide:gauge',
             },
             {
+              key: 'pipelines-experiments',
+              title: t('menu.pipeline_experiments') ?? 'Experiments',
+              url: 'pipelines/experiments',
+              icon: 'lucide:flask-conical',
+            },
+            {
               key: 'pipelines-builder',
               title: 'Builder',
               url: 'pipelines/builder',

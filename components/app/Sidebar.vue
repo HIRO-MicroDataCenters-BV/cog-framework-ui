@@ -9,7 +9,11 @@ const config = useRuntimeConfig();
 const menu = uselistMenus();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
-// const urlOrigin = window.location.origin;
+
+// Infra Dashboard lives at the bare origin (e.g. https://dashboard.cog.hiro-develop.nl/).
+// Our UI is mounted under a context path (/uidev or /cogui), so strip the path
+// by using only the origin from the current request URL.
+const infraDashboardUrl = computed(() => useRequestURL().origin);
 
 const route = useRoute();
 const query = computed(() => route.query);
@@ -28,12 +32,16 @@ const isMainActive = (url: string, hasChildren: boolean) => {
 const isSubActive = (subUrl: string) => {
   const fullPath = route.path;
 
-  // Special handling for Pipelines "Runs" vs "Builder"
+  // Special handling for Pipelines "Runs" vs "Builder" / "Experiments":
+  // run detail pages (e.g. /pipelines/<run-id>) don't match any sub-url
+  // explicitly, so treat bare `/pipelines/...` (that is not builder or
+  // experiments) as "Runs".
   if (subUrl === 'pipelines/run') {
     return (
       fullPath.startsWith('/pipelines/run') ||
       (fullPath.startsWith('/pipelines') &&
         !fullPath.startsWith('/pipelines/builder') &&
+        !fullPath.startsWith('/pipelines/experiments') &&
         !fullPath.startsWith('/pipelines/run'))
     );
   }
@@ -177,6 +185,21 @@ const toggleTheme = () => {
               </SidebarMenuItem>
             </Collapsible>
           </template>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton as-child :tooltip="t('menu.infra_dashboard')">
+              <a
+                :href="infraDashboardUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="text-lg">
+                  <Icon name="lucide:layout-dashboard" />
+                </span>
+                <span>{{ t('menu.infra_dashboard') }}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
     </SidebarContent>

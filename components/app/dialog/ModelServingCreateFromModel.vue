@@ -126,7 +126,7 @@
           </div>
 
           <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="model_format" class="text-right">Model format</Label>
+            <Label for="model_format" class="text-right">Model format *</Label>
             <div class="col-span-3">
               <Select v-model="form.model_format">
                 <SelectTrigger id="model_format" class="w-full">
@@ -379,6 +379,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup } from '~/components/ui/radio-group';
 import RadioGroupItem from '~/components/ui/radio-group/RadioGroupItem.vue';
+import { sanitizeIsvcName } from '~/utils/sanitizeIsvcName';
 
 const props = defineProps<{
   open: boolean;
@@ -390,7 +391,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing, getModelArtifacts } = useApi();
+const { postModelServing, getModelAssociationsById } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -473,10 +474,8 @@ watch(
     form.model_name = String(m.name ?? '');
     form.model_version =
       m.version !== undefined && m.version !== null ? String(m.version) : '';
-    // Initial service name must follow RFC 1123: lowercase, no underscores
-    form.isvc_name = form.model_name
-      ? `${form.model_name.replace(/_/g, '-').toLowerCase()}-serving`
-      : '';
+    const sanitized = sanitizeIsvcName(form.model_name);
+    form.isvc_name = sanitized ? `${sanitized}-serving` : '';
     if (form.model_id) {
       fetchModelArtifacts(form.model_id);
     }
@@ -509,6 +508,7 @@ const canGoNext = computed(() => {
       isValidIsvcName.value &&
       !!form.model_name &&
       !!form.model_version &&
+      !!form.model_format &&
       (!artifactPaths.value.length || !!selectedArtifactPath.value)
     );
   }
@@ -565,7 +565,7 @@ const handleSubmit = async () => {
         model_format: form.model_format,
         artifact_path: selectedArtifactPath.value || undefined,
       },
-      { successMessage: 'operation_completed' },
+      { useResponseMessage: true },
     );
     emit('created');
     resetState();
@@ -584,7 +584,7 @@ const fetchModelArtifacts = async (modelId: string) => {
   artifactPaths.value = [];
   selectedArtifactPath.value = '';
   try {
-    const res = await getModelArtifacts(modelId, { showToast: false });
+    const res = await getModelAssociationsById(modelId);
     if (res?.data?.length && res.data[0]?.artifacts?.model_files) {
       const modelFiles = res.data[0].artifacts.model_files;
       const folders = new Set<string>();

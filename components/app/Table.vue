@@ -37,6 +37,12 @@ import type {
 import AppDialogDataset from '~/components/app/dialog/Dataset.vue';
 import AppDialogModel from '~/components/app/dialog/Model.vue';
 import ColumnFilter from '~/components/app/table/ColumnFilter.vue';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 const props = defineProps({
   dataSource: {
@@ -101,6 +107,10 @@ const props = defineProps({
   groupBy: {
     type: String as PropType<string | null>,
     default: null,
+  },
+  expandable: {
+    type: Boolean,
+    default: false,
   },
   hideHeader: {
     type: Boolean,
@@ -329,7 +339,13 @@ const handleSort = (columnId: string) => {
   const query = { ...route.query };
 
   if (currentSortBy.value === columnId) {
-    query.sort_order = currentSortOrder.value === 'asc' ? 'desc' : 'asc';
+    if (currentSortOrder.value === 'asc') {
+      query.sort_order = 'desc';
+    } else {
+      // Tri-state: asc → desc → cleared (back to default sort).
+      delete query.sort_by;
+      delete query.sort_order;
+    }
   } else {
     query.sort_by = columnId;
     query.sort_order = 'asc';
@@ -392,6 +408,9 @@ const getSectionIcon = (section: string | undefined) => {
   // Use specific icon for pipeline_runs
   if (section === 'pipeline_runs') {
     return 'lucide:gauge';
+  }
+  if (section === 'pipeline_experiments') {
+    return 'lucide:flask-conical';
   }
   return menu.value.main.find((item) => item.key === section)?.icon;
 };
@@ -564,6 +583,7 @@ const table = useVueTable({
   getSubRows: props.groupBy
     ? (row: DataItem) => (row as DataItem & { subRows?: DataItem[] }).subRows
     : undefined,
+  getRowCanExpand: props.expandable && !props.groupBy ? () => true : undefined,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
@@ -871,7 +891,12 @@ watch(
   },
 );
 
-defineExpose({ fetchData, totalItems });
+const resetExpanded = () => {
+  expanded.value = {};
+  table.resetExpanded();
+};
+
+defineExpose({ fetchData, totalItems, resetExpanded });
 </script>
 
 <template>
@@ -914,24 +939,40 @@ defineExpose({ fetchData, totalItems });
             <div class="flex gap-2 items-center">
               <slot name="header-actions" />
 
-              <Button
-                variant="outline"
-                size="icon"
-                class="cursor-pointer shrink-0"
-                :title="t('action.refresh')"
-                :disabled="isRefreshing"
-                @click="fetchData()"
-              >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    isRefreshing && 'animate-spin',
-                  ]"
-                />
-              </Button>
+              <TooltipProvider :delay-duration="300">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="cursor-pointer shrink-0"
+                      :disabled="isRefreshing"
+                      @click="fetchData()"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="[
+                          'h-4 w-4 transition-transform duration-300',
+                          isRefreshing && 'animate-spin',
+                        ]"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {{ t('action.refresh') }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-              <Button class="cursor-pointer" @click="() => add()">
+              <Button
+                v-if="
+                  ['datasets', 'models', 'pipelines', 'pipeline_runs'].includes(
+                    page.section,
+                  )
+                "
+                class="cursor-pointer"
+                @click="() => add()"
+              >
                 <Icon name="lucide:plus" />
                 {{
                   t(
@@ -939,6 +980,8 @@ defineExpose({ fetchData, totalItems });
                   )
                 }}
               </Button>
+
+              <slot name="header-actions-end" />
             </div>
           </div>
         </div>
@@ -947,52 +990,9 @@ defineExpose({ fetchData, totalItems });
       <!-- Slot for custom tabs or additional header content -->
       <slot name="header-tabs" />
     </div>
-    <!-- Non-scrollable table header -->
-    <div class="overflow-x-auto w-full bg-sidebar-background">
-      <table
-        class="border-b w-full border-collapse table-fixed bg-sidebar-background"
-      >
-        <colgroup>
-          <col
-            v-for="header in visibleHeaders"
-            :key="header.id"
-            :style="{
-              width:
-                header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
-            }"
-          />
-        </colgroup>
-        <TableHeader
-          class="border-b border-t border-border shadow-xs bg-sidebar"
-        >
-          <TableRow
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-            class="h-10 min-h-10 border-0"
-          >
-            <TableHead
-              v-for="header in visibleHeaders"
-              :key="header.id"
-              :class="'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10'"
-              :style="{
-                width:
-                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
-              }"
-            >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-      </table>
-    </div>
-
-    <!-- Scrollable table body -->
+    <!-- Scrollable table with sticky header (header + body share scroll) -->
     <div
-      class="overflow-x-auto overflow-y-auto w-full flex-1 bg-sidebar-background relative pb-10"
+      class="overflow-auto w-full flex-1 bg-sidebar-background relative pb-10"
     >
       <table
         class="border-b w-full border-collapse table-fixed bg-sidebar-background"
@@ -1007,6 +1007,34 @@ defineExpose({ fetchData, totalItems });
             }"
           />
         </colgroup>
+        <TableHeader
+          class="border-b border-t border-border shadow-xs bg-sidebar sticky top-0 z-20"
+        >
+          <TableRow
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="headerGroup.id"
+            class="h-10 min-h-10 border-0"
+          >
+            <TableHead
+              v-for="(header, hIdx) in visibleHeaders"
+              :key="header.id"
+              :class="[
+                'border-l border-r border-border py-2 px-3 text-sm h-10 min-h-10 overflow-hidden bg-sidebar',
+                hIdx === 0 && 'sticky left-0 z-30',
+              ]"
+              :style="{
+                width:
+                  header.getSize() !== 150 ? `${header.getSize()}px` : 'auto',
+              }"
+            >
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           <template v-if="table.getFilteredRowModel().rows?.length">
             <template
@@ -1019,7 +1047,11 @@ defineExpose({ fetchData, totalItems });
                     .getVisibleCells()
                     .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                   :key="cell.id"
-                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  :class="[
+                    'border-l border-r border-border py-1 px-3 text-sm',
+                    cellIndex === 0 &&
+                      'sticky left-0 z-10 bg-sidebar-background',
+                  ]"
                   :style="{
                     width:
                       cell.column.getSize() !== 150
@@ -1028,7 +1060,11 @@ defineExpose({ fetchData, totalItems });
                   }"
                 >
                   <div
-                    v-if="cellIndex === 0 && groupBy && row.getCanExpand()"
+                    v-if="
+                      cellIndex === 0 &&
+                      (groupBy || expandable) &&
+                      row.getCanExpand()
+                    "
                     class="flex items-center gap-1.5"
                   >
                     <button
@@ -1075,7 +1111,11 @@ defineExpose({ fetchData, totalItems });
                       .getVisibleCells()
                       .filter((c) => !(c.column.columnDef as any).meta?.hidden)"
                     :key="cell.id"
-                    class="border-l border-r border-border py-1 px-3 text-sm"
+                    :class="[
+                      'border-l border-r border-border py-1 px-3 text-sm',
+                      cellIndex === 0 &&
+                        'sticky left-0 z-10 bg-sidebar-background',
+                    ]"
                     :style="{
                       width:
                         cell.column.getSize() !== 150
@@ -1101,9 +1141,15 @@ defineExpose({ fetchData, totalItems });
               <TableRow v-if="!groupBy && row.getIsExpanded()">
                 <TableCell
                   :colspan="row.getAllCells().length"
-                  class="border-l border-r border-border py-1 px-3 text-sm"
+                  class="border-l border-r border-border p-0 text-sm bg-muted/20"
                 >
-                  {{ JSON.stringify(row.original) }}
+                  <div class="expanded-row-content">
+                    <slot name="expanded" :row="row.original">
+                      <div class="p-3 text-muted-foreground">
+                        {{ JSON.stringify(row.original) }}
+                      </div>
+                    </slot>
+                  </div>
                 </TableCell>
               </TableRow>
             </template>
@@ -1139,7 +1185,7 @@ defineExpose({ fetchData, totalItems });
     </div>
 
     <div
-      class="py-1 px-4 border-t border-border bg-card absolute bottom-0 left-0 right-0"
+      class="py-1 px-4 border-t border-border bg-card absolute bottom-0 left-0 right-0 z-30"
     >
       <div class="flex items-center justify-between">
         <div v-if="selectable" class="flex-1 text-sm text-muted-foreground">
@@ -1201,3 +1247,20 @@ defineExpose({ fetchData, totalItems });
     "
   />
 </template>
+
+<style scoped>
+.expanded-row-content {
+  animation: expand-fade-in 180ms ease-out;
+}
+
+@keyframes expand-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

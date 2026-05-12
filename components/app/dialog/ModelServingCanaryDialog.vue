@@ -530,7 +530,7 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { patchModelServing, getModels, getModelArtifacts } = useApi();
+const { patchModelServing, getModels, getModelAssociationsById } = useApi();
 const toaster = useToaster();
 
 const isSubmitting = ref(false);
@@ -826,7 +826,7 @@ const fetchModelArtifacts = async (modelId: string) => {
   artifactPaths.value = [];
   selectedArtifactPath.value = '';
   try {
-    const res = await getModelArtifacts(modelId, { showToast: false });
+    const res = await getModelAssociationsById(modelId);
     if (res?.data?.length && res.data[0]?.artifacts?.model_files) {
       const modelFiles = res.data[0].artifacts.model_files;
       // Extract unique first-level folder paths (first segment before "/")

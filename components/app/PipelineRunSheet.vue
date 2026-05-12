@@ -468,6 +468,20 @@ interface ChildTask {
   pod_name: string;
 }
 
+/**
+ * KFP v2beta1 `PipelineTaskExecutorDetail`: holds the actual executor pod
+ * name in `main_job` (e.g. `{workflow}-{component-name}-{ordinal}`). This is
+ * the pod whose logs the user wants — NOT the driver pod that ends up in
+ * `child_tasks[0]` (which has format `{workflow}-{ordinal}` and serves no
+ * useful logs).
+ */
+interface ExecutorDetail {
+  main_job?: string;
+  pre_caching_check_job?: string;
+  failed_main_jobs?: string[];
+  failed_pre_caching_check_jobs?: string[];
+}
+
 interface TaskDetail {
   run_id: string;
   task_id: string;
@@ -478,6 +492,10 @@ interface TaskDetail {
   state?: string;
   output_values?: Record<string, string>;
   state_history?: StateHistoryEntry[];
+  /** KFP v2 sometimes surfaces the executor pod here directly. */
+  pod_name?: string;
+  /** KFP v2beta1 nests the executor pod here as `executor_detail.main_job`. */
+  executor_detail?: ExecutorDetail;
   child_tasks?: ChildTask[];
 }
 
@@ -733,11 +751,16 @@ const stateHistory = computed<StateHistoryEntry[]>(
   () => run.value?.state_history ?? [],
 );
 
-// Pod name for logs (first child pod of selected task)
-const logPodName = computed(() => {
-  const task = selectedTask.value;
-  return task?.child_tasks?.[0]?.pod_name ?? null;
-});
+// Pod name for logs. Pure resolution lives in `utils/resolveLogPodName` so
+// it can be unit-tested without mounting this component. See that file for
+// the full explanation of the KFP v1.8 / v2beta1 pod-naming heuristic.
+const logPodName = computed(() =>
+  resolveLogPodName(
+    selectedTask.value,
+    run.value?.run_details?.task_details ?? [],
+    run.value?.pipeline_spec?.spec?.templates ?? [],
+  ),
+);
 
 const logsLoading = ref(false);
 const logsError = ref<string | null>(null);
@@ -761,7 +784,7 @@ const fetchPodLogs = async () => {
       podnamespace: POD_NAMESPACE,
     });
     if (data == null) {
-      logsError.value = 'Failed to load logs';
+      logsError.value = t('description.logs_unavailable');
       return;
     }
     // Handle various response shapes: { content }, { logs }, or plain string
@@ -776,8 +799,10 @@ const fetchPodLogs = async () => {
         null;
     }
   } catch (err) {
-    logsError.value =
-      err instanceof Error ? err.message : 'Failed to load logs';
+    // KFP `/k8s/pod/logs` errors aren't useful to surface (404 for compilation
+    // pods, 500 for gc'd pods, etc.). Show a friendly fallback either way.
+    console.error('Error fetching pod logs:', err);
+    logsError.value = t('description.logs_unavailable');
   } finally {
     logsLoading.value = false;
   }

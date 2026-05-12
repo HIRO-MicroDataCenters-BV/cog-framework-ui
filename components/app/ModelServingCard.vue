@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="relative px-4 pt-3 pb-2">
       <!-- Icon and name -->
-      <div class="flex items-start gap-2.5">
+      <div class="flex items-center gap-2.5">
         <div
           class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary"
         >
@@ -40,25 +40,38 @@
           </div>
           <div class="flex items-center justify-between gap-2 mt-0.5">
             <div class="flex items-center gap-1.5">
-              <Badge :class="statusBadgeClass" class="text-[10px] font-medium">
+              <Badge
+                :class="statusBadgeClass"
+                class="text-[10px] font-medium px-1 py-0"
+              >
                 {{ serving.status }}
               </Badge>
-              <Button
+              <TooltipProvider
                 v-if="
                   serving.status && serving.status.toLowerCase() !== 'ready'
                 "
-                variant="ghost"
-                size="icon"
-                class="h-5 w-5 text-muted-foreground hover:text-foreground"
-                title="Refresh status"
-                :disabled="refreshing"
-                @click.stop="emit('refresh-status', serving.isvc_name)"
+                :delay-duration="300"
               >
-                <Icon
-                  name="lucide:refresh-cw"
-                  :class="['h-3 w-3', refreshing && 'animate-spin']"
-                />
-              </Button>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="h-5 w-5 text-muted-foreground hover:text-foreground"
+                      :disabled="refreshing"
+                      @click.stop="emit('refresh-status', serving.isvc_name)"
+                    >
+                      <Icon
+                        name="lucide:refresh-cw"
+                        :class="['h-3 w-3', refreshing && 'animate-spin']"
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="text-[11px] px-2 py-1">
+                    Refresh status
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <span
               v-if="serving.age"
@@ -228,10 +241,10 @@
         </div>
       </div>
 
-      <!-- Traffic split (stop propagation so slider doesn't open sheet) -->
+      <!-- Traffic split: section-level clicks bubble (open the sheet); only
+           the interactive slider/button row stops propagation. -->
       <div
         class="px-4 py-3 border-t border-border/50 dark:border-zinc-700/50 bg-muted/10 dark:bg-zinc-800/20"
-        @click.stop
       >
         <div class="flex items-center justify-between gap-2 mb-2">
           <span class="text-xs font-medium text-muted-foreground"
@@ -264,7 +277,7 @@
         </div>
 
         <!-- Slider, step controls, and update (enabled only when has_canary) -->
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5" @click.stop>
           <Button
             variant="outline"
             size="icon"
@@ -380,6 +393,8 @@ const localCanaryPercent = ref(initialCanaryPercent);
 const statusDotClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
   if (s === 'ready') return 'bg-green-500 shadow-green-500/50 shadow-sm';
+  if (s === 'not_ready')
+    return 'bg-orange-500 shadow-orange-500/50 shadow-sm animate-pulse';
   if (s === 'pending')
     return 'bg-amber-500 shadow-amber-500/50 shadow-sm animate-pulse';
   if (s === 'failed') return 'bg-red-500 shadow-red-500/50 shadow-sm';
@@ -393,6 +408,8 @@ const statusBadgeClass = computed(() => {
   const s = props.serving.status?.toLowerCase();
   if (s === 'ready')
     return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+  if (s === 'not_ready')
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
   if (s === 'pending')
     return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
   if (s === 'failed')

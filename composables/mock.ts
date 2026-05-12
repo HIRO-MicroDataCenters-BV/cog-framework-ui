@@ -800,18 +800,7 @@ export const useApiWithMock = () => {
       return request(`/models-serving${q ? `?${q}` : ''}`);
     },
 
-    postModelServing: async (data: {
-      model_id: string;
-      isvc_name: string;
-      model_name: string;
-      model_version: string;
-      dataset_id?: string;
-      transformer_image?: string;
-      transformer_parameters?: unknown;
-      protocol_version: string;
-      model_format: string;
-      artifact_path?: string;
-    }) => {
+    postModelServing: async (data: Record<string, unknown>) => {
       if (mock.value.enabled) {
         await mockDelay();
         return Promise.resolve({

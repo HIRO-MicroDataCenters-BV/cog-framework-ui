@@ -1133,8 +1133,14 @@ const selectType = (type: string) => {
   form.setFieldValue('type', type);
 };
 
+const clearStepErrors = (step: number) => {
+  const fields = stepFieldNames[step]?.() || [];
+  fields.forEach((f) => form.setFieldError(f, undefined));
+};
+
 const goToStep = (step: number) => {
   if (step <= furthestStep.value) {
+    if (step < currentStep.value) clearStepErrors(currentStep.value);
     currentStep.value = step;
   }
 };
@@ -1172,6 +1178,7 @@ const prevStep = () => {
   }
 
   if (currentStep.value > 0) {
+    clearStepErrors(currentStep.value);
     currentStep.value--;
   }
 };
