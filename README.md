@@ -370,6 +370,3 @@ pnpm lint:inspector
 ```bash
 pnpm format
 ```
-
-
-
