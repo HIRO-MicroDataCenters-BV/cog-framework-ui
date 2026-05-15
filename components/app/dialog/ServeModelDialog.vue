@@ -207,6 +207,35 @@
 
           <SectionHeader title="Model settings" class="mt-6" />
           <div class="space-y-3">
+            <FieldRow label="Concurrent users" align="top">
+              <div class="flex gap-2">
+                <Input
+                  v-model.number="llm.concurrent_users"
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 10"
+                  class="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="h-9 px-3 text-xs cursor-pointer"
+                  :disabled="
+                    typeof llm.concurrent_users !== 'number' ||
+                    llm.concurrent_users < 1
+                  "
+                  @click="autofillModelSettings"
+                >
+                  <Icon name="lucide:wand-2" class="h-3 w-3 mr-1" />
+                  Autofill
+                </Button>
+              </div>
+              <p class="text-[11px] text-muted-foreground mt-1">
+                Enter expected concurrent users and click Autofill to suggest
+                model settings.
+              </p>
+            </FieldRow>
             <FieldRow label="HF token">
               <Input
                 v-model="llm.hf_token"
@@ -339,7 +368,10 @@
                 class="h-8 w-8 cursor-pointer"
                 @click="removeToleration(i)"
               >
-                <Icon name="lucide:x" class="h-3.5 w-3.5 text-muted-foreground" />
+                <Icon
+                  name="lucide:x"
+                  class="h-3.5 w-3.5 text-muted-foreground"
+                />
               </Button>
             </div>
           </template>
@@ -432,6 +464,7 @@ const blankLlm = () => ({
   dtype: '',
   max_model_len: undefined as number | undefined,
   tensor_parallel_size: undefined as number | undefined,
+  concurrent_users: undefined as number | undefined,
   res_cpu_req: '',
   res_cpu_lim: '',
   res_mem_req: '',
@@ -500,6 +533,86 @@ const addToleration = () => {
 
 const removeToleration = (i: number) => {
   llm.tolerations.splice(i, 1);
+};
+
+type RecommendedSettings = {
+  dtype: string;
+  max_model_len: number;
+  tensor_parallel_size: number;
+  res_cpu_req: string;
+  res_cpu_lim: string;
+  res_mem_req: string;
+  res_mem_lim: string;
+  res_gpu_req: string;
+  res_gpu_lim: string;
+};
+
+const recommendForUsers = (users: number): RecommendedSettings => {
+  if (users <= 10) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 1,
+      res_cpu_req: '4',
+      res_cpu_lim: '8',
+      res_mem_req: '16Gi',
+      res_mem_lim: '32Gi',
+      res_gpu_req: '1',
+      res_gpu_lim: '1',
+    };
+  }
+  if (users <= 50) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 2,
+      res_cpu_req: '8',
+      res_cpu_lim: '16',
+      res_mem_req: '32Gi',
+      res_mem_lim: '64Gi',
+      res_gpu_req: '2',
+      res_gpu_lim: '2',
+    };
+  }
+  if (users <= 100) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 4,
+      res_cpu_req: '16',
+      res_cpu_lim: '32',
+      res_mem_req: '64Gi',
+      res_mem_lim: '128Gi',
+      res_gpu_req: '4',
+      res_gpu_lim: '4',
+    };
+  }
+  return {
+    dtype: 'bfloat16',
+    max_model_len: 4096,
+    tensor_parallel_size: 8,
+    res_cpu_req: '32',
+    res_cpu_lim: '64',
+    res_mem_req: '128Gi',
+    res_mem_lim: '256Gi',
+    res_gpu_req: '8',
+    res_gpu_lim: '8',
+  };
+};
+
+const autofillModelSettings = () => {
+  const users = llm.concurrent_users;
+  if (typeof users !== 'number' || users < 1) return;
+  const r = recommendForUsers(users);
+  llm.dtype = r.dtype;
+  llm.max_model_len = r.max_model_len;
+  llm.tensor_parallel_size = r.tensor_parallel_size;
+  llm.res_cpu_req = r.res_cpu_req;
+  llm.res_cpu_lim = r.res_cpu_lim;
+  llm.res_mem_req = r.res_mem_req;
+  llm.res_mem_lim = r.res_mem_lim;
+  llm.res_gpu_req = r.res_gpu_req;
+  llm.res_gpu_lim = r.res_gpu_lim;
 };
 
 const resetState = () => {
