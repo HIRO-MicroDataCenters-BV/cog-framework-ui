@@ -618,17 +618,18 @@ const buildLlmPayload = (): LlmPayload => {
   if (Object.keys(limits).length) resources.limits = limits;
   if (Object.keys(resources).length) payload.resources = resources;
 
-  const tolerations: NonNullable<LlmPayload['tolerations']> = llm.tolerations
-    .map((t) => {
-      const cleaned: NonNullable<LlmPayload['tolerations']>[number] = {};
-      if (t.key.trim()) cleaned.key = t.key.trim();
-      if (t.operator) cleaned.operator = t.operator;
-      if (t.value.trim()) cleaned.value = t.value.trim();
-      if (t.effect) cleaned.effect = t.effect;
-      return cleaned;
-    })
-    .filter((t) => Object.keys(t).length > 0);
-  if (tolerations.length) payload.tolerations = tolerations;
+  // Tolerations intentionally not sent — UI hidden; keep logic for future use.
+  // const tolerations: NonNullable<LlmPayload['tolerations']> = llm.tolerations
+  //   .map((t) => {
+  //     const cleaned: NonNullable<LlmPayload['tolerations']>[number] = {};
+  //     if (t.key.trim()) cleaned.key = t.key.trim();
+  //     if (t.operator) cleaned.operator = t.operator;
+  //     if (t.value.trim()) cleaned.value = t.value.trim();
+  //     if (t.effect) cleaned.effect = t.effect;
+  //     return cleaned;
+  //   })
+  //   .filter((t) => Object.keys(t).length > 0);
+  // if (tolerations.length) payload.tolerations = tolerations;
 
   if (typeof llm.min_replicas === 'number')
     payload.min_replicas = llm.min_replicas;
