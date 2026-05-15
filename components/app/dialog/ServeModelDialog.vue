@@ -248,97 +248,101 @@
             </FieldRow>
           </div>
 
-          <SectionHeader title="Resources" class="mt-6" />
-          <div class="grid grid-cols-3 gap-3 text-[11px]">
-            <div />
-            <div class="text-center font-medium">Requests</div>
-            <div class="text-center font-medium">Limits</div>
-            <Label class="flex items-center">CPU</Label>
-            <Input v-model="llm.res_cpu_req" placeholder="e.g. 4" />
-            <Input v-model="llm.res_cpu_lim" placeholder="e.g. 8" />
-            <Label class="flex items-center">Memory</Label>
-            <Input v-model="llm.res_mem_req" placeholder="e.g. 7Gi" />
-            <Input v-model="llm.res_mem_lim" placeholder="e.g. 8Gi" />
-            <Label class="flex items-center">GPU</Label>
-            <Input v-model="llm.res_gpu_req" placeholder="e.g. 1" />
-            <Input v-model="llm.res_gpu_lim" placeholder="e.g. 1" />
-          </div>
+          <template v-if="false">
+            <SectionHeader title="Resources" class="mt-6" />
+            <div class="grid grid-cols-3 gap-3 text-[11px]">
+              <div />
+              <div class="text-center font-medium">Requests</div>
+              <div class="text-center font-medium">Limits</div>
+              <Label class="flex items-center">CPU</Label>
+              <Input v-model="llm.res_cpu_req" placeholder="e.g. 4" />
+              <Input v-model="llm.res_cpu_lim" placeholder="e.g. 8" />
+              <Label class="flex items-center">Memory</Label>
+              <Input v-model="llm.res_mem_req" placeholder="e.g. 7Gi" />
+              <Input v-model="llm.res_mem_lim" placeholder="e.g. 8Gi" />
+              <Label class="flex items-center">GPU</Label>
+              <Input v-model="llm.res_gpu_req" placeholder="e.g. 1" />
+              <Input v-model="llm.res_gpu_lim" placeholder="e.g. 1" />
+            </div>
+          </template>
 
-          <div class="grid grid-cols-2 gap-3 mt-4">
-            <FieldRow label="Min replicas" inline>
-              <Input
-                v-model.number="llm.min_replicas"
-                type="number"
-                min="0"
-                placeholder="1"
-              />
-            </FieldRow>
-            <FieldRow label="Max replicas" inline>
-              <Input
-                v-model.number="llm.max_replicas"
-                type="number"
-                min="0"
-                placeholder="1"
-              />
-            </FieldRow>
-          </div>
+          <template v-if="false">
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <FieldRow label="Min replicas" inline>
+                <Input
+                  v-model.number="llm.min_replicas"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                />
+              </FieldRow>
+              <FieldRow label="Max replicas" inline>
+                <Input
+                  v-model.number="llm.max_replicas"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                />
+              </FieldRow>
+            </div>
 
-          <SectionHeader title="Tolerations" class="mt-6">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="h-7 px-2 text-xs cursor-pointer"
-              @click="addToleration"
+            <SectionHeader title="Tolerations" class="mt-6">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="h-7 px-2 text-xs cursor-pointer"
+                @click="addToleration"
+              >
+                <Icon name="lucide:plus" class="h-3 w-3 mr-1" />
+                Add
+              </Button>
+            </SectionHeader>
+            <p
+              v-if="llm.tolerations.length === 0"
+              class="text-[11px] text-muted-foreground"
             >
-              <Icon name="lucide:plus" class="h-3 w-3 mr-1" />
-              Add
-            </Button>
-          </SectionHeader>
-          <p
-            v-if="llm.tolerations.length === 0"
-            class="text-[11px] text-muted-foreground"
-          >
-            No tolerations. Click Add to schedule pods onto tainted nodes.
-          </p>
-          <div
-            v-for="(tol, i) in llm.tolerations"
-            :key="i"
-            class="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 mb-2 items-center"
-          >
-            <Input v-model="tol.key" placeholder="key" />
-            <Select v-model="tol.operator">
-              <SelectTrigger>
-                <SelectValue placeholder="operator" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Equal">Equal</SelectItem>
-                <SelectItem value="Exists">Exists</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input v-model="tol.value" placeholder="value" />
-            <Select v-model="tol.effect">
-              <SelectTrigger>
-                <SelectValue placeholder="effect" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NoSchedule">NoSchedule</SelectItem>
-                <SelectItem value="PreferNoSchedule">
-                  PreferNoSchedule
-                </SelectItem>
-                <SelectItem value="NoExecute">NoExecute</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8 cursor-pointer"
-              @click="removeToleration(i)"
+              No tolerations. Click Add to schedule pods onto tainted nodes.
+            </p>
+            <div
+              v-for="(tol, i) in llm.tolerations"
+              :key="i"
+              class="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 mb-2 items-center"
             >
-              <Icon name="lucide:x" class="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </div>
+              <Input v-model="tol.key" placeholder="key" />
+              <Select v-model="tol.operator">
+                <SelectTrigger>
+                  <SelectValue placeholder="operator" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Equal">Equal</SelectItem>
+                  <SelectItem value="Exists">Exists</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input v-model="tol.value" placeholder="value" />
+              <Select v-model="tol.effect">
+                <SelectTrigger>
+                  <SelectValue placeholder="effect" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NoSchedule">NoSchedule</SelectItem>
+                  <SelectItem value="PreferNoSchedule">
+                    PreferNoSchedule
+                  </SelectItem>
+                  <SelectItem value="NoExecute">NoExecute</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 cursor-pointer"
+                @click="removeToleration(i)"
+              >
+                <Icon name="lucide:x" class="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </div>
+          </template>
         </template>
       </form>
 
