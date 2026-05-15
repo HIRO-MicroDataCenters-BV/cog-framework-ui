@@ -165,8 +165,13 @@ describe('ServeModelDialog', () => {
     expect(wrapper.text()).toContain('Served model name');
     expect(wrapper.text()).toContain('Hugging Face model ID');
     expect(wrapper.text()).toContain('Model settings');
-    expect(wrapper.text()).toContain('Resources');
-    expect(wrapper.text()).toContain('Tolerations');
+    expect(wrapper.text()).toContain('Concurrent users');
+    // Resources, Tolerations, Min/Max replicas are intentionally hidden (kept
+    // in template behind v-if="false" for future use).
+    expect(wrapper.text()).not.toContain('Resources');
+    expect(wrapper.text()).not.toContain('Tolerations');
+    expect(wrapper.text()).not.toContain('Min replicas');
+    expect(wrapper.text()).not.toContain('Max replicas');
 
     expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
 
@@ -179,7 +184,7 @@ describe('ServeModelDialog', () => {
     ).toBeUndefined();
   });
 
-  it('submits LLM minimum payload (only hf_model_id + default tolerations)', async () => {
+  it('submits LLM minimum payload (only hf_model_id; tolerations no longer sent)', async () => {
     const wrapper = mountDialog();
     await clickLlmTab(wrapper);
 
@@ -192,15 +197,8 @@ describe('ServeModelDialog', () => {
     const [body] = postModelServing.mock.calls[0];
     expect(body).toEqual({
       hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct',
-      tolerations: [
-        {
-          key: 'storage-type',
-          operator: 'Equal',
-          value: 'local',
-          effect: 'NoSchedule',
-        },
-      ],
     });
+    expect(body.tolerations).toBeUndefined();
   });
 
   it('includes isvc_name and served_model_name only when filled', async () => {
@@ -241,5 +239,212 @@ describe('ServeModelDialog', () => {
     await findButton(wrapper, 'Cancel')!.trigger('click');
     expect(wrapper.emitted('close')).toBeTruthy();
     expect(postModelServing).not.toHaveBeenCalled();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Concurrent users + Autofill
+  // ---------------------------------------------------------------------------
+
+  // After clicking the LLM tab, visible inputs are:
+  //   [0] hf_model_id, [1] isvc_name, [2] served_model_name,
+  //   [3] concurrent_users, [4] hf_token, [5] max_model_len, [6] tensor_parallel_size
+  const setupLlmAndAutofill = async (
+    wrapper: W,
+    concurrentUsers: string,
+    hfModelId = 'Qwen/Qwen2.5-Coder-7B-Instruct',
+  ) => {
+    const inputs = wrapper.findAll('input');
+    await inputs[0].setValue(hfModelId);
+    await inputs[3].setValue(concurrentUsers);
+    await flushPromises();
+    await findButton(wrapper, 'Autofill')!.trigger('click');
+    await flushPromises();
+  };
+
+  it('Autofill button is disabled until concurrent_users is a positive number', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeDefined();
+
+    const inputs = wrapper.findAll('input');
+    // 0 is not positive — still disabled
+    await inputs[3].setValue('0');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeDefined();
+
+    // A positive integer enables the button
+    await inputs[3].setValue('5');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeUndefined();
+  });
+
+  it('Autofill does nothing when clicked with an empty / invalid value (defensive)', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+
+    // Triggering the click bypasses the disabled attribute in jsdom, but the
+    // handler itself guards against non-numeric / non-positive input.
+    await findButton(wrapper, 'Autofill')!.trigger('click');
+    await flushPromises();
+
+    const inputs = wrapper.findAll('input');
+    await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({ hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct' });
+    expect(body.resources).toBeUndefined();
+    expect(body.dtype).toBeUndefined();
+  });
+
+  it('Autofill <=10 users applies tier-1 model settings and resources', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '5');
+
+    // Verify the populated inputs render the new values.
+    const inputs = wrapper.findAll('input');
+    expect((inputs[5].element as HTMLInputElement).value).toBe('4096');
+    expect((inputs[6].element as HTMLInputElement).value).toBe('1');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct',
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 1,
+      resources: {
+        requests: { cpu: '4', memory: '16Gi', 'nvidia.com/gpu': '1' },
+        limits: { cpu: '8', memory: '32Gi', 'nvidia.com/gpu': '1' },
+      },
+    });
+  });
+
+  it('Autofill boundary at 10 still applies tier-1 (<=10 inclusive)', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '10');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      tensor_parallel_size: 1,
+      resources: {
+        requests: { cpu: '4', memory: '16Gi', 'nvidia.com/gpu': '1' },
+        limits: { cpu: '8', memory: '32Gi', 'nvidia.com/gpu': '1' },
+      },
+    });
+  });
+
+  it('Autofill 11-50 users applies tier-2 settings', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '25');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      tensor_parallel_size: 2,
+      max_model_len: 4096,
+      dtype: 'bfloat16',
+      resources: {
+        requests: { cpu: '8', memory: '32Gi', 'nvidia.com/gpu': '2' },
+        limits: { cpu: '16', memory: '64Gi', 'nvidia.com/gpu': '2' },
+      },
+    });
+  });
+
+  it('Autofill 51-100 users applies tier-3 settings', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '100');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      tensor_parallel_size: 4,
+      resources: {
+        requests: { cpu: '16', memory: '64Gi', 'nvidia.com/gpu': '4' },
+        limits: { cpu: '32', memory: '128Gi', 'nvidia.com/gpu': '4' },
+      },
+    });
+  });
+
+  it('Autofill >100 users applies tier-4 settings', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '500');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      tensor_parallel_size: 8,
+      resources: {
+        requests: { cpu: '32', memory: '128Gi', 'nvidia.com/gpu': '8' },
+        limits: { cpu: '64', memory: '256Gi', 'nvidia.com/gpu': '8' },
+      },
+    });
+  });
+
+  it('Autofilled payload never includes tolerations or concurrent_users', async () => {
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '25');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body.tolerations).toBeUndefined();
+    expect(body.concurrent_users).toBeUndefined();
+  });
+
+  it('reopening the dialog resets concurrent_users and autofill', async () => {
+    const wrapper = mountDialog(true);
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '500');
+
+    // Close and reopen the dialog
+    await wrapper.setProps({ open: false });
+    await flushPromises();
+    await wrapper.setProps({ open: true });
+    await flushPromises();
+    await clickLlmTab(wrapper);
+
+    // Autofill is back to disabled (state reset)
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeDefined();
+
+    // Concurrent users input is empty
+    const inputs = wrapper.findAll('input');
+    expect((inputs[3].element as HTMLInputElement).value).toBe('');
+
+    // Submit with hf_model_id only — resources/dtype should not leak from previous fill
+    await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({ hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct' });
   });
 });
