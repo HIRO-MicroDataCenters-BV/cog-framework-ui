@@ -207,6 +207,35 @@
 
           <SectionHeader title="Model settings" class="mt-6" />
           <div class="space-y-3">
+            <FieldRow label="Concurrent users" align="top">
+              <div class="flex gap-2">
+                <Input
+                  v-model.number="llm.concurrent_users"
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 10"
+                  class="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="h-9 px-3 text-xs cursor-pointer"
+                  :disabled="
+                    typeof llm.concurrent_users !== 'number' ||
+                    llm.concurrent_users < 1
+                  "
+                  @click="autofillModelSettings"
+                >
+                  <Icon name="lucide:wand-2" class="h-3 w-3 mr-1" />
+                  Autofill
+                </Button>
+              </div>
+              <p class="text-[11px] text-muted-foreground mt-1">
+                Enter expected concurrent users and click Autofill to suggest
+                model settings.
+              </p>
+            </FieldRow>
             <FieldRow label="HF token">
               <Input
                 v-model="llm.hf_token"
@@ -248,97 +277,104 @@
             </FieldRow>
           </div>
 
-          <SectionHeader title="Resources" class="mt-6" />
-          <div class="grid grid-cols-3 gap-3 text-[11px]">
-            <div />
-            <div class="text-center font-medium">Requests</div>
-            <div class="text-center font-medium">Limits</div>
-            <Label class="flex items-center">CPU</Label>
-            <Input v-model="llm.res_cpu_req" placeholder="e.g. 4" />
-            <Input v-model="llm.res_cpu_lim" placeholder="e.g. 8" />
-            <Label class="flex items-center">Memory</Label>
-            <Input v-model="llm.res_mem_req" placeholder="e.g. 7Gi" />
-            <Input v-model="llm.res_mem_lim" placeholder="e.g. 8Gi" />
-            <Label class="flex items-center">GPU</Label>
-            <Input v-model="llm.res_gpu_req" placeholder="e.g. 1" />
-            <Input v-model="llm.res_gpu_lim" placeholder="e.g. 1" />
-          </div>
+          <template v-if="false">
+            <SectionHeader title="Resources" class="mt-6" />
+            <div class="grid grid-cols-3 gap-3 text-[11px]">
+              <div />
+              <div class="text-center font-medium">Requests</div>
+              <div class="text-center font-medium">Limits</div>
+              <Label class="flex items-center">CPU</Label>
+              <Input v-model="llm.res_cpu_req" placeholder="e.g. 4" />
+              <Input v-model="llm.res_cpu_lim" placeholder="e.g. 8" />
+              <Label class="flex items-center">Memory</Label>
+              <Input v-model="llm.res_mem_req" placeholder="e.g. 7Gi" />
+              <Input v-model="llm.res_mem_lim" placeholder="e.g. 8Gi" />
+              <Label class="flex items-center">GPU</Label>
+              <Input v-model="llm.res_gpu_req" placeholder="e.g. 1" />
+              <Input v-model="llm.res_gpu_lim" placeholder="e.g. 1" />
+            </div>
+          </template>
 
-          <div class="grid grid-cols-2 gap-3 mt-4">
-            <FieldRow label="Min replicas" inline>
-              <Input
-                v-model.number="llm.min_replicas"
-                type="number"
-                min="0"
-                placeholder="1"
-              />
-            </FieldRow>
-            <FieldRow label="Max replicas" inline>
-              <Input
-                v-model.number="llm.max_replicas"
-                type="number"
-                min="0"
-                placeholder="1"
-              />
-            </FieldRow>
-          </div>
+          <template v-if="false">
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <FieldRow label="Min replicas" inline>
+                <Input
+                  v-model.number="llm.min_replicas"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                />
+              </FieldRow>
+              <FieldRow label="Max replicas" inline>
+                <Input
+                  v-model.number="llm.max_replicas"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                />
+              </FieldRow>
+            </div>
 
-          <SectionHeader title="Tolerations" class="mt-6">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="h-7 px-2 text-xs cursor-pointer"
-              @click="addToleration"
+            <SectionHeader title="Tolerations" class="mt-6">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="h-7 px-2 text-xs cursor-pointer"
+                @click="addToleration"
+              >
+                <Icon name="lucide:plus" class="h-3 w-3 mr-1" />
+                Add
+              </Button>
+            </SectionHeader>
+            <p
+              v-if="llm.tolerations.length === 0"
+              class="text-[11px] text-muted-foreground"
             >
-              <Icon name="lucide:plus" class="h-3 w-3 mr-1" />
-              Add
-            </Button>
-          </SectionHeader>
-          <p
-            v-if="llm.tolerations.length === 0"
-            class="text-[11px] text-muted-foreground"
-          >
-            No tolerations. Click Add to schedule pods onto tainted nodes.
-          </p>
-          <div
-            v-for="(tol, i) in llm.tolerations"
-            :key="i"
-            class="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 mb-2 items-center"
-          >
-            <Input v-model="tol.key" placeholder="key" />
-            <Select v-model="tol.operator">
-              <SelectTrigger>
-                <SelectValue placeholder="operator" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Equal">Equal</SelectItem>
-                <SelectItem value="Exists">Exists</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input v-model="tol.value" placeholder="value" />
-            <Select v-model="tol.effect">
-              <SelectTrigger>
-                <SelectValue placeholder="effect" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NoSchedule">NoSchedule</SelectItem>
-                <SelectItem value="PreferNoSchedule">
-                  PreferNoSchedule
-                </SelectItem>
-                <SelectItem value="NoExecute">NoExecute</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8 cursor-pointer"
-              @click="removeToleration(i)"
+              No tolerations. Click Add to schedule pods onto tainted nodes.
+            </p>
+            <div
+              v-for="(tol, i) in llm.tolerations"
+              :key="i"
+              class="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 mb-2 items-center"
             >
-              <Icon name="lucide:x" class="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </div>
+              <Input v-model="tol.key" placeholder="key" />
+              <Select v-model="tol.operator">
+                <SelectTrigger>
+                  <SelectValue placeholder="operator" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Equal">Equal</SelectItem>
+                  <SelectItem value="Exists">Exists</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input v-model="tol.value" placeholder="value" />
+              <Select v-model="tol.effect">
+                <SelectTrigger>
+                  <SelectValue placeholder="effect" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NoSchedule">NoSchedule</SelectItem>
+                  <SelectItem value="PreferNoSchedule">
+                    PreferNoSchedule
+                  </SelectItem>
+                  <SelectItem value="NoExecute">NoExecute</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 cursor-pointer"
+                @click="removeToleration(i)"
+              >
+                <Icon
+                  name="lucide:x"
+                  class="h-3.5 w-3.5 text-muted-foreground"
+                />
+              </Button>
+            </div>
+          </template>
         </template>
       </form>
 
@@ -428,6 +464,7 @@ const blankLlm = () => ({
   dtype: '',
   max_model_len: undefined as number | undefined,
   tensor_parallel_size: undefined as number | undefined,
+  concurrent_users: undefined as number | undefined,
   res_cpu_req: '',
   res_cpu_lim: '',
   res_mem_req: '',
@@ -496,6 +533,86 @@ const addToleration = () => {
 
 const removeToleration = (i: number) => {
   llm.tolerations.splice(i, 1);
+};
+
+type RecommendedSettings = {
+  dtype: string;
+  max_model_len: number;
+  tensor_parallel_size: number;
+  res_cpu_req: string;
+  res_cpu_lim: string;
+  res_mem_req: string;
+  res_mem_lim: string;
+  res_gpu_req: string;
+  res_gpu_lim: string;
+};
+
+const recommendForUsers = (users: number): RecommendedSettings => {
+  if (users <= 10) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 1,
+      res_cpu_req: '4',
+      res_cpu_lim: '8',
+      res_mem_req: '16Gi',
+      res_mem_lim: '32Gi',
+      res_gpu_req: '1',
+      res_gpu_lim: '1',
+    };
+  }
+  if (users <= 50) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 2,
+      res_cpu_req: '8',
+      res_cpu_lim: '16',
+      res_mem_req: '32Gi',
+      res_mem_lim: '64Gi',
+      res_gpu_req: '2',
+      res_gpu_lim: '2',
+    };
+  }
+  if (users <= 100) {
+    return {
+      dtype: 'bfloat16',
+      max_model_len: 4096,
+      tensor_parallel_size: 4,
+      res_cpu_req: '16',
+      res_cpu_lim: '32',
+      res_mem_req: '64Gi',
+      res_mem_lim: '128Gi',
+      res_gpu_req: '4',
+      res_gpu_lim: '4',
+    };
+  }
+  return {
+    dtype: 'bfloat16',
+    max_model_len: 4096,
+    tensor_parallel_size: 8,
+    res_cpu_req: '32',
+    res_cpu_lim: '64',
+    res_mem_req: '128Gi',
+    res_mem_lim: '256Gi',
+    res_gpu_req: '8',
+    res_gpu_lim: '8',
+  };
+};
+
+const autofillModelSettings = () => {
+  const users = llm.concurrent_users;
+  if (typeof users !== 'number' || users < 1) return;
+  const r = recommendForUsers(users);
+  llm.dtype = r.dtype;
+  llm.max_model_len = r.max_model_len;
+  llm.tensor_parallel_size = r.tensor_parallel_size;
+  llm.res_cpu_req = r.res_cpu_req;
+  llm.res_cpu_lim = r.res_cpu_lim;
+  llm.res_mem_req = r.res_mem_req;
+  llm.res_mem_lim = r.res_mem_lim;
+  llm.res_gpu_req = r.res_gpu_req;
+  llm.res_gpu_lim = r.res_gpu_lim;
 };
 
 const resetState = () => {
@@ -614,17 +731,18 @@ const buildLlmPayload = (): LlmPayload => {
   if (Object.keys(limits).length) resources.limits = limits;
   if (Object.keys(resources).length) payload.resources = resources;
 
-  const tolerations: NonNullable<LlmPayload['tolerations']> = llm.tolerations
-    .map((t) => {
-      const cleaned: NonNullable<LlmPayload['tolerations']>[number] = {};
-      if (t.key.trim()) cleaned.key = t.key.trim();
-      if (t.operator) cleaned.operator = t.operator;
-      if (t.value.trim()) cleaned.value = t.value.trim();
-      if (t.effect) cleaned.effect = t.effect;
-      return cleaned;
-    })
-    .filter((t) => Object.keys(t).length > 0);
-  if (tolerations.length) payload.tolerations = tolerations;
+  // Tolerations intentionally not sent — UI hidden; keep logic for future use.
+  // const tolerations: NonNullable<LlmPayload['tolerations']> = llm.tolerations
+  //   .map((t) => {
+  //     const cleaned: NonNullable<LlmPayload['tolerations']>[number] = {};
+  //     if (t.key.trim()) cleaned.key = t.key.trim();
+  //     if (t.operator) cleaned.operator = t.operator;
+  //     if (t.value.trim()) cleaned.value = t.value.trim();
+  //     if (t.effect) cleaned.effect = t.effect;
+  //     return cleaned;
+  //   })
+  //   .filter((t) => Object.keys(t).length > 0);
+  // if (tolerations.length) payload.tolerations = tolerations;
 
   if (typeof llm.min_replicas === 'number')
     payload.min_replicas = llm.min_replicas;
