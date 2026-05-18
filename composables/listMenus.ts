@@ -56,7 +56,7 @@ export const uselistMenus = () => {
         },
         {
           key: 'flowise',
-          title: 'Flowise',
+          title: 'GenAI',
           url: 'flowise',
           icon: 'lucide:sparkles',
           items: [],
