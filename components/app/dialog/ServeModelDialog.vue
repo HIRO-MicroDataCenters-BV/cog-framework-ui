@@ -222,18 +222,36 @@
                   size="sm"
                   class="h-9 px-3 text-xs cursor-pointer"
                   :disabled="
+                    !llm.hf_model_id.trim() ||
                     typeof llm.concurrent_users !== 'number' ||
-                    llm.concurrent_users < 1
+                    llm.concurrent_users < 1 ||
+                    isAutofilling
                   "
                   @click="autofillModelSettings"
                 >
-                  <Icon name="lucide:wand-2" class="h-3 w-3 mr-1" />
+                  <Icon
+                    :name="isAutofilling ? 'lucide:loader-2' : 'lucide:wand-2'"
+                    :class="[
+                      'h-3 w-3 mr-1',
+                      isAutofilling ? 'animate-spin' : '',
+                    ]"
+                  />
                   Autofill
                 </Button>
               </div>
-              <p class="text-[11px] text-muted-foreground mt-1">
-                Enter expected concurrent users and click Autofill to suggest
-                model settings.
+              <p
+                v-if="autofillError"
+                class="text-[11px] text-destructive flex items-start gap-1 mt-1"
+              >
+                <Icon
+                  name="lucide:alert-circle"
+                  class="w-3 h-3 mt-0.5 shrink-0"
+                />
+                <span>{{ autofillError }}</span>
+              </p>
+              <p v-else class="text-[11px] text-muted-foreground mt-1">
+                Enter HF Model ID and expected concurrent users, then click
+                Autofill to fetch recommended model settings.
               </p>
             </FieldRow>
             <FieldRow label="HF token">
@@ -439,10 +457,13 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing } = useApi();
+const { postModelServing, recommendModelServing } = useApi();
+const toaster = useToaster();
 
 const mode = ref<Mode>('classical');
 const isSubmitting = ref(false);
+const isAutofilling = ref(false);
+const autofillError = ref<string | null>(null);
 
 const blankClassical = () => ({
   isvc_name: '',
@@ -600,19 +621,80 @@ const recommendForUsers = (users: number): RecommendedSettings => {
   };
 };
 
-const autofillModelSettings = () => {
+const autofillModelSettings = async () => {
   const users = llm.concurrent_users;
-  if (typeof users !== 'number' || users < 1) return;
-  const r = recommendForUsers(users);
-  llm.dtype = r.dtype;
-  llm.max_model_len = r.max_model_len;
-  llm.tensor_parallel_size = r.tensor_parallel_size;
-  llm.res_cpu_req = r.res_cpu_req;
-  llm.res_cpu_lim = r.res_cpu_lim;
-  llm.res_mem_req = r.res_mem_req;
-  llm.res_mem_lim = r.res_mem_lim;
-  llm.res_gpu_req = r.res_gpu_req;
-  llm.res_gpu_lim = r.res_gpu_lim;
+  const hfModelId = llm.hf_model_id.trim();
+  if (!hfModelId || typeof users !== 'number' || users < 1) return;
+
+  autofillError.value = null;
+  isAutofilling.value = true;
+  try {
+    type RecommendationItem = {
+      profile?: string;
+      max_model_len?: number;
+      dtype?: string;
+      tensor_parallel_size?: number;
+      min_replicas?: number;
+      max_replicas?: number;
+      resources?: {
+        requests?: Record<string, string>;
+        limits?: Record<string, string>;
+      };
+    };
+    type RecommendData = { recommendations?: RecommendationItem[] };
+
+    const res = (await recommendModelServing(
+      {
+        hf_model_id: hfModelId,
+        concurrent_users: users,
+        expected_input_tokens: 2048,
+        expected_output_tokens: 1024,
+        quantization: 'none',
+        profiles: ['throughput'],
+      },
+      {
+        onConflict: (msg) => {
+          autofillError.value = msg;
+        },
+      },
+    )) as { data?: RecommendData } | null;
+
+    if (autofillError.value) return;
+
+    const local = recommendForUsers(users);
+    const recs = Array.isArray(res?.data?.recommendations)
+      ? res.data.recommendations
+      : [];
+    const rec: RecommendationItem | undefined =
+      recs.find((r) => r?.profile === 'throughput') ?? recs[0];
+
+    const pickStr = (v: unknown): string | undefined =>
+      typeof v === 'string' && v.length > 0 ? v : undefined;
+    const pickNum = (v: unknown): number | undefined =>
+      typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+
+    const requests = rec?.resources?.requests ?? {};
+    const limits = rec?.resources?.limits ?? {};
+
+    llm.dtype = pickStr(rec?.dtype) ?? local.dtype;
+    llm.max_model_len = pickNum(rec?.max_model_len) ?? local.max_model_len;
+    llm.tensor_parallel_size =
+      pickNum(rec?.tensor_parallel_size) ?? local.tensor_parallel_size;
+    llm.res_cpu_req = pickStr(requests.cpu) ?? local.res_cpu_req;
+    llm.res_cpu_lim = pickStr(limits.cpu) ?? local.res_cpu_lim;
+    llm.res_mem_req = pickStr(requests.memory) ?? local.res_mem_req;
+    llm.res_mem_lim = pickStr(limits.memory) ?? local.res_mem_lim;
+    llm.res_gpu_req = pickStr(requests['nvidia.com/gpu']) ?? local.res_gpu_req;
+    llm.res_gpu_lim = pickStr(limits['nvidia.com/gpu']) ?? local.res_gpu_lim;
+    llm.min_replicas = pickNum(rec?.min_replicas) ?? llm.min_replicas;
+    llm.max_replicas = pickNum(rec?.max_replicas) ?? llm.max_replicas;
+
+    if (rec) {
+      toaster.show('success', 'operation_completed');
+    }
+  } finally {
+    isAutofilling.value = false;
+  }
 };
 
 const resetState = () => {
@@ -620,6 +702,7 @@ const resetState = () => {
   Object.assign(llm, blankLlm());
   mode.value = 'classical';
   isSubmitting.value = false;
+  autofillError.value = null;
 };
 
 watch(

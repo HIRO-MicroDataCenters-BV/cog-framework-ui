@@ -815,6 +815,36 @@ export const useApiWithMock = () => {
       });
     },
 
+    recommendModelServing: async (
+      data: {
+        hf_model_id: string;
+        concurrent_users: number;
+        expected_input_tokens?: number;
+        expected_output_tokens?: number;
+        quantization?: string;
+        profiles?: string[];
+      },
+      _options?: {
+        showToast?: boolean;
+        onConflict?: (message: string) => void;
+      },
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const recommendJson = await import(
+          '~/mocks/post.models-serving.recommend.json'
+        );
+        return Promise.resolve(
+          recommendJson as unknown as {
+            status_code: number;
+            message: string;
+            data: unknown;
+          },
+        );
+      }
+      return request(`/models-serving/recommend`, 'POST', data);
+    },
+
     patchModelServing: async (
       data: {
         isvc_name: string;
