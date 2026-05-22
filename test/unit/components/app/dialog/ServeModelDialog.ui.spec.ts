@@ -3,9 +3,10 @@ import { mount, flushPromises } from '@vue/test-utils';
 import ServeModelDialog from '~/components/app/dialog/ServeModelDialog.vue';
 
 const postModelServing = vi.fn();
+const recommendModelServing = vi.fn();
 
 vi.mock('@/composables/api', () => ({
-  useApi: () => ({ postModelServing }),
+  useApi: () => ({ postModelServing, recommendModelServing }),
 }));
 
 beforeAll(() => {
@@ -83,6 +84,9 @@ const clickLlmTab = async (wrapper: W) => {
 describe('ServeModelDialog', () => {
   beforeEach(() => {
     postModelServing.mockReset().mockResolvedValue({ status_code: 201 });
+    // Default: recommend returns null so existing tier tests exercise the
+    // local-fallback path via recommendForUsers().
+    recommendModelServing.mockReset().mockResolvedValue(null);
   });
 
   it('renders closed when open=false', () => {
@@ -261,7 +265,7 @@ describe('ServeModelDialog', () => {
     await flushPromises();
   };
 
-  it('Autofill button is disabled until concurrent_users is a positive number', async () => {
+  it('Autofill button is disabled until hf_model_id is set AND concurrent_users is a positive number', async () => {
     const wrapper = mountDialog();
     await clickLlmTab(wrapper);
 
@@ -270,6 +274,22 @@ describe('ServeModelDialog', () => {
     ).toBeDefined();
 
     const inputs = wrapper.findAll('input');
+
+    // concurrent_users alone (without hf_model_id) leaves Autofill disabled.
+    await inputs[3].setValue('5');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeDefined();
+
+    // hf_model_id alone (without a positive concurrent_users) also leaves it disabled.
+    await inputs[3].setValue('');
+    await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Autofill')!.attributes('disabled'),
+    ).toBeDefined();
+
     // 0 is not positive — still disabled
     await inputs[3].setValue('0');
     await flushPromises();
@@ -277,7 +297,7 @@ describe('ServeModelDialog', () => {
       findButton(wrapper, 'Autofill')!.attributes('disabled'),
     ).toBeDefined();
 
-    // A positive integer enables the button
+    // Both inputs valid → button enables.
     await inputs[3].setValue('5');
     await flushPromises();
     expect(
@@ -416,6 +436,179 @@ describe('ServeModelDialog', () => {
     const [body] = postModelServing.mock.calls[0];
     expect(body.tolerations).toBeUndefined();
     expect(body.concurrent_users).toBeUndefined();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Recommendation API integration (success + 409 conflict)
+  // ---------------------------------------------------------------------------
+
+  it('applies recommendation from API response (throughput profile) instead of local fallback', async () => {
+    recommendModelServing.mockResolvedValueOnce({
+      status_code: 200,
+      message: 'LLM serving config recommendation generated.',
+      data: {
+        recommendations: [
+          {
+            profile: 'throughput',
+            max_model_len: 8192,
+            dtype: 'float16',
+            tensor_parallel_size: 2,
+            resources: {
+              requests: { cpu: '6', memory: '50Gi', 'nvidia.com/gpu': '2' },
+              limits: { cpu: '6', memory: '50Gi', 'nvidia.com/gpu': '2' },
+            },
+            min_replicas: 1,
+            max_replicas: 1,
+          },
+        ],
+      },
+    });
+
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    // 5 users would map to tier-1 locally (tp=1, cpu=4, 16Gi/32Gi); the API
+    // values above must win.
+    await setupLlmAndAutofill(wrapper, '5');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      dtype: 'float16',
+      max_model_len: 8192,
+      tensor_parallel_size: 2,
+      resources: {
+        requests: { cpu: '6', memory: '50Gi', 'nvidia.com/gpu': '2' },
+        limits: { cpu: '6', memory: '50Gi', 'nvidia.com/gpu': '2' },
+      },
+    });
+  });
+
+  it('prefers the throughput profile when multiple recommendations are returned', async () => {
+    recommendModelServing.mockResolvedValueOnce({
+      data: {
+        recommendations: [
+          {
+            profile: 'balanced',
+            max_model_len: 2048,
+            dtype: 'bfloat16',
+            tensor_parallel_size: 4,
+            resources: {
+              requests: { cpu: '2', memory: '8Gi', 'nvidia.com/gpu': '1' },
+              limits: { cpu: '2', memory: '8Gi', 'nvidia.com/gpu': '1' },
+            },
+          },
+          {
+            profile: 'throughput',
+            max_model_len: 4096,
+            dtype: 'bfloat16',
+            tensor_parallel_size: 1,
+            resources: {
+              requests: { cpu: '4', memory: '50Gi', 'nvidia.com/gpu': '1' },
+              limits: { cpu: '4', memory: '50Gi', 'nvidia.com/gpu': '1' },
+            },
+          },
+        ],
+      },
+    });
+
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '5');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toMatchObject({
+      max_model_len: 4096,
+      tensor_parallel_size: 1,
+      resources: {
+        requests: { cpu: '4', memory: '50Gi', 'nvidia.com/gpu': '1' },
+      },
+    });
+  });
+
+  it('displays 409 detail.message inline below Concurrent users and does NOT autofill', async () => {
+    const conflictMsg =
+      'No configuration fits on any node for 35.0B-param model. At preferred (quantization=none) tp=1 each GPU would need 65.4 GiB.';
+
+    recommendModelServing.mockImplementationOnce(async (_data, options) => {
+      options?.onConflict?.(conflictMsg);
+      return null;
+    });
+
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '5');
+
+    // The conflict message renders verbatim under the Concurrent users field.
+    expect(wrapper.text()).toContain(conflictMsg);
+    // The helper hint is replaced (the autofill error <p> renders v-else).
+    expect(wrapper.text()).not.toContain(
+      'Enter HF Model ID and expected concurrent users',
+    );
+
+    // Local fallback must NOT have been applied: max_model_len / tensor_parallel_size
+    // inputs remain empty.
+    const inputs = wrapper.findAll('input');
+    expect((inputs[5].element as HTMLInputElement).value).toBe('');
+    expect((inputs[6].element as HTMLInputElement).value).toBe('');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({ hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct' });
+    expect(body.resources).toBeUndefined();
+    expect(body.dtype).toBeUndefined();
+  });
+
+  it('clears the 409 error message on the next autofill click', async () => {
+    const conflictMsg = 'No configuration fits on any node.';
+
+    recommendModelServing
+      .mockImplementationOnce(async (_data, options) => {
+        options?.onConflict?.(conflictMsg);
+        return null;
+      })
+      .mockResolvedValueOnce(null);
+
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '5');
+    expect(wrapper.text()).toContain(conflictMsg);
+
+    // Second autofill resolves cleanly — the error message must disappear.
+    await findButton(wrapper, 'Autofill')!.trigger('click');
+    await flushPromises();
+    expect(wrapper.text()).not.toContain(conflictMsg);
+    expect(wrapper.text()).toContain(
+      'Enter HF Model ID and expected concurrent users',
+    );
+  });
+
+  it('clears the 409 error when the dialog is closed and reopened', async () => {
+    const conflictMsg = 'No configuration fits on any node.';
+
+    recommendModelServing.mockImplementationOnce(async (_data, options) => {
+      options?.onConflict?.(conflictMsg);
+      return null;
+    });
+
+    const wrapper = mountDialog(true);
+    await clickLlmTab(wrapper);
+    await setupLlmAndAutofill(wrapper, '5');
+    expect(wrapper.text()).toContain(conflictMsg);
+
+    await wrapper.setProps({ open: false });
+    await flushPromises();
+    await wrapper.setProps({ open: true });
+    await flushPromises();
+    await clickLlmTab(wrapper);
+
+    expect(wrapper.text()).not.toContain(conflictMsg);
   });
 
   it('reopening the dialog resets concurrent_users and autofill', async () => {
