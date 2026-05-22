@@ -1,0 +1,187 @@
+{
+  "status_code": 200,
+  "message": "LLM serving config recommendation generated.",
+  "data": {
+    "recommendations": [
+      {
+        "profile": "throughput",
+        "max_model_len": 4096,
+        "dtype": "bfloat16",
+        "quantization": "fp8",
+        "kv_cache_dtype": "fp8_e4m3",
+        "tensor_parallel_size": 1,
+        "gpu_memory_utilization": 0.95,
+        "max_num_seqs": 73,
+        "resources": {
+          "requests": {
+            "cpu": "4",
+            "memory": "50Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "cpu": "4",
+            "memory": "50Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "min_replicas": 1,
+        "max_replicas": 1,
+        "rationale": {
+          "chosen_node": {
+            "name": "cog-gpu",
+            "gpu_product": "NVIDIA-L40",
+            "gpu_memory_gb": 45,
+            "total_gpu": 1,
+            "used_gpu": 0,
+            "free_gpu": 1,
+            "total_cpu": 16,
+            "free_cpu": 13.625,
+            "total_memory_gb": 31.34,
+            "free_memory_gb": 31.02,
+            "schedulable": true,
+            "labels": {
+              "kubernetes.io/hostname": "cog-gpu",
+              "nvidia.com/gpu.product": "NVIDIA-L40",
+              "nvidia.com/gpu.memory": "46068",
+              "nvidia.com/gpu.count": "1"
+            }
+          },
+          "decisions": [
+            "profile=throughput (gpu_util=0.95, kv_headroom=0.85)",
+            "ladder rung 1/4: weight=fp8, kv=fp8_e4m3, context_cap=8192",
+            "dtype=bfloat16 (2 bytes/elem compute, kv 1.0 bytes/elem)",
+            "quantization=fp8 (1.0 bytes/param effective)",
+            "weight_memory=35.0 GB total",
+            "tensor_parallel_size=1 fits on node 'cog-gpu' (NVIDIA-L40, 45.0 GB/GPU, free_gpu=1)",
+            "max_num_seqs=73 (kv-budget cap=73, concurrent_users=1, cap_at_concurrent=False)",
+            "max_model_len=4096 (native=262144, want=3072+256, cap=8192)",
+            "resources cpu=4 memory=50Gi gpu=1 (requests=limits → Guaranteed QoS)"
+          ]
+        }
+      },
+      {
+        "profile": "balanced",
+        "max_model_len": 4096,
+        "dtype": "bfloat16",
+        "quantization": "fp8",
+        "kv_cache_dtype": "auto",
+        "tensor_parallel_size": 1,
+        "gpu_memory_utilization": 0.9,
+        "max_num_seqs": 1,
+        "resources": {
+          "requests": {
+            "cpu": "4",
+            "memory": "41Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "cpu": "4",
+            "memory": "41Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "min_replicas": 1,
+        "max_replicas": 1,
+        "rationale": {
+          "chosen_node": {
+            "name": "cog-gpu",
+            "gpu_product": "NVIDIA-L40",
+            "gpu_memory_gb": 45,
+            "schedulable": true
+          },
+          "decisions": [
+            "profile=balanced (gpu_util=0.9, kv_headroom=0.8)",
+            "ladder rung 2/5: weight=fp8, kv=auto, context_cap=None",
+            "dtype=bfloat16 (2 bytes/elem compute, kv 2.0 bytes/elem)",
+            "quantization=fp8 (1.0 bytes/param effective)",
+            "weight_memory=35.0 GB total",
+            "tensor_parallel_size=1 fits on node 'cog-gpu' (NVIDIA-L40, 45.0 GB/GPU, free_gpu=1)",
+            "max_num_seqs=1 (kv-budget cap=26, concurrent_users=1, cap_at_concurrent=True)",
+            "max_model_len=4096 (native=262144, want=3072+512)",
+            "resources cpu=4 memory=41Gi gpu=1 (requests=limits → Guaranteed QoS)"
+          ]
+        }
+      },
+      {
+        "profile": "quality",
+        "max_model_len": 6144,
+        "dtype": "bfloat16",
+        "quantization": "fp8",
+        "kv_cache_dtype": "auto",
+        "tensor_parallel_size": 1,
+        "gpu_memory_utilization": 0.85,
+        "max_num_seqs": 1,
+        "resources": {
+          "requests": {
+            "cpu": "4",
+            "memory": "41Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "cpu": "4",
+            "memory": "41Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "min_replicas": 1,
+        "max_replicas": 1,
+        "rationale": {
+          "chosen_node": {
+            "name": "cog-gpu",
+            "gpu_product": "NVIDIA-L40",
+            "gpu_memory_gb": 45,
+            "schedulable": true
+          },
+          "decisions": [
+            "profile=quality (gpu_util=0.85, kv_headroom=0.6)",
+            "ladder rung 4/5: weight=fp8, kv=auto, context_cap=32768",
+            "dtype=bfloat16 (2 bytes/elem compute, kv 2.0 bytes/elem)",
+            "quantization=fp8 (1.0 bytes/param effective)",
+            "weight_memory=35.0 GB total",
+            "tensor_parallel_size=1 fits on node 'cog-gpu' (NVIDIA-L40, 45.0 GB/GPU, free_gpu=1)",
+            "max_num_seqs=1 (kv-budget cap=4, concurrent_users=1, cap_at_concurrent=True)",
+            "max_model_len=6144 (native=262144, want=3072+2048, cap=32768)",
+            "resources cpu=4 memory=41Gi gpu=1 (requests=limits → Guaranteed QoS)"
+          ]
+        }
+      }
+    ],
+    "skipped": [],
+    "model": {
+      "hf_model_id": "Qwen/Qwen3.6-35B-A3B",
+      "params_b": 35,
+      "native_context": 262144,
+      "num_layers": 40,
+      "num_kv_heads": 2,
+      "head_dim": 256,
+      "default_dtype": "bfloat16",
+      "quantization": "none"
+    },
+    "cluster": [
+      {
+        "name": "cog-gpu",
+        "gpu_product": "NVIDIA-L40",
+        "gpu_memory_gb": 45,
+        "total_gpu": 1,
+        "used_gpu": 0,
+        "free_gpu": 1,
+        "total_cpu": 16,
+        "free_cpu": 13.625,
+        "total_memory_gb": 31.34,
+        "free_memory_gb": 31.02,
+        "schedulable": true,
+        "labels": {
+          "kubernetes.io/hostname": "cog-gpu",
+          "nvidia.com/gpu.product": "NVIDIA-L40"
+        }
+      }
+    ],
+    "traffic": {
+      "concurrent_users": 1,
+      "expected_input_tokens": 2048,
+      "expected_output_tokens": 1024
+    },
+    "replaced_isvc": null
+  },
+  "pagination": null
+}

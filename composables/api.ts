@@ -151,6 +151,7 @@ export const useApi = () => {
       showToast?: boolean;
       successMessage?: string;
       useResponseMessage?: boolean;
+      onConflict?: (message: string) => void;
     },
   ) => {
     const isFormData = body instanceof FormData;
@@ -226,6 +227,30 @@ export const useApi = () => {
               toaster.show('error', 'not_found');
             }
             return null;
+          case 409: {
+            // Handle conflict errors - detail may be an object with a message field
+            // (e.g. /models-serving/recommend returns rich scheduling info on 409).
+            const conflictDetail = data?.detail;
+            const conflictMsg =
+              conflictDetail &&
+              typeof conflictDetail === 'object' &&
+              typeof (conflictDetail as { message?: unknown }).message ===
+                'string'
+                ? (conflictDetail as { message: string }).message
+                : typeof conflictDetail === 'string'
+                  ? conflictDetail
+                  : typeof data?.message === 'string'
+                    ? data.message
+                    : null;
+            if (options?.onConflict && conflictMsg) {
+              options.onConflict(conflictMsg);
+            } else if (conflictMsg) {
+              toaster.show('error', conflictMsg, undefined, { raw: true });
+            } else {
+              toaster.show('error', 'request_failed');
+            }
+            return null;
+          }
           case 422: {
             // Handle validation errors - detail might be an array or object
             const validationMsg =
@@ -434,6 +459,32 @@ export const useApi = () => {
         undefined,
         { successMessage: 'model_serving_deleted' },
       );
+    },
+
+    /**
+     * Requests recommended LLM serving settings for the given workload.
+     *
+     * @param {Object} data - Workload description used by the recommender
+     * @returns {Promise<Object>} Response containing recommended model settings
+     */
+    recommendModelServing: async (
+      data: {
+        hf_model_id: string;
+        concurrent_users: number;
+        expected_input_tokens?: number;
+        expected_output_tokens?: number;
+        quantization?: string;
+        profiles?: string[];
+      },
+      options?: {
+        showToast?: boolean;
+        onConflict?: (message: string) => void;
+      },
+    ) => {
+      return request(`/models-serving/recommend`, 'POST', data, {
+        showToast: options?.showToast ?? false,
+        onConflict: options?.onConflict,
+      });
     },
 
     /**
