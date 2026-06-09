@@ -3703,5 +3703,75 @@ export const useApi = () => {
         successMessage: 'share_updated',
       });
     },
+
+    /**
+     * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
+     *
+     * The trained controller is converted to a standard PEFT LoRA adapter
+     * (default `export: 'lora'`) and registered as a `model_info` row of
+     * `type='lora'` — once the kfp run completes, the new adapter appears
+     * in the existing LoRA picker on the model-serving flow.
+     *
+     * @param {Object} data - Fine-tune request body matching the backend
+     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
+     *   `export` to `'lora'` on the server; pinned hyperparams in
+     *   `hyperparams` override the recommender defaults.
+     * @param {boolean} [runPipeline=true] - When false, only the pending
+     *   `model_info` row is created and the kfp run is skipped — useful
+     *   for staged deployment.
+     * @returns {Promise<Object>} Response containing `model_id`,
+     *   `pipeline_id`, and `run_id`. Poll the pipeline-run table for
+     *   progress; the artifact URI is patched by the kfp component on
+     *   completion.
+     */
+    createFineTune: async (
+      data: {
+        base_model_id: string;
+        dataset_id: string;
+        output_name: string;
+        method?: 'ntk';
+        export?: 'lora' | 'ntk_model';
+        hyperparams?: {
+          gates?: number;
+          max_log_gate?: number;
+          train_steps?: number;
+          lr?: number;
+        };
+      },
+      runPipeline = true,
+    ) => {
+      const q = new URLSearchParams({
+        run_pipeline: String(runPipeline),
+      }).toString();
+      return request(`/models/fine-tune?${q}`, 'POST', data, {
+        successMessage: 'fine_tune_created',
+      });
+    },
+
+    /**
+     * Requests recommended training knobs for an NTK fine-tune run.
+     *
+     * Phase 1 returns ntkmirror's library defaults (gates=5000,
+     * max_log_gate=0.05, train_steps=240); caller-pinned values pass
+     * through verbatim and the `rationale` block flags each knob as
+     * `'pinned'` or `'default'` so the form can surface which values
+     * the recommender filled vs the user pinned.
+     *
+     * @param {Object} data - Base model identity + optional caller pins
+     * @returns {Promise<Object>} Recommendation containing gates,
+     *   max_log_gate, train_steps, and rationale per knob.
+     */
+    recommendFineTune: async (data: {
+      hf_model_id?: string;
+      model_id?: string;
+      method?: 'ntk';
+      gates?: number;
+      max_log_gate?: number;
+      train_steps?: number;
+    }) => {
+      return request(`/fine-tune/recommend`, 'POST', data, {
+        showToast: false,
+      });
+    },
   };
 };

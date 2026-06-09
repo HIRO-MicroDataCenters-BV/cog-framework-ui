@@ -28,6 +28,14 @@ export const uselistMenus = () => {
           isActive: false,
         },
         {
+          key: 'fine-tune',
+          title: t('menu.fine_tune'),
+          url: 'fine-tune',
+          icon: 'lucide:sliders-horizontal',
+          items: [],
+          isActive: false,
+        },
+        {
           key: 'pipelines',
           title: t('menu.pipelines'),
           url: 'pipelines',
