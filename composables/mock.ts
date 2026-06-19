@@ -845,6 +845,72 @@ export const useApiWithMock = () => {
       return request(`/models-serving/recommend`, 'POST', data);
     },
 
+    createFineTune: async (
+      data: {
+        base_model_id: string;
+        dataset_id: string;
+        output_name: string;
+        method?: 'ntk';
+        export?: 'lora' | 'ntk_model';
+        hyperparams?: {
+          gates?: number;
+          max_log_gate?: number;
+          train_steps?: number;
+          lr?: number;
+        };
+      },
+      runPipeline = true,
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: runPipeline
+            ? 'Fine-tune run started successfully'
+            : 'Fine-tune validated; run not submitted',
+          data: {
+            model_id: 'mock-fine-tune-model-id',
+            run_id: runPipeline ? 'mock-fine-tune-run-id' : null,
+          },
+        });
+      }
+      const q = new URLSearchParams({
+        run_pipeline: String(runPipeline),
+      }).toString();
+      return request(`/models/fine-tune?${q}`, 'POST', data, {
+        successMessage: runPipeline
+          ? 'fine_tune_created'
+          : 'fine_tune_validated',
+      });
+    },
+
+    recommendFineTune: async (data: {
+      hf_model_id?: string;
+      model_id?: string;
+      method?: 'ntk';
+      gates?: number;
+      max_log_gate?: number;
+      train_steps?: number;
+    }) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Fine-tune knob recommendation generated.',
+          data: {
+            method: 'ntk',
+            gates: data.gates ?? 5000,
+            max_log_gate: data.max_log_gate ?? 0.05,
+            train_steps: data.train_steps ?? 240,
+            rationale: {},
+          },
+        });
+      }
+      return request(`/fine-tune/recommend`, 'POST', data, {
+        showToast: false,
+      });
+    },
+
     patchModelServing: async (
       data: {
         isvc_name: string;
