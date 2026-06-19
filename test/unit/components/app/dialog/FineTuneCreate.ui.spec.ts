@@ -3,8 +3,9 @@
  *
  * Stub out the heavy UI primitives so the test focuses on the
  * dialog's behavior: picker filtering (LLMs with hf_model_id only;
- * JSONL datasets only), submit payload shape, and the auto-fill
- * from the fine-tune recommender.
+ * JSONL datasets only), auto-fill from the fine-tune recommender on
+ * base-model select, the submitted FineTuneRequest payload shape, and
+ * the max_log_gate bound.
  */
 
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
@@ -160,6 +161,91 @@ describe('FineTuneCreate', () => {
     await wrapper.setProps({ open: true });
     await flushPromises();
     expect(getModels).toHaveBeenCalledTimes(2);
+  });
+
+  it('auto-fills hyperparams from the recommender when a base model is selected', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({ data: [] });
+    recommendFineTune.mockResolvedValueOnce({
+      data: { gates: 1234, max_log_gate: 0.07, train_steps: 99 },
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    // Selecting the base model (first Select) triggers the recommender fill.
+    const selects = wrapper.findAllComponents('[data-testid="select"]');
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    await flushPromises();
+
+    expect(recommendFineTune).toHaveBeenCalledWith({
+      hf_model_id: 'Qwen/0.5B',
+      method: 'ntk',
+    });
+    expect((wrapper.find('#ft-gates').element as HTMLInputElement).value).toBe(
+      '1234',
+    );
+    expect(
+      (wrapper.find('#ft-max-log-gate').element as HTMLInputElement).value,
+    ).toBe('0.07');
+    expect(
+      (wrapper.find('#ft-train-steps').element as HTMLInputElement).value,
+    ).toBe('99');
+  });
+
+  it('submits the FineTuneRequest payload the backend expects', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'jsonl-1', train_and_inference_type: 5 },
+      ],
+    });
+    // Empty recommendation → form keeps the static ntkmirror defaults.
+    recommendFineTune.mockResolvedValueOnce({ data: {} });
+    createFineTune.mockResolvedValueOnce({
+      data: { model_id: 'mi-1', run_id: 'run-1' },
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    const selects = wrapper.findAllComponents('[data-testid="select"]');
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    const submit = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Launch fine-tune'));
+    await submit!.trigger('click');
+    await flushPromises();
+
+    expect(createFineTune).toHaveBeenCalledWith({
+      base_model_id: 'm-1',
+      dataset_id: 'd-1',
+      output_name: 'adapter-x',
+      method: 'ntk',
+      export: 'lora',
+      hyperparams: {
+        gates: 5000,
+        max_log_gate: 0.05,
+        train_steps: 240,
+        lr: 0.005,
+      },
+    });
+    expect(wrapper.emitted('created')?.[0]?.[0]).toEqual({
+      model_id: 'mi-1',
+      run_id: 'run-1',
+    });
   });
 
   it('caps max_log_gate at 1 to match the backend bound (le=1.0)', async () => {

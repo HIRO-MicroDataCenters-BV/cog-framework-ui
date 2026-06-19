@@ -87,10 +87,11 @@ const canSubmit = computed(
     !!form.value.dataset_id &&
     form.value.output_name.trim().length > 0 &&
     form.value.gates >= 1 &&
-    form.value.max_log_gate > 0 &&
+    // Bounds mirror the input min/max + the backend (max_log_gate le=1.0).
+    form.value.max_log_gate >= 0.001 &&
     form.value.max_log_gate <= 1 &&
     form.value.train_steps >= 1 &&
-    form.value.lr > 0,
+    form.value.lr >= 0.0001,
 );
 
 const handleOpenChange = (value: boolean) => {
@@ -118,17 +119,17 @@ const loadPickers = async () => {
     );
   } catch (err) {
     console.error('Failed to load fine-tune pickers', err);
-    toaster.error('Failed to load base models or datasets');
+    toaster.show('error', 'fine_tune_load_failed');
   } finally {
     loadingPickers.value = false;
   }
 };
 
-// Re-fill hyperparams from the recommender when the base model changes.
-// Caller-pinned form values (user already edited) are still surfaced as
-// hints in the recommender response (`rationale.<knob> === 'pinned'`),
-// but the form treats the user as authoritative — Phase 1 keeps it
-// simple by only pre-filling when the values are still at defaults.
+// Re-fill hyperparams from the recommender whenever the base model changes.
+// Phase 1 keeps it simple: the recommended gates/max_log_gate/train_steps
+// always overwrite the current form values (so switching base model surfaces
+// that model's recommended knobs). The recommender response also flags each
+// knob in `rationale.<knob>` as 'pinned'/'default' for future surfacing.
 const fillFromRecommender = async () => {
   if (!form.value.base_model_id) return;
   const selected = baseModels.value.find(

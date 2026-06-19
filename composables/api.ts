@@ -3716,9 +3716,11 @@ export const useApi = () => {
      *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
      *   `export` to `'lora'` on the server; pinned hyperparams in
      *   `hyperparams` override the recommender defaults.
-     * @param {boolean} [runPipeline=true] - When false, only the pending
-     *   `model_info` row is created and the kfp run is skipped — useful
-     *   for staged deployment.
+     * @param {boolean} [runPipeline=true] - When false, the backend
+     *   validates every prerequisite and reserves the output `model_id`
+     *   without submitting the kfp run (no `model_info` row is created and
+     *   no kfp auth is required) — useful for staged deployment. The row
+     *   materializes only when the run completes.
      * @returns {Promise<Object>} Response containing `model_id` and
      *   `run_id` (the backend `FineTuneResponse`). Poll the pipeline-run
      *   table by `run_id` for progress; the artifact URI is patched by the
