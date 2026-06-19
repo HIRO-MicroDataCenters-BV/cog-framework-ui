@@ -96,6 +96,10 @@ const canSubmit = computed(
 );
 
 const handleOpenChange = (value: boolean) => {
+  // Don't let outside-click / Escape / Cancel close the dialog mid-submit
+  // (matches ServeModelDialog) — a late success would otherwise re-close or
+  // navigate away confusingly.
+  if (!value && submitting.value) return;
   emit('update:open', value);
 };
 
@@ -375,7 +379,11 @@ watch(() => form.value.base_model_id, fillFromRecommender);
       </div>
 
       <DialogFooter class="px-6 py-4 border-t">
-        <Button variant="outline" @click="handleOpenChange(false)">
+        <Button
+          variant="outline"
+          :disabled="submitting"
+          @click="handleOpenChange(false)"
+        >
           Cancel
         </Button>
         <Button :disabled="!canSubmit || submitting" @click="handleSubmit">
