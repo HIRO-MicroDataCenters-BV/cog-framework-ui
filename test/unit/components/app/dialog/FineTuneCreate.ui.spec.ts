@@ -54,6 +54,7 @@ const stubs = {
       '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
   },
   Select: {
+    name: 'Select',
     props: ['modelValue'],
     emits: ['update:modelValue'],
     template:
@@ -178,7 +179,7 @@ describe('FineTuneCreate', () => {
     await flushPromises();
 
     // Selecting the base model (first Select) triggers the recommender fill.
-    const selects = wrapper.findAllComponents('[data-testid="select"]');
+    const selects = wrapper.findAllComponents({ name: 'Select' });
     selects[0].vm.$emit('update:modelValue', 'm-1');
     await flushPromises();
 
@@ -217,7 +218,7 @@ describe('FineTuneCreate', () => {
     const wrapper = mountDialog();
     await flushPromises();
 
-    const selects = wrapper.findAllComponents('[data-testid="select"]');
+    const selects = wrapper.findAllComponents({ name: 'Select' });
     selects[0].vm.$emit('update:modelValue', 'm-1');
     selects[1].vm.$emit('update:modelValue', 'd-1');
     await flushPromises();

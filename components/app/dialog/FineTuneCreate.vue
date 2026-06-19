@@ -108,6 +108,12 @@ const loadPickers = async () => {
       getModels({ limit: 200 }),
       getDatasets({ limit: 200 }),
     ]);
+    // The shared request() helper catches HTTP/network errors and returns
+    // null instead of throwing, so a null response (not just a thrown error)
+    // is how a failed load surfaces here.
+    if (!modelsRes || !datasetsRes) {
+      toaster.show('error', 'fine_tune_load_failed');
+    }
     const modelRows: ModelOption[] = (modelsRes?.data || []) as ModelOption[];
     baseModels.value = modelRows.filter(
       (m) => m.type === 'llm' && !!m.hf_model_id,
