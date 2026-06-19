@@ -3707,10 +3707,11 @@ export const useApi = () => {
     /**
      * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
      *
-     * The trained controller is converted to a standard PEFT LoRA adapter
-     * (default `export: 'lora'`) and registered as a `model_info` row of
-     * `type='lora'` — once the kfp run completes, the new adapter appears
-     * in the existing LoRA picker on the model-serving flow.
+     * The kfp run trains the controller, converts it to a standard PEFT
+     * LoRA adapter (default `export: 'lora'`), and only on completion
+     * registers the `model_info(type='lora')` row — at which point the new
+     * adapter appears in the existing LoRA picker on the model-serving flow.
+     * The request itself just reserves `model_id`; no row exists until then.
      *
      * @param {Object} data - Fine-tune request body matching the backend
      *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and

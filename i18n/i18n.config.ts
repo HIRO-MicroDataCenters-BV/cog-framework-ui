@@ -562,6 +562,9 @@ export default defineI18nConfig(() => ({
         model_validation: 'Model Validation',
         model_serving: 'Model Serving',
         fine_tune: 'Fine-tune',
+        // Breadcrumb renders `menu.${page.section}` and the fine-tune page's
+        // section is the hyphenated 'fine-tune' (mirrors 'model-serving').
+        'fine-tune': 'Fine-tune',
         pipelines: 'Flow',
         pipelines_builder: 'Builder',
         datasets: 'Datasets',

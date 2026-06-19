@@ -7,10 +7,11 @@
  * export only; the resulting `model_info(type='lora')` row appears in
  * the existing LoRA picker once the kfp run completes.
  *
- * Hyperparam defaults are filled by `POST /cogapi/fine-tune/recommend`
- * on open. The recommender's `rationale` block lets us surface which
- * values are pinned vs default-filled — Phase 1 just uses them as
- * initial form values; caller pins (user edits) win on submit.
+ * Hyperparam knobs are filled by `POST /cogapi/fine-tune/recommend`
+ * when a base model is selected: the recommended gates/max_log_gate/
+ * train_steps overwrite the current form values. The response also
+ * carries a `rationale` block (pinned vs default per knob); Phase 1
+ * does not surface it yet.
  */
 import { computed, ref, watch } from 'vue';
 import {
@@ -249,7 +250,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             v-if="!loadingPickers && baseModels.length === 0"
             class="text-sm text-muted-foreground"
           >
-            No LLM rows with an HuggingFace id were found. Register an LLM with
+            No LLM rows with a Hugging Face ID were found. Register an LLM with
             hf_model_id first.
           </p>
         </div>

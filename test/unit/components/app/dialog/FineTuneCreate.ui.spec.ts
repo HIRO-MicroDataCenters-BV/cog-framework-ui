@@ -27,10 +27,10 @@ vi.mock('@/composables/api', () => ({
 }));
 
 beforeAll(() => {
+  // Mirror the real composable, which exposes only `show(...)` — stubbing
+  // extra helpers would mask a `toaster.error(...)`-style bug in the SUT.
   vi.stubGlobal('useToaster', () => ({
     show: vi.fn(),
-    success: vi.fn(),
-    error: vi.fn(),
   }));
 });
 
