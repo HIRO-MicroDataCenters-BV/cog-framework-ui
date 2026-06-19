@@ -99,7 +99,14 @@ const handleOpenChange = (value: boolean) => {
   emit('update:open', value);
 };
 
+// Monotonic token: a rapid close/reopen can fire loadPickers() again while a
+// previous request is still in flight. Only the latest invocation may apply
+// results or clear the loading flag, so a slow earlier response can't clobber
+// newer state.
+let pickersLoadId = 0;
+
 const loadPickers = async () => {
+  const loadId = ++pickersLoadId;
   loadingPickers.value = true;
   try {
     const [modelsRes, datasetsRes] = await Promise.all([
@@ -108,6 +115,8 @@ const loadPickers = async () => {
       getModels({ limit: 200 }),
       getDatasets({ limit: 200 }),
     ]);
+    // A newer load started while this one was in flight — drop this result.
+    if (loadId !== pickersLoadId) return;
     // The shared request() helper catches HTTP/network errors and returns
     // null instead of throwing, so a null response (not just a thrown error)
     // is how a failed load surfaces here.
@@ -125,10 +134,12 @@ const loadPickers = async () => {
       (d) => d.train_and_inference_type === JSONL_DATASET_TYPE,
     );
   } catch (err) {
+    if (loadId !== pickersLoadId) return;
     console.error('Failed to load fine-tune pickers', err);
     toaster.show('error', 'fine_tune_load_failed');
   } finally {
-    loadingPickers.value = false;
+    // Only the most recent load owns the loading flag.
+    if (loadId === pickersLoadId) loadingPickers.value = false;
   }
 };
 
@@ -189,8 +200,8 @@ const handleSubmit = async () => {
     const data = resp?.data;
     if (data?.model_id) {
       emit('created', { model_id: data.model_id, run_id: data.run_id });
+      // Closing resets the form via the `open` watcher — single source of truth.
       emit('update:open', false);
-      resetForm();
     }
   } catch (err) {
     console.error('Fine-tune submission failed', err);
