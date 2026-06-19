@@ -228,9 +228,15 @@ watch(
     if (isOpen) {
       loadPickers();
     } else {
-      // Clear stale selections on close (Cancel / outside-click / Escape /
-      // parent-driven) so a reopen doesn't keep base/dataset IDs that may no
-      // longer exist in the freshly loaded options — and can't submit them.
+      // On close (Cancel / outside-click / Escape / parent-driven):
+      // invalidate any in-flight picker load (so a late response can't apply
+      // results or toast after close), clear the cached options/flag (so they
+      // can't flash on the next open before the fresh reload), and clear the
+      // form selections (so a reopen can't keep IDs absent from the reload).
+      pickersLoadId += 1;
+      baseModels.value = [];
+      datasets.value = [];
+      loadingPickers.value = false;
       resetForm();
     }
   },
