@@ -3747,7 +3747,11 @@ export const useApi = () => {
         run_pipeline: String(runPipeline),
       }).toString();
       return request(`/models/fine-tune?${q}`, 'POST', data, {
-        successMessage: 'fine_tune_created',
+        // validate/reserve mode (runPipeline=false) doesn't start a run, so
+        // don't claim one was started.
+        successMessage: runPipeline
+          ? 'fine_tune_created'
+          : 'fine_tune_validated',
       });
     },
 

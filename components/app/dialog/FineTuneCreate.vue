@@ -103,8 +103,8 @@ const loadPickers = async () => {
   loadingPickers.value = true;
   try {
     const [modelsRes, datasetsRes] = await Promise.all([
-      // Backend filters by query param; we then narrow to LLM rows that
-      // also have an hf_model_id (the kfp component needs the HF id).
+      // getModels has no type filter — fetch a page and narrow client-side
+      // to LLM rows that also carry an hf_model_id (the kfp component needs it).
       getModels({ limit: 200 }),
       getDatasets({ limit: 200 }),
     ]);
@@ -150,6 +150,10 @@ const fillFromRecommender = async () => {
       hf_model_id: selected.hf_model_id,
       method: 'ntk',
     });
+    // Guard against a stale response: if the user switched base model while
+    // this request was in flight, drop it so it can't overwrite the newer
+    // model's knobs.
+    if (form.value.base_model_id !== selected.id) return;
     const rec = resp?.data;
     if (rec) {
       form.value.gates = rec.gates ?? form.value.gates;
@@ -212,6 +216,11 @@ watch(
   (isOpen) => {
     if (isOpen) {
       loadPickers();
+    } else {
+      // Clear stale selections on close (Cancel / outside-click / Escape /
+      // parent-driven) so a reopen doesn't keep base/dataset IDs that may no
+      // longer exist in the freshly loaded options — and can't submit them.
+      resetForm();
     }
   },
   // ``immediate`` so an already-open dialog (mounted with ``open=true``)

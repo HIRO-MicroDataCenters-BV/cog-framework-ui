@@ -26,6 +26,7 @@ export default defineI18nConfig(() => ({
           model_serving_deleted: 'Model service deleted successfully',
           model_serving_created: 'Model serving created successfully',
           fine_tune_created: 'Fine-tune run started successfully',
+          fine_tune_validated: 'Fine-tune validated; run not submitted',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
