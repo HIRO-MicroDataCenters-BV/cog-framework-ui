@@ -161,4 +161,16 @@ describe('FineTuneCreate', () => {
     await flushPromises();
     expect(getModels).toHaveBeenCalledTimes(2);
   });
+
+  it('caps max_log_gate at 1 to match the backend bound (le=1.0)', async () => {
+    getModels.mockResolvedValueOnce({ data: [] });
+    getDatasets.mockResolvedValueOnce({ data: [] });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    // The server rejects max_log_gate > 1.0 (422); the input must declare the
+    // upper bound so the form can't submit a value the backend will reject.
+    expect(wrapper.find('#ft-max-log-gate').attributes('max')).toBe('1');
+  });
 });

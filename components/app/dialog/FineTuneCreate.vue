@@ -88,6 +88,7 @@ const canSubmit = computed(
     form.value.output_name.trim().length > 0 &&
     form.value.gates >= 1 &&
     form.value.max_log_gate > 0 &&
+    form.value.max_log_gate <= 1 &&
     form.value.train_steps >= 1 &&
     form.value.lr > 0,
 );
@@ -310,6 +311,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
                 type="number"
                 step="0.01"
                 min="0.001"
+                max="1"
               />
             </div>
             <div class="space-y-1">

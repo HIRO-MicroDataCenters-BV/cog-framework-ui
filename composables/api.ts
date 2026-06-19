@@ -3719,10 +3719,10 @@ export const useApi = () => {
      * @param {boolean} [runPipeline=true] - When false, only the pending
      *   `model_info` row is created and the kfp run is skipped — useful
      *   for staged deployment.
-     * @returns {Promise<Object>} Response containing `model_id`,
-     *   `pipeline_id`, and `run_id`. Poll the pipeline-run table for
-     *   progress; the artifact URI is patched by the kfp component on
-     *   completion.
+     * @returns {Promise<Object>} Response containing `model_id` and
+     *   `run_id` (the backend `FineTuneResponse`). Poll the pipeline-run
+     *   table by `run_id` for progress; the artifact URI is patched by the
+     *   kfp component on completion.
      */
     createFineTune: async (
       data: {
