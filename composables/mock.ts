@@ -878,6 +878,10 @@ export const useApiWithMock = () => {
         run_pipeline: String(runPipeline),
       }).toString();
       return request(`/models/fine-tune?${q}`, 'POST', data, {
+        // The mock wrapper's request() only toasts when showToast is truthy
+        // (it doesn't default to true), so set it explicitly to match the
+        // expectation that a fine-tune submit surfaces a success toast.
+        showToast: true,
         successMessage: runPipeline
           ? 'fine_tune_created'
           : 'fine_tune_validated',

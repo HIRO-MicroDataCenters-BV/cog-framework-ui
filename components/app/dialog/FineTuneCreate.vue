@@ -190,11 +190,14 @@ const handleSubmit = async () => {
       output_name: form.value.output_name.trim(),
       method: 'ntk',
       export: 'lora',
+      // Coerce to numbers: `v-model.number` isn't auto-applied to the custom
+      // Input wrapper, so an edited field can hold a string. Guarantee a
+      // numeric payload (and avoid tripping strict backend validation).
       hyperparams: {
-        gates: form.value.gates,
-        max_log_gate: form.value.max_log_gate,
-        train_steps: form.value.train_steps,
-        lr: form.value.lr,
+        gates: Number(form.value.gates),
+        max_log_gate: Number(form.value.max_log_gate),
+        train_steps: Number(form.value.train_steps),
+        lr: Number(form.value.lr),
       },
     });
     const data = resp?.data;
