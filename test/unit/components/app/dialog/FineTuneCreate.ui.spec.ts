@@ -267,16 +267,18 @@ describe('FineTuneCreate', () => {
     expect(wrapper.find('#ft-max-log-gate').attributes('max')).toBe('1');
   });
 
-  it('surfaces a load-failure toast when a picker request returns null', async () => {
-    // The shared request() helper returns null (not a throw) on HTTP/network
-    // error, so a null picker response is how a failed load surfaces.
+  it('handles a null picker response gracefully (empty pickers, no own toast)', async () => {
+    // request() returns null (not a throw) on HTTP/network error and owns the
+    // error toast itself; the dialog must not add a second one — it just
+    // narrows to empty pickers and shows its empty-state hints.
     getModels.mockResolvedValueOnce(null);
-    getDatasets.mockResolvedValueOnce({ data: [] });
+    getDatasets.mockResolvedValueOnce(null);
 
-    mountDialog();
+    const wrapper = mountDialog();
     await flushPromises();
 
-    expect(toasterShow).toHaveBeenCalledWith('error', 'fine_tune_load_failed');
+    expect(wrapper.findAll('[data-value]')).toHaveLength(0);
+    expect(toasterShow).not.toHaveBeenCalled();
   });
 
   it('blocks close and disables Cancel while a submit is in flight', async () => {

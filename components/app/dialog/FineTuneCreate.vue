@@ -59,7 +59,6 @@ const emit = defineEmits<{
 }>();
 
 const { getModels, getDatasets, createFineTune, recommendFineTune } = useApi();
-const toaster = useToaster();
 const { t } = useI18n();
 
 // `5` == DatasetTypeEnum.JSONL on the backend; only JSONL is accepted
@@ -83,9 +82,10 @@ const form = ref({
 const submitting = ref(false);
 const recommending = ref(false);
 
-// Coerce-then-validate a knob. The custom Input wrapper emits strings (and
-// `.number` isn't applied to component v-models), and a pasted '1e999' becomes
-// Infinity (which JSON.stringify would emit as `null` on submit). Number() +
+// Coerce-then-validate a knob. The custom Input wrapper emits raw strings
+// (it doesn't implement modelModifiers, so `v-model.number` would be a no-op),
+// and a pasted '1e999' becomes Infinity once coerced (which JSON.stringify
+// would emit as `null` on submit). Number() +
 // Number.isFinite() rejects empty/NaN/Infinity/string and an out-of-range
 // value in one shot; the bounds mirror each input's min/max and the backend
 // (max_log_gate & lr le=1.0). `gates`/`train_steps` have no semantic upper
@@ -150,12 +150,11 @@ const loadPickers = async () => {
     ]);
     // A newer load started while this one was in flight — drop this result.
     if (loadId !== pickersLoadId) return;
-    // The shared request() helper catches HTTP/network errors and returns
-    // null instead of throwing, so a null response (not just a thrown error)
-    // is how a failed load surfaces here.
-    if (!modelsRes || !datasetsRes) {
-      toaster.show('error', 'fine_tune_load_failed');
-    }
+    // request() already surfaces its own error toast on HTTP/network failure
+    // (it returns null rather than throwing, and toasts connection_error/
+    // server_error unconditionally), so we don't add a second one here. A
+    // failed/empty load just narrows to empty pickers, which render their own
+    // "register an LLM / upload a dataset" hints.
     const modelRows: ModelOption[] = (modelsRes?.data || []) as ModelOption[];
     baseModels.value = modelRows.filter(
       (m) => m.type === 'llm' && !!m.hf_model_id,
@@ -169,7 +168,6 @@ const loadPickers = async () => {
   } catch (err) {
     if (loadId !== pickersLoadId) return;
     console.error('Failed to load fine-tune pickers', err);
-    toaster.show('error', 'fine_tune_load_failed');
   } finally {
     // Only the most recent load owns the loading flag.
     if (loadId === pickersLoadId) loadingPickers.value = false;
@@ -231,9 +229,9 @@ const handleSubmit = async () => {
       output_name: form.value.output_name.trim(),
       method: 'ntk',
       export: 'lora',
-      // Coerce to numbers: `v-model.number` isn't auto-applied to the custom
-      // Input wrapper, so an edited field can hold a string. Guarantee a
-      // numeric payload (and avoid tripping strict backend validation).
+      // Coerce to numbers: the custom Input wrapper emits raw strings, so an
+      // edited field can hold a string. Guarantee a numeric payload (and
+      // avoid tripping strict backend validation).
       hyperparams: {
         gates: Number(form.value.gates),
         max_log_gate: Number(form.value.max_log_gate),
@@ -388,7 +386,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
               }}</Label>
               <Input
                 id="ft-gates"
-                v-model.number="form.gates"
+                v-model="form.gates"
                 type="number"
                 min="1"
                 step="1"
@@ -400,7 +398,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
               </Label>
               <Input
                 id="ft-max-log-gate"
-                v-model.number="form.max_log_gate"
+                v-model="form.max_log_gate"
                 type="number"
                 step="0.01"
                 min="0.001"
@@ -413,7 +411,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
               }}</Label>
               <Input
                 id="ft-train-steps"
-                v-model.number="form.train_steps"
+                v-model="form.train_steps"
                 type="number"
                 min="1"
                 step="1"
@@ -425,7 +423,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
               }}</Label>
               <Input
                 id="ft-lr"
-                v-model.number="form.lr"
+                v-model="form.lr"
                 type="number"
                 step="0.0001"
                 min="0.0001"
