@@ -3703,5 +3703,82 @@ export const useApi = () => {
         successMessage: 'share_updated',
       });
     },
+
+    /**
+     * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
+     *
+     * The kfp run trains the controller, converts it to a standard PEFT
+     * LoRA adapter (default `export: 'lora'`), and only on completion
+     * registers the `model_info(type='lora')` row — at which point the new
+     * adapter appears in the existing LoRA picker on the model-serving flow.
+     * The request itself just reserves `model_id`; no row exists until then.
+     *
+     * @param {Object} data - Fine-tune request body matching the backend
+     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
+     *   `export` to `'lora'` on the server; pinned hyperparams in
+     *   `hyperparams` override the recommender defaults.
+     * @param {boolean} [runPipeline=true] - When false, the backend
+     *   validates every prerequisite and reserves the output `model_id`
+     *   without submitting the kfp run (no `model_info` row is created and
+     *   no kfp auth is required) — useful for staged deployment. The row
+     *   materializes only when the run completes.
+     * @returns {Promise<Object>} Response containing `model_id` and
+     *   `run_id` (the backend `FineTuneResponse`). Poll the pipeline-run
+     *   table by `run_id` for progress; the artifact URI is patched by the
+     *   kfp component on completion.
+     */
+    createFineTune: async (
+      data: {
+        base_model_id: string;
+        dataset_id: string;
+        output_name: string;
+        method?: 'ntk';
+        export?: 'lora' | 'ntk_model';
+        hyperparams?: {
+          gates?: number;
+          max_log_gate?: number;
+          train_steps?: number;
+          lr?: number;
+        };
+      },
+      runPipeline = true,
+    ) => {
+      const q = new URLSearchParams({
+        run_pipeline: String(runPipeline),
+      }).toString();
+      return request(`/models/fine-tune?${q}`, 'POST', data, {
+        // validate/reserve mode (runPipeline=false) doesn't start a run, so
+        // don't claim one was started.
+        successMessage: runPipeline
+          ? 'fine_tune_created'
+          : 'fine_tune_validated',
+      });
+    },
+
+    /**
+     * Requests recommended training knobs for an NTK fine-tune run.
+     *
+     * Phase 1 returns ntkmirror's library defaults (gates=5000,
+     * max_log_gate=0.05, train_steps=240); caller-pinned values pass
+     * through verbatim and the `rationale` block flags each knob as
+     * `'pinned'` or `'default'` so the form can surface which values
+     * the recommender filled vs the user pinned.
+     *
+     * @param {Object} data - Base model identity + optional caller pins
+     * @returns {Promise<Object>} Recommendation containing gates,
+     *   max_log_gate, train_steps, and rationale per knob.
+     */
+    recommendFineTune: async (data: {
+      hf_model_id?: string;
+      model_id?: string;
+      method?: 'ntk';
+      gates?: number;
+      max_log_gate?: number;
+      train_steps?: number;
+    }) => {
+      return request(`/fine-tune/recommend`, 'POST', data, {
+        showToast: false,
+      });
+    },
   };
 };
