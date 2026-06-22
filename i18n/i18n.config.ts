@@ -46,6 +46,7 @@ export default defineI18nConfig(() => ({
           dataset_add_failed: 'Failed to add dataset',
           model_add_failed: 'Failed to add model',
           component_upload_failed: 'Failed to upload component',
+          fine_tune_load_failed: 'Failed to load base models or datasets',
           connection_error: 'Unable to connect to server',
           download_failed: 'Download failed',
           unauthorized: 'Unauthorized - please log in',

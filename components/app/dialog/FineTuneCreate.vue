@@ -83,18 +83,46 @@ const form = ref({
 const submitting = ref(false);
 const recommending = ref(false);
 
+// Coerce-then-validate a knob. The custom Input wrapper emits strings (and
+// `.number` isn't applied to component v-models), and a pasted '1e999' becomes
+// Infinity (which JSON.stringify would emit as `null` on submit). Number() +
+// Number.isFinite() rejects empty/NaN/Infinity/string and an out-of-range
+// value in one shot; the bounds mirror each input's min/max and the backend
+// (max_log_gate & lr le=1.0). `gates`/`train_steps` have no semantic upper
+// bound, so the backend stays authoritative for those.
+const isValidKnob = (value: unknown, min: number, max = Infinity) => {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max;
+};
+
 const canSubmit = computed(
   () =>
     !!form.value.base_model_id &&
     !!form.value.dataset_id &&
     form.value.output_name.trim().length > 0 &&
-    form.value.gates >= 1 &&
-    // Bounds mirror the input min/max + the backend (max_log_gate le=1.0).
-    form.value.max_log_gate >= 0.001 &&
-    form.value.max_log_gate <= 1 &&
-    form.value.train_steps >= 1 &&
-    form.value.lr >= 0.0001,
+    isValidKnob(form.value.gates, 1) &&
+    isValidKnob(form.value.max_log_gate, 0.001, 1) &&
+    isValidKnob(form.value.train_steps, 1) &&
+    isValidKnob(form.value.lr, 0.0001, 1),
 );
+
+// Surface *why* "Launch" is disabled: name the first unmet requirement so the
+// user isn't left guessing at a greyed-out button. Mirrors `canSubmit`'s order
+// and reuses `isValidKnob`, so the two can't drift. Empty string == ready.
+const validationHint = computed(() => {
+  if (!form.value.base_model_id) return t('hint.fine_tune_select_base');
+  if (!form.value.dataset_id) return t('hint.fine_tune_select_dataset');
+  if (form.value.output_name.trim().length === 0)
+    return t('hint.fine_tune_enter_name');
+  if (!isValidKnob(form.value.gates, 1)) return t('hint.fine_tune_gates_range');
+  if (!isValidKnob(form.value.max_log_gate, 0.001, 1))
+    return t('hint.fine_tune_max_log_gate_range');
+  if (!isValidKnob(form.value.train_steps, 1))
+    return t('hint.fine_tune_steps_range');
+  if (!isValidKnob(form.value.lr, 0.0001, 1))
+    return t('hint.fine_tune_lr_range');
+  return '';
+});
 
 const handleOpenChange = (value: boolean) => {
   // Don't let outside-click / Escape / Cancel close the dialog mid-submit
@@ -148,6 +176,13 @@ const loadPickers = async () => {
   }
 };
 
+// Monotonic token mirroring `pickersLoadId`: a rapid base-model switch can
+// leave an earlier recommend() in flight. Only the latest call may apply
+// results or own the `recommending` spinner — so a slow earlier response
+// can't overwrite the newer model's knobs, nor clear the spinner while the
+// current request is still loading.
+let recommendId = 0;
+
 // Re-fill hyperparams from the recommender whenever the base model changes.
 // Phase 1 keeps it simple: the recommended gates/max_log_gate/train_steps
 // always overwrite the current form values (so switching base model surfaces
@@ -160,16 +195,16 @@ const fillFromRecommender = async () => {
   );
   if (!selected || !selected.hf_model_id) return;
 
+  const loadId = ++recommendId;
   recommending.value = true;
   try {
     const resp = await recommendFineTune({
       hf_model_id: selected.hf_model_id,
       method: 'ntk',
     });
-    // Guard against a stale response: if the user switched base model while
-    // this request was in flight, drop it so it can't overwrite the newer
-    // model's knobs.
-    if (form.value.base_model_id !== selected.id) return;
+    // A newer recommend (model switch or close) started while this one was in
+    // flight — drop it so it can't overwrite the newer model's knobs.
+    if (loadId !== recommendId) return;
     const rec = resp?.data;
     if (rec) {
       form.value.gates = rec.gates ?? form.value.gates;
@@ -181,7 +216,8 @@ const fillFromRecommender = async () => {
     // are already ntkmirror's library defaults.
     console.warn('Recommender fill failed, using defaults', err);
   } finally {
-    recommending.value = false;
+    // Only the most recent recommend owns the spinner flag.
+    if (loadId === recommendId) recommending.value = false;
   }
 };
 
@@ -210,6 +246,13 @@ const handleSubmit = async () => {
       emit('created', { model_id: data.model_id, run_id: data.run_id });
       // Closing resets the form via the `open` watcher — single source of truth.
       emit('update:open', false);
+    } else if (resp) {
+      // A 2xx without `model_id` shouldn't happen — the backend always reserves
+      // one. If it ever does, the API layer has already fired the success
+      // toast, so don't emit `created`/close on an incomplete response; keep
+      // the dialog open and leave a breadcrumb for diagnosis. (A genuine
+      // HTTP/network error returns `resp === null`, already toasted upstream.)
+      console.warn('Fine-tune response missing model_id', resp);
     }
   } catch (err) {
     console.error('Fine-tune submission failed', err);
@@ -241,7 +284,10 @@ watch(
       // results or toast after close), clear the cached options/flag (so they
       // can't flash on the next open before the fresh reload), and clear the
       // form selections (so a reopen can't keep IDs absent from the reload).
+      // Bump the recommend token too, so an in-flight recommend can't apply
+      // its knobs onto the just-reset form after close.
       pickersLoadId += 1;
+      recommendId += 1;
       baseModels.value = [];
       datasets.value = [];
       loadingPickers.value = false;
@@ -263,11 +309,9 @@ watch(() => form.value.base_model_id, fillFromRecommender);
     <DialogContent class="sm:max-w-[640px] p-0 gap-0">
       <div class="px-6 pt-6 pb-4">
         <DialogHeader>
-          <DialogTitle>Fine-tune an LLM</DialogTitle>
+          <DialogTitle>{{ t('title.fine_tune') }}</DialogTitle>
           <DialogDescription>
-            Train an ntkmirror controller over a JSONL dataset; the result is
-            exported as a standard LoRA adapter and appears in the existing
-            model-serving picker once the run completes.
+            {{ t('description.fine_tune_dialog') }}
           </DialogDescription>
         </DialogHeader>
       </div>
@@ -275,10 +319,10 @@ watch(() => form.value.base_model_id, fillFromRecommender);
       <div class="px-6 pb-4 space-y-4">
         <!-- Base model picker (LLM rows with hf_model_id only). -->
         <div class="space-y-2">
-          <Label for="ft-base-model">Base LLM</Label>
+          <Label for="ft-base-model">{{ t('label.base_llm') }}</Label>
           <Select v-model="form.base_model_id">
             <SelectTrigger id="ft-base-model" class="w-full">
-              <SelectValue placeholder="Select an LLM..." />
+              <SelectValue :placeholder="t('placeholder.select_llm')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="m in baseModels" :key="m.id" :value="m.id">
@@ -290,17 +334,18 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             v-if="!loadingPickers && baseModels.length === 0"
             class="text-sm text-muted-foreground"
           >
-            No LLM rows with a Hugging Face ID were found. Register an LLM with
-            hf_model_id first.
+            {{ t('hint.fine_tune_no_llm') }}
           </p>
         </div>
 
         <!-- Dataset picker (JSONL only, per backend FineTuneRequest). -->
         <div class="space-y-2">
-          <Label for="ft-dataset">JSONL dataset</Label>
+          <Label for="ft-dataset">{{ t('label.jsonl_dataset') }}</Label>
           <Select v-model="form.dataset_id">
             <SelectTrigger id="ft-dataset" class="w-full">
-              <SelectValue placeholder="Select a JSONL dataset..." />
+              <SelectValue
+                :placeholder="t('placeholder.select_jsonl_dataset')"
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="d in datasets" :key="d.id" :value="d.id">
@@ -312,17 +357,18 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             v-if="!loadingPickers && datasets.length === 0"
             class="text-sm text-muted-foreground"
           >
-            No JSONL datasets registered yet. Upload one via the datasets page
-            (type JSONL).
+            {{ t('hint.fine_tune_no_dataset') }}
           </p>
         </div>
 
         <div class="space-y-2">
-          <Label for="ft-output-name">Output adapter name</Label>
+          <Label for="ft-output-name">{{
+            t('label.output_adapter_name')
+          }}</Label>
           <Input
             id="ft-output-name"
             v-model="form.output_name"
-            placeholder="e.g. qwen-math-lora-v1"
+            :placeholder="t('placeholder.output_adapter_name')"
           />
         </div>
 
@@ -330,22 +376,27 @@ watch(() => form.value.base_model_id, fillFromRecommender);
              model is selected. User edits override on submit. -->
         <div>
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium">Training knobs</span>
+            <span class="text-sm font-medium">{{
+              t('label.training_knobs')
+            }}</span>
             <Spinner v-if="recommending" class="size-3" />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1">
-              <Label for="ft-gates" class="text-xs">Gates</Label>
+              <Label for="ft-gates" class="text-xs">{{
+                t('label.gates')
+              }}</Label>
               <Input
                 id="ft-gates"
                 v-model.number="form.gates"
                 type="number"
                 min="1"
+                step="1"
               />
             </div>
             <div class="space-y-1">
               <Label for="ft-max-log-gate" class="text-xs">
-                Max log gate
+                {{ t('label.max_log_gate') }}
               </Label>
               <Input
                 id="ft-max-log-gate"
@@ -357,27 +408,42 @@ watch(() => form.value.base_model_id, fillFromRecommender);
               />
             </div>
             <div class="space-y-1">
-              <Label for="ft-train-steps" class="text-xs">Steps</Label>
+              <Label for="ft-train-steps" class="text-xs">{{
+                t('label.steps')
+              }}</Label>
               <Input
                 id="ft-train-steps"
                 v-model.number="form.train_steps"
                 type="number"
                 min="1"
+                step="1"
               />
             </div>
             <div class="space-y-1">
-              <Label for="ft-lr" class="text-xs">Learning rate</Label>
+              <Label for="ft-lr" class="text-xs">{{
+                t('label.learning_rate')
+              }}</Label>
               <Input
                 id="ft-lr"
                 v-model.number="form.lr"
                 type="number"
                 step="0.0001"
                 min="0.0001"
+                max="1"
               />
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Tells the user which requirement is blocking submit, rather than
+           leaving "Launch" greyed out with no explanation. -->
+      <p
+        v-if="validationHint && !submitting"
+        class="px-6 pb-2 text-sm text-muted-foreground"
+      >
+        {{ validationHint }}
+      </p>
 
       <DialogFooter class="px-6 py-4 border-t">
         <Button
@@ -385,11 +451,11 @@ watch(() => form.value.base_model_id, fillFromRecommender);
           :disabled="submitting"
           @click="handleOpenChange(false)"
         >
-          Cancel
+          {{ t('action.cancel') }}
         </Button>
         <Button :disabled="!canSubmit || submitting" @click="handleSubmit">
           <Spinner v-if="submitting" class="size-3 mr-2" />
-          Launch fine-tune
+          {{ t('action.launch_fine_tune') }}
         </Button>
       </DialogFooter>
     </DialogContent>
