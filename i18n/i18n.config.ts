@@ -131,6 +131,8 @@ export default defineI18nConfig(() => ({
         run_details: 'Run Details',
         archive_run: 'Archive run',
         restore_run: 'Restore run',
+        fine_tune: 'Fine-tune an LLM',
+        fine_tune_empty: 'No fine-tune runs to show',
       },
       alert: {
         delete_dataset:
@@ -169,6 +171,12 @@ export default defineI18nConfig(() => ({
           'Organise and track pipeline runs grouped by experiment. Browse, search and compare experiments across your workspace.',
         edit_model_serving: 'Update traffic percentage for {name}',
         logs_unavailable: 'Logs are not available for this component',
+        fine_tune:
+          'Train a parameter-efficient LoRA adapter on an existing LLM via the NTK fine-tune method. Cheap to train, serves on the standard LoRA path.',
+        fine_tune_dialog:
+          'Train an ntkmirror controller over a JSONL dataset; the result is exported as a standard LoRA adapter and appears in the existing model-serving picker once the run completes.',
+        fine_tune_empty:
+          'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting LoRA adapter will appear in the model-serving picker once the run completes.',
       },
       builder: {
         components: 'Components',
@@ -337,6 +345,14 @@ export default defineI18nConfig(() => ({
         test_request_data: 'Request Data',
         test_report_config: 'Report Config',
         test_connection: 'Test Connection',
+        base_llm: 'Base LLM',
+        jsonl_dataset: 'JSONL dataset',
+        output_adapter_name: 'Output adapter name',
+        training_knobs: 'Training knobs',
+        gates: 'Gates',
+        max_log_gate: 'Max log gate',
+        steps: 'Steps',
+        learning_rate: 'Learning rate',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -391,6 +407,9 @@ export default defineI18nConfig(() => ({
         parameter_name: 'e.g., model_name',
         parameter_description: 'Describe this parameter (optional)',
         select_type: 'Select type',
+        select_llm: 'Select an LLM...',
+        select_jsonl_dataset: 'Select a JSONL dataset...',
+        output_adapter_name: 'e.g. qwen-math-lora-v1',
       },
       theme: {
         dark: 'Dark',
@@ -454,6 +473,9 @@ export default defineI18nConfig(() => ({
         clear_all: 'Clear all',
         clear_filters: 'Clear filters',
         share: 'Share',
+        add_fine_tune: 'New fine-tune',
+        start_fine_tune: 'Start a fine-tune',
+        launch_fine_tune: 'Launch fine-tune',
       },
       share: {
         title: 'Share Dataset',
@@ -546,6 +568,18 @@ export default defineI18nConfig(() => ({
         preview_max_limit:
           'Maximum preview limit reached. Download the file to see the full content.',
         no_data: 'No data available',
+        fine_tune_no_llm:
+          'No LLM rows with a Hugging Face ID were found. Register an LLM with hf_model_id first.',
+        fine_tune_no_dataset:
+          'No JSONL datasets registered yet. Upload one via the datasets page (type JSONL).',
+        fine_tune_select_base: 'Select a base LLM.',
+        fine_tune_select_dataset: 'Select a JSONL dataset.',
+        fine_tune_enter_name: 'Enter an output adapter name.',
+        fine_tune_gates_range: 'Gates must be a number ≥ 1.',
+        fine_tune_max_log_gate_range:
+          'Max log gate must be between 0.001 and 1.',
+        fine_tune_steps_range: 'Steps must be a number ≥ 1.',
+        fine_tune_lr_range: 'Learning rate must be between 0.0001 and 1.',
       },
       menu: {
         upload: 'Upload',

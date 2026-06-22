@@ -16,6 +16,8 @@ const getModels = vi.fn();
 const getDatasets = vi.fn();
 const createFineTune = vi.fn();
 const recommendFineTune = vi.fn();
+// Shared spy so tests can assert which toasts the dialog fires.
+const toasterShow = vi.fn();
 
 vi.mock('@/composables/api', () => ({
   useApi: () => ({
@@ -30,12 +32,13 @@ beforeAll(() => {
   // Mirror the real composable, which exposes only `show(...)` — stubbing
   // extra helpers would mask a `toaster.error(...)`-style bug in the SUT.
   vi.stubGlobal('useToaster', () => ({
-    show: vi.fn(),
+    show: toasterShow,
   }));
 });
 
 const stubs = {
   Dialog: {
+    name: 'Dialog',
     props: ['open'],
     template:
       '<div data-testid="dialog" :data-open="open ? \'1\' : \'0\'"><slot v-if="open" /></div>',
@@ -85,6 +88,7 @@ beforeEach(() => {
   getDatasets.mockReset();
   createFineTune.mockReset();
   recommendFineTune.mockReset();
+  toasterShow.mockReset();
 });
 
 describe('FineTuneCreate', () => {
@@ -224,9 +228,11 @@ describe('FineTuneCreate', () => {
     await flushPromises();
     await wrapper.find('#ft-output-name').setValue('adapter-x');
 
+    // The stubbed `useI18n` echoes the key, so the button renders its i18n
+    // key rather than the English label.
     const submit = wrapper
       .findAll('button')
-      .find((b) => b.text().includes('Launch fine-tune'));
+      .find((b) => b.text().includes('action.launch_fine_tune'));
     await submit!.trigger('click');
     await flushPromises();
 
@@ -259,5 +265,105 @@ describe('FineTuneCreate', () => {
     // The server rejects max_log_gate > 1.0 (422); the input must declare the
     // upper bound so the form can't submit a value the backend will reject.
     expect(wrapper.find('#ft-max-log-gate').attributes('max')).toBe('1');
+  });
+
+  it('surfaces a load-failure toast when a picker request returns null', async () => {
+    // The shared request() helper returns null (not a throw) on HTTP/network
+    // error, so a null picker response is how a failed load surfaces.
+    getModels.mockResolvedValueOnce(null);
+    getDatasets.mockResolvedValueOnce({ data: [] });
+
+    mountDialog();
+    await flushPromises();
+
+    expect(toasterShow).toHaveBeenCalledWith('error', 'fine_tune_load_failed');
+  });
+
+  it('blocks close and disables Cancel while a submit is in flight', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'jsonl-1', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValueOnce({ data: {} });
+    // A submit that never resolves keeps `submitting` true for the assertions.
+    let resolveCreate: (v: unknown) => void = () => {};
+    createFineTune.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveCreate = resolve;
+      }),
+    );
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    const submit = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.launch_fine_tune'));
+    await submit!.trigger('click');
+    await flushPromises();
+
+    // Cancel is disabled mid-submit...
+    const cancel = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.cancel'));
+    expect(cancel!.attributes('disabled')).toBeDefined();
+
+    // ...and an Escape / outside-click close attempt is swallowed (no
+    // `update:open=false` while submitting).
+    wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', false);
+    await flushPromises();
+    const openEvents = wrapper.emitted('update:open') ?? [];
+    expect(openEvents.some(([value]) => value === false)).toBe(false);
+
+    // Let the in-flight request settle so the test leaves no pending work.
+    resolveCreate({ data: { model_id: 'mi-1', run_id: null } });
+    await flushPromises();
+  });
+
+  it('blocks submit when a knob is non-finite (1e999 → Infinity)', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'jsonl-1', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValueOnce({ data: {} });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    // '1e999' coerces to Infinity, which JSON.stringify would serialize to
+    // `null`. The validator must reject it so no bad payload is submittable.
+    await wrapper.find('#ft-gates').setValue('1e999');
+
+    const submit = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.launch_fine_tune'));
+    expect(submit!.attributes('disabled')).toBeDefined();
+    await submit!.trigger('click');
+    await flushPromises();
+    expect(createFineTune).not.toHaveBeenCalled();
   });
 });

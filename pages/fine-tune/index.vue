@@ -33,7 +33,7 @@ const handleCreated = (payload: {
   run_id?: string | null;
 }) => {
   if (payload.run_id) {
-    router.push(`/pipelines/run`);
+    router.push('/pipelines/run');
   }
 };
 </script>
@@ -44,14 +44,12 @@ const handleCreated = (payload: {
       <div>
         <h1 class="text-xl font-semibold">{{ t('menu.fine_tune') }}</h1>
         <p class="text-sm text-muted-foreground mt-1">
-          Train a parameter-efficient LoRA adapter on an existing LLM via the
-          NTK fine-tune method. Cheap to train, serves on the standard LoRA
-          path.
+          {{ t('description.fine_tune') }}
         </p>
       </div>
       <Button @click="dialogOpen = true">
         <Icon name="lucide:plus" class="size-4 mr-2" />
-        New fine-tune
+        {{ t('action.add_fine_tune') }}
       </Button>
     </div>
 
@@ -61,15 +59,15 @@ const handleCreated = (payload: {
           name="lucide:sliders-horizontal"
           class="size-12 text-muted-foreground mx-auto mb-4"
         />
-        <h2 class="text-lg font-medium mb-2">No fine-tune runs to show</h2>
+        <h2 class="text-lg font-medium mb-2">
+          {{ t('title.fine_tune_empty') }}
+        </h2>
         <p class="text-sm text-muted-foreground mb-4">
-          Launch your first fine-tune by selecting an LLM, a JSONL dataset, and
-          training knobs. The resulting LoRA adapter will appear in the
-          model-serving picker once the run completes.
+          {{ t('description.fine_tune_empty') }}
         </p>
         <Button @click="dialogOpen = true">
           <Icon name="lucide:plus" class="size-4 mr-2" />
-          Start a fine-tune
+          {{ t('action.start_fine_tune') }}
         </Button>
       </div>
     </div>
