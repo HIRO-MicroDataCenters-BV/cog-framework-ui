@@ -1,0 +1,276 @@
+{
+  "runs": [
+    {
+      "run_id": "run-d01-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-28T10:00:00Z",
+      "finished_at": "2026-06-28T10:08:24Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d01-002",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-28T12:30:00Z",
+      "finished_at": "2026-06-28T12:54:11Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d02-001",
+      "display_name": "kitnet-retrain-run",
+      "state": "FAILED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-27T09:15:00Z",
+      "finished_at": "2026-06-27T09:22:05Z",
+      "experiment_id": "exp-kitnet-001"
+    },
+    {
+      "run_id": "run-d02-002",
+      "display_name": "lstm-pipeline-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-27T14:00:00Z",
+      "finished_at": "2026-06-27T14:31:47Z",
+      "experiment_id": "exp-lstm-001"
+    },
+    {
+      "run_id": "run-d03-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-26T08:00:00Z",
+      "finished_at": "2026-06-26T08:09:02Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d03-002",
+      "display_name": "llm-vllm-finetune-run",
+      "state": "RUNNING",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-26T11:45:00Z",
+      "finished_at": null,
+      "experiment_id": "exp-llm-001"
+    },
+    {
+      "run_id": "run-d04-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-25T10:20:00Z",
+      "finished_at": "2026-06-25T10:44:33Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d05-001",
+      "display_name": "kitnet-retrain-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-24T13:00:00Z",
+      "finished_at": "2026-06-24T13:07:19Z",
+      "experiment_id": "exp-kitnet-001"
+    },
+    {
+      "run_id": "run-d05-002",
+      "display_name": "wine-quality-training-run",
+      "state": "FAILED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-24T16:30:00Z",
+      "finished_at": "2026-06-24T16:31:02Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d06-001",
+      "display_name": "lstm-pipeline-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-23T09:00:00Z",
+      "finished_at": "2026-06-23T09:28:55Z",
+      "experiment_id": "exp-lstm-001"
+    },
+    {
+      "run_id": "run-d07-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-22T11:00:00Z",
+      "finished_at": "2026-06-22T11:22:44Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d07-002",
+      "display_name": "wine-quality-training-run",
+      "state": "SKIPPED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-22T15:00:00Z",
+      "finished_at": "2026-06-22T15:00:10Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d09-001",
+      "display_name": "kitnet-retrain-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-20T08:30:00Z",
+      "finished_at": "2026-06-20T08:38:21Z",
+      "experiment_id": "exp-kitnet-001"
+    },
+    {
+      "run_id": "run-d10-001",
+      "display_name": "llm-vllm-finetune-run",
+      "state": "FAILED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-19T14:00:00Z",
+      "finished_at": "2026-06-19T14:05:33Z",
+      "experiment_id": "exp-llm-001"
+    },
+    {
+      "run_id": "run-d10-002",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-19T16:00:00Z",
+      "finished_at": "2026-06-19T16:19:47Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d12-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-17T09:00:00Z",
+      "finished_at": "2026-06-17T09:07:55Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d12-002",
+      "display_name": "lstm-pipeline-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-17T13:30:00Z",
+      "finished_at": "2026-06-17T14:01:12Z",
+      "experiment_id": "exp-lstm-001"
+    },
+    {
+      "run_id": "run-d14-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-15T10:00:00Z",
+      "finished_at": "2026-06-15T10:23:38Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d15-001",
+      "display_name": "kitnet-retrain-run",
+      "state": "FAILED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-14T08:00:00Z",
+      "finished_at": "2026-06-14T08:04:11Z",
+      "experiment_id": "exp-kitnet-001"
+    },
+    {
+      "run_id": "run-d16-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-13T11:00:00Z",
+      "finished_at": "2026-06-13T11:09:03Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d18-001",
+      "display_name": "llm-vllm-finetune-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-11T09:30:00Z",
+      "finished_at": "2026-06-11T10:14:22Z",
+      "experiment_id": "exp-llm-001"
+    },
+    {
+      "run_id": "run-d19-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-10T14:00:00Z",
+      "finished_at": "2026-06-10T14:21:09Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d21-001",
+      "display_name": "lstm-pipeline-run",
+      "state": "SKIPPED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-08T10:00:00Z",
+      "finished_at": "2026-06-08T10:00:08Z",
+      "experiment_id": "exp-lstm-001"
+    },
+    {
+      "run_id": "run-d22-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-07T08:00:00Z",
+      "finished_at": "2026-06-07T08:08:44Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d24-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-05T12:00:00Z",
+      "finished_at": "2026-06-05T12:19:31Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d25-001",
+      "display_name": "kitnet-retrain-run",
+      "state": "FAILED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-04T09:00:00Z",
+      "finished_at": "2026-06-04T09:06:17Z",
+      "experiment_id": "exp-kitnet-001"
+    },
+    {
+      "run_id": "run-d26-001",
+      "display_name": "llm-vllm-finetune-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-03T13:00:00Z",
+      "finished_at": "2026-06-03T13:58:02Z",
+      "experiment_id": "exp-llm-001"
+    },
+    {
+      "run_id": "run-d28-001",
+      "display_name": "fedsvc-federated-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-06-01T10:30:00Z",
+      "finished_at": "2026-06-01T10:52:45Z",
+      "experiment_id": "exp-fed-001"
+    },
+    {
+      "run_id": "run-d29-001",
+      "display_name": "wine-quality-training-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-05-31T08:00:00Z",
+      "finished_at": "2026-05-31T08:09:11Z",
+      "experiment_id": "exp-wine-001"
+    },
+    {
+      "run_id": "run-d30-001",
+      "display_name": "lstm-pipeline-run",
+      "state": "SUCCEEDED",
+      "storage_state": "AVAILABLE",
+      "created_at": "2026-05-30T14:00:00Z",
+      "finished_at": "2026-05-30T14:29:58Z",
+      "experiment_id": "exp-lstm-001"
+    }
+  ],
+  "total_size": 30,
+  "next_page_token": ""
+}

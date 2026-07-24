@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIRO Microdatacenters — VERGE Project Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a18;background:#f5f4f0;font-size:14px;line-height:1.6}
+  @media print{body{background:#fff;font-size:11px} .no-print{display:none} .page-break{page-break-before:always}}
+  .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:600} h2{font-size:16px;font-weight:600} h3{font-size:14px;font-weight:600}
+
+  /* HEADER */
+  .hdr{background:linear-gradient(135deg,#185FA5 0%,#534AB7 100%);border-radius:16px;padding:2rem 2.5rem;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+  .hdr h1{font-size:24px;font-weight:600;margin-bottom:.4rem}
+  .hdr p{font-size:13px;opacity:.85;max-width:600px}
+  .hdr-badges{display:flex;flex-direction:column;gap:.4rem;align-items:flex-end;flex-shrink:0}
+  .hdr-badge{font-size:11px;font-weight:500;padding:.25rem .8rem;border-radius:20px;border:1px solid rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.15);white-space:nowrap}
+
+  /* SECTION LABEL */
+  .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888780;margin-bottom:.6rem;margin-top:1.5rem}
+
+  /* GRIDS */
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem}
+  @media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr} .g5{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:600px){.g4,.g3,.g2,.g5{grid-template-columns:1fr}}
+
+  /* CARDS */
+  .card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1rem}
+  .card-al{border-left:4px solid}
+  .kv{font-size:2.2rem;font-weight:600;line-height:1}
+  .kl{font-size:12px;color:#5f5e5a;margin-top:.3rem}
+  .ks{font-size:11px;color:#888780;margin-top:.2rem}
+
+  /* TAGS / BADGES */
+  .tag{display:inline-block;font-size:10px;padding:.15rem .45rem;border-radius:4px;font-weight:600;margin:.1rem;vertical-align:middle}
+  .tb{background:#E6F1FB;color:#0C447C}
+  .tp{background:#EEEDFE;color:#3C3489}
+  .tt{background:#E1F5EE;color:#085041}
+  .ta{background:#FAEEDA;color:#633806}
+  .tc{background:#FAECE7;color:#712B13}
+  .tg{background:#EAF3DE;color:#27500A}
+  .tgr{background:#F1EFE8;color:#444441}
+  .trd{background:#FCEBEB;color:#791F1F}
+  .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;padding:.2rem .65rem;border-radius:20px;font-weight:600}
+  .b-green{background:#EAF3DE;color:#3B6D11}
+  .b-blue{background:#E6F1FB;color:#185FA5}
+  .b-amber{background:#FAEEDA;color:#854F0B}
+  .b-purple{background:#EEEDFE;color:#534AB7}
+
+  /* COLORS */
+  .c-blue{color:#185FA5} .c-purple{color:#534AB7} .c-teal{color:#0F6E56} .c-amber{color:#854F0B}
+
+  /* DEMO CARDS */
+  .demo-card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.1rem}
+  .demo-num{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888780;margin-bottom:.25rem}
+  .demo-title{font-size:14px;font-weight:600;margin-bottom:.5rem}
+  .demo-desc{font-size:12px;color:#5f5e5a;line-height:1.6;margin-bottom:.6rem}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #f1efe8;font-size:12px;gap:.5rem}
+  .stat-row:last-of-type{border-bottom:none}
+  .stat-label{color:#5f5e5a;flex-shrink:0}
+  .stat-val{font-weight:500;text-align:right;font-size:11px}
+  .lesson{font-size:11px;background:#f5f4f0;border-left:3px solid;padding:.4rem .6rem;border-radius:0 6px 6px 0;color:#5f5e5a;margin-top:.6rem;line-height:1.5}
+  .highlight-box{padding:.6rem .8rem;border-radius:8px;margin-top:.6rem}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;padding:.5rem .7rem;font-weight:600;color:#5f5e5a;border-bottom:2px solid #d3d1c7;font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:#f5f4f0}
+  td{padding:.5rem .7rem;border-bottom:1px solid #f1efe8;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f9f8f5}
+  .mono{font-family:'SF Mono','Fira Code',Courier,monospace;font-size:10px;color:#185FA5;background:#E6F1FB;padding:.1rem .3rem;border-radius:3px}
+
+  /* PILL */
+  .pill{background:#f5f4f0;border:1px solid #d3d1c7;border-radius:8px;padding:.65rem .9rem;margin-bottom:.5rem}
+  .pill-title{font-size:12px;font-weight:600;margin-bottom:.2rem}
+  .pill-body{font-size:11px;color:#5f5e5a;line-height:1.5}
+
+  /* QUOTE */
+  .quote{font-size:12px;font-style:italic;color:#5f5e5a;border-left:4px solid #7F77DD;padding:.6rem .9rem;background:#EEEDFE;border-radius:0 8px 8px 0;line-height:1.7;margin:.75rem 0}
+
+  /* CONTRIB */
+  .contrib-block{padding:.5rem .75rem;border-radius:8px;border:1px solid #d3d1c7;background:#f9f8f5;margin-bottom:.4rem}
+  .contrib-role{font-size:10px;color:#888780;margin-bottom:.1rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .contrib-name{font-size:13px;font-weight:600}
+
+  /* CSUITE */
+  .csuite-card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.1rem;border-top:4px solid}
+  .csuite-title{font-size:13px;font-weight:600;margin-bottom:.6rem}
+  .csuite-card ul{padding-left:1.1rem;display:flex;flex-direction:column;gap:.35rem}
+  .csuite-card li{font-size:12px;color:#5f5e5a}
+
+  /* FOOTER */
+  .footer{margin-top:2rem;padding:1rem 1.5rem;background:#fff;border:1px solid #d3d1c7;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888780}
+
+  /* PRINT BUTTON */
+  .print-btn{display:inline-flex;align-items:center;gap:.4rem;background:#185FA5;color:#fff;border:none;padding:.6rem 1.2rem;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:1rem}
+  .print-btn:hover{background:#0C447C}
+  .section-divider{border:none;border-top:2px solid #d3d1c7;margin:2rem 0}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- PRINT BUTTON -->
+  <div class="no-print" style="margin-bottom:1rem">
+    <button class="print-btn" onclick="window.print()">&#128438; Export as PDF (Print → Save as PDF)</button>
+    <span style="font-size:11px;color:#888780;margin-left:.75rem">Use your browser's Print dialog and choose "Save as PDF"</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div>
+      <h1>HIRO Microdatacenters — VERGE Project</h1>
+      <p>Cognitive Framework Integration · Executive Management Dashboard · Source: VERGE Deliverable D5.2 v1.1 (166 pages, May 2025)</p>
+    </div>
+    <div class="hdr-badges">
+      <span class="hdr-badge">✓ Project Completed · Jun 2025</span>
+      <span class="hdr-badge">EU Horizon Europe · SNS JU</span>
+      <span class="hdr-badge">Grant Agreement 101096034</span>
+      <span class="hdr-badge">Authors: F.Buining · R.Min · B.Nasr · S.Vaduka (HIRO)</span>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="sl">Project at a glance</div>
+  <div class="g4">
+    <div class="card card-al" style="border-left-color:#378ADD">
+      <div class="kv c-blue">16</div>
+      <div class="kl">Consortium partners</div>
+      <div class="ks">Ericsson · Samsung · Intel · KCL · BSC · HIRO +10</div>
+    </div>
+    <div class="card card-al" style="border-left-color:#1D9E75">
+      <div class="kv c-teal">8</div>
+      <div class="kl">Demonstrations</div>
+      <div class="ks">2 Use Cases · WP2 Edge4AI · WP3 AI4Edge · WP4 SPT4AI</div>
+    </div>
+    <div class="card card-al" style="border-left-color:#7F77DD">
+      <div class="kv c-purple">3</div>
+      <div class="kl">Demos with CF integration</div>
+      <div class="ks">Demo 2.2 · Demo 2.4 · Demo 2.5</div>
+    </div>
+    <div class="card card-al" style="border-left-color:#EF9F27">
+      <div class="kv c-amber">6</div>
+      <div class="kl">AI/ML models through CF</div>
+      <div class="ks">Informer · TD3 DRL · CRL · DTMC · DQN · PPO</div>
+    </div>
+  </div>
+
+  <!-- WHAT CF IS -->
+  <div class="sl">What the Cognitive Framework is in VERGE</div>
+  <div class="card">
+    <div class="quote">"The VERGE Cognitive Framework is a software asset developed in VERGE to facilitate the lifecycle management of AI models, enabling the AI model developers to register, train and serve their models in a unified way." — D5.2, p.85</div>
+    <div class="g5" style="margin-top:.75rem">
+      <div class="pill" style="margin-bottom:0"><div class="pill-title">① Register</div><div class="pill-body">Model registration via <code>cf.pyfunc.PythonModel</code></div></div>
+      <div class="pill" style="margin-bottom:0"><div class="pill-title">② Train</div><div class="pill-body">Experiment tracking, TensorBoard, artifact storage</div></div>
+      <div class="pill" style="margin-bottom:0"><div class="pill-title">③ Validate</div><div class="pill-body">Pipeline stages, metrics logging, isolation via URIs</div></div>
+      <div class="pill" style="margin-bottom:0"><div class="pill-title">④ Serve</div><div class="pill-body">REST API via <code>cf.ModelServing.deploy()</code></div></div>
+      <div class="pill" style="margin-bottom:0"><div class="pill-title">⑤ Infer</div><div class="pill-body">Real-time client via <code>cf.InferenceClient()</code></div></div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- 3 DEMO INTEGRATIONS -->
+  <div class="sl">Cognitive Framework — 3 demonstration integrations (from D5.2)</div>
+  <div class="g3">
+
+    <!-- DEMO 2.2 -->
+    <div class="demo-card">
+      <div class="demo-num">Demo 2.2 · Multi-site Edge Orchestration</div>
+      <div class="demo-title">Informer Forecasting Model Integration</div>
+      <div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.6rem">
+        <span class="badge b-blue">Test Case 2.2.4</span>
+        <span class="badge b-amber">Partial</span>
+      </div>
+      <div class="demo-desc">CF hosted the <strong>Informer</strong> — a transformer-based time-series forecasting model for 5G traffic prediction. Intended to feed proactive decisions into the NearbyOne multi-site orchestrator across BSC + NBC edge clusters + AWS cloud.</div>
+      <div class="stat-row"><span class="stat-label">Model type</span><span class="stat-val">Informer (time-series transformer)</span></div>
+      <div class="stat-row"><span class="stat-label">Purpose</span><span class="stat-val">Traffic forecasting → orchestration</span></div>
+      <div class="stat-row"><span class="stat-label">IDE provided</span><span class="stat-val">CodeFlow Server + VS Code</span></div>
+      <div class="stat-row"><span class="stat-label">Pipeline stages</span><span class="stat-val">Pre-process → Train → Serve → Infer</span></div>
+      <div class="stat-row"><span class="stat-label">CF infra hosted by</span><span class="stat-val">HIRO cloud cluster (AWS env)</span></div>
+      <div class="lesson" style="border-color:#EF9F27"><strong>Limitation (D5.2):</strong> HIRO cloud resources insufficient for full-scale Informer model. Multi-cluster model deployment deprioritised in favour of model recommender feature.</div>
+    </div>
+
+    <!-- DEMO 2.4 -->
+    <div class="demo-card">
+      <div class="demo-num">Demo 2.4 · Secure &amp; Trustworthy AI · Smart Mobility</div>
+      <div class="demo-title">Causal-RL + Formal Verification Pipelines</div>
+      <div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.6rem">
+        <span class="badge b-purple">6 Test Cases · 3 Pipelines</span>
+        <span class="badge b-green">Completed</span>
+      </div>
+      <div class="demo-desc">CF ran 3 pipeline configurations (6 test cases) training DRL and Causal-RL tram controllers and formally verifying them with PRISM. All artifacts stored and passed between pipeline stages via CF artifact URIs. Florence tram NGAP dataset used.</div>
+      <div class="stat-row"><span class="stat-label">Model 1</span><span class="stat-val"><span class="tag tp">TD3 DRL</span> Tram + LongiControl envs</span></div>
+      <div class="stat-row"><span class="stat-label">Model 2</span><span class="stat-val"><span class="tag tp">TD3-INVASE CRL</span> Causal-RL controller</span></div>
+      <div class="stat-row"><span class="stat-label">Verification</span><span class="stat-val"><span class="tag tgr">PRISM DTMC</span> Markov chain safety</span></div>
+      <div class="stat-row"><span class="stat-label">Dataset</span><span class="stat-val">GTSI Florence tram NGAP</span></div>
+      <div class="stat-row"><span class="stat-label">Monitoring</span><span class="stat-val">TensorBoard via CF</span></div>
+      <div class="highlight-box" style="background:#EEEDFE">
+        <div style="font-size:10px;color:#534AB7;font-weight:700;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.05em">Key result from CF pipelines</div>
+        <div style="font-size:12px;color:#3C3489">CRL converged in <strong>~250 episodes</strong> vs <strong>~1,800</strong> for DRL. CRL mean reward <strong>−433</strong> vs DRL <strong>−817</strong> on stochastic environments — <strong>47% better generalizability</strong>.</div>
+      </div>
+      <div class="lesson" style="border-color:#7F77DD"><strong>Lesson (D5.2):</strong> FVT–CF integration required building REST adapter APIs from scratch. Middleware between specialized tools (PRISM) and generic platforms (CF) demands careful API design upfront.</div>
+    </div>
+
+    <!-- DEMO 2.5 -->
+    <div class="demo-card">
+      <div class="demo-num">Demo 2.5 · AI-driven Split Computing</div>
+      <div class="demo-title">DRL Split-Point Optimization Agent</div>
+      <div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.6rem">
+        <span class="badge b-blue">DQN + PPO</span>
+        <span class="badge b-green">Completed</span>
+      </div>
+      <div class="demo-desc">CF registered, tracked, deployed, and served a Deep RL agent that dynamically selects the optimal neural network split point between UE and edge server — minimizing inference latency, energy consumption, and SLA violations in real time.</div>
+      <div class="stat-row"><span class="stat-label">Model 1</span><span class="stat-val"><span class="tag tb">DQN</span> Deep Q-Network agent</span></div>
+      <div class="stat-row"><span class="stat-label">Model 2</span><span class="stat-val"><span class="tag tb">PPO</span> Proximal Policy Optimization</span></div>
+      <div class="stat-row"><span class="stat-label">Input</span><span class="stat-val">7-dim UE state (CPU/GPU/mem/bat/RSRP/RSRQ/SINR)</span></div>
+      <div class="stat-row"><span class="stat-label">Output</span><span class="stat-val">Optimal NN split point (layer index 0–4)</span></div>
+      <div class="stat-row"><span class="stat-label">Devices tested</span><span class="stat-val">Smartphone · Tablet · Laptop · VR · IoT</span></div>
+      <div class="stat-row"><span class="stat-label">Production endpoint</span><span class="stat-val"><code>split-computing-prod</code></span></div>
+      <div style="margin-top:.6rem">
+        <div style="font-size:10px;color:#5f5e5a;font-weight:700;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em">CF API calls used</div>
+        <span class="mono">cf.set_experiment()</span>
+        <span class="mono">cf.start_run()</span>
+        <span class="mono">cf.pyfunc.log_model()</span>
+        <span class="mono">cf.ModelServing.deploy()</span>
+        <span class="mono">cf.InferenceClient()</span>
+        <span class="mono">cf.models.infer_signature()</span>
+      </div>
+      <div class="lesson" style="border-color:#1D9E75"><strong>Lesson (D5.2):</strong> CF integration here was smoother because team applied lessons from Demo 2.4. Simulator calibration against real 3GPP channel data was the primary technical challenge.</div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- MODELS TABLE -->
+  <div class="sl">All AI/ML models integrated through the Cognitive Framework</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Algorithm / Type</th>
+          <th>Demo</th>
+          <th>Dataset</th>
+          <th>CF function</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Informer</strong></td>
+          <td><span class="tag tb">Time-series transformer</span></td>
+          <td>2.2</td>
+          <td>Multi-site 5G traffic metrics</td>
+          <td>Train · Serve · Infer</td>
+          <td><span class="tag ta">Partial — resource limit</span></td>
+        </tr>
+        <tr>
+          <td><strong>TD3 DRL controller</strong></td>
+          <td><span class="tag tp">Deep RL · TD3</span></td>
+          <td>2.4</td>
+          <td>GTSI Florence tram NGAP</td>
+          <td>Pipeline · Artifact · TensorBoard</td>
+          <td><span class="tag tg">Validated</span></td>
+        </tr>
+        <tr>
+          <td><strong>TD3-INVASE Causal-RL</strong></td>
+          <td><span class="tag tp">Causal RL · TD3-INVASE</span></td>
+          <td>2.4</td>
+          <td>GTSI Florence tram NGAP</td>
+          <td>Pipeline · Artifact · TensorBoard</td>
+          <td><span class="tag tg">Validated — 47% better generalizability</span></td>
+        </tr>
+        <tr>
+          <td><strong>PRISM DTMC model</strong></td>
+          <td><span class="tag tgr">Formal verification</span></td>
+          <td>2.4</td>
+          <td>Tram environment samples</td>
+          <td>Artifact store · Verification output</td>
+          <td><span class="tag tg">Validated</span></td>
+        </tr>
+        <tr>
+          <td><strong>DQN split-point agent</strong></td>
+          <td><span class="tag tb">Deep Q-Network</span></td>
+          <td>2.5</td>
+          <td>3GPP 5G channel data (CSV)</td>
+          <td>Register · Track · Deploy · Serve</td>
+          <td><span class="tag tg">Production endpoint live</span></td>
+        </tr>
+        <tr>
+          <td><strong>PPO split-point agent</strong></td>
+          <td><span class="tag tb">Proximal Policy Optimization</span></td>
+          <td>2.5</td>
+          <td>3GPP 5G channel data (CSV)</td>
+          <td>Register · Track · Deploy · Serve</td>
+          <td><span class="tag tg">Production endpoint live</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- CF CAPABILITIES -->
+  <div class="sl">CF capabilities proven in VERGE (from D5.2)</div>
+  <div class="g3">
+    <div class="card" style="background:#E6F1FB;border-color:#85B7EB">
+      <h3 style="color:#185FA5;margin-bottom:.6rem">MLOps pipeline engine</h3>
+      <ul style="font-size:12px;color:#0C447C;padding-left:1rem;display:flex;flex-direction:column;gap:.3rem">
+        <li>Multi-stage Kubeflow pipelines (3 configs, 6 test cases in Demo 2.4)</li>
+        <li>CodeFlow Server IDE integrated with VS Code for pipeline authoring</li>
+        <li>Independent stage execution via CF artifact URIs</li>
+        <li>Docker containerized task execution</li>
+        <li>Artifact persistence enabling isolated task-level testing</li>
+      </ul>
+    </div>
+    <div class="card" style="background:#EEEDFE;border-color:#AFA9EC">
+      <h3 style="color:#534AB7;margin-bottom:.6rem">Artifact &amp; experiment management</h3>
+      <ul style="font-size:12px;color:#3C3489;padding-left:1rem;display:flex;flex-direction:column;gap:.3rem">
+        <li>Artifact storage for models, DTMCs, logs, verification outputs</li>
+        <li>MLflow experiment tracking — metrics, params, runs</li>
+        <li>TensorBoard for reward curves &amp; training visualization</li>
+        <li>Model versioning and complete lineage tracking</li>
+        <li>Cross-stage artifact URI references (load by URI in isolation)</li>
+      </ul>
+    </div>
+    <div class="card" style="background:#E1F5EE;border-color:#5DCAA5">
+      <h3 style="color:#0F6E56;margin-bottom:.6rem">Model serving &amp; inference</h3>
+      <ul style="font-size:12px;color:#085041;padding-left:1rem;display:flex;flex-direction:column;gap:.3rem">
+        <li>REST API endpoint deployment via KServe</li>
+        <li>InferenceClient for real-time UE split-point queries</li>
+        <li>Production monitoring dashboard (energy, latency, SLA)</li>
+        <li>Model signature inference for input/output specification</li>
+        <li>Endpoint tagging, versioning, and description metadata</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- DATASETS -->
+  <div class="sl">All 8 VERGE project datasets — available for CF pipelines</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Dataset</th><th>Type</th><th>Source / Sensors</th><th>CF use case</th><th>Demo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Real 5G Network</strong></td><td><span class="tag tb">Network KPIs</span></td><td>Live 5G network — signal, bandwidth, latency, reliability</td><td>AI4Edge model training, traffic forecasting</td><td>2.2</td></tr>
+        <tr><td>2</td><td><strong>Obstacle Detection (GTSI-HITACHI-ODT)</strong></td><td><span class="tag tc">Safety sensor</span></td><td>RADAR + LiDAR, Florence tram</td><td>Object detection pipeline</td><td>2.4</td></tr>
+        <tr><td>3</td><td><strong>Tram Positioning (GTSI-HITACHI-NGAP)</strong></td><td><span class="tag tc">Sensor fusion</span></td><td>RADAR + IMU + GNSS, Florence tram</td><td>DRL &amp; CRL tram controller training</td><td>2.4</td></tr>
+        <tr><td>4</td><td><strong>Space/Time User Distribution</strong></td><td><span class="tag tt">Connectivity</span></td><td>WiFi APs, UPC Barcelona (62 days)</td><td>Spatial demand prediction</td><td>—</td></tr>
+        <tr><td>5</td><td><strong>Real Time Video / 3D Avatar (PCDataset)</strong></td><td><span class="tag tp">AR/VR</span></td><td>Point cloud 2,048 pts + skeleton JSON</td><td>UC1 federated split learning</td><td>1.1</td></tr>
+        <tr><td>6</td><td><strong>RAN Dataset (OAI)</strong></td><td><span class="tag tb">Network</span></td><td>OAI 5G emulation · ~10,080 samples · 5 weeks</td><td>RAN performance prediction</td><td>2.3</td></tr>
+        <tr><td>7</td><td><strong>Deployed Slicing Testbed</strong></td><td><span class="tag tb">Network</span></td><td>5G slicing: latency, QoS, resource allocation</td><td>Slice orchestration AI</td><td>—</td></tr>
+        <tr><td>8</td><td><strong>3D Design Dataset for VR</strong></td><td><span class="tag tp">XR</span></td><td>PLM 3D designs via 5G/XR</td><td>UC1 collaborative design</td><td>1.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- HIRO TEAM + REUSABILITY -->
+  <div class="g2">
+    <div>
+      <div class="sl">HIRO team contributions to D5.2</div>
+      <div class="card">
+        <div class="contrib-block"><div class="contrib-role">Founder / CTO</div><div class="contrib-name">F. Buining (HIRO)</div></div>
+        <div class="contrib-block"><div class="contrib-role">CF Engineering</div><div class="contrib-name">R. Min (HIRO)</div></div>
+        <div class="contrib-block"><div class="contrib-role">CF Engineering</div><div class="contrib-name">B. Nasr (HIRO)</div></div>
+        <div class="contrib-block"><div class="contrib-role">CF Engineering</div><div class="contrib-name">S. Vaduka (HIRO)</div></div>
+        <div style="margin-top:.75rem">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888780;margin-bottom:.4rem">HIRO dual infrastructure role</div>
+          <div class="pill" style="margin-bottom:0"><div class="pill-body">HIRO provided the <strong>cloud cluster hosting CF's main engine</strong> (dedicated AWS environment). HIRO also provided <strong>private cloud compute resources</strong> (alongside NBC public cloud) for the BSC edge testbed service hosting.</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sl">CF reusability findings — cross-demo (D5.2 ch.4)</div>
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;color:#5f5e5a;margin-bottom:.5rem">What transferred across demonstrations</div>
+        <div class="stat-row"><span class="stat-label">Model registration pattern</span><span class="tag tg">Reusable</span></div>
+        <div class="stat-row"><span class="stat-label">Training workflow structure</span><span class="tag tg">Reusable</span></div>
+        <div class="stat-row"><span class="stat-label">Artifact management</span><span class="tag tg">Reusable</span></div>
+        <div class="stat-row"><span class="stat-label">REST API adapter for FVT</span><span class="tag tg">Partially reusable</span></div>
+        <div class="stat-row"><span class="stat-label">Formal verification (PRISM)</span><span class="tag ta">Domain-specific only</span></div>
+        <div class="stat-row"><span class="stat-label">Multi-cluster model deployment</span><span class="tag trd">Not completed in VERGE</span></div>
+        <div class="quote" style="font-size:11px">"Generic AI platforms can effectively support reusable MLOps-style infrastructure, whereas formal verification remains a domain where reuse is primarily methodological rather than plug-and-play." — D5.2, p.154</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- C-SUITE -->
+  <div class="sl">C-suite executive takeaways</div>
+  <div class="g3">
+    <div class="csuite-card" style="border-top-color:#378ADD">
+      <div class="csuite-title c-blue">CEO — Strategic position</div>
+      <ul>
+        <li>HIRO CF is the <strong>named intelligence backbone</strong> of a 16-partner EU flagship project alongside Ericsson, Samsung, Intel</li>
+        <li>CF proven across 3 distinct demos — multi-site orchestration, AI safety, edge inference optimization</li>
+        <li>Project completed Jun 2025 — all deliverables and IP ready for productization</li>
+        <li>HIRO is active in 4 EU projects: BRAINE · MYRTUS · SYCLOPS · VERGE + ACES</li>
+        <li>Next deliverable D5.3 will add final quantitative benchmarks → additional proof points</li>
+      </ul>
+    </div>
+    <div class="csuite-card" style="border-top-color:#7F77DD">
+      <div class="csuite-title c-purple">CTO — Technical depth</div>
+      <ul>
+        <li>6 AI models registered, trained, and served through CF across 3 demonstrations</li>
+        <li>Causal-RL (TD3-INVASE) outperformed standard DRL by 47% on generalizability — proven by CF pipelines</li>
+        <li>Full REST-API production deployment proven: register → train → deploy → InferenceClient</li>
+        <li>CodeFlow Server IDE (VS Code integration) enables CF-native pipeline authoring</li>
+        <li>Gap: multi-cluster model deployment not yet in CF — priority roadmap item</li>
+      </ul>
+    </div>
+    <div class="csuite-card" style="border-top-color:#EF9F27">
+      <div class="csuite-title c-amber">CFO — Value &amp; investment</div>
+      <ul>
+        <li>EU Horizon Europe co-funded — SNS JU Grant 101096034 · R&amp;D cost shared across 16 partners</li>
+        <li>CF platform reused across 3 demos → low marginal cost per integration</li>
+        <li>HIRO dual contribution: CF software platform <strong>and</strong> cloud infrastructure hosting</li>
+        <li>Reusability patterns now established → accelerates onboarding in BRAINE · ACES · SYCLOPS</li>
+        <li>Open-source CF (BSD-2-Clause) → community leverage and commercial productization path</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- LINKS SECTION -->
+  <div class="sl">All links from D5.2 — datasets, models, pipelines &amp; GitHub</div>
+
+  <!-- GitHub -->
+  <div style="margin-bottom:.75rem">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#185FA5;margin-bottom:.4rem;padding:.3rem .6rem;background:#E6F1FB;border-radius:6px;display:inline-block">GitHub Repositories</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Repository</th><th>What it is</th><th>Used in</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a href="https://github.com/VERGE-PROJECT/bsc-edge-cluster-setup/tree/main" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">VERGE-PROJECT/bsc-edge-cluster-setup</a></td>
+            <td style="font-size:12px">Edge cluster setup scripts for BSC edge testbed (Kubernetes, Ansible, monitoring stack)</td>
+            <td><span class="tag tb">Demo 2.2</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/google/cluster-data/blob/master/ClusterData2019.md" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">google/cluster-data (ClusterData2019)</a></td>
+            <td style="font-size:12px">Google cluster dataset — used to train LSTM cloud resource forecasting model</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/HIRO-MicroDataCenters-BV/Hiro-CF" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">HIRO-MicroDataCenters-BV/Hiro-CF</a></td>
+            <td style="font-size:12px">HIRO Cognitive Framework — Kubeflow + MLflow + Federated Learning platform (referenced throughout D5.2)</td>
+            <td><span class="tag tp">CF Engine</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/HIRO-MicroDataCenters-BV/cogflow" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">HIRO-MicroDataCenters-BV/cogflow</a></td>
+            <td style="font-size:12px">CogFlow Python library — model registry, dataset linking, pipeline orchestration, MinIO/S3, KServe</td>
+            <td><span class="tag tp">CF Engine</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/VERGE-PROJECT/Split_computing_CF_integration" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">VERGE-PROJECT/Split_computing_CF_integration</a></td>
+            <td style="font-size:12px">Jupyter notebook — DRL split-point agent integrated with HIRO CF APIs (cf.pyfunc, cf.ModelServing, cf.InferenceClient)</td>
+            <td><span class="tag tb">Demo 2.5</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://verge-project.github.io/datasets/" target="_blank" style="color:#185FA5;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">verge-project.github.io/datasets</a></td>
+            <td style="font-size:12px">VERGE project datasets portal — all 8 datasets listed with descriptions and download links</td>
+            <td><span class="tag tg">All datasets</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GitLab / OAI -->
+  <div style="margin-bottom:.75rem">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin-bottom:.4rem;padding:.3rem .6rem;background:#EEEDFE;border-radius:6px;display:inline-block">GitLab — OpenAirInterface (RAN Dataset &amp; 5G Pipeline)</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Repository</th><th>What it is</th><th>Used in</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a href="https://gitlab.eurecom.fr/oai/openairinterface5g.git" target="_blank" style="color:#534AB7;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">oai/openairinterface5g</a></td>
+            <td style="font-size:12px">OAI 5G stack — used to generate the 5-week RAN dataset (~10,080 samples) for LSTM model training</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/BUILD.md" target="_blank" style="color:#534AB7;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">oai/openairinterface5g/BUILD.md</a></td>
+            <td style="font-size:12px">OAI build &amp; setup instructions for the RAN dataset pipeline</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://gitlab.eurecom.fr/mosaic5g/flexric.git" target="_blank" style="color:#534AB7;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">mosaic5g/flexric</a></td>
+            <td style="font-size:12px">FlexRIC — RAN Intelligent Controller with KPM xApp used for live RAN metric capture (KPI dataset generation)</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://gitlab.eurecom.fr/oai/cn5g" target="_blank" style="color:#534AB7;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">oai/cn5g</a></td>
+            <td style="font-size:12px">OAI 5G Core Network — CN5G used with OAI gNB in testbed deployments</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://gitlab.eurecom.fr/oai/trainings/oai-workshops.git" target="_blank" style="color:#534AB7;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">oai/trainings/oai-workshops</a></td>
+            <td style="font-size:12px">OAI workshop configs — gNB configuration files used in testbed pipeline setup</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tools / Models -->
+  <div style="margin-bottom:.75rem">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#0F6E56;margin-bottom:.4rem;padding:.3rem .6rem;background:#E1F5EE;border-radius:6px;display:inline-block">Tools &amp; Model References</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Link</th><th>What it is</th><th>Used in</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a href="https://www.prismmodelchecker.org/" target="_blank" style="color:#0F6E56;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">prismmodelchecker.org</a></td>
+            <td style="font-size:12px">PRISM — Probabilistic Symbolic Model Checker. Run as subprocess inside CF pipelines to formally verify DRL/CRL tram controller models (DTMC safety properties)</td>
+            <td><span class="tag tp">Demo 2.4</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://shorturl.at/yanIY" target="_blank" style="color:#0F6E56;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">shorturl.at/yanIY</a></td>
+            <td style="font-size:12px">LinkedIn post with additional context on Demo 2.3 RAN dataset creation and exposure (referenced as footnote 13 in D5.2)</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/HIRO-MicroDataCenters-BV/cf_finetune_ntk" target="_blank" style="color:#0F6E56;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">HIRO-MicroDataCenters-BV/cf_finetune_ntk</a></td>
+            <td style="font-size:12px">NTK fine-tuning validation — Qwen2.5-0.5B-Instruct on GSM8K math dataset. Novel ntkmirror LoRA-free approach. KServe serving gate ≤1% NLL variance.</td>
+            <td><span class="tag tp">CF Model</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Hardware / XR Products -->
+  <div style="margin-bottom:.75rem">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#854F0B;margin-bottom:.4rem;padding:.3rem .6rem;background:#FAEEDA;border-radius:6px;display:inline-block">Hardware &amp; XR Products Referenced</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Link</th><th>What it is</th><th>Used in</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a href="https://hololight.com/products/hololight-stream-xr-streaming-sdk/?hsLang=en" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">hololight.com — Stream SDK</a></td>
+            <td style="font-size:12px">Hololight Stream XR Streaming SDK — used for XR offloading in Demo 1.1 &amp; 1.2</td>
+            <td><span class="tag tp">Demo 1.1 / 1.2</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://hololight.com/products/hololight-space-enduser-application?hsLang=en" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">hololight.com — Space App</a></td>
+            <td style="font-size:12px">Hololight Space end-user XR application — used in collaborative design Demo 1.2</td>
+            <td><span class="tag tp">Demo 1.2</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://www.magicleap.com/magic-leap-2" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">magicleap.com — Magic Leap 2</a></td>
+            <td style="font-size:12px">Magic Leap 2 AR headset used as edge-connected XR device in UC1 demos</td>
+            <td><span class="tag tp">Demo 1.1 / 1.2</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://learn.microsoft.com/en-us/hololens/" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">Microsoft HoloLens</a></td>
+            <td style="font-size:12px">Microsoft HoloLens AR headset used in XR teleoperation and collaborative design demos</td>
+            <td><span class="tag tp">Demo 1.1 / 1.2</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://bubbleran.com/products/mx-pdk/" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">bubbleran.com — MX-PDK</a></td>
+            <td style="font-size:12px">BubbleRAN MX-PDK — used in FPGA SoC micro-orchestration for RAN function management</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="https://www.ericsson.com/en/portfolio/cloud-software-and-services/network-management-andautomation/ericsson-network-manager" target="_blank" style="color:#854F0B;font-family:'SF Mono','Fira Code',Courier,monospace;font-size:11px">Ericsson Network Manager</a></td>
+            <td style="font-size:12px">Ericsson ENM — referenced in RAN management and orchestration context (Demo 2.3)</td>
+            <td><span class="tag tb">Demo 2.3</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Missing / Unnamed links -->
+  <div style="margin-bottom:.75rem">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#791F1F;margin-bottom:.4rem;padding:.3rem .6rem;background:#FCEBEB;border-radius:6px;display:inline-block">Referenced in D5.2 but no URL provided — gaps to fill</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Asset</th><th>Description</th><th>Where referenced</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-size:12px;font-weight:600">Informer model code</td>
+            <td style="font-size:12px">Transformer-based time-series forecasting model for 5G traffic prediction — described in D3.2 section 3.3. No public repo linked.</td>
+            <td><span class="tag ta">Demo 2.2 · D3.2 §3.3</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;font-weight:600">VERGE Open Dataspace (D1.2)</td>
+            <td style="font-size:12px">All 8 VERGE datasets formally documented in Deliverable D1.2. No direct URL given in D5.2.</td>
+            <td><span class="tag ta">Reference [6]</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;font-weight:600">Formal Verification Toolbox (FVT)</td>
+            <td style="font-size:12px">REST API toolbox wrapping PRISM for CF pipeline integration. Built by EAB (Ericsson AB). No repo URL.</td>
+            <td><span class="tag ta">Demo 2.4</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;font-weight:600">LongiControl gym environment</td>
+            <td style="font-size:12px">RL gym for longitudinal vehicle control (Dohmen et al., ICAART 2021). Referenced as [12] but no repo URL given.</td>
+            <td><span class="tag ta">Demo 2.4 · Reference [12]</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;font-weight:600">VERGE CF pipeline definitions</td>
+            <td style="font-size:12px">3 Kubeflow pipeline configurations (Pipelines 1, 2, 3a, 3b) for Demo 2.4. Described in D2.2 §13.5.1. No public repo.</td>
+            <td><span class="tag ta">Demo 2.4 · D2.2 §13.5.1</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;font-weight:600">GTSI Florence tram NGAP dataset</td>
+            <td style="font-size:12px">Tram positioning dataset from Florence tramline (RADAR + IMU + GNSS). Used for CRL/DRL training. Available at verge-project.github.io/datasets but not directly linked in D5.2 text.</td>
+            <td><span class="tag ta">Demo 2.4 · D1.2 [6]</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div><strong>Source:</strong> VERGE Deliverable D5.2 v1.1 — "Technical report on integration, testing and validation of the VERGE demonstrations" · Submitted 22 May 2025 · Revised 18 Dec 2025</div>
+    <div style="text-align:right;flex-shrink:0"><strong>HIRO Microdatacenters BV</strong><br>hiro-microdatacenters.nl</div>
+  </div>
+
+</div>
+<script>
+  // Auto-highlight any code elements
+  document.querySelectorAll('code').forEach(el => {
+    el.style.fontFamily = "'SF Mono','Fira Code',Courier,monospace";
+    el.style.fontSize = '10px';
+    el.style.background = '#E6F1FB';
+    el.style.color = '#0C447C';
+    el.style.padding = '.1rem .35rem';
+    el.style.borderRadius = '3px';
+  });
+</script>
+</body>
+</html>

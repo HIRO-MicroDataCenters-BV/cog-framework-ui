@@ -2100,8 +2100,16 @@ export const useApi = () => {
      * const metrics = await api.getValidationMetricsByModelId('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getValidationMetricsByModelId: async (model_id: string) => {
-      return request(`/models/${model_id}/validation/metrics`);
+    getValidationMetricsByModelId: async (
+      model_id: string,
+      options?: { showToast?: boolean },
+    ) => {
+      return request(
+        `/models/${model_id}/validation/metrics`,
+        'GET',
+        undefined,
+        options,
+      );
     },
     /**
      * Posts validation metrics by model ID

@@ -1486,5 +1486,109 @@ export const useApiWithMock = () => {
         data: null,
       });
     },
+
+    // ── Dashboard support methods ────────────────────────────────────────────
+
+    getHealth: async () => {
+      if (mock.value.enabled) {
+        await mockDelay(100);
+        const json = await import('~/mocks/get.health.json');
+        return Promise.resolve(json);
+      }
+      return request(`/health`);
+    },
+
+    getExperimentsListV2: async (params: Record<string, unknown> = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        // Derive a small, stable experiment set from the dashboard runs mock.
+        const json = await import('~/mocks/get.pipeline-runs-v2.json');
+        type V2Run = { experiment_id?: string };
+        const ids = new Set(
+          (json.runs as V2Run[])
+            .map((r) => r.experiment_id)
+            .filter((id): id is string => Boolean(id)),
+        );
+        const experiments = Array.from(ids).map((id) => ({
+          experiment_id: id,
+          name: id,
+          created_at: null,
+          storage_state: 'AVAILABLE',
+        }));
+        const limit = parseInt(String(params.limit ?? '10'));
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Experiments retrieved.',
+          data: experiments.slice(0, limit),
+          pagination: {
+            total_items: experiments.length,
+            page: 1,
+            limit,
+            total_pages: 1,
+          },
+        });
+      }
+      return request(`/experiments`);
+    },
+
+    getUsers: async () => {
+      if (mock.value.enabled) {
+        // Simulate a slower admin endpoint so per-widget loading is visible in demo mode
+        await mockDelay(1800);
+        const json = await import('~/mocks/get.users.json');
+        return Promise.resolve(json);
+      }
+      return request(`/users`);
+    },
+
+    getPipelineRunsListV2Dashboard: async (params = {}) => {
+      if (mock.value.enabled) {
+        // Slowest endpoint — its chart should appear well after the fast KPI cards
+        await mockDelay(2800);
+        const json = await import('~/mocks/get.pipeline-runs-v2.json');
+        const searchParams = params as Record<string, string>;
+
+        type V2Run = {
+          run_id: string;
+          display_name?: string;
+          state?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          storage_state?: string;
+          experiment_id?: string;
+        };
+
+        let filteredRuns: V2Run[] = [...(json.runs as V2Run[])];
+
+        if (searchParams.status) {
+          filteredRuns = filteredRuns.filter(
+            (r) => (r.state || '').toUpperCase() === searchParams.status.toUpperCase(),
+          );
+        }
+
+        const limit = parseInt(searchParams.limit || '500');
+        return Promise.resolve({
+          runs: filteredRuns.slice(0, limit),
+          total_size: filteredRuns.length,
+          next_page_token: '',
+        });
+      }
+      return request(`/pipelines/runs`);
+    },
+
+    getValidationMetricsByModelId: async (model_id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay(80);
+        const json = await import('~/mocks/get.validation-metrics.json');
+        // Return metrics for ~70% of models to simulate realistic partial coverage
+        const hasMetrics = model_id.charCodeAt(0) % 10 < 7;
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Validation metrics retrieved.',
+          data: hasMetrics ? json.data : [],
+        });
+      }
+      return request(`/models/${model_id}/validation/metrics`);
+    },
   };
 };
