@@ -53,6 +53,14 @@ export interface DatasetTypeStat {
   colorClass: string;
 }
 
+export interface ModelTypeStat {
+  type: string;
+  label: string;
+  count: number;
+  icon: string;
+  colorClass: string;
+}
+
 // Per-widget loading flags so a slow endpoint never blocks a fast widget.
 export interface DashboardLoading {
   health: boolean;
@@ -91,6 +99,7 @@ export const useDashboard = () => {
   const servingRows = ref<ServingRow[]>([]);
   const runBuckets = ref<RunBucket[]>([]);
   const datasetTypeStats = ref<DatasetTypeStat[]>([]);
+  const modelTypeStats = ref<ModelTypeStat[]>([]);
 
   // Owner attribution — counts are captured separately by the models/datasets
   // fetches (which run in parallel) and merged into a sorted leaderboard.
@@ -157,6 +166,33 @@ export const useDashboard = () => {
     database: 'text-purple-600 dark:text-purple-400',
     stream: 'text-orange-600 dark:text-orange-400',
     time_series: 'text-green-600 dark:text-green-400',
+  };
+
+  // Model framework presentation — nicer labels + a distinct icon/colour per
+  // framework so the Model Inventory reads like the Dataset Inventory.
+  const frameworkNameMap: Record<string, string> = {
+    pytorch: 'PyTorch',
+    tensorflow: 'TensorFlow',
+    keras: 'Keras',
+    sklearn: 'scikit-learn',
+    xgboost: 'XGBoost',
+    pyfunc: 'PyFunc',
+  };
+  const frameworkIconMap: Record<string, string> = {
+    pytorch: 'lucide:flame',
+    tensorflow: 'lucide:brain',
+    keras: 'lucide:layers',
+    sklearn: 'lucide:git-fork',
+    xgboost: 'lucide:trees',
+    pyfunc: 'lucide:function-square',
+  };
+  const frameworkColorMap: Record<string, string> = {
+    pytorch: 'text-orange-600 dark:text-orange-400',
+    tensorflow: 'text-amber-600 dark:text-amber-400',
+    keras: 'text-red-600 dark:text-red-400',
+    sklearn: 'text-blue-600 dark:text-blue-400',
+    xgboost: 'text-green-600 dark:text-green-400',
+    pyfunc: 'text-purple-600 dark:text-purple-400',
   };
 
   // ── Independent per-widget fetchers ───────────────────────────────────────
@@ -344,11 +380,23 @@ export const useDashboard = () => {
         (res as { data?: Record<string, unknown>[] })?.data ?? [];
       kpis.value.modelsTotal = modelsData.length;
       const counts: Record<string, number> = {};
+      const typeCount: Record<string, number> = {};
       for (const m of modelsData) {
         const owner = String(m.register_user_id ?? '').trim();
         if (owner) counts[owner] = (counts[owner] ?? 0) + 1;
+        const type = String(m.type ?? '').trim().toLowerCase();
+        if (type) typeCount[type] = (typeCount[type] ?? 0) + 1;
       }
       modelOwnerCounts.value = counts;
+      modelTypeStats.value = Object.entries(typeCount)
+        .map(([type, count]) => ({
+          type,
+          label: frameworkNameMap[type] ?? type,
+          count,
+          icon: frameworkIconMap[type] ?? 'lucide:box',
+          colorClass: frameworkColorMap[type] ?? 'text-muted-foreground',
+        }))
+        .sort((a, b) => b.count - a.count);
     } catch {
       error.value.models = true;
     } finally {
@@ -389,6 +437,7 @@ export const useDashboard = () => {
     servingRows,
     runBuckets,
     datasetTypeStats,
+    modelTypeStats,
     ownerStats,
     loading,
     error,

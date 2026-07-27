@@ -8,6 +8,7 @@ import KpiCard from '~/components/app/dashboard/KpiCard.vue';
 import ServingTable from '~/components/app/dashboard/ServingTable.vue';
 import RunsChart from '~/components/app/dashboard/RunsChart.vue';
 import DatasetInventory from '~/components/app/dashboard/DatasetInventory.vue';
+import ModelInventory from '~/components/app/dashboard/ModelInventory.vue';
 import OwnersTable from '~/components/app/dashboard/OwnersTable.vue';
 
 const { setPage } = useApp();
@@ -35,6 +36,7 @@ const {
   servingRows,
   runBuckets,
   datasetTypeStats,
+  modelTypeStats,
   ownerStats,
   loading,
   error,
@@ -139,7 +141,7 @@ const kpiCards = computed(() => [
       />
     </div>
 
-    <!-- ── Row 2: Serving table (60%) + Dataset inventory over Pipeline runs (40%) ── -->
+    <!-- ── Row 2: Serving table (60%) + Pipeline runs (40%) ── -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
       <div class="lg:col-span-3">
         <ServingTable
@@ -148,13 +150,7 @@ const kpiCards = computed(() => [
           :error="error.serving"
         />
       </div>
-      <div class="lg:col-span-2 flex flex-col gap-3">
-        <DatasetInventory
-          :stats="datasetTypeStats"
-          :total="kpis.datasetsTotal"
-          :loading="loading.datasets"
-          :error="error.datasets"
-        />
+      <div class="lg:col-span-2">
         <RunsChart
           :buckets="runBuckets"
           :loading="loading.runs"
@@ -163,7 +159,23 @@ const kpiCards = computed(() => [
       </div>
     </div>
 
-    <!-- ── Row 3: Assets by owner (full width) ── -->
+    <!-- ── Row 3: Dataset inventory + Model inventory (side by side) ── -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <DatasetInventory
+        :stats="datasetTypeStats"
+        :total="kpis.datasetsTotal"
+        :loading="loading.datasets"
+        :error="error.datasets"
+      />
+      <ModelInventory
+        :stats="modelTypeStats"
+        :total="kpis.modelsTotal"
+        :loading="loading.models"
+        :error="error.models"
+      />
+    </div>
+
+    <!-- ── Row 4: Assets by owner (full width) ── -->
     <div>
       <OwnersTable
         :owners="ownerStats"
