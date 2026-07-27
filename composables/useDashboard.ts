@@ -48,6 +48,7 @@ export interface OwnerStat {
 
 export interface DatasetTypeStat {
   type: string;
+  label: string;
   count: number;
   icon: string;
   colorClass: string;
@@ -59,6 +60,8 @@ export interface ModelTypeStat {
   count: number;
   icon: string;
   colorClass: string;
+  // Populated only for the "Other" bucket: the raw types folded into it.
+  members?: { label: string; count: number }[];
 }
 
 // Per-widget loading flags so a slow endpoint never blocks a fast widget.
@@ -167,9 +170,36 @@ export const useDashboard = () => {
     stream: 'text-orange-600 dark:text-orange-400',
     time_series: 'text-green-600 dark:text-green-400',
   };
+  const typeNameMap: Record<string, string> = {
+    file: 'File',
+    database: 'Database',
+    stream: 'Stream',
+    time_series: 'Time Series',
+  };
+  const prettify = (s: string) =>
+    s.replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
   // Model framework presentation — nicer labels + a distinct icon/colour per
   // framework so the Model Inventory reads like the Dataset Inventory.
+  // Raw backend `type` values are inconsistent (framework / task / noise), so we
+  // fold them into a curated set of canonical categories. Anything unrecognised
+  // lands in the "other" bucket. Keys on the right must exist in the maps below.
+  const frameworkCanonicalMap: Record<string, string> = {
+    pytorch: 'pytorch',
+    torch: 'pytorch',
+    tensorflow: 'tensorflow',
+    tf: 'tensorflow',
+    keras: 'keras',
+    sklearn: 'sklearn',
+    'scikit-learn': 'sklearn',
+    scikit_learn: 'sklearn',
+    xgboost: 'xgboost',
+    xcboost: 'xgboost', // common typo in the registry
+    xgb: 'xgboost',
+    pyfunc: 'pyfunc',
+    llm: 'llm',
+    classification: 'classification',
+  };
   const frameworkNameMap: Record<string, string> = {
     pytorch: 'PyTorch',
     tensorflow: 'TensorFlow',
@@ -177,6 +207,9 @@ export const useDashboard = () => {
     sklearn: 'scikit-learn',
     xgboost: 'XGBoost',
     pyfunc: 'PyFunc',
+    llm: 'LLM',
+    classification: 'Classification',
+    other: 'Other',
   };
   const frameworkIconMap: Record<string, string> = {
     pytorch: 'lucide:flame',
@@ -185,6 +218,9 @@ export const useDashboard = () => {
     sklearn: 'lucide:git-fork',
     xgboost: 'lucide:trees',
     pyfunc: 'lucide:function-square',
+    llm: 'lucide:sparkles',
+    classification: 'lucide:tags',
+    other: 'lucide:shapes',
   };
   const frameworkColorMap: Record<string, string> = {
     pytorch: 'text-orange-600 dark:text-orange-400',
@@ -193,6 +229,9 @@ export const useDashboard = () => {
     sklearn: 'text-blue-600 dark:text-blue-400',
     xgboost: 'text-green-600 dark:text-green-400',
     pyfunc: 'text-purple-600 dark:text-purple-400',
+    llm: 'text-indigo-600 dark:text-indigo-400',
+    classification: 'text-cyan-600 dark:text-cyan-400',
+    other: 'text-slate-500 dark:text-slate-400',
   };
 
   // ── Independent per-widget fetchers ───────────────────────────────────────
@@ -260,12 +299,15 @@ export const useDashboard = () => {
         if (owner) ownerCount[owner] = (ownerCount[owner] ?? 0) + 1;
       }
       datasetOwnerCounts.value = ownerCount;
-      datasetTypeStats.value = Object.entries(typeCount).map(([type, count]) => ({
-        type,
-        count,
-        icon: typeIconMap[type] ?? 'lucide:layers',
-        colorClass: typeColorMap[type] ?? 'text-muted-foreground',
-      }));
+      datasetTypeStats.value = Object.entries(typeCount)
+        .map(([type, count]) => ({
+          type,
+          label: typeNameMap[type] ?? prettify(type),
+          count,
+          icon: typeIconMap[type] ?? 'lucide:layers',
+          colorClass: typeColorMap[type] ?? 'text-muted-foreground',
+        }))
+        .sort((a, b) => b.count - a.count);
     } catch {
       error.value.datasets = true;
     } finally {
@@ -380,23 +422,38 @@ export const useDashboard = () => {
         (res as { data?: Record<string, unknown>[] })?.data ?? [];
       kpis.value.modelsTotal = modelsData.length;
       const counts: Record<string, number> = {};
-      const typeCount: Record<string, number> = {};
+      const canonCount: Record<string, number> = {};
+      const otherMembers: Record<string, number> = {};
       for (const m of modelsData) {
         const owner = String(m.register_user_id ?? '').trim();
         if (owner) counts[owner] = (counts[owner] ?? 0) + 1;
-        const type = String(m.type ?? '').trim().toLowerCase();
-        if (type) typeCount[type] = (typeCount[type] ?? 0) + 1;
+        const raw = String(m.type ?? '').trim().toLowerCase();
+        if (!raw) continue;
+        const canon = frameworkCanonicalMap[raw] ?? 'other';
+        canonCount[canon] = (canonCount[canon] ?? 0) + 1;
+        if (canon === 'other') otherMembers[raw] = (otherMembers[raw] ?? 0) + 1;
       }
       modelOwnerCounts.value = counts;
-      modelTypeStats.value = Object.entries(typeCount)
+      modelTypeStats.value = Object.entries(canonCount)
         .map(([type, count]) => ({
           type,
-          label: frameworkNameMap[type] ?? type,
+          label: frameworkNameMap[type] ?? prettify(type),
           count,
           icon: frameworkIconMap[type] ?? 'lucide:box',
           colorClass: frameworkColorMap[type] ?? 'text-muted-foreground',
+          members:
+            type === 'other'
+              ? Object.entries(otherMembers)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([label, c]) => ({ label: prettify(label), count: c }))
+              : undefined,
         }))
-        .sort((a, b) => b.count - a.count);
+        // Sort by count desc, but always keep "Other" last.
+        .sort((a, b) => {
+          if (a.type === 'other') return 1;
+          if (b.type === 'other') return -1;
+          return b.count - a.count;
+        });
     } catch {
       error.value.models = true;
     } finally {

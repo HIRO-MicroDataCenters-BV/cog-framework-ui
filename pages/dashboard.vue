@@ -7,8 +7,7 @@ import HealthBadge from '~/components/app/dashboard/HealthBadge.vue';
 import KpiCard from '~/components/app/dashboard/KpiCard.vue';
 import ServingTable from '~/components/app/dashboard/ServingTable.vue';
 import RunsChart from '~/components/app/dashboard/RunsChart.vue';
-import DatasetInventory from '~/components/app/dashboard/DatasetInventory.vue';
-import ModelInventory from '~/components/app/dashboard/ModelInventory.vue';
+import InventoryPanel from '~/components/app/dashboard/InventoryPanel.vue';
 import OwnersTable from '~/components/app/dashboard/OwnersTable.vue';
 
 const { setPage } = useApp();
@@ -161,17 +160,25 @@ const kpiCards = computed(() => [
 
     <!-- ── Row 3: Dataset inventory + Model inventory (side by side) ── -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <DatasetInventory
+      <InventoryPanel
+        title="Dataset Inventory"
+        header-icon="lucide:table-2"
+        unit="datasets"
         :stats="datasetTypeStats"
         :total="kpis.datasetsTotal"
         :loading="loading.datasets"
         :error="error.datasets"
+        empty-text="No datasets registered"
       />
-      <ModelInventory
+      <InventoryPanel
+        title="Model Inventory"
+        header-icon="lucide:bot"
+        unit="models"
         :stats="modelTypeStats"
         :total="kpis.modelsTotal"
         :loading="loading.models"
         :error="error.models"
+        empty-text="No models registered"
       />
     </div>
 
