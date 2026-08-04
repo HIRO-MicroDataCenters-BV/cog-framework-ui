@@ -21,6 +21,8 @@ import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.promethe
 import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
 import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
+import modelsStatsData from '@/mocks/get.models-stats.json';
+import datasetsStatsData from '@/mocks/get.datasets-stats.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
@@ -362,6 +364,17 @@ export const useApi = () => {
       const q = new URLSearchParams(mapped).toString();
 
       return await request(`/models?${q}`, 'GET', undefined, options);
+    },
+
+    /**
+     * Lightweight model statistics for the dashboard (counts only, no rows).
+     * Returns { total, by_type, by_owner, by_month }.
+     */
+    getModelsStats: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsStatsData);
+      }
+      return await request(`/models/stats`);
     },
 
     /**
@@ -1346,6 +1359,16 @@ export const useApi = () => {
       return res;
     },
     /**
+     * Lightweight dataset statistics for the dashboard (counts only, no rows).
+     * Returns { total, by_source_type, by_type, by_owner, by_month }.
+     */
+    getDatasetsStats: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsStatsData);
+      }
+      return await request(`/datasets/stats`);
+    },
+    /**
      * Updates an existing dataset file
      *
      * Updates an existing dataset by providing its ID, name, optional description,
@@ -2100,8 +2123,16 @@ export const useApi = () => {
      * const metrics = await api.getValidationMetricsByModelId('123e4567-e89b-12d3-a456-426614174000');
      * ```
      */
-    getValidationMetricsByModelId: async (model_id: string) => {
-      return request(`/models/${model_id}/validation/metrics`);
+    getValidationMetricsByModelId: async (
+      model_id: string,
+      options?: { showToast?: boolean },
+    ) => {
+      return request(
+        `/models/${model_id}/validation/metrics`,
+        'GET',
+        undefined,
+        options,
+      );
     },
     /**
      * Posts validation metrics by model ID

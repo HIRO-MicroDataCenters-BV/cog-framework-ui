@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIRO Microdatacenters — ACES Project Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a18;background:#f5f4f0;font-size:14px;line-height:1.6}
+  @media print{body{background:#fff;font-size:11px} .no-print{display:none} .page-break{page-break-before:always}}
+  .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:600} h2{font-size:16px;font-weight:600} h3{font-size:14px;font-weight:600}
+
+  .hdr{background:linear-gradient(135deg,#0D6E4C 0%,#185FA5 100%);border-radius:16px;padding:2rem 2.5rem;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+  .hdr h1{font-size:24px;font-weight:600;margin-bottom:.4rem}
+  .hdr p{font-size:13px;opacity:.85;max-width:600px}
+  .hdr-badges{display:flex;flex-direction:column;gap:.4rem;align-items:flex-end;flex-shrink:0}
+  .hdr-badge{font-size:11px;font-weight:500;padding:.25rem .8rem;border-radius:20px;border:1px solid rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.15);white-space:nowrap}
+
+  .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888780;margin-bottom:.6rem;margin-top:1.5rem}
+
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem}
+  @media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr} .g5{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:600px){.g4,.g3,.g2,.g5{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1rem}
+  .card-al{border-left:4px solid}
+  .kv{font-size:2.2rem;font-weight:600;line-height:1}
+  .kl{font-size:12px;color:#5f5e5a;margin-top:.3rem}
+  .ks{font-size:11px;color:#888780;margin-top:.2rem}
+
+  .tag{display:inline-block;font-size:10px;padding:.15rem .45rem;border-radius:4px;font-weight:600;margin:.1rem;vertical-align:middle}
+  .tb{background:#E6F1FB;color:#0C447C}
+  .tp{background:#EEEDFE;color:#3C3489}
+  .tt{background:#E1F5EE;color:#085041}
+  .ta{background:#FAEEDA;color:#633806}
+  .tc{background:#FAECE7;color:#712B13}
+  .tg{background:#EAF3DE;color:#27500A}
+  .tgr{background:#F1EFE8;color:#444441}
+  .trd{background:#FCEBEB;color:#791F1F}
+  .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;padding:.2rem .65rem;border-radius:20px;font-weight:600}
+  .b-green{background:#EAF3DE;color:#3B6D11}
+  .b-blue{background:#E6F1FB;color:#0C447C}
+  .b-amber{background:#FAEEDA;color:#633806}
+  .b-purple{background:#EEEDFE;color:#3C3489}
+  .b-teal{background:#E1F5EE;color:#085041}
+  .b-red{background:#FCEBEB;color:#791F1F}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#5f5e5a;border-bottom:1.5px solid #d3d1c7;padding:.5rem .6rem}
+  td{padding:.5rem .6rem;border-bottom:1px solid #ece9e2;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafaf8}
+
+  .flow{display:flex;align-items:stretch;gap:0;margin:.5rem 0}
+  .flow-step{background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:.6rem .8rem;flex:1;font-size:12px}
+  .flow-step strong{display:block;font-size:11px;color:#5f5e5a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+  .flow-arrow{display:flex;align-items:center;padding:0 .3rem;color:#888780;font-size:16px;flex-shrink:0}
+
+  .pill-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+  .pill{font-size:11px;padding:.2rem .55rem;border-radius:12px;font-weight:500;background:#F1EFE8;color:#444441}
+
+  .section-box{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+  .section-box h2{margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+  .section-box h3{margin-bottom:.5rem;color:#2a2a28}
+
+  .highlight-box{background:#E1F5EE;border:1px solid #A8D5C2;border-radius:10px;padding:1rem 1.2rem;margin-bottom:.75rem}
+  .highlight-box p{font-size:13px;color:#085041}
+  .highlight-box strong{color:#054A38}
+
+  .warn-box{background:#FAEEDA;border:1px solid #F0C898;border-radius:10px;padding:.8rem 1.1rem;margin-top:.5rem}
+  .warn-box p{font-size:12px;color:#633806}
+
+  .metric-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
+  .metric{background:#F5F4F0;border-radius:8px;padding:.4rem .75rem;font-size:12px}
+  .metric strong{font-size:15px;font-weight:600;display:block}
+
+  .link-group{margin-bottom:1rem}
+  .link-group h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#5f5e5a;margin-bottom:.4rem;padding-bottom:.3rem;border-bottom:1px solid #ece9e2}
+  .link-item{display:flex;align-items:baseline;gap:.5rem;padding:.3rem 0;font-size:13px;border-bottom:1px solid #f3f1eb}
+  .link-item:last-child{border-bottom:none}
+  .link-item a{color:#185FA5;text-decoration:none;font-family:monospace;font-size:12px}
+  .link-item a:hover{text-decoration:underline}
+  .link-label{font-weight:500;min-width:180px;flex-shrink:0;font-size:12px}
+
+  .no-print.btn{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:.4rem 1rem;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit}
+  .no-print.btn:hover{background:rgba(255,255,255,.3)}
+
+  .arch-box{background:linear-gradient(135deg,#F0FBF5 0%,#EAF1FB 100%);border:1px solid #B8DDD0;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+
+  .takeaway{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid #ece9e2}
+  .takeaway:last-child{border-bottom:none}
+  .takeaway-icon{font-size:18px;flex-shrink:0;margin-top:.1rem}
+  .takeaway-text{font-size:13px}
+  .takeaway-text strong{display:block;margin-bottom:.2rem}
+
+  footer{text-align:center;font-size:11px;color:#888780;margin-top:2rem;padding-top:1rem;border-top:1px solid #d3d1c7}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ─── HEADER ─── -->
+<div class="hdr">
+  <div>
+    <div style="font-size:11px;opacity:.75;margin-bottom:.4rem;letter-spacing:.05em">HIRO MICRODATACENTERS · EU HORIZON EUROPE</div>
+    <h1>ACES Project — Cognitive Framework Dashboard</h1>
+    <p>Autopoietic Cognitive Edge-cloud Services · HIRO Cognitive Framework (CF) contributions: models, pipelines, datasets, hyperparameter tuning, and platform integrations.</p>
+    <div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
+      <span class="badge b-green">✓ CF Central Data Orchestration Layer</span>
+      <span class="badge b-blue">HP3 Model Deployed on KServe</span>
+      <span class="badge b-teal">KFP Pipeline Active</span>
+      <span class="badge b-amber">D-GLIS Distributed Tuning</span>
+    </div>
+  </div>
+  <div class="hdr-badges">
+    <div class="hdr-badge">Grant 101093126</div>
+    <div class="hdr-badge">€7.8M · 36 months</div>
+    <div class="hdr-badge">Horizon Europe</div>
+    <div class="hdr-badge">11 Partners</div>
+    <button class="no-print btn" onclick="window.print()">⬇ Export PDF</button>
+  </div>
+</div>
+
+<!-- ─── KPI CARDS ─── -->
+<div class="sl">HIRO CF Contribution at a Glance</div>
+<div class="g5">
+  <div class="card" style="border-top:3px solid #0D6E4C">
+    <div class="kv" style="color:#0D6E4C">1</div>
+    <div class="kl">CF Deployed Model</div>
+    <div class="ks">HyperParameterCalibrator (HP3) v19</div>
+  </div>
+  <div class="card" style="border-top:3px solid #185FA5">
+    <div class="kv" style="color:#185FA5">4</div>
+    <div class="kl">ML Models Developed</div>
+    <div class="ks">HP3, Pod-Phase, Anomaly, KitNET</div>
+  </div>
+  <div class="card" style="border-top:3px solid #534AB7">
+    <div class="kv" style="color:#534AB7">1</div>
+    <div class="kl">KFP Pipeline</div>
+    <div class="ks">hp3-tuning-pipeline (10-iter feedback loop)</div>
+  </div>
+  <div class="card" style="border-top:3px solid #D4860A">
+    <div class="kv" style="color:#D4860A">4</div>
+    <div class="kl">Datasets Used</div>
+    <div class="ks">Alibaba, AWS, Kitsune/Mirai, AKS</div>
+  </div>
+  <div class="card" style="border-top:3px solid #AD3333">
+    <div class="kv" style="color:#AD3333">6</div>
+    <div class="kl">Platform Integrations</div>
+    <div class="ks">NATS, KServe, MLflow, Prometheus, TimescaleDB, Neo4j</div>
+  </div>
+</div>
+
+<!-- ─── WHAT IS THE CF ─── -->
+<div class="sl">Cognitive Framework — Role in ACES</div>
+<div class="arch-box">
+  <h2>CF as the Central Data Orchestration Layer</h2>
+  <p style="font-size:13px;color:#074A34;margin-bottom:1rem"><strong>Official finding (ACES D4.5, Section 6.7):</strong> "Developed by HIRO, the CF serves as the central data orchestration layer for the ACES Platform. It acts as the primary gateway for all data operations and provides a unified REST API for read/write access across all data resources."</p>
+  <div class="g3">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">CF Provides</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>Unified REST API across all data stores</li>
+        <li>ML model registry (MLflow)</li>
+        <li>Model serving layer (KServe)</li>
+        <li>Pipeline orchestration (Kubeflow Pipelines)</li>
+        <li>Artifact storage (MinIO/S3)</li>
+        <li>Experiment tracking</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">CF Integrates With (ACES)</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>Net Detector</li>
+        <li>ML Tuning Algorithm (HP3)</li>
+        <li>Attack Detection service</li>
+        <li>Anomaly Detection service</li>
+        <li>TKG Relation Models</li>
+        <li>Resource Management (Lakeside Labs)</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">Data Stores via CF REST API</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>TimescaleDB (time-series metrics)</li>
+        <li>Neo4j (knowledge graphs)</li>
+        <li>NATS (event streaming)</li>
+        <li>MinIO (model artifacts)</li>
+        <li>Prometheus (monitoring)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CF LIFECYCLE ─── -->
+<div class="sl">CF Lifecycle — HP3 Model End-to-End</div>
+<div class="section-box">
+  <div class="flow">
+    <div class="flow-step">
+      <strong>1 · Develop</strong>
+      HyperParameterCalibrator class (cogflow.pyfunc.PythonModel) · GTAdam optimizer · GPR surrogate
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>2 · Register</strong>
+      cogflow.pyfunc.log_model() → "HP" model v19 in MLflow registry · code_path: GTAdam.py · signature inferred
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>3 · Serve</strong>
+      cogflow.serve_model_v2(murl, "hp3") → KServe InferenceService "hp3" · endpoint: hp3.admin.svc.cluster.local
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>4 · Pipeline</strong>
+      KFP hp3-tuning-pipeline · 10 serial iterations · fetch KPI → infer → publish NATS → wait
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>5 · Feedback</strong>
+      Predictions (α, β) published to NATS JetStream "HP3" stream · scheduler applies CPU params · loop repeats
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODELS TABLE ─── -->
+<div class="sl">ML Models — Developed &amp; Deployed via HIRO CF</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Algorithm / Architecture</th>
+        <th>Task</th>
+        <th>CF Integration</th>
+        <th>Performance</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>HyperParameterCalibrator (HP3)</strong><br><span class="tag ta">cogflow.pyfunc</span></td>
+        <td>GTAdam (Gradient Tracking + Adam)<br>Gaussian Process Regressor surrogate (RBF kernel)<br>Distributed optimization via disropt</td>
+        <td>Predict optimal CPU scheduler parameters α (alpha) and β (beta) to maximise geometric mean CPU utilisation (gm_cpu_utilization)</td>
+        <td>
+          <span class="tag tt">log_model</span>
+          <span class="tag tb">serve_model_v2</span>
+          <span class="tag tp">KServe InferenceService</span><br>
+          Model "HP" v19 · endpoint: <code style="font-size:10px">hp3.admin.svc.cluster.local</code>
+        </td>
+        <td>
+          <div class="metric-row">
+            <div class="metric"><strong>10%</strong>Convergence rate (≤1.0 dist)</div>
+            <div class="metric"><strong>8.15</strong>Best KPI achieved</div>
+            <div class="metric"><strong>60%</strong>In-bounds rate</div>
+            <div class="metric"><strong>27/45</strong>Best run iterations</div>
+          </div>
+        </td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pod-Phase Classifier</strong><br><span class="tag tb">aces_1.ipynb</span></td>
+        <td>XGBoost (best), LR, KNN, SVM, Random Forest, LightGBM<br>100-bootstrap XGBoost ensemble · SHAP feature importance</td>
+        <td>Classify Kubernetes pod phase: Running / Failed / Succeeded / Pending</td>
+        <td>
+          <span class="tag tt">CF Dataset Registry</span>
+          <span class="tag tb">Model Registry</span><br>
+          deployment.yaml · ui-deployment.yaml · deploy script
+        </td>
+        <td>
+          <div class="metric-row">
+            <div class="metric"><strong>87.6%</strong>Accuracy (XGBoost)</div>
+            <div class="metric"><strong>0.735</strong>F1-macro</div>
+            <div class="metric"><strong>0.998</strong>Acc (AWS 22-feat)</div>
+          </div>
+        </td>
+        <td><span class="badge b-blue">Training</span></td>
+      </tr>
+      <tr>
+        <td><strong>AKS Anomaly Detector</strong><br><span class="tag ta">Anomaly_Detection_ML</span></td>
+        <td>Random Forest Classifier · .joblib serialization</td>
+        <td>Detect packet-loss anomalies in Azure Kubernetes Service (AKS) cluster networking</td>
+        <td>
+          <span class="tag tt">CF Dataset Storage</span>
+          <span class="tag tb">Model Artifacts (MinIO)</span><br>
+          final_dataset.csv via CF REST API
+        </td>
+        <td><div class="metric-row"><div class="metric"><strong>RF</strong>Best model</div><div class="metric"><strong>AKS</strong>Network data</div></div></td>
+        <td><span class="badge b-teal">Validated</span></td>
+      </tr>
+      <tr>
+        <td><strong>KitNET Traffic Detector</strong><br><span class="tag tc">peregrine</span></td>
+        <td>KitNET (ensemble of autoencoders) · Intel Tofino P4 switch integration · Tbps-scale</td>
+        <td>Real-time malicious traffic detection at line rate on programmable data-plane switches</td>
+        <td>
+          <span class="tag tt">CF Model Registry</span>
+          <span class="tag tb">CF Dataset Storage</span>
+        </td>
+        <td><div class="metric-row"><div class="metric"><strong>Tbps</strong>Detection rate</div><div class="metric"><strong>Mirai</strong>Attack class</div></div></td>
+        <td><span class="badge b-blue">Research</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── HYPERPARAMETER MODEL DEEP DIVE ─── -->
+<div class="sl">HP3 Model — Technical Deep Dive (from loris_hyperparameter.ipynb)</div>
+<div class="g2">
+  <div class="section-box">
+    <h3>GTAdam Algorithm</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Gradient Tracking + Adam — distributed optimisation over a single-node graph (MPI simulated)</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Hyperparameters</td><td><span class="tag tb">β₁=0.9</span> <span class="tag tb">β₂=0.999</span> <span class="tag tb">ε=1e-8</span></td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Step size</td><td><code style="font-size:11px">0.001</code></td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Iterations</td><td><code style="font-size:11px">1,000 per call</code></td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Search space</td><td>α ∈ [0, 6], β ∈ [0, 6]</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Surrogate</td><td>GPR · RBF kernel · 20 restarts</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">IDW exploration</td><td>δ = scaling (diversity bonus)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">turn flag</td><td>True = explore (IDW active) · False = exploit (final)</td></tr>
+    </table>
+  </div>
+  <div class="section-box">
+    <h3>Model I/O Signature</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">KServe V2 inference protocol (HTTP POST)</p>
+    <table>
+      <tr><th>Input tensor</th><th>Shape</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code style="font-size:10px">kpi_window</code></td><td>[N, 1]</td><td>FP64</td><td>Historical KPI values (gm_cpu_utilization)</td></tr>
+      <tr><td><code style="font-size:10px">alpha_beta_window</code></td><td>[N, 2]</td><td>FP64</td><td>Corresponding α, β parameter pairs</td></tr>
+      <tr><td><code style="font-size:10px">nr_calls</code></td><td>[1]</td><td>INT16</td><td>Iteration count (controls exploration)</td></tr>
+      <tr><td><code style="font-size:10px">turn</code></td><td>[1]</td><td>BOOL</td><td>IDW exploration flag</td></tr>
+      <tr><th>Output tensor</th><th>Shape</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code style="font-size:10px">alpha_beta</code></td><td>[1, 2]</td><td>FP64</td><td>Predicted (α, β) CPU scheduler parameters</td></tr>
+    </table>
+    <div class="warn-box">
+      <p><strong>CF Signature Inference:</strong> <code style="font-size:11px">cogflow.models.infer_signature(example_in, example_out)</code> used to auto-infer and register the full model signature in MLflow registry before serving.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── BENCHMARK RESULTS ─── -->
+<div class="sl">Benchmark Results — HP3 Model Validation (from benchmark.ipynb)</div>
+<div class="section-box">
+  <p style="font-size:12px;color:#5f5e5a;margin-bottom:.75rem">20-trial benchmark using Beale function as KPI simulation · Global optimum: (α=3.0, β=0.5, f=0)</p>
+  <div class="g4">
+    <div class="card" style="border-left:4px solid #0D6E4C">
+      <div class="kv" style="color:#0D6E4C;font-size:1.8rem">8.15</div>
+      <div class="kl">Best KPI Achieved</div>
+      <div class="ks">Trial 19 · α=2.86, β=0.91</div>
+    </div>
+    <div class="card" style="border-left:4px solid #185FA5">
+      <div class="kv" style="color:#185FA5;font-size:1.8rem">10%</div>
+      <div class="kl">Convergence Rate</div>
+      <div class="ks">Distance to optimum &lt; 1.0</div>
+    </div>
+    <div class="card" style="border-left:4px solid #D4860A">
+      <div class="kv" style="color:#D4860A;font-size:1.8rem">60%</div>
+      <div class="kl">In-Bounds Rate</div>
+      <div class="ks">Predictions within [0,6]×[0,6]</div>
+    </div>
+    <div class="card" style="border-left:4px solid #534AB7">
+      <div class="kv" style="color:#534AB7;font-size:1.8rem">3.19</div>
+      <div class="kl">Mean Distance to Optimum</div>
+      <div class="ks">±1.76 std dev · 20 trials</div>
+    </div>
+  </div>
+  <div style="margin-top:.75rem">
+    <table>
+      <thead><tr><th>Category</th><th>Count</th><th>%</th><th>Distance criterion</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge b-green">Excellent</span></td><td>1</td><td>5%</td><td>Distance &lt; 0.5 from global optimum</td></tr>
+        <tr><td><span class="badge b-teal">Good</span></td><td>1</td><td>5%</td><td>Distance 0.5 – 1.0</td></tr>
+        <tr><td><span class="badge b-amber">Fair</span></td><td>3</td><td>15%</td><td>Distance 1.0 – 2.0</td></tr>
+        <tr><td><span class="badge b-red">Poor</span></td><td>15</td><td>75%</td><td>Distance &gt; 2.0 — model needs more iterations / tuning</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:.6rem">
+    <strong style="font-size:12px">Iterative (growing dataset) run — best result:</strong>
+    <span style="font-size:12px;margin-left:.5rem">Seed 42 · 27 completed iterations · α=2.4884, β=0.5052 · KPI=0.4387 · Total improvement: 8.43 · Dataset grew 5 → 32 points</span>
+  </div>
+</div>
+
+<!-- ─── PIPELINE ─── -->
+<div class="sl">KFP Pipeline — hp3-tuning-pipeline (from loris_custom_pipeline.ipynb)</div>
+<div class="section-box">
+  <div class="g2">
+    <div>
+      <h3 style="margin-bottom:.6rem">Pipeline Configuration</h3>
+      <table>
+        <tr><td style="font-size:12px;color:#5f5e5a">Pipeline name</td><td><code style="font-size:11px">hp3-tuning-pipeline</code></td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">Max iterations</td><td>10 (compiled · up to 45 in iterative benchmark)</td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">Execution mode</td><td>Serial (each step waits for previous)</td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">CF component</td><td><code style="font-size:11px">@cogcomponent</code> / create_component_from_func</td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">Base image</td><td><code style="font-size:11px">python:3.11-slim</code></td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">KPI field</td><td><code style="font-size:11px">gm_cpu_utilization</code></td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">API limit</td><td>5–10 records per fetch</td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">Wait time</td><td>60s between iterations (10s in benchmark)</td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">NATS stream</td><td><code style="font-size:11px">HP3</code> · subject: <code style="font-size:11px">hp3.predictions</code></td></tr>
+        <tr><td style="font-size:12px;color:#5f5e5a">Compiled to</td><td><code style="font-size:11px">hp3_tuning_pipeline.yaml</code></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">Per-Iteration Steps</h3>
+      <div style="font-size:12px">
+        <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #ece9e2">
+          <span style="background:#E1F5EE;color:#085041;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">1</span>
+          <div><strong>Fetch KPI data</strong> · GET ACES Orchestration API · <code style="font-size:10px">latest_geometric_mean_with_tuning_params</code></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #ece9e2">
+          <span style="background:#E6F1FB;color:#0C447C;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">2</span>
+          <div><strong>Transform data</strong> · Build kpi_window, alpha_beta_window tensors from API response</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #ece9e2">
+          <span style="background:#EEEDFE;color:#3C3489;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">3</span>
+          <div><strong>Infer via CF</strong> · POST hp3 KServe endpoint · turn=True (explore) on all but last iteration</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #ece9e2">
+          <span style="background:#FAEEDA;color:#633806;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">4</span>
+          <div><strong>Publish to NATS</strong> · JetStream publish {alpha, beta, timestamp, iteration, turn} → HP3 stream</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0">
+          <span style="background:#FAECE7;color:#712B13;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">5</span>
+          <div><strong>Wait &amp; repeat</strong> · Sleep 60s for scheduler to apply params · last iter: turn=False (exploit mode)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DATASETS ─── -->
+<div class="sl">Datasets — Used in HIRO CF Integrations</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Dataset</th>
+        <th>Size</th>
+        <th>Used For</th>
+        <th>Features</th>
+        <th>Source / Repo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Alibaba GPU Cluster Trace v2023</strong></td>
+        <td>8,152 samples</td>
+        <td>Pod-phase classification (Running/Failed/Succeeded/Pending)</td>
+        <td>6 features (task type, instance count, etc.)</td>
+        <td><span class="tag tg">ACES-EU/Cognitive-Framework</span> · aces_1.ipynb</td>
+      </tr>
+      <tr>
+        <td><strong>AWS Kubernetes Metrics Dataset</strong></td>
+        <td>223,116 entries</td>
+        <td>Pod-phase classification (Running/Pending/Failed) · expanded feature set</td>
+        <td>22 features: CPU/memory/threading/I-O/network/K8s container metrics</td>
+        <td><span class="tag tg">ACES-EU/Cognitive-Framework</span> · AWS_dataset.ipynb</td>
+      </tr>
+      <tr>
+        <td><strong>Kitsune / Mirai Traffic Dataset</strong></td>
+        <td>Large-scale PCAP</td>
+        <td>KitNET traffic classification · Mirai botnet attack detection</td>
+        <td>Network flow features (Tofino P4 extracted)</td>
+        <td><span class="tag tc">ACES-EU/peregrine</span></td>
+      </tr>
+      <tr>
+        <td><strong>AKS Packet Loss Dataset</strong></td>
+        <td>final_dataset.csv</td>
+        <td>Anomaly detection in Azure Kubernetes networking</td>
+        <td>Network / cluster telemetry features</td>
+        <td><span class="tag tp">ACES-EU/Anomaly_Detection_ML</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES Live KPI Stream</strong></td>
+        <td>Continuous (10-record windows)</td>
+        <td>HP3 real-time hyperparameter tuning · gm_cpu_utilization</td>
+        <td>gm_cpu_utilization, alpha, beta, timestamp</td>
+        <td><span class="tag tt">ACES Orchestration API</span> · TimescaleDB via CF</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── HYPERPARAMETER TUNING ─── -->
+<div class="sl">Hyperparameter Tuning — D-GLIS &amp; GTAdam</div>
+<div class="g2">
+  <div class="section-box">
+    <h3>D-GLIS: Distributed Global &amp; Local Optimization</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">From ACES-EU/Self-hyperparameter-tuning · Python + MATLAB</p>
+    <ul style="font-size:13px;padding-left:1rem">
+      <li>Distributed Bayesian surrogate optimisation across multiple agents</li>
+      <li>IDW (Inverse Distance Weighting) diversity exploration bonus</li>
+      <li>Applied to MPC vehicle control (car_model.m, car_LTV_MPC.m)</li>
+      <li>Generalised to cloud resource scheduling in ACES</li>
+      <li>GTAdam = gradient tracking consensus + Adam momentum update</li>
+      <li>Supports multi-node MPI execution (faked to single-node via _FakeMPI for CF deployment)</li>
+    </ul>
+  </div>
+  <div class="section-box">
+    <h3>CF Tuning Integration</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">How tuning plugs into the HIRO CF lifecycle</p>
+    <ul style="font-size:13px;padding-left:1rem">
+      <li>HyperParameterCalibrator registered as <code style="font-size:11px">cogflow.pyfunc.PythonModel</code></li>
+      <li>Surrogate (GPR) rebuilt fresh per inference call from the rolling window</li>
+      <li>Model serialised with <code style="font-size:11px">cogflow.pyfunc.log_model(code_path=["GTAdam.py"])</code></li>
+      <li>Signature auto-captured via <code style="font-size:11px">cogflow.models.infer_signature()</code></li>
+      <li>19 versions registered during development/testing in CF MLflow registry</li>
+      <li>Beale function used as KPI simulator for offline benchmarking</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── GITHUB REPOS ─── -->
+<div class="sl">ACES GitHub Repositories — HIRO CF Contributions</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Repository</th>
+        <th>HIRO CF Work</th>
+        <th>Key Files</th>
+        <th>Tech Stack</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ACES-EU/Cognitive-Framework</strong></td>
+        <td>Pod-phase ML models, CF deployment scripts, full model training pipeline</td>
+        <td>aces_1.ipynb · AWS_dataset.ipynb · deployment.yaml · ui-deployment.yaml · deploy_cognitive_engine_solution.sh</td>
+        <td><span class="tag tb">XGBoost</span> <span class="tag tg">SHAP</span> <span class="tag tp">Kubernetes</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/Anomaly_Detection_ML</strong></td>
+        <td>Random Forest anomaly detector for AKS, dataset management via CF</td>
+        <td>final_dataset.csv · model .joblib files</td>
+        <td><span class="tag ta">Random Forest</span> <span class="tag tb">scikit-learn</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/Self-hyperparameter-tuning</strong></td>
+        <td>D-GLIS distributed hyperparameter optimisation — core HP3 algorithm</td>
+        <td>GTAdam.py · car_model.m · car_LTV_MPC.m</td>
+        <td><span class="tag tb">Python</span> <span class="tag tg">MATLAB</span> <span class="tag tp">disropt</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/ACES_LLMs</strong></td>
+        <td>OpenAI Swarm-based ABC (Artificial Bee Colony) resource orchestration</td>
+        <td>point_randomizer_swarm.py</td>
+        <td><span class="tag tp">OpenAI Swarm</span> <span class="tag ta">ABC algorithm</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/EMDC-Metrics-Management</strong></td>
+        <td>T3.2 metrics pipeline — all data stores exposed via CF REST API</td>
+        <td>Metrics ingestion pipeline</td>
+        <td><span class="tag tb">TimescaleDB</span> <span class="tag tg">Neo4j</span> <span class="tag tc">Kafka</span> <span class="tag tt">Prometheus</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/peregrine</strong></td>
+        <td>KitNET ML on Intel Tofino P4 switches — traffic detection at Tbps</td>
+        <td>KitNET model · Tofino P4 integration</td>
+        <td><span class="tag tb">KitNET</span> <span class="tag tgr">P4/Tofino</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/resource-management-service</strong></td>
+        <td>FastAPI service for intra-cluster resource allocation (Lakeside Labs integration)</td>
+        <td>FastAPI app</td>
+        <td><span class="tag ta">FastAPI</span> <span class="tag tb">Python</span></td>
+      </tr>
+      <tr>
+        <td><strong>ACES-EU/workload-actions-manager</strong></td>
+        <td>Go-based scheduler subcomponent — receives α, β from HP3 via NATS</td>
+        <td>Go scheduler</td>
+        <td><span class="tag tg">Go</span> <span class="tag tp">NATS JetStream</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── INTEGRATION ARCHITECTURE ─── -->
+<div class="sl">Integration Architecture — HIRO CF within ACES Platform</div>
+<div class="section-box">
+  <div class="g2">
+    <div>
+      <h3 style="margin-bottom:.6rem">Data Flow: HP3 Closed-Loop</h3>
+      <div style="font-size:13px">
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #ece9e2">
+          <span class="tag tt">1</span>
+          <span>Prometheus scrapes cluster metrics → TimescaleDB (via CF REST API)</span>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #ece9e2">
+          <span class="tag tb">2</span>
+          <span>ACES Orchestration API aggregates gm_cpu_utilization with current α, β</span>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #ece9e2">
+          <span class="tag tp">3</span>
+          <span>KFP pipeline fetches 5–10 records → builds kpi_window + alpha_beta_window</span>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #ece9e2">
+          <span class="tag ta">4</span>
+          <span>HP3 KServe endpoint predicts new α, β (GTAdam + GPR surrogate)</span>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #ece9e2">
+          <span class="tag tc">5</span>
+          <span>Prediction published to NATS JetStream "HP3" stream</span>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.35rem 0">
+          <span class="tag tg">6</span>
+          <span>Workload Actions Manager (Go) consumes NATS message → applies α, β → loop continues</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">CF API Integrations</h3>
+      <table>
+        <tr><th>CF API</th><th>ACES Usage</th></tr>
+        <tr><td><code style="font-size:10px">cogflow.pyfunc.log_model()</code></td><td>Register HP3 with GTAdam code + signature</td></tr>
+        <tr><td><code style="font-size:10px">cogflow.get_model_uri()</code></td><td>Retrieve model URI for serving</td></tr>
+        <tr><td><code style="font-size:10px">cogflow.serve_model_v2()</code></td><td>Deploy HP3 as KServe InferenceService</td></tr>
+        <tr><td><code style="font-size:10px">cogflow.delete_served_model()</code></td><td>Re-deploy with updated model version</td></tr>
+        <tr><td><code style="font-size:10px">cogflow.models.infer_signature()</code></td><td>Auto-capture HP3 tensor I/O schema</td></tr>
+        <tr><td><code style="font-size:10px">cogflow.pyfunc.PythonModel</code></td><td>Base class for HyperParameterCalibrator</td></tr>
+        <tr><td><code style="font-size:10px">@cogcomponent</code></td><td>KFP pipeline component decorator</td></tr>
+        <tr><td><code style="font-size:10px">kfp.Client()</code></td><td>Submit hp3-tuning-pipeline runs</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HIRO TEAM ─── -->
+<div class="sl">HIRO Contributors</div>
+<div class="g3">
+  <div class="card">
+    <div style="font-size:15px;font-weight:600">Loris (CF Lead)</div>
+    <div style="font-size:12px;color:#5f5e5a;margin-top:.2rem">loris_hyperparameter.ipynb · loris_custom_pipeline.ipynb</div>
+    <div class="pill-row">
+      <span class="pill">HP3 Model</span>
+      <span class="pill">GTAdam</span>
+      <span class="pill">KFP Pipeline</span>
+      <span class="pill">KServe Deploy</span>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:15px;font-weight:600">HIRO CF Team</div>
+    <div style="font-size:12px;color:#5f5e5a;margin-top:.2rem">Platform infrastructure &amp; integrations</div>
+    <div class="pill-row">
+      <span class="pill">CogFlow library</span>
+      <span class="pill">CF REST API</span>
+      <span class="pill">Model Registry</span>
+      <span class="pill">Data Orchestration</span>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:15px;font-weight:600">ACES Partners</div>
+    <div style="font-size:12px;color:#5f5e5a;margin-top:.2rem">Integrated via HIRO CF APIs</div>
+    <div class="pill-row">
+      <span class="pill">Lakeside Labs (resources)</span>
+      <span class="pill">INESC ID</span>
+      <span class="pill">TU Darmstadt</span>
+      <span class="pill">SixSQ</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── C-SUITE TAKEAWAYS ─── -->
+<div class="sl">C-Suite Takeaways</div>
+<div class="section-box">
+  <div class="takeaway">
+    <div class="takeaway-icon">🏗️</div>
+    <div class="takeaway-text">
+      <strong>HIRO CF is the backbone of ACES data infrastructure</strong>
+      The Cognitive Framework, developed entirely by HIRO, is the officially designated "central data orchestration layer" for the entire ACES platform — confirmed in project deliverable D4.5. All 11 partners' ML workloads route through CF.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🤖</div>
+    <div class="takeaway-text">
+      <strong>Novel AI model (HP3) in production for autonomous CPU tuning</strong>
+      HIRO developed and deployed the HyperParameterCalibrator — a distributed Bayesian optimisation model using GTAdam — that autonomously tunes CPU scheduler parameters in real-time, replacing manual cluster tuning. It runs as a live KServe service.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔄</div>
+    <div class="takeaway-text">
+      <strong>First closed-loop ML pipeline for edge-cloud resource optimisation</strong>
+      The KFP hp3-tuning-pipeline creates a fully automated feedback loop: observe KPIs → predict parameters → apply via NATS → measure effect → repeat. This is a key ACES novelty for self-managing cloud infrastructure.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">📊</div>
+    <div class="takeaway-text">
+      <strong>Multi-model ML portfolio covering security, scheduling &amp; anomaly detection</strong>
+      HIRO contributed 4 distinct ML models across domains: hyperparameter tuning (HP3/GTAdam), workload classification (XGBoost/RF on Alibaba+AWS data), network security (KitNET on P4 switches), and cluster anomaly detection (Random Forest).
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔗</div>
+    <div class="takeaway-text">
+      <strong>CF creates reusable IP across EU projects</strong>
+      The same CogFlow library, model registry, and serving infrastructure developed for VERGE is now operating in ACES, demonstrating that HIRO's CF platform is a reusable, production-ready asset — not a one-off integration.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">⚡</div>
+    <div class="takeaway-text">
+      <strong>GTAdam algorithm is a research contribution with commercial potential</strong>
+      The GTAdam distributed optimisation algorithm (gradient tracking + Adam) implemented in Python with disropt is novel academic work by HIRO/ACES. Combined with D-GLIS surrogate optimisation, this has potential for patent/commercialisation.
+    </div>
+  </div>
+</div>
+
+<!-- ─── LINKS ─── -->
+<div class="sl">Links — Repositories, Notebooks &amp; APIs</div>
+<div class="section-box">
+  <div class="g2">
+    <div>
+      <div class="link-group">
+        <h3 style="color:#0D6E4C">GitHub Repositories (ACES-EU)</h3>
+        <div class="link-item"><span class="link-label">Cognitive Framework</span><a href="https://github.com/ACES-EU/Cognitive-Framework" target="_blank">github.com/ACES-EU/Cognitive-Framework</a></div>
+        <div class="link-item"><span class="link-label">Anomaly Detection</span><a href="https://github.com/ACES-EU/Anomaly_Detection_ML" target="_blank">github.com/ACES-EU/Anomaly_Detection_ML</a></div>
+        <div class="link-item"><span class="link-label">Self-Hyperparameter Tuning</span><a href="https://github.com/ACES-EU/Self-hyperparameter-tuning" target="_blank">github.com/ACES-EU/Self-hyperparameter-tuning</a></div>
+        <div class="link-item"><span class="link-label">ACES LLMs / Swarm</span><a href="https://github.com/ACES-EU/ACES_LLMs" target="_blank">github.com/ACES-EU/ACES_LLMs</a></div>
+        <div class="link-item"><span class="link-label">EMDC Metrics Management</span><a href="https://github.com/ACES-EU/EMDC-Metrics-Management" target="_blank">github.com/ACES-EU/EMDC-Metrics-Management</a></div>
+        <div class="link-item"><span class="link-label">Peregrine (KitNET/P4)</span><a href="https://github.com/ACES-EU/peregrine" target="_blank">github.com/ACES-EU/peregrine</a></div>
+        <div class="link-item"><span class="link-label">Resource Mgmt Service</span><a href="https://github.com/ACES-EU/resource-management-service" target="_blank">github.com/ACES-EU/resource-management-service</a></div>
+        <div class="link-item"><span class="link-label">Workload Actions Manager</span><a href="https://github.com/ACES-EU/workload-actions-manager" target="_blank">github.com/ACES-EU/workload-actions-manager</a></div>
+      </div>
+    </div>
+    <div>
+      <div class="link-group">
+        <h3 style="color:#185FA5">HIRO CF Notebooks (Private — authenticated)</h3>
+        <div class="link-item"><span class="link-label">HP3 Model Notebook</span><a href="https://dashboard.cog.hiro-develop.nl/notebook/admin/tkg3/lab/workspaces/auto-O/tree/loris_hyperparameter.ipynb" target="_blank">loris_hyperparameter.ipynb</a></div>
+        <div class="link-item"><span class="link-label">HP3 KFP Pipeline</span><a href="https://dashboard.cog.hiro-develop.nl/notebook/admin/tkg3/lab/workspaces/auto-O/tree/loris_custom_pipeline.ipynb" target="_blank">loris_custom_pipeline.ipynb</a></div>
+        <div class="link-item"><span class="link-label">Benchmark Notebook</span><a href="https://dashboard.cog.hiro-develop.nl/notebook/admin/tkg3/lab/workspaces/auto-O/tree/benchmark.ipynb" target="_blank">benchmark.ipynb</a></div>
+        <div class="link-item"><span class="link-label">Iterative Benchmark</span><a href="https://dashboard.cog.hiro-develop.nl/notebook/admin/tkg3/lab/workspaces/auto-O/tree/simple_iterative_notebook.ipynb" target="_blank">simple_iterative_notebook.ipynb</a></div>
+      </div>
+      <div class="link-group" style="margin-top:.75rem">
+        <h3 style="color:#534AB7">ACES Live APIs &amp; Services</h3>
+        <div class="link-item"><span class="link-label">ACES Orchestration API</span><a href="https://orchestration-api.aces.hiro-develop.nl" target="_blank">orchestration-api.aces.hiro-develop.nl</a></div>
+        <div class="link-item"><span class="link-label">CF Dashboard</span><a href="https://dashboard.cog.hiro-develop.nl" target="_blank">dashboard.cog.hiro-develop.nl</a></div>
+        <div class="link-item"><span class="link-label">HP3 KServe Endpoint</span><span style="font-size:11px;font-family:monospace;color:#534AB7">hp3.admin.svc.cluster.local (internal)</span></div>
+        <div class="link-item"><span class="link-label">ACES Project Website</span><a href="https://aces-project.eu" target="_blank">aces-project.eu</a></div>
+        <div class="link-item"><span class="link-label">ACES GitHub Org</span><a href="https://github.com/ACES-EU" target="_blank">github.com/ACES-EU</a></div>
+      </div>
+      <div class="link-group" style="margin-top:.75rem">
+        <h3 style="color:#0D6E4C">Datasets</h3>
+        <div class="link-item"><span class="link-label">Alibaba GPU Cluster Trace</span><a href="https://github.com/alibaba/clusterdata" target="_blank">github.com/alibaba/clusterdata</a></div>
+        <div class="link-item"><span class="link-label">Kitsune Dataset</span><a href="https://www.kaggle.com/datasets/ymirsky/network-attack-dataset-kitsune" target="_blank">Kaggle — Network Attack Dataset</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  HIRO Microdatacenters · ACES Project (Grant 101093126) · Cognitive Framework Dashboard · Generated 2026-06-29 · Confidential — C-Level Internal Use
+</footer>
+
+</div>
+</body>
+</html>

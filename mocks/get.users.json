@@ -1,0 +1,78 @@
+{
+  "status_code": 200,
+  "message": "Users retrieved successfully.",
+  "data": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@hiro.com",
+      "first_name": "Admin",
+      "last_name": "User",
+      "role": "admin",
+      "created_at": "2025-09-01T08:00:00.000000"
+    },
+    {
+      "id": 2,
+      "username": "sai_kireeti",
+      "email": "sai.kireeti@hiro-microdatacenters.nl",
+      "first_name": "Sai",
+      "last_name": "Kireeti",
+      "role": "user",
+      "created_at": "2025-09-10T09:00:00.000000"
+    },
+    {
+      "id": 3,
+      "username": "fred_buining",
+      "email": "fred.buining@hiro-microdatacenters.nl",
+      "first_name": "Fred",
+      "last_name": "Buining",
+      "role": "user",
+      "created_at": "2025-09-12T10:00:00.000000"
+    },
+    {
+      "id": 4,
+      "username": "ali_shalbaf",
+      "email": "ali.shalbaf@hiro-microdatacenters.nl",
+      "first_name": "Ali",
+      "last_name": "Shalbaf",
+      "role": "user",
+      "created_at": "2025-10-01T11:00:00.000000"
+    },
+    {
+      "id": 5,
+      "username": "bola_nasr",
+      "email": "bola.nasr@hiro-microdatacenters.nl",
+      "first_name": "Bola",
+      "last_name": "Nasr",
+      "role": "user",
+      "created_at": "2025-10-05T12:00:00.000000"
+    },
+    {
+      "id": 6,
+      "username": "rui_min",
+      "email": "rui.min@hiro-microdatacenters.nl",
+      "first_name": "Rui",
+      "last_name": "Min",
+      "role": "user",
+      "created_at": "2025-10-15T09:30:00.000000"
+    },
+    {
+      "id": 7,
+      "username": "veena_rao",
+      "email": "veena.rao@hiro-microdatacenters.nl",
+      "first_name": "Veena",
+      "last_name": "Rao",
+      "role": "user",
+      "created_at": "2025-11-01T08:45:00.000000"
+    },
+    {
+      "id": 8,
+      "username": "renuka_gollu",
+      "email": "renuka.gollu@hiro-microdatacenters.nl",
+      "first_name": "Renuka",
+      "last_name": "Gollu",
+      "role": "user",
+      "created_at": "2025-11-10T10:00:00.000000"
+    }
+  ]
+}

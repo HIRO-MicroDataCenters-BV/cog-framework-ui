@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIRO Microdatacenters — NextGen Project Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a18;background:#f5f4f0;font-size:14px;line-height:1.6}
+  @media print{body{background:#fff;font-size:11px} .no-print{display:none} .page-break{page-break-before:always}}
+  .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:600} h2{font-size:16px;font-weight:600} h3{font-size:14px;font-weight:600}
+
+  .hdr{background:linear-gradient(135deg,#7B1FA2 0%,#C62828 100%);border-radius:16px;padding:2rem 2.5rem;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+  .hdr h1{font-size:24px;font-weight:600;margin-bottom:.4rem}
+  .hdr p{font-size:13px;opacity:.85;max-width:640px}
+  .hdr-badges{display:flex;flex-direction:column;gap:.4rem;align-items:flex-end;flex-shrink:0}
+  .hdr-badge{font-size:11px;font-weight:500;padding:.25rem .8rem;border-radius:20px;border:1px solid rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.15);white-space:nowrap}
+
+  .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888780;margin-bottom:.6rem;margin-top:1.5rem}
+
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem}
+  @media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr} .g5{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:600px){.g4,.g3,.g2,.g5{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1rem}
+  .kv{font-size:2.2rem;font-weight:600;line-height:1}
+  .kl{font-size:12px;color:#5f5e5a;margin-top:.3rem}
+  .ks{font-size:11px;color:#888780;margin-top:.2rem}
+
+  .tag{display:inline-block;font-size:10px;padding:.15rem .45rem;border-radius:4px;font-weight:600;margin:.1rem;vertical-align:middle}
+  .tb{background:#E6F1FB;color:#0C447C}
+  .tp{background:#EEEDFE;color:#3C3489}
+  .tt{background:#E1F5EE;color:#085041}
+  .ta{background:#FAEEDA;color:#633806}
+  .tc{background:#FAECE7;color:#712B13}
+  .tg{background:#EAF3DE;color:#27500A}
+  .tgr{background:#F1EFE8;color:#444441}
+  .trd{background:#FCEBEB;color:#791F1F}
+  .tpu{background:#F3E8FB;color:#6A1B9A}
+
+  .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;padding:.2rem .65rem;border-radius:20px;font-weight:600}
+  .b-green{background:#EAF3DE;color:#3B6D11}
+  .b-blue{background:#E6F1FB;color:#0C447C}
+  .b-amber{background:#FAEEDA;color:#633806}
+  .b-purple{background:#F3E8FB;color:#6A1B9A}
+  .b-teal{background:#E1F5EE;color:#085041}
+  .b-red{background:#FCEBEB;color:#791F1F}
+  .b-dark{background:#E8E6F0;color:#2C2A4A}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#5f5e5a;border-bottom:1.5px solid #d3d1c7;padding:.5rem .6rem}
+  td{padding:.5rem .6rem;border-bottom:1px solid #ece9e2;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafaf8}
+
+  .flow{display:flex;align-items:stretch;gap:0;margin:.5rem 0;flex-wrap:wrap}
+  .flow-step{background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:.6rem .8rem;flex:1;min-width:140px;font-size:12px}
+  .flow-step strong{display:block;font-size:11px;color:#5f5e5a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+  .flow-arrow{display:flex;align-items:center;padding:0 .3rem;color:#888780;font-size:16px;flex-shrink:0}
+
+  .section-box{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+  .section-box h2{margin-bottom:.75rem}
+  .section-box h3{margin-bottom:.5rem;color:#2a2a28}
+
+  .arch-box{background:linear-gradient(135deg,#F9F0FD 0%,#FDF0F0 100%);border:1px solid #D9B3E8;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+
+  .takeaway{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid #ece9e2}
+  .takeaway:last-child{border-bottom:none}
+  .takeaway-icon{font-size:18px;flex-shrink:0;margin-top:.1rem}
+  .takeaway-text{font-size:13px}
+  .takeaway-text strong{display:block;margin-bottom:.2rem}
+
+  .metric-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
+  .metric{background:#F5F4F0;border-radius:8px;padding:.4rem .75rem;font-size:12px}
+  .metric strong{font-size:15px;font-weight:600;display:block}
+
+  .pill-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+  .pill{font-size:11px;padding:.2rem .55rem;border-radius:12px;font-weight:500;background:#F1EFE8;color:#444441}
+
+  .link-group{margin-bottom:1rem}
+  .link-group h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#5f5e5a;margin-bottom:.4rem;padding-bottom:.3rem;border-bottom:1px solid #ece9e2}
+  .link-item{display:flex;align-items:baseline;gap:.5rem;padding:.3rem 0;font-size:13px;border-bottom:1px solid #f3f1eb}
+  .link-item:last-child{border-bottom:none}
+  .link-item a{color:#7B1FA2;text-decoration:none;font-family:monospace;font-size:12px}
+  .link-item a:hover{text-decoration:underline}
+  .link-label{font-weight:500;min-width:200px;flex-shrink:0;font-size:12px}
+
+  .no-print.btn{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:.4rem 1rem;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit}
+  .no-print.btn:hover{background:rgba(255,255,255,.3)}
+
+  .warn-box{background:#FFF8E1;border:1px solid #FFD54F;border-radius:10px;padding:.8rem 1.1rem;margin-top:.5rem}
+  .warn-box p{font-size:12px;color:#5D4037}
+
+  .layer{border:1px solid #d3d1c7;border-radius:8px;padding:.6rem .9rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.75rem}
+  .layer-num{background:#7B1FA2;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+  footer{text-align:center;font-size:11px;color:#888780;margin-top:2rem;padding-top:1rem;border-top:1px solid #d3d1c7}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ─── HEADER ─── -->
+<div class="hdr">
+  <div>
+    <div style="font-size:11px;opacity:.75;margin-bottom:.4rem;letter-spacing:.05em">HIRO MICRODATACENTERS · EU HORIZON EUROPE</div>
+    <h1>NextGen Project — Platform & Data Space Dashboard</h1>
+    <p>Genome-Centric Multimodal Data Integration in Personalised Cardiovascular Medicine · HIRO's role: PEaaS (Powerful Edge as a Service) infrastructure + full Data Space Node platform — catalog, connector, search, policy, contracts, identity &amp; federated ML.</p>
+    <div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
+      <span class="badge b-purple">✓ Data Space Node Provider</span>
+      <span class="badge b-blue">Federated Catalogue</span>
+      <span class="badge b-teal">Policy Engine (OPA)</span>
+      <span class="badge b-amber">Contract Engine (VC-JWT)</span>
+      <span class="badge b-red">Decentralised Identity (KERI)</span>
+    </div>
+  </div>
+  <div class="hdr-badges">
+    <div class="hdr-badge">Grant 101136962</div>
+    <div class="hdr-badge">Horizon Europe</div>
+    <div class="hdr-badge">~20 Partners</div>
+    <div class="hdr-badge">Through 2026</div>
+    <button class="no-print btn" onclick="window.print()">⬇ Export PDF</button>
+  </div>
+</div>
+
+<!-- ─── KPI CARDS ─── -->
+<div class="sl">HIRO Contribution at a Glance</div>
+<div class="g5">
+  <div class="card" style="border-top:3px solid #7B1FA2">
+    <div class="kv" style="color:#7B1FA2">10+</div>
+    <div class="kl">Microservices Built</div>
+    <div class="ks">All open-source, MIT licensed</div>
+  </div>
+  <div class="card" style="border-top:3px solid #C62828">
+    <div class="kv" style="color:#C62828">3</div>
+    <div class="kl">Sites Deployed</div>
+    <div class="ks">ki (Karolinska) · hus (Helsinki) · uva (Virginia)</div>
+  </div>
+  <div class="card" style="border-top:3px solid #1565C0">
+    <div class="kv" style="color:#1565C0">FL</div>
+    <div class="kl">CF Federated Learning</div>
+    <div class="ks">CF provides distributed model training across clinical sites</div>
+  </div>
+  <div class="card" style="border-top:3px solid #2E7D32">
+    <div class="kv" style="color:#2E7D32">7</div>
+    <div class="kl">Countries Covered</div>
+    <div class="ks">SE · FI · UK · CH · US · DE · NL</div>
+  </div>
+  <div class="card" style="border-top:3px solid #E65100">
+    <div class="kv" style="color:#E65100">6</div>
+    <div class="kl">Clinical Pilot Sites</div>
+    <div class="ks">Cardiovascular disease pilots across EU+USA</div>
+  </div>
+</div>
+
+<!-- ─── CF INTEGRATION ─── -->
+<div class="sl">Cognitive Framework (CF) — Role in NextGen</div>
+<div class="arch-box">
+  <h2>How HIRO's CF Connects to the NextGen Platform</h2>
+  <p style="font-size:13px;color:#4A0072;margin-bottom:1rem">In NextGen, HIRO's Cognitive Framework (CF) sits <strong>above</strong> the Data Space Node: the Data Space Node governs <em>who can access what data</em>, while the CF orchestrates <em>what ML happens with that data</em>. Together they form HIRO's complete federated intelligence stack for healthcare.</p>
+  <div class="g3">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">CF Provides to NextGen</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>Federated Learning across clinical sites (ki, hus, uva) without moving raw patient data</li>
+        <li>ML pipeline orchestration (Kubeflow Pipelines) for genomic &amp; multimodal models</li>
+        <li>Model registry (MLflow) for versioning trained genomic/clinical models</li>
+        <li>Model serving (KServe) for deploying inference endpoints at edge sites</li>
+        <li>LLM fine-tuning via NTK (cf_finetune_ntk) for AI-guided genomic curation tasks</li>
+        <li>Experiment tracking across distributed training runs</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">Data Space Node Enables CF</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li><strong>ds-connector</strong> exposes governed clinical/genomic datasets to CF training pipelines</li>
+        <li><strong>ds-policy-engine</strong> (OPA) authorises which CF jobs can access which datasets</li>
+        <li><strong>ds-contract-engine</strong> issues time-limited VC-JWT contracts for CF model training runs</li>
+        <li><strong>rhio</strong> (P2P) syncs model weights and training artifacts between CF instances across sites</li>
+        <li><strong>ds-catalog</strong> makes CF-trained models discoverable as catalog items for partner reuse</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">CF Models &amp; Pipelines in NextGen</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li><strong>Federated genomic ML</strong>: PRS, GWAS models trained across sites via CF FL</li>
+        <li><strong>LLM fine-tuning</strong>: Qwen2.5-0.5B-Instruct fine-tuned with NTK (signed-log-mask controllers, LoRA-free) for AI-guided variant curation</li>
+        <li><strong>Anomaly detection</strong>: metrics-anomaly-detection (Python) for platform health monitoring</li>
+        <li><strong>Multimodal models</strong>: clinical + genomic data fused via CF pipelines using MMIOs</li>
+        <li>All models versioned in CF MLflow registry, served via KServe at each clinical site</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CF LIFECYCLE IN NEXTGEN ─── -->
+<div class="sl">CF Lifecycle — Federated Model Training in NextGen</div>
+<div class="section-box">
+  <div class="flow">
+    <div class="flow-step">
+      <strong>1 · Discover Data</strong>
+      Researcher finds genomic dataset via <strong>ds-catalog</strong> / <strong>ds-search-service</strong> — CF pipeline queries catalog to locate training data across ki, hus, uva sites
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>2 · Authorise</strong>
+      CF training job authenticated via <strong>DEX-DKMS</strong> (KERI DID) · <strong>ds-policy-engine</strong> evaluates OPA rules · <strong>ds-contract-engine</strong> issues time-limited training contract
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>3 · Federated Train</strong>
+      CF runs KFP pipeline locally at each site via <strong>ds-connector</strong> — local model trained on local data · no raw data leaves the site · weights only exchanged
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>4 · Aggregate</strong>
+      <strong>rhio</strong> (P2P) syncs model weights / gradients across sites · CF aggregates into global model · MLflow tracks experiment versions
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>5 · Register &amp; Serve</strong>
+      Global model registered in CF MLflow registry · <strong>cogflow.serve_model_v2()</strong> deploys to KServe at each edge site · Listed in <strong>ds-catalog</strong> for partner discovery
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>6 · Fine-tune (LLM)</strong>
+      <strong>cf_finetune_ntk</strong>: Qwen2.5-0.5B fine-tuned with NTK (LoRA-free) for genomic curation · CogAPI manages dataset + ISVC deployment · vLLM serves inference
+    </div>
+  </div>
+  <div style="margin-top:.75rem;background:#F3E8FB;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#4A0072">
+    <strong>Key distinction vs VERGE/ACES:</strong> In NextGen, CF operates in a <em>federated learning</em> mode across geographically distributed clinical sites, with the Data Space Node enforcing data governance (who can train, on what, for how long) before any CF pipeline runs. The Data Space Node + CF together form HIRO's full sovereign AI stack.
+  </div>
+</div>
+
+<!-- ─── PROJECT OVERVIEW ─── -->
+<div class="sl">Project Context</div>
+<div class="arch-box">
+  <h2>NextGen — Personalised Cardiovascular Medicine via Federated Data</h2>
+  <p style="font-size:13px;color:#4A0072;margin-bottom:1rem">The NextGen project builds a <strong>small-scale European Health Data Space (EHDS)</strong> that lets researchers connect securely across global genomic and clinical datasets without centralising sensitive patient data. HIRO provides the <strong>technical infrastructure backbone</strong>: the Data Space Node platform and edge compute hardware (PEaaS).</p>
+  <div class="g3">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">Clinical Focus</div>
+      <ul style="font-size:13px;padding-left:1rem">
+        <li>Cardiovascular disease prediction &amp; prevention</li>
+        <li>Diagnosis &amp; treatment personalisation</li>
+        <li>Polygenic risk scores (PRS) across federated sites</li>
+        <li>Genome-wide association studies (GWAS)</li>
+        <li>Differential gene expression analysis</li>
+        <li>6 pilot demonstrations · 5 clinical sites</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">Data Types</div>
+      <ul style="font-size:13px;padding-left:1rem">
+        <li>Genomic variant data (WGS/WES)</li>
+        <li>Clinical EHR records</li>
+        <li>Multimodal Integration Objects (MMIOs)</li>
+        <li>Imaging &amp; biosensor data</li>
+        <li>Federated catalogue metadata</li>
+        <li>Consent &amp; governance records</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">HIRO's Role</div>
+      <ul style="font-size:13px;padding-left:1rem">
+        <li>Data Space Node platform (full stack)</li>
+        <li>PEaaS edge hardware at clinical sites</li>
+        <li>Frontend application (Nuxt/Vue)</li>
+        <li>Federated catalogue infrastructure</li>
+        <li>Policy, identity &amp; contract layer</li>
+        <li>P2P data sync (rhio)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DATA SPACE ARCHITECTURE ─── -->
+<div class="sl">HIRO Data Space Node — Full Platform Architecture</div>
+<div class="section-box">
+  <p style="font-size:12px;color:#5f5e5a;margin-bottom:1rem">HIRO built and operates the complete Data Space Node stack deployed at each NextGen clinical site (Karolinska, HUS Helsinki, UVA Virginia)</p>
+  <div class="layer">
+    <div class="layer-num">1</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Presentation Layer — nextgen-fe</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Nuxt/Vue 3 · TypeScript · Deployed on Vercel · Multilingual (i18n)</span>
+    </div>
+    <span class="badge b-purple">UI Portal</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">2</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Discovery Layer — ds-catalog + ds-search-service</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">FastAPI · Python · Manages, searches and shares catalog items across federated nodes</span>
+    </div>
+    <span class="badge b-blue">Federated Catalogue</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">3</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Data Access Layer — ds-connector + ds-connector-service</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Python · REST API · Requests data from data layer, serves catalog service · PyPI published</span>
+    </div>
+    <span class="badge b-teal">Data Connector</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">4</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Marketplace Layer — ds-checkout</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Python · FastAPI · Processes catalog items at checkout · Bridges catalogue &amp; order fulfillment</span>
+    </div>
+    <span class="badge b-amber">Marketplace</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">5</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Governance Layer — ds-policy-engine + ds-contract-engine</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">OPA/Rego policies · VC-JWT contracts · Ed25519 signing · Role &amp; institute-based access control</span>
+    </div>
+    <span class="badge b-red">Policy &amp; Contracts</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">6</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Identity Layer — DEX-DKMS</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">KERI/DID · OIDC bridge · Ed25519 · Decentralised identity for federated authentication</span>
+    </div>
+    <span class="badge b-dark">Decentralised ID</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">7</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Transport Layer — rhio</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Rust · NATS JetStream (intra-cluster) · p2panda P2P (inter-cluster) · MinIO/S3 file sync</span>
+    </div>
+    <span class="badge b-purple">P2P Messaging</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">8</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Semantic Layer — ds-oca-integration</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">OCA (Overlays Capture Architecture) · Helm chart · Semantic data schema standardisation</span>
+    </div>
+    <span class="badge b-teal">Semantics / OCA</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">9</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Knowledge Graph — demo-store-graph-neo4j</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Neo4j · Jupyter · CRUD operations on subgraphs · Graph-based data modelling for NextGen</span>
+    </div>
+    <span class="badge b-green">Knowledge Graph</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">10</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Infrastructure — ds-gitops · monitoring-stack · Kubernetes/Helm</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">GitOps deployments per site · Prometheus monitoring · OIDC auth (demo-docker-auth-server)</span>
+    </div>
+    <span class="badge b-amber">DevOps / GitOps</span>
+  </div>
+</div>
+
+<!-- ─── MICROSERVICES TABLE ─── -->
+<div class="sl">HIRO Repositories — NextGen Platform Components</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Repository</th>
+        <th>Purpose</th>
+        <th>Tech Stack</th>
+        <th>Artifacts</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>nextgen-fe</strong></td>
+        <td>Main user-facing portal for NextGen platform — dataset discovery, federated analytics access, governance</td>
+        <td><span class="tag tp">Nuxt</span> <span class="tag tb">Vue 3</span> <span class="tag tg">TypeScript</span> <span class="tag ta">Docker</span></td>
+        <td>Vercel deployment · Docker image</td>
+        <td><span class="badge b-green">✓ Live</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-catalog</strong></td>
+        <td>REST API service to manage, search and share catalog items within the data space</td>
+        <td><span class="tag tb">Python 3.10+</span> <span class="tag tg">FastAPI</span> <span class="tag tp">Helm</span></td>
+        <td>PyPI: ds_catalog · Docker · Helm chart · OpenAPI spec</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-connector</strong></td>
+        <td>Requests data from backend data layer, provides REST API for catalog service</td>
+        <td><span class="tag tb">Python 3.10+</span> <span class="tag tg">FastAPI</span> <span class="tag tp">Kubernetes</span></td>
+        <td>PyPI · Docker · Helm chart</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-search-service</strong></td>
+        <td>Processes search queries, aggregates results from decentralised federated catalogs</td>
+        <td><span class="tag tb">Python 3.10+</span> <span class="tag tg">FastAPI</span></td>
+        <td>73 releases · PyPI · Helm · Docker</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-checkout</strong></td>
+        <td>Marketplace checkout — reads and processes catalog items to support order fulfillment</td>
+        <td><span class="tag tb">Python 3.10+</span> <span class="tag tg">FastAPI</span></td>
+        <td>PyPI · Docker · Helm chart</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-policy-engine</strong></td>
+        <td>Policy-as-code service evaluating user permissions by role &amp; institute via OPA/Rego</td>
+        <td><span class="tag tp">OPA/Rego</span> <span class="tag tb">FastAPI</span> <span class="tag tg">SQLAlchemy</span> <span class="tag ta">Alembic</span></td>
+        <td>Deployed at ki, hus, uva sites via GitOps · PyPI client SDK</td>
+        <td><span class="badge b-green">✓ Live (3 sites)</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-contract-engine</strong></td>
+        <td>Issues and validates VC-JWT data access contracts · Contract Generator (port 8082) + Contract Validator (port 8083)</td>
+        <td><span class="tag tb">Python</span> <span class="tag tg">FastAPI</span> <span class="tag tp">Ed25519</span> <span class="tag ta">JWT</span></td>
+        <td>Docker · Helm chart · JWKS endpoint</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>DEX-DKMS</strong></td>
+        <td>KERI-based decentralised identity bridge to DEX — OIDC provider for DID authentication</td>
+        <td><span class="tag tp">KERI/DID</span> <span class="tag tb">FastAPI</span> <span class="tag tg">Ed25519</span> <span class="tag ta">OAuth2/OIDC</span></td>
+        <td>OIDC provider endpoint · JWT tokens · AID-based auth</td>
+        <td><span class="badge b-blue">Integration</span></td>
+      </tr>
+      <tr>
+        <td><strong>rhio</strong></td>
+        <td>P2P NATS message routing + S3 object sync — decentralised inter-cluster data exchange</td>
+        <td><span class="tag tg">Rust</span> <span class="tag tp">NATS JetStream</span> <span class="tag tb">p2panda</span> <span class="tag ta">MinIO/S3</span></td>
+        <td>Binary · Kubernetes deployment · bao file encoding</td>
+        <td><span class="badge b-green">✓ Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-oca-integration</strong></td>
+        <td>OCA (Overlays Capture Architecture) repository — semantic data schema standardisation for health data</td>
+        <td><span class="tag tb">Python</span> <span class="tag tg">Helm chart</span></td>
+        <td>Helm chart · Docker · GitOps deployment</td>
+        <td><span class="badge b-teal">Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>demo-store-graph-neo4j</strong></td>
+        <td>CRUD operations on Neo4j knowledge graph subgraphs for NextGen data modelling</td>
+        <td><span class="tag tp">Neo4j</span> <span class="tag tb">Jupyter</span> <span class="tag tg">Python/Poetry</span></td>
+        <td>Jupyter notebook · Sample data</td>
+        <td><span class="badge b-amber">Demo/Research</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-openapi-spec</strong></td>
+        <td>OpenAPI specs for all Data Space services (Catalog + Search) — single source of truth</td>
+        <td><span class="tag tgr">OpenAPI YAML</span></td>
+        <td>OpenAPI definitions · Machine-readable API docs</td>
+        <td><span class="badge b-blue">Reference</span></td>
+      </tr>
+      <tr>
+        <td><strong>ds-gitops</strong></td>
+        <td>Data Space deployment configuration — GitOps per-site (ki, hus, uva)</td>
+        <td><span class="tag tp">GitOps</span> <span class="tag tb">Helm</span> <span class="tag tg">Kubernetes</span></td>
+        <td>Per-site deployment configs · Argo CD</td>
+        <td><span class="badge b-green">✓ Ops</span></td>
+      </tr>
+      <tr>
+        <td><strong>nextgen-test-data</strong></td>
+        <td>Catalog items for integration testing — MVP1 dataset catalogue entries</td>
+        <td><span class="tag tgr">JSON/YAML</span></td>
+        <td>Test catalog items · mvp1/ · test/</td>
+        <td><span class="badge b-teal">QA</span></td>
+      </tr>
+      <tr>
+        <td><strong>nextgen-feedback</strong></td>
+        <td>Central partner feedback hub — bug reports, improvements, questions about NextGen platform</td>
+        <td><span class="tag tgr">GitHub Issues</span></td>
+        <td>Partner collaboration platform</td>
+        <td><span class="badge b-blue">Active</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── DATA FLOW ─── -->
+<div class="sl">Data Space Data Flow — Federated Dataset Access</div>
+<div class="section-box">
+  <p style="font-size:12px;color:#5f5e5a;margin-bottom:.75rem">How a researcher accesses a genomic dataset across a federated NextGen clinical site:</p>
+  <div class="flow">
+    <div class="flow-step">
+      <strong>1 · Discover</strong>
+      Researcher searches via <strong>nextgen-fe</strong> portal → queries <strong>ds-search-service</strong> which aggregates results from all federated <strong>ds-catalog</strong> nodes
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>2 · Authenticate</strong>
+      <strong>DEX-DKMS</strong> verifies researcher identity via KERI AID / decentralised DID → issues OIDC token to access platform
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>3 · Authorise</strong>
+      <strong>ds-policy-engine</strong> evaluates OPA/Rego policies → checks role &amp; institute → grants or denies access to specific dataset
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>4 · Contract</strong>
+      <strong>ds-checkout</strong> processes order → <strong>ds-contract-engine</strong> mints time-limited VC-JWT access contract signed with Ed25519
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>5 · Access Data</strong>
+      <strong>ds-connector</strong> requests data from local site data layer → returns data to authorised researcher via REST API under contract
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <strong>6 · Sync</strong>
+      <strong>rhio</strong> replicates catalog updates / result objects across sites via P2P (p2panda) + NATS JetStream without central broker
+    </div>
+  </div>
+</div>
+
+<!-- ─── NEXTGEN TOOLS ─── -->
+<div class="sl">NextGen Platform Tools (nextgentools.eu) — HIRO Infrastructure Supports</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Description</th>
+        <th>HIRO Infrastructure Used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Genomic Data Curation</strong></td>
+        <td>AI-guided pipelines for processing genomic variants in genetic association studies · Automates QC for millions of variants</td>
+        <td><span class="tag tb">ds-connector</span> <span class="tag tp">rhio (data sync)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Variant Prioritisation</strong></td>
+        <td>Classifies genomic variations by clinical validity · Links variants to diseases via evidence annotation</td>
+        <td><span class="tag tb">ds-catalog</span> <span class="tag tg">ds-oca-integration (schemas)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Accelerated Genomics</strong></td>
+        <td>Addresses computational bottlenecks in multi-step genomic processing for exponentially growing datasets</td>
+        <td><span class="tag ta">PEaaS Edge Hardware</span> <span class="tag tp">rhio (P2P file sync)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Multimodal Integration Objects (MMIOs)</strong></td>
+        <td>Standardises heterogeneous health data formats · Enables research portability across borders</td>
+        <td><span class="tag tg">ds-oca-integration</span> <span class="tag tb">ds-catalog</span> <span class="tag tp">demo-store-graph-neo4j</span></td>
+      </tr>
+      <tr>
+        <td><strong>Federated Catalogues</strong></td>
+        <td>Semantic technology for dataset discoverability across federated sites · Format-independent meaning extraction</td>
+        <td><span class="tag tb">ds-catalog</span> <span class="tag tg">ds-search-service</span> <span class="tag tp">nextgen-fe</span></td>
+      </tr>
+      <tr>
+        <td><strong>Federated Genomics</strong></td>
+        <td>Distributed computation for PRS, GWAS and differential gene expression without centralising patient data</td>
+        <td><span class="tag tp">ds-policy-engine</span> <span class="tag tb">ds-contract-engine</span> <span class="tag tg">rhio</span></td>
+      </tr>
+      <tr>
+        <td><strong>Federated Machine Learning</strong></td>
+        <td>Distributed learning across sites without data aggregation · Multiple algorithm support</td>
+        <td><span class="tag ta">PEaaS Edge Hardware</span> <span class="tag tp">ds-policy-engine</span> <span class="tag tb">ds-contract-engine</span> <span class="tag tg">rhio</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── KEY TECHNOLOGIES ─── -->
+<div class="sl">Key Technologies — HIRO Engineering in NextGen</div>
+<div class="g2">
+  <div class="section-box">
+    <h3>Identity &amp; Trust (DEX-DKMS)</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Novel decentralised identity stack for healthcare data sovereignty</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Protocol</td><td>KERI (Key Event Receipt Infrastructure)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Identity type</td><td>AID (Autonomic Identifier) — self-sovereign</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Cryptography</td><td>Ed25519 signing · RS256 JWT tokens</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Standard</td><td>OAuth2/OIDC · CESR encoding</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Integration</td><td>DEX identity hub → any OIDC-connected app</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Resolution</td><td>OOBI queries to KERI witnesses</td></tr>
+    </table>
+  </div>
+  <div class="section-box">
+    <h3>Policy &amp; Contracts (OPA + VC-JWT)</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Fine-grained access control for sensitive health data</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Policy language</td><td>OPA Rego — policy-as-code</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Access control</td><td>Role + institute-based evaluation</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Contract format</td><td>VC-JWT (Verifiable Credential JWT)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Signing</td><td>Ed25519 cryptographic keys</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">TTL</td><td>Configurable time-limited access</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Deployed at</td><td>ki · hus · uva sites (GitOps)</td></tr>
+    </table>
+  </div>
+  <div class="section-box">
+    <h3>P2P Messaging (rhio — Rust)</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Novel decentralised inter-site data exchange without central broker</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Language</td><td>Rust (98% of codebase)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Intra-cluster</td><td>NATS JetStream</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Inter-cluster</td><td>p2panda (P2P protocol)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">File sync</td><td>bao encoding · MinIO/S3</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Design</td><td>Serverless — no auto stream creation</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Scale</td><td>Files of any size</td></tr>
+    </table>
+  </div>
+  <div class="section-box">
+    <h3>Knowledge Graph (Neo4j)</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Graph-based data modelling for genomic-clinical relationships</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Database</td><td>Neo4j (graph database)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Operations</td><td>CRUD on subgraphs</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Interface</td><td>Jupyter notebook · Python/Poetry</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Use case</td><td>Gene-disease relationship modelling</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Data</td><td>Genomic variant subgraphs</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─── CONSORTIUM ─── -->
+<div class="sl">Consortium Partners</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr><th>Partner</th><th>Country</th><th>Type</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>HIRO Microdatacenters</strong></td><td>🇳🇱 Netherlands</td><td><span class="badge b-purple">Tech Provider</span></td><td>Data Space Node platform · PEaaS edge infrastructure · Full stack development · CF federated ML</td></tr>
+      <tr><td>UMC Utrecht</td><td>🇳🇱 Netherlands</td><td><span class="badge b-blue">Clinical</span></td><td>Coordinating academic hospital · Clinical data</td></tr>
+      <tr><td>Karolinska Institutet (ki)</td><td>🇸🇪 Sweden</td><td><span class="badge b-blue">Research</span></td><td>Medical research · HIRO Data Space Node deployed</td></tr>
+      <tr><td>HUS Helsinki University Hospital (hus)</td><td>🇫🇮 Finland</td><td><span class="badge b-blue">Clinical</span></td><td>Clinical services · HIRO Data Space Node deployed</td></tr>
+      <tr><td>Queen Mary University of London</td><td>🇬🇧 UK</td><td><span class="badge b-blue">Research</span></td><td>William Harvey Research Institute · Cardiovascular research</td></tr>
+      <tr><td>Goethe Universität Frankfurt</td><td>🇩🇪 Germany</td><td><span class="badge b-blue">Research</span></td><td>Sudden cardiac death research</td></tr>
+      <tr><td>University of Virginia (uva)</td><td>🇺🇸 USA</td><td><span class="badge b-blue">Research</span></td><td>Genomics · HIRO Data Space Node deployed</td></tr>
+      <tr><td>WellSpan Health</td><td>🇺🇸 USA</td><td><span class="badge b-blue">Clinical</span></td><td>Clinical data · Patient populations</td></tr>
+      <tr><td>Earlham Institute</td><td>🇬🇧 UK</td><td><span class="badge b-teal">Genomics</span></td><td>Genomics research and tool development</td></tr>
+      <tr><td>IDSIA-SUPSI</td><td>🇨🇭 Switzerland</td><td><span class="badge b-teal">AI/ML</span></td><td>AI and machine learning research</td></tr>
+      <tr><td>EURECOM</td><td>🇫🇷 France</td><td><span class="badge b-teal">AI/ML</span></td><td>Data science and machine learning</td></tr>
+      <tr><td>Human Colossus Foundation</td><td>🇨🇭 Switzerland</td><td><span class="badge b-amber">Governance</span></td><td>Data governance and OCA standards</td></tr>
+      <tr><td>DataPower</td><td>🇧🇪 Belgium</td><td><span class="badge b-amber">Impact</span></td><td>Technology evaluation and impact assessment</td></tr>
+      <tr><td>European Society of Cardiology</td><td>🌍 EU</td><td><span class="badge b-red">Clinical</span></td><td>Scientific dissemination and guidelines</td></tr>
+      <tr><td>DPO Associates</td><td>🇨🇭 Switzerland</td><td><span class="badge b-red">Governance</span></td><td>Data protection compliance (GDPR)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── C-SUITE TAKEAWAYS ─── -->
+<div class="sl">C-Suite Takeaways</div>
+<div class="section-box">
+  <div class="takeaway">
+    <div class="takeaway-icon">🏗️</div>
+    <div class="takeaway-text">
+      <strong>HIRO built the entire Data Space Node platform for NextGen</strong>
+      HIRO engineered 10+ microservices (catalog, search, connector, checkout, policy, contracts, identity, P2P messaging, frontend) forming the complete technical backbone of the NextGen federated health data infrastructure — deployed at 3 clinical sites across 3 continents. The CF sits on top of this stack to deliver federated AI.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔐</div>
+    <div class="takeaway-text">
+      <strong>Novel technology: Decentralised identity (KERI/DID) for healthcare</strong>
+      HIRO developed DEX-DKMS — a production-ready KERI-based decentralised identity bridge using Ed25519 cryptography. This is cutting-edge SSI (Self-Sovereign Identity) technology rarely deployed at scale, giving HIRO advanced IP in the health data sovereignty space.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">⚡</div>
+    <div class="takeaway-text">
+      <strong>rhio: Novel Rust-based P2P data exchange without central infrastructure</strong>
+      HIRO built rhio — a Rust-based peer-to-peer message routing and S3 file sync system using p2panda and NATS JetStream. This eliminates the need for central brokers in federated health data networks, a key sovereignty and resilience requirement for the EHDS.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">📋</div>
+    <div class="takeaway-text">
+      <strong>Full compliance stack: OPA policies + VC-JWT contracts + GDPR governance</strong>
+      HIRO implemented the entire governance layer: OPA/Rego policy engine, VC-JWT contract issuance/validation with Ed25519 signing, and partner feedback loop. This makes HIRO's platform GDPR-compliant and ready for regulated healthcare environments across 7 countries.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔄</div>
+    <div class="takeaway-text">
+      <strong>Reusable platform assets across EU projects</strong>
+      The Data Space Node components (catalog, connector, policy engine, contract engine, rhio) are all open-source (MIT) and independently deployable. They can be reused across other EU Data Space initiatives (GAIA-X, Health Data Space, IDSA) — multiplying HIRO's commercial opportunities beyond NextGen.
+    </div>
+  </div>
+</div>
+
+<!-- ─── LINKS ─── -->
+<div class="sl">Links — Repositories, Project &amp; APIs</div>
+<div class="section-box">
+  <div class="g2">
+    <div>
+      <div class="link-group">
+        <h3 style="color:#7B1FA2">GitHub — Core Platform Services</h3>
+        <div class="link-item"><span class="link-label">nextgen-fe (Portal)</span><a href="https://github.com/HIRO-MicroDataCenters-BV/nextgen-fe" target="_blank">github.com/HIRO-MicroDataCenters-BV/nextgen-fe</a></div>
+        <div class="link-item"><span class="link-label">ds-catalog</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-catalog" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-catalog</a></div>
+        <div class="link-item"><span class="link-label">ds-connector</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-connector" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-connector</a></div>
+        <div class="link-item"><span class="link-label">ds-search-service</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-search-service" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-search-service</a></div>
+        <div class="link-item"><span class="link-label">ds-checkout</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-checkout" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-checkout</a></div>
+        <div class="link-item"><span class="link-label">ds-policy-engine</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-policy-engine" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-policy-engine</a></div>
+        <div class="link-item"><span class="link-label">ds-contract-engine</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-contract-engine" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-contract-engine</a></div>
+        <div class="link-item"><span class="link-label">DEX-DKMS (Identity)</span><a href="https://github.com/HIRO-MicroDataCenters-BV/DEX-DKMS" target="_blank">github.com/HIRO-MicroDataCenters-BV/DEX-DKMS</a></div>
+        <div class="link-item"><span class="link-label">rhio (P2P messaging)</span><a href="https://github.com/HIRO-MicroDataCenters-BV/rhio" target="_blank">github.com/HIRO-MicroDataCenters-BV/rhio</a></div>
+        <div class="link-item"><span class="link-label">ds-oca-integration</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-oca-integration" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-oca-integration</a></div>
+      </div>
+    </div>
+    <div>
+      <div class="link-group">
+        <h3 style="color:#C62828">GitHub — Infrastructure &amp; Support</h3>
+        <div class="link-item"><span class="link-label">ds-gitops</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-gitops" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-gitops</a></div>
+        <div class="link-item"><span class="link-label">ds-openapi-spec</span><a href="https://github.com/HIRO-MicroDataCenters-BV/ds-openapi-spec" target="_blank">github.com/HIRO-MicroDataCenters-BV/ds-openapi-spec</a></div>
+        <div class="link-item"><span class="link-label">demo-store-graph-neo4j</span><a href="https://github.com/HIRO-MicroDataCenters-BV/demo-store-graph-neo4j" target="_blank">github.com/HIRO-MicroDataCenters-BV/demo-store-graph-neo4j</a></div>
+        <div class="link-item"><span class="link-label">nextgen-test-data</span><a href="https://github.com/HIRO-MicroDataCenters-BV/nextgen-test-data" target="_blank">github.com/HIRO-MicroDataCenters-BV/nextgen-test-data</a></div>
+        <div class="link-item"><span class="link-label">nextgen-feedback</span><a href="https://github.com/HIRO-MicroDataCenters-BV/nextgen-feedback" target="_blank">github.com/HIRO-MicroDataCenters-BV/nextgen-feedback</a></div>
+        <div class="link-item"><span class="link-label">HIRO GitHub Org</span><a href="https://github.com/HIRO-MicroDataCenters-BV" target="_blank">github.com/HIRO-MicroDataCenters-BV</a></div>
+      </div>
+      <div class="link-group" style="margin-top:.75rem">
+        <h3 style="color:#1565C0">Project Websites</h3>
+        <div class="link-item"><span class="link-label">NextGen Project Site</span><a href="https://www.nextgentools.eu" target="_blank">nextgentools.eu</a></div>
+        <div class="link-item"><span class="link-label">NextGen Tools</span><a href="https://www.nextgentools.eu/tools/" target="_blank">nextgentools.eu/tools/</a></div>
+        <div class="link-item"><span class="link-label">NextGen Partners</span><a href="https://www.nextgentools.eu/partners/" target="_blank">nextgentools.eu/partners/</a></div>
+        <div class="link-item"><span class="link-label">EU Grant Record</span><a href="https://cordis.europa.eu/project/id/101136962" target="_blank">cordis.europa.eu/project/id/101136962</a></div>
+      </div>
+      <div class="link-group" style="margin-top:.75rem">
+        <h3 style="color:#2E7D32">PyPI Packages (HIRO)</h3>
+        <div class="link-item"><span class="link-label">ds_catalog</span><a href="https://pypi.org/project/ds-catalog/" target="_blank">pypi.org/project/ds-catalog/</a></div>
+        <div class="link-item"><span class="link-label">ds_connector (client)</span><a href="https://pypi.org/search/?q=ds+connector+hiro" target="_blank">PyPI — ds connector client</a></div>
+        <div class="link-item"><span class="link-label">ds_policy_engine (client)</span><a href="https://pypi.org/search/?q=ds+policy+engine+hiro" target="_blank">PyPI — ds policy engine client</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  HIRO Microdatacenters · NextGen Project (Grant 101136962) · Platform Dashboard · Generated 2026-07-01 · Confidential — C-Level Internal Use
+</footer>
+
+</div>
+</body>
+</html>

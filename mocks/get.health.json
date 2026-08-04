@@ -1,0 +1,9 @@
+{
+  "status_code": 200,
+  "message": "Healthy",
+  "data": {
+    "status": "ok",
+    "version": "2.0.0",
+    "uptime_seconds": 86400
+  }
+}

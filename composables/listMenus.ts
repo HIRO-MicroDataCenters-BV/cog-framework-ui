@@ -4,6 +4,14 @@ export const uselistMenus = () => {
     return {
       main: [
         {
+          key: 'dashboard',
+          title: 'Dashboard',
+          url: 'dashboard',
+          icon: 'lucide:layout-dashboard',
+          items: [],
+          isActive: false,
+        },
+        {
           key: 'datasets',
           title: t('menu.datasets'),
           url: 'datasets',

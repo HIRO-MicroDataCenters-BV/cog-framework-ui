@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIRO Microdatacenters — CAPE Project Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a18;background:#f5f4f0;font-size:14px;line-height:1.6}
+  @media print{body{background:#fff;font-size:11px} .no-print{display:none} .page-break{page-break-before:always}}
+  .page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+  h1{font-size:22px;font-weight:600} h2{font-size:16px;font-weight:600} h3{font-size:14px;font-weight:600}
+
+  .hdr{background:linear-gradient(135deg,#1B5E20 0%,#0D47A1 100%);border-radius:16px;padding:2rem 2.5rem;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+  .hdr h1{font-size:24px;font-weight:600;margin-bottom:.4rem}
+  .hdr p{font-size:13px;opacity:.85;max-width:640px}
+  .hdr-badges{display:flex;flex-direction:column;gap:.4rem;align-items:flex-end;flex-shrink:0}
+  .hdr-badge{font-size:11px;font-weight:500;padding:.25rem .8rem;border-radius:20px;border:1px solid rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.15);white-space:nowrap}
+
+  .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888780;margin-bottom:.6rem;margin-top:1.5rem}
+
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem}
+  @media(max-width:900px){.g4,.g3,.g5{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.g4,.g3,.g2,.g5{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1rem}
+  .kv{font-size:2.2rem;font-weight:600;line-height:1}
+  .kl{font-size:12px;color:#5f5e5a;margin-top:.3rem}
+  .ks{font-size:11px;color:#888780;margin-top:.2rem}
+
+  .tag{display:inline-block;font-size:10px;padding:.15rem .45rem;border-radius:4px;font-weight:600;margin:.1rem;vertical-align:middle}
+  .tb{background:#E6F1FB;color:#0C447C}
+  .tp{background:#EEEDFE;color:#3C3489}
+  .tt{background:#E1F5EE;color:#085041}
+  .ta{background:#FAEEDA;color:#633806}
+  .tc{background:#FAECE7;color:#712B13}
+  .tg{background:#EAF3DE;color:#27500A}
+  .tgr{background:#F1EFE8;color:#444441}
+  .trd{background:#FCEBEB;color:#791F1F}
+  .tgn{background:#E8F5E9;color:#1B5E20}
+
+  .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:11px;padding:.2rem .65rem;border-radius:20px;font-weight:600}
+  .b-green{background:#EAF3DE;color:#3B6D11}
+  .b-blue{background:#E6F1FB;color:#0C447C}
+  .b-amber{background:#FAEEDA;color:#633806}
+  .b-purple{background:#F3E8FB;color:#6A1B9A}
+  .b-teal{background:#E1F5EE;color:#085041}
+  .b-red{background:#FCEBEB;color:#791F1F}
+  .b-dark{background:#E8E6F0;color:#2C2A4A}
+  .b-dgreen{background:#E8F5E9;color:#1B5E20}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#5f5e5a;border-bottom:1.5px solid #d3d1c7;padding:.5rem .6rem}
+  td{padding:.5rem .6rem;border-bottom:1px solid #ece9e2;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafaf8}
+
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:.5rem 0}
+  .flow-step{background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:.6rem .8rem;flex:1;min-width:140px;font-size:12px}
+  .flow-step strong{display:block;font-size:11px;color:#5f5e5a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+  .flow-arrow{display:flex;align-items:center;padding:0 .3rem;color:#888780;font-size:16px;flex-shrink:0}
+
+  .section-box{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+  .section-box h3{margin-bottom:.5rem;color:#2a2a28}
+
+  .arch-box{background:linear-gradient(135deg,#E8F5E9 0%,#E3F2FD 100%);border:1px solid #A5D6A7;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.75rem}
+
+  .highlight-box{background:#E3F2FD;border:1px solid #90CAF9;border-radius:10px;padding:.9rem 1.1rem;margin-bottom:.75rem}
+  .highlight-box p{font-size:13px;color:#0D47A1}
+
+  .layer{border:1px solid #d3d1c7;border-radius:8px;padding:.6rem .9rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.75rem;background:#fff}
+  .layer-num{background:#1B5E20;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+  .takeaway{display:flex;gap:.75rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid #ece9e2}
+  .takeaway:last-child{border-bottom:none}
+  .takeaway-icon{font-size:18px;flex-shrink:0;margin-top:.1rem}
+  .takeaway-text{font-size:13px}
+  .takeaway-text strong{display:block;margin-bottom:.2rem}
+
+  .metric-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
+  .metric{background:#F5F4F0;border-radius:8px;padding:.4rem .75rem;font-size:12px}
+  .metric strong{font-size:15px;font-weight:600;display:block}
+
+  .pill-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+  .pill{font-size:11px;padding:.2rem .55rem;border-radius:12px;font-weight:500;background:#F1EFE8;color:#444441}
+
+  .uc-card{background:#fff;border:1px solid #d3d1c7;border-radius:12px;padding:1rem 1.2rem}
+  .uc-card h3{color:#1B5E20;margin-bottom:.4rem}
+
+  .link-group{margin-bottom:1rem}
+  .link-group h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#5f5e5a;margin-bottom:.4rem;padding-bottom:.3rem;border-bottom:1px solid #ece9e2}
+  .link-item{display:flex;align-items:baseline;gap:.5rem;padding:.3rem 0;font-size:13px;border-bottom:1px solid #f3f1eb}
+  .link-item:last-child{border-bottom:none}
+  .link-item a{color:#1B5E20;text-decoration:none;font-family:monospace;font-size:12px}
+  .link-item a:hover{text-decoration:underline}
+  .link-label{font-weight:500;min-width:200px;flex-shrink:0;font-size:12px}
+
+  .no-print.btn{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:.4rem 1rem;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit}
+  .no-print.btn:hover{background:rgba(255,255,255,.3)}
+
+  footer{text-align:center;font-size:11px;color:#888780;margin-top:2rem;padding-top:1rem;border-top:1px solid #d3d1c7}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ─── HEADER ─── -->
+<div class="hdr">
+  <div>
+    <div style="font-size:11px;opacity:.75;margin-bottom:.4rem;letter-spacing:.05em">HIRO MICRODATACENTERS · EU HORIZON EUROPE</div>
+    <h1>CAPE Project — Compute Architecture for Powerful Edge</h1>
+    <p>Superpowering the Edge · HIRO's role: Edge Micro Data Center (EMDC) hardware + AI-driven adaptive orchestration software — intelligent pod placement, energy-aware scheduling, cross-cluster workloads, and Cognitive Framework (CF) AI decision agents.</p>
+    <div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
+      <span class="badge b-dgreen">✓ EMDC Hardware Provider</span>
+      <span class="badge b-blue">AI Adaptive Orchestrator</span>
+      <span class="badge b-teal">Energy-Aware Scheduling</span>
+      <span class="badge b-amber">CF Decision Agent</span>
+      <span class="badge b-purple">Cross-Cluster Workloads</span>
+    </div>
+  </div>
+  <div class="hdr-badges">
+    <div class="hdr-badge">Grant 101189899</div>
+    <div class="hdr-badge">Horizon Europe (RIA)</div>
+    <div class="hdr-badge">12 Partners</div>
+    <div class="hdr-badge">Dec 2024 – Dec 2027</div>
+    <button class="no-print btn" onclick="window.print()">⬇ Export PDF</button>
+  </div>
+</div>
+
+<!-- ─── KPI CARDS ─── -->
+<div class="sl">HIRO CF &amp; Platform Contribution at a Glance</div>
+<div class="g5">
+  <div class="card" style="border-top:3px solid #1B5E20">
+    <div class="kv" style="color:#1B5E20">5+</div>
+    <div class="kl">Repos / Components Built</div>
+    <div class="ks">Orchestration, energy, mesh, cross-cluster, placement</div>
+  </div>
+  <div class="card" style="border-top:3px solid #0D47A1">
+    <div class="kv" style="color:#0D47A1">AI</div>
+    <div class="kl">CF Decision Agent</div>
+    <div class="ks">External AI scoring for pod placement via CF</div>
+  </div>
+  <div class="card" style="border-top:3px solid #E65100">
+    <div class="kv" style="color:#E65100">3</div>
+    <div class="kl">Use Cases Supported</div>
+    <div class="ks">Smart Grid · Edge AI · Satellite Data</div>
+  </div>
+  <div class="card" style="border-top:3px solid #6A1B9A">
+    <div class="kv" style="color:#6A1B9A">P2P</div>
+    <div class="kl">Decentralised Control Plane</div>
+    <div class="ks">mesh-controller + placement-controller (Rust/Python)</div>
+  </div>
+  <div class="card" style="border-top:3px solid #00695C">
+    <div class="kv" style="color:#00695C">ML</div>
+    <div class="kl">Energy Forecasting Model</div>
+    <div class="ks">Linear Regression (Kepler/eBPF + Prometheus)</div>
+  </div>
+</div>
+
+<!-- ─── PROJECT OVERVIEW ─── -->
+<div class="sl">Project Context</div>
+<div class="arch-box">
+  <h2>CAPE — Rethinking Edge Computing Architecture</h2>
+  <p style="font-size:13px;color:#1B4D1E;margin-bottom:1rem">CAPE (Compute Architecture for Powerful Edge) is an EU Horizon Europe project that <strong>rethinks disaggregated, hyperconvergent computing</strong> across the full cloud-edge spectrum to strengthen European digital sovereignty. HIRO contributes both hardware (EMDC) and the intelligent software orchestration layer, with the Cognitive Framework powering the AI decision agent for workload placement.</p>
+  <div class="g3">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">Project Goals</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>Strengthen European digital sovereignty</li>
+        <li>Disaggregated, hyperconvergent computing at edge</li>
+        <li>Open-source software stack for cloud-edge</li>
+        <li>Composable infrastructure &amp; thermal management</li>
+        <li>AI-assisted deployment and orchestration</li>
+        <li>Support diverse application domains</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">HIRO Hardware Role</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>EMDC (Edge Micro Data Center) hardware nodes</li>
+        <li>eHPS (Energy-efficient Hardware Platform Systems)</li>
+        <li>Modular computing nodes with thermal management</li>
+        <li>PEaaS (Powerful Edge as a Service) platform</li>
+        <li>On-premise, sovereign edge compute infrastructure</li>
+        <li>Deployed at use-case partner sites</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.5rem">HIRO Software Role</div>
+      <ul style="font-size:13px;padding-left:1rem;color:#1a1a18">
+        <li>AI-driven adaptive orchestration (hiro-adaptive-orchestrator)</li>
+        <li>Energy-aware workload scheduling (energy-aware-orchestrator)</li>
+        <li>Decentralised control plane (mesh-controller)</li>
+        <li>Cross-cluster workload management (hiro-cross-cluster-workloads)</li>
+        <li>Multi-zone application deployment (anyapplication-controller)</li>
+        <li>CF as the AI decision agent for placement scoring</li>
+        <li><strong>IaC Agent (act)</strong> — CF-powered LLM Cognitive Validator for Pulumi IaC</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CF INTEGRATION ─── -->
+<div class="sl">Cognitive Framework (CF) — Role in CAPE</div>
+<div class="section-box">
+  <div class="highlight-box">
+    <p><strong>CF as the AI Decision Agent for Workload Placement:</strong> In CAPE, HIRO's Cognitive Framework plugs into the <code>hiro-adaptive-orchestrator</code> as the external AI decision agent. The orchestrator calls CF via HTTP to score candidate Kubernetes nodes for pod placement. CF runs ML inference, returns per-node scores (0–100), and the scheduler normalises these into placement decisions — enabling ML-driven, energy-aware, resource-aware workload orchestration at the edge.</p>
+  </div>
+  <div class="g2">
+    <div>
+      <h3 style="margin-bottom:.6rem">What CF Provides to CAPE</h3>
+      <ul style="font-size:13px;padding-left:1rem">
+        <li><strong>AI Decision Agent</strong> — HTTP endpoint at <code>/api/v1/agent/placement/decision</code> · receives <code>DecisionRequest</code> · returns per-node scores [0–100]</li>
+        <li><strong>Energy forecasting model</strong> — Linear Regression (<code>energy_forecasting_linear_regression.pkl</code>) trained on CPU + memory metrics via Kepler/eBPF · predicts future energy availability in Watts</li>
+        <li><strong>Model registry (MLflow)</strong> — versions energy forecasting and placement scoring models; supports retraining via Jupyter notebooks</li>
+        <li><strong>Model serving (KServe)</strong> — serves AI agent as inference endpoint within the CAPE cluster</li>
+        <li><strong>Experiment tracking</strong> — logs placement quality, energy consumption, and scheduling outcomes across CAPE deployments</li>
+        <li><strong>Federated Learning</strong> — enables energy and placement models to improve across multiple EMDC sites without centralising sensitive operational data</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">CF Lifecycle in CAPE</h3>
+      <div class="flow" style="flex-direction:column;gap:.4rem">
+        <div class="flow-step" style="min-width:unset">
+          <strong>1 · Train Energy Model</strong>
+          Kepler (eBPF) collects node power data → Prometheus → PostgreSQL → CF trains Linear Regression model → logs to MLflow registry
+        </div>
+        <div class="flow-step" style="min-width:unset">
+          <strong>2 · Register &amp; Serve</strong>
+          <code>cogflow.pyfunc.log_model()</code> registers model → <code>cogflow.serve_model_v2()</code> deploys as KServe InferenceService (AI Decision Agent)
+        </div>
+        <div class="flow-step" style="min-width:unset">
+          <strong>3 · Score Placement</strong>
+          hiro-adaptive-orchestrator sends <code>POST /api/v1/agent/placement/decision</code> to CF agent → CF scores candidate nodes considering energy, CPU, memory, GPU
+        </div>
+        <div class="flow-step" style="min-width:unset">
+          <strong>4 · Schedule</strong>
+          Scheduler plugin normalises CF scores [0,100] → [0,10] → Kubernetes places pod on optimal node per OrchestrationProfile strategy (Balanced / Packed / Spread)
+        </div>
+        <div class="flow-step" style="min-width:unset">
+          <strong>5 · Federated Update</strong>
+          Placement outcomes and energy metrics federated back to CF across CAPE EMDC sites → global model improves without sharing raw cluster data
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:1rem;border-top:1px solid #d3d1c7;padding-top:1rem">
+    <h3 style="margin-bottom:.6rem">CF as IaC Governance — Cognitive Validator (<code>act</code>)</h3>
+    <div class="g2">
+      <div>
+        <p style="font-size:13px;margin-bottom:.6rem">Beyond ML orchestration, CF extends into infrastructure code governance via the <code>act</code> IaC Agent. The <strong>Cognitive Validator</strong> is an optional LLM layer (LangGraph + CF-served LLM) that runs alongside deterministic security rules to analyse Pulumi program content before any resource is provisioned.</p>
+        <ul style="font-size:13px;padding-left:1rem">
+          <li><strong>CF role</strong>: serves the LLM endpoint consumed by the Cognitive Validator; non-blocking if unreachable</li>
+          <li><strong>LangGraph</strong>: orchestrates multi-step reasoning over resource declarations</li>
+          <li><strong>Secret detection</strong>: LLM scans string fields for embedded API keys, tokens, passwords</li>
+          <li><strong>Shell safety</strong>: analyses <code>user_data</code> scripts for unsafe commands before cloud execution</li>
+          <li><strong>Additive</strong>: runs after deterministic Checkov/OPA rules — LLM catches semantic risks rules miss</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.6rem;font-size:13px">CAPE-Specific Integration</h3>
+        <ul style="font-size:13px;padding-left:1rem">
+          <li><strong>CAPE provider schema</strong>: <code>tests/fixtures/cape/schema.json</code> — validates CAPE-specific Pulumi resource declarations</li>
+          <li><strong>cape-sdks submodule</strong>: CAPE SDK bindings integrated as git submodule for provider validation</li>
+          <li><strong>Target architectures</strong>: amd64 · arm64 · RISC-V · GPU · FPGA · CXL — all validated before deployment to EMDC nodes</li>
+          <li><strong>Fuzzing</strong>: atheris + hypothesis property testing for edge-case IaC config detection</li>
+          <li><strong>Checkov adapter</strong>: bridges act findings into standard security scanning workflows</li>
+          <li><strong>k3s test targets</strong>: local cluster validation before CAPE edge deployment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HIRO ORCHESTRATION STACK ─── -->
+<div class="sl">HIRO Orchestration Stack — Components Built for CAPE</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr>
+        <th>Repository</th>
+        <th>Purpose</th>
+        <th>Tech Stack</th>
+        <th>CF Integration</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>hiro-adaptive-orchestrator</strong></td>
+        <td>Kubernetes operator for AI-driven pod placement · <code>OrchestrationProfile</code> CRD binds workloads to placement strategies · integrates external AI agent (CF) for node scoring</td>
+        <td><span class="tag tgn">Go</span> <span class="tag tb">Kubebuilder v4</span> <span class="tag tg">Kubernetes v1.29+</span> <span class="tag ta">Prometheus</span></td>
+        <td><span class="tag tt">CF = AI Decision Agent</span><br>HTTP POST → CF scores nodes → scheduler places pods</td>
+        <td><span class="badge b-green">✓ Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>energy-aware-orchestrator</strong></td>
+        <td>Kubernetes platform scheduling workloads based on real-time + forecasted energy availability · 3 priority levels: Critical, Preferred, Optional · 24-hour scheduling window</td>
+        <td><span class="tag tb">Python/Kopf</span> <span class="tag tg">FastAPI</span> <span class="tag ta">Angular 20</span> <span class="tag tp">Kepler/eBPF</span> <span class="tag tgr">Grafana</span></td>
+        <td><span class="tag tt">CF hosts energy forecasting model</span><br>Linear Regression (.pkl) in MLflow · KServe serving</td>
+        <td><span class="badge b-green">✓ Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>mesh-controller</strong></td>
+        <td>Kubernetes operator for decentralised P2P communication across clusters · <code>MeshPeer</code> CRD · Ed25519 peer authentication · forms CAPE's decentralised control plane</td>
+        <td><span class="tag tgn">Rust</span> <span class="tag tp">p2panda</span> <span class="tag tb">Ed25519</span> <span class="tag ta">Prometheus</span></td>
+        <td>Enables CF inter-site model sync via P2P (no central broker)</td>
+        <td><span class="badge b-green">✓ Active (21 releases)</span></td>
+      </tr>
+      <tr>
+        <td><strong>placement-controller</strong></td>
+        <td>Rudimentary decentralised placement controller · Python · manages pod scheduling decisions in DCP (Decentralised Control Plane) environments · 17 releases</td>
+        <td><span class="tag tb">Python 3.13+</span> <span class="tag tg">uv</span> <span class="tag ta">Kubernetes/Helm</span></td>
+        <td>Receives placement signals from CF AI agent for DCP environments</td>
+        <td><span class="badge b-green">✓ Active (17 releases)</span></td>
+      </tr>
+      <tr>
+        <td><strong>anyapplication-controller</strong></td>
+        <td>Kubernetes operator managing Helm-based apps across multiple zones in DCP · Local (single-zone) and Global (multi-zone) placement strategies · self-healing, retry, ownership transfer</td>
+        <td><span class="tag tgn">Go</span> <span class="tag tb">Kubebuilder</span> <span class="tag tg">Helm</span></td>
+        <td>Multi-zone workload lifecycle managed by CF pipelines</td>
+        <td><span class="badge b-blue">Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>hiro-cross-cluster-workloads</strong><br>(workload-stealer / workload-donor)</td>
+        <td>Cross-cluster workload migration using work-stealing algorithm · Stealer acquires pods from Donor clusters · placeholder pods track migrated workloads · results published back</td>
+        <td><span class="tag tgn">Go</span> <span class="tag tb">Kubernetes (Kind)</span></td>
+        <td>CF tracks workload performance across donor/stealer clusters</td>
+        <td><span class="badge b-blue">Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>orchestration_library</strong></td>
+        <td>FastAPI backend + PostgreSQL for orchestration operations · REST API for orchestration management · Swagger docs · Helm charts (orchestration-api)</td>
+        <td><span class="tag tb">Python/FastAPI</span> <span class="tag tg">PostgreSQL</span> <span class="tag ta">Alembic</span> <span class="tag tp">Helm</span></td>
+        <td>Provides orchestration state API consumed by CF pipelines</td>
+        <td><span class="badge b-teal">Deployed</span></td>
+      </tr>
+      <tr>
+        <td><strong>act — IaC Agent</strong><br><span class="tag tgn">CF Cognitive Validator</span></td>
+        <td>General-purpose IaC validation and testing framework for Pulumi programs · intercepts resource declarations before cloud deployment · validates against security rules, fuzzes configs, checks reproducibility across amd64/arm64/RISC-V/GPU/FPGA/CXL targets · CAPE provider schema and cape-sdks integrated as first-class use case</td>
+        <td><span class="tag tb">Python</span> <span class="tag tg">Pulumi</span> <span class="tag ta">LangGraph</span> <span class="tag tp">atheris/hypothesis</span> <span class="tag tgr">Checkov</span> <span class="tag tc">k3s</span></td>
+        <td>
+          <span class="tag tt">CF Cognitive Validator</span><br>
+          Optional LLM layer (LangGraph) for content analysis — detects embedded secrets, shell-command safety in <code>user_data</code> · CF serves LLM endpoint · non-blocking if unreachable
+        </td>
+        <td><span class="badge b-green">✓ Active</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── AI PLACEMENT DEEP DIVE ─── -->
+<div class="sl">AI-Driven Pod Placement — Technical Deep Dive</div>
+<div class="g2">
+  <div class="section-box">
+    <h3>OrchestrationProfile CRD (hiro-adaptive-orchestrator)</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">Custom Kubernetes resource binding workloads to AI-driven placement strategies</p>
+    <table>
+      <tr><th>Strategy</th><th>Behaviour</th></tr>
+      <tr><td><span class="badge b-blue">Balanced</span></td><td>Distributes pods evenly across all nodes</td></tr>
+      <tr><td><span class="badge b-amber">Packed</span></td><td>Bin-packing — concentrates pods on fewest nodes</td></tr>
+      <tr><td><span class="badge b-teal">Spread</span></td><td>Maximises spread across failure domains</td></tr>
+    </table>
+    <div style="margin-top:.75rem">
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.4rem">Multi-Dimensional Scoring Dimensions</div>
+      <div class="pill-row">
+        <span class="pill">CPU utilisation</span>
+        <span class="pill">Memory pressure</span>
+        <span class="pill">GPU availability</span>
+        <span class="pill">Energy consumption</span>
+        <span class="pill">Node health state</span>
+      </div>
+    </div>
+    <div style="margin-top:.75rem">
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.4rem">Dynamic Rebalancing Triggers</div>
+      <div class="pill-row">
+        <span class="pill">Energy threshold breach</span>
+        <span class="pill">CPU/Memory threshold</span>
+        <span class="pill">Node failure</span>
+        <span class="pill">Scheduled rebalance</span>
+      </div>
+    </div>
+    <div style="margin-top:.75rem">
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.4rem">Scheduler Integration Paths</div>
+      <div class="pill-row">
+        <span class="pill">hiro-scheduler (custom plugin)</span>
+        <span class="pill">extender (patches kube-scheduler)</span>
+      </div>
+    </div>
+  </div>
+  <div class="section-box">
+    <h3>Energy-Aware Orchestrator — ML Model</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.6rem">CF-hosted Linear Regression model for energy forecasting</p>
+    <table>
+      <tr><td style="font-size:12px;color:#5f5e5a">Model type</td><td>Linear Regression <code>(.pkl)</code></td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Features</td><td>Node CPU metrics + Memory metrics</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Target</td><td>Energy consumption (Watts)</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Data source</td><td>Kepler (eBPF) → Prometheus → PostgreSQL</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Forecast API</td><td><code>GET /api/energy-availability/future/forecast</code></td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">Retraining</td><td>Jupyter notebook + training script via CF</td></tr>
+      <tr><td style="font-size:12px;color:#5f5e5a">CF registry</td><td>Versioned in MLflow · served via KServe</td></tr>
+    </table>
+    <div style="margin-top:.75rem">
+      <div style="font-size:11px;font-weight:600;color:#5f5e5a;text-transform:uppercase;margin-bottom:.4rem">Scheduling Priority Levels</div>
+      <table>
+        <tr><td><span class="badge b-red">Critical</span></td><td style="font-size:12px">Immediate deployment regardless of energy</td></tr>
+        <tr><td><span class="badge b-amber">Preferred</span></td><td style="font-size:12px">Deploy if sufficient energy; else schedule within 6 hours</td></tr>
+        <tr><td><span class="badge b-teal">Optional</span></td><td style="font-size:12px">Find optimal 24-hour scheduling window</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── USE CASES ─── -->
+<div class="sl">Use Cases — HIRO CF &amp; Orchestration in Action</div>
+<div class="g3">
+  <div class="uc-card">
+    <h3>⚡ Smart Grid</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.5rem">Partner: IPTO (Greece)</p>
+    <p style="font-size:13px;margin-bottom:.5rem">Edge analytics for transmission grid: anomaly detection and predictive insight on high-frequency SCADA data, processed close to the substation.</p>
+    <div style="font-size:12px;font-weight:600;color:#5f5e5a;margin-bottom:.3rem">HIRO CF Contribution</div>
+    <ul style="font-size:12px;padding-left:1rem">
+      <li>EMDC hardware at substation edge</li>
+      <li>CF hosts anomaly detection ML model (energy time-series)</li>
+      <li>Energy-aware orchestrator prioritises grid analytics workloads</li>
+      <li>AI placement agent balances SCADA processing pods across EMDC nodes</li>
+      <li>Kepler/eBPF energy monitoring integrated with grid power data</li>
+    </ul>
+  </div>
+  <div class="uc-card">
+    <h3>🎥 Edge AI</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.5rem">Partner: Fraunhofer ITWM (Germany)</p>
+    <p style="font-size:13px;margin-bottom:.5rem">Privacy-preserving video analytics pipeline at the edge, accelerated by an FPGA-based RISC-V/CXL deep-learning accelerator.</p>
+    <div style="font-size:12px;font-weight:600;color:#5f5e5a;margin-bottom:.3rem">HIRO CF Contribution</div>
+    <ul style="font-size:12px;padding-left:1rem">
+      <li>EMDC hardware hosts FPGA accelerator nodes</li>
+      <li>CF serves deep-learning inference models (KServe) on GPU/FPGA nodes</li>
+      <li>hiro-adaptive-orchestrator uses CF to score GPU-aware node placement</li>
+      <li>CF model registry manages video analytics model versions</li>
+      <li>Packed strategy consolidates inference pods on accelerator nodes</li>
+    </ul>
+  </div>
+  <div class="uc-card">
+    <h3>🛰️ Satellite Data Processing</h3>
+    <p style="font-size:12px;color:#5f5e5a;margin-bottom:.5rem">Partner: PCBD (Hungary)</p>
+    <p style="font-size:13px;margin-bottom:.5rem">Earth-observation data processed on the EMDC at the ground station, sending only high-value results to the cloud.</p>
+    <div style="font-size:12px;font-weight:600;color:#5f5e5a;margin-bottom:.3rem">HIRO CF Contribution</div>
+    <ul style="font-size:12px;padding-left:1rem">
+      <li>EMDC at ground station processes raw satellite imagery locally</li>
+      <li>CF orchestrates KFP pipelines for Earth-observation preprocessing</li>
+      <li>hiro-cross-cluster-workloads migrates burst workloads to cloud</li>
+      <li>CF energy-aware scheduling aligns heavy processing with renewable energy windows</li>
+      <li>Only CF-filtered high-value results sent to cloud (data sovereignty)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── ARCHITECTURE ─── -->
+<div class="sl">Full CAPE Stack — HIRO Layer Architecture</div>
+<div class="section-box">
+  <div class="layer">
+    <div class="layer-num">1</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">AI Intelligence Layer — Cognitive Framework (CF)</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">External AI Decision Agent · MLflow model registry · KServe serving · KFP pipelines · Federated Learning across EMDC sites</span>
+    </div>
+    <span class="badge b-dgreen">CF Core</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">2</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Adaptive Orchestration — hiro-adaptive-orchestrator</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Go · Kubebuilder · OrchestrationProfile CRD · calls CF AI agent for node scoring · hiro-scheduler plugin</span>
+    </div>
+    <span class="badge b-blue">Placement AI</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">3</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Energy Layer — energy-aware-orchestrator</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Python/Kopf · FastAPI · Kepler eBPF · CF Linear Regression energy forecast · Angular UI · Grafana dashboards</span>
+    </div>
+    <span class="badge b-teal">Energy AI</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">4</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Control Plane — mesh-controller + placement-controller</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Rust · p2panda P2P · Ed25519 · decentralised multi-cluster coordination · MeshPeer CRD · 21 + 17 releases</span>
+    </div>
+    <span class="badge b-purple">Decentralised CP</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">5</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Application Layer — anyapplication-controller + hiro-cross-cluster-workloads</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Go · Helm multi-zone · work-stealing cross-cluster · self-healing · Local/Global placement strategies</span>
+    </div>
+    <span class="badge b-amber">App Management</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num">6</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Infrastructure Layer — orchestration_library + Kubernetes + Helm</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">FastAPI · PostgreSQL · Alembic · orchestration-api Helm chart · monitoring-stack · GitHub Actions CI/CD</span>
+    </div>
+    <span class="badge b-dark">Infra / Ops</span>
+  </div>
+  <div class="layer">
+    <div class="layer-num" style="background:#0D47A1">H</div>
+    <div style="flex:1">
+      <strong style="font-size:13px">Hardware Layer — EMDC (Edge Micro Data Center)</strong>
+      <span style="font-size:12px;color:#5f5e5a;margin-left:.5rem">Modular computing nodes · eHPS · thermal management · on-premise deployment at partner sites (IPTO, PCBD, Fraunhofer)</span>
+    </div>
+    <span class="badge b-dgreen">HIRO Hardware</span>
+  </div>
+</div>
+
+<!-- ─── DELIVERABLES ─── -->
+<div class="sl">CAPE Work Packages &amp; Deliverables Timeline</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr><th>WP</th><th>Deliverable</th><th>Due</th><th>HIRO Contribution</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>WP2 — Specification</strong></td><td>D2.1 — Architectural blueprint</td><td>Jun 2025</td><td>EMDC hardware spec · orchestration architecture · CF AI agent design</td></tr>
+      <tr><td><strong>WP2 — Specification</strong></td><td>D2.2 — Component definitions (HW &amp; SW), Cognition and use cases</td><td>Aug 2025</td><td>EMDC component specs · CF cognitive layer definition · use case mapping</td></tr>
+      <tr><td><strong>WP2 — Specification</strong></td><td>D2.4 — Open Standard development</td><td>Nov 2026</td><td>Open orchestration API standards · EMDC interoperability specs</td></tr>
+      <tr><td><strong>WP3 — Hardware</strong></td><td>D3.1 — First report on edge-cloud hardware development</td><td>Aug 2025</td><td>EMDC hardware progress · eHPS development · thermal management</td></tr>
+      <tr><td><strong>WP3 — Hardware</strong></td><td>D3.2 — Mid-term report</td><td>May 2026</td><td>EMDC integration at use-case sites · hardware performance</td></tr>
+      <tr><td><strong>WP3 — Hardware</strong></td><td>D3.3 — Final report</td><td>Nov 2027</td><td>Complete EMDC deployment · hardware validation results</td></tr>
+      <tr><td><strong>WP4 — Software</strong></td><td>D4.1 — First report on software services</td><td>Aug 2025</td><td>Adaptive orchestrator v1 · energy-aware orchestrator · mesh-controller</td></tr>
+      <tr><td><strong>WP4 — Software</strong></td><td>D4.2 — Mid-term report on services and integration</td><td>May 2026</td><td>CF AI agent integration · cross-cluster workloads · DCP deployment</td></tr>
+      <tr><td><strong>WP4 — Software</strong></td><td>D4.3 — Final report</td><td>Nov 2027</td><td>Complete orchestration stack · CF federated learning · production deployment</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── CONSORTIUM ─── -->
+<div class="sl">Consortium Partners</div>
+<div class="section-box">
+  <table>
+    <thead>
+      <tr><th>Partner</th><th>Country</th><th>Type</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>HIRO Microdatacenters</strong></td><td>🇳🇱 Netherlands</td><td><span class="badge b-dgreen">Tech Provider</span></td><td>EMDC hardware · AI adaptive orchestration · CF decision agent · energy-aware scheduling · P2P control plane</td></tr>
+      <tr><td>PXNT (Paraxent)</td><td>🇩🇪 Germany</td><td><span class="badge b-blue">Industry</span></td><td>Project coordination · software stack</td></tr>
+      <tr><td>UNIBI (Univ. Bielefeld)</td><td>🇩🇪 Germany</td><td><span class="badge b-purple">Academic</span></td><td>Research · architecture design</td></tr>
+      <tr><td>RYAX Technologies</td><td>🇫🇷 France</td><td><span class="badge b-blue">Industry</span></td><td>Cloud-edge software · Infrastructure as Code</td></tr>
+      <tr><td>Christmann (CHR)</td><td>🇩🇪 Germany</td><td><span class="badge b-blue">Hardware</span></td><td>Edge computing hardware</td></tr>
+      <tr><td>EPFL</td><td>🇨🇭 Switzerland</td><td><span class="badge b-purple">Academic</span></td><td>Distributed systems research</td></tr>
+      <tr><td>HSG (Univ. St. Gallen)</td><td>🇨🇭 Switzerland</td><td><span class="badge b-purple">Academic</span></td><td>Business &amp; governance research</td></tr>
+      <tr><td>CDTV</td><td>🇭🇺 Hungary</td><td><span class="badge b-blue">Industry</span></td><td>Technology development</td></tr>
+      <tr><td>PCBD</td><td>🇭🇺 Hungary</td><td><span class="badge b-teal">Use Case</span></td><td>Satellite data processing use case</td></tr>
+      <tr><td>IPTO</td><td>🇬🇷 Greece</td><td><span class="badge b-teal">Use Case</span></td><td>Smart Grid use case · transmission grid analytics</td></tr>
+      <tr><td>Fraunhofer ITWM (FHG)</td><td>🇩🇪 Germany</td><td><span class="badge b-teal">Use Case</span></td><td>Edge AI use case · FPGA/RISC-V deep learning accelerator</td></tr>
+      <tr><td>PICMG</td><td>🌍 International</td><td><span class="badge b-amber">Standards</span></td><td>Edge computing standardisation body</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── C-SUITE TAKEAWAYS ─── -->
+<div class="sl">C-Suite Takeaways</div>
+<div class="section-box">
+  <div class="takeaway">
+    <div class="takeaway-icon">🧠</div>
+    <div class="takeaway-text">
+      <strong>HIRO's CF is the AI brain of CAPE's orchestration layer</strong>
+      The Cognitive Framework serves as the external AI decision agent for the CAPE adaptive orchestrator, scoring Kubernetes nodes based on real-time CPU, memory, GPU, and energy data. This makes HIRO the only partner delivering both hardware (EMDC) and the AI intelligence layer for the entire CAPE platform.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">⚡</div>
+    <div class="takeaway-text">
+      <strong>Energy-aware AI scheduling — unique CF capability in CAPE</strong>
+      HIRO trained a Linear Regression model (hosted in CF/MLflow, served via KServe) that predicts future energy consumption from Kepler eBPF metrics. The energy-aware orchestrator uses this CF model to defer non-critical workloads to renewable energy windows — a novel green-computing contribution directly enabled by the CF.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔗</div>
+    <div class="takeaway-text">
+      <strong>Decentralised control plane — novel Rust + P2P architecture</strong>
+      The mesh-controller (Rust, p2panda P2P, Ed25519) and placement-controller together form CAPE's decentralised control plane — no single point of failure, no central authority. CF model updates federate across EMDC sites via this P2P mesh, enabling distributed AI without centralising operational data.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🛰️</div>
+    <div class="takeaway-text">
+      <strong>Three high-value use cases demonstrate HIRO's full stack</strong>
+      HIRO's EMDC hardware + CF AI orchestration is deployed across Smart Grid (IPTO), Edge AI (Fraunhofer), and Satellite Data Processing (PCBD) use cases — covering energy, computer vision, and Earth-observation domains. This validates HIRO's platform as domain-agnostic and production-ready.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🛡️</div>
+    <div class="takeaway-text">
+      <strong>CF now governs infrastructure code — not just ML workloads</strong>
+      The <code>act</code> IaC Agent (CF-powered Cognitive Validator) extends CF beyond ML serving into DevSecOps. A LangGraph + LLM layer intercepts Pulumi infrastructure declarations before cloud deployment, detecting embedded secrets and unsafe shell commands in <code>user_data</code>. CAPE's provider schema and <code>cape-sdks</code> are integrated as a first-class test target — with coverage across amd64, arm64, RISC-V, GPU, FPGA, and CXL node types. This means CF is now a governance layer for both AI models and infrastructure code.
+    </div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-icon">🔄</div>
+    <div class="takeaway-text">
+      <strong>CF reuse across VERGE, ACES, NextGen and CAPE = compounding IP value</strong>
+      The same Cognitive Framework (cogflow, KServe, MLflow, KFP) deployed in VERGE and ACES now powers CAPE's AI orchestration layer. Each project adds new CF capabilities (energy forecasting, federated placement, NTK fine-tuning) that feed back into the platform — increasing HIRO's IP value and reducing per-project engineering cost.
+    </div>
+  </div>
+</div>
+
+<!-- ─── LINKS ─── -->
+<div class="sl">Links — Repositories &amp; Project</div>
+<div class="section-box">
+  <div class="g2">
+    <div>
+      <div class="link-group">
+        <h3 style="color:#1B5E20">GitHub — HIRO CAPE Components</h3>
+        <div class="link-item"><span class="link-label">hiro-adaptive-orchestrator</span><a href="https://github.com/HIRO-MicroDataCenters-BV/hiro-adaptive-orchestrator" target="_blank">github.com/HIRO-MicroDataCenters-BV/hiro-adaptive-orchestrator</a></div>
+        <div class="link-item"><span class="link-label">energy-aware-orchestrator</span><a href="https://github.com/HIRO-MicroDataCenters-BV/energy-aware-orchestrator" target="_blank">github.com/HIRO-MicroDataCenters-BV/energy-aware-orchestrator</a></div>
+        <div class="link-item"><span class="link-label">mesh-controller</span><a href="https://github.com/HIRO-MicroDataCenters-BV/mesh-controller" target="_blank">github.com/HIRO-MicroDataCenters-BV/mesh-controller</a></div>
+        <div class="link-item"><span class="link-label">placement-controller</span><a href="https://github.com/HIRO-MicroDataCenters-BV/placement-controller" target="_blank">github.com/HIRO-MicroDataCenters-BV/placement-controller</a></div>
+        <div class="link-item"><span class="link-label">anyapplication-controller</span><a href="https://github.com/HIRO-MicroDataCenters-BV/anyapplication-controller" target="_blank">github.com/HIRO-MicroDataCenters-BV/anyapplication-controller</a></div>
+        <div class="link-item"><span class="link-label">hiro-cross-cluster-workloads</span><a href="https://github.com/HIRO-MicroDataCenters-BV/hiro-cross-cluster-workloads" target="_blank">github.com/HIRO-MicroDataCenters-BV/hiro-cross-cluster-workloads</a></div>
+        <div class="link-item"><span class="link-label">orchestration_library</span><a href="https://github.com/HIRO-MicroDataCenters-BV/orchestration_library" target="_blank">github.com/HIRO-MicroDataCenters-BV/orchestration_library</a></div>
+        <div class="link-item"><span class="link-label">act — IaC Agent</span><a href="https://github.com/HIRO-MicroDataCenters-BV/act" target="_blank">github.com/HIRO-MicroDataCenters-BV/act</a></div>
+        <div class="link-item"><span class="link-label">Hiro-CF (Cognitive Framework)</span><a href="https://github.com/HIRO-MicroDataCenters-BV/Hiro-CF" target="_blank">github.com/HIRO-MicroDataCenters-BV/Hiro-CF</a></div>
+        <div class="link-item"><span class="link-label">HIRO GitHub Org</span><a href="https://github.com/HIRO-MicroDataCenters-BV" target="_blank">github.com/HIRO-MicroDataCenters-BV</a></div>
+      </div>
+    </div>
+    <div>
+      <div class="link-group">
+        <h3 style="color:#0D47A1">Project Websites</h3>
+        <div class="link-item"><span class="link-label">CAPE Project Site</span><a href="https://cape-project.eu" target="_blank">cape-project.eu</a></div>
+        <div class="link-item"><span class="link-label">CAPE Use Cases</span><a href="https://cape-project.eu/use-cases/" target="_blank">cape-project.eu/use-cases/</a></div>
+        <div class="link-item"><span class="link-label">CAPE Deliverables</span><a href="https://cape-project.eu/deliverables/" target="_blank">cape-project.eu/deliverables/</a></div>
+        <div class="link-item"><span class="link-label">EU Grant Record</span><a href="https://cordis.europa.eu/project/id/101189899" target="_blank">cordis.europa.eu/project/id/101189899</a></div>
+      </div>
+      <div class="link-group" style="margin-top:.75rem">
+        <h3 style="color:#1B5E20">CF Tools Used in CAPE</h3>
+        <div class="link-item"><span class="link-label">cogflow (PyPI)</span><a href="https://github.com/HIRO-MicroDataCenters-BV/cogflow" target="_blank">github.com/HIRO-MicroDataCenters-BV/cogflow</a></div>
+        <div class="link-item"><span class="link-label">Cogflow-Examples</span><a href="https://github.com/HIRO-MicroDataCenters-BV/Cogflow-Examples" target="_blank">github.com/HIRO-MicroDataCenters-BV/Cogflow-Examples</a></div>
+        <div class="link-item"><span class="link-label">cf_finetune_ntk</span><a href="https://github.com/HIRO-MicroDataCenters-BV/cf_finetune_ntk" target="_blank">github.com/HIRO-MicroDataCenters-BV/cf_finetune_ntk</a></div>
+        <div class="link-item"><span class="link-label">cog-framework-ui</span><a href="https://github.com/HIRO-MicroDataCenters-BV/cog-framework-ui" target="_blank">github.com/HIRO-MicroDataCenters-BV/cog-framework-ui</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  HIRO Microdatacenters · CAPE Project (Grant 101189899) · Cognitive Framework Dashboard · Generated 2026-07-01 · Confidential — C-Level Internal Use
+</footer>
+
+</div>
+</body>
+</html>
