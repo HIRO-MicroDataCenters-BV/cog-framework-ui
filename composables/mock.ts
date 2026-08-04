@@ -1498,6 +1498,24 @@ export const useApiWithMock = () => {
       return request(`/health`);
     },
 
+    getModelsStats: async () => {
+      if (mock.value.enabled) {
+        await mockDelay(200);
+        const json = await import('~/mocks/get.models-stats.json');
+        return Promise.resolve(json.default ?? json);
+      }
+      return request(`/models/stats`);
+    },
+
+    getDatasetsStats: async () => {
+      if (mock.value.enabled) {
+        await mockDelay(200);
+        const json = await import('~/mocks/get.datasets-stats.json');
+        return Promise.resolve(json.default ?? json);
+      }
+      return request(`/datasets/stats`);
+    },
+
     getExperimentsListV2: async (params: Record<string, unknown> = {}) => {
       if (mock.value.enabled) {
         await mockDelay();
@@ -1562,7 +1580,9 @@ export const useApiWithMock = () => {
 
         if (searchParams.status) {
           filteredRuns = filteredRuns.filter(
-            (r) => (r.state || '').toUpperCase() === searchParams.status.toUpperCase(),
+            (r) =>
+              (r.state || '').toUpperCase() ===
+              searchParams.status.toUpperCase(),
           );
         }
 

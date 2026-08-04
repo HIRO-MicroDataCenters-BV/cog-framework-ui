@@ -1,8 +1,8 @@
 import { useIntervalFn } from '@vueuse/core';
-import { getDataTypeFromValue } from '~/utils';
 
 // useApi() returns a large inferred object; cast to any to access all methods without TS narrowing limits
-type AnyApi = ReturnType<typeof useApi> & Record<string, (...args: unknown[]) => Promise<unknown>>;
+type AnyApi = ReturnType<typeof useApi> &
+  Record<string, (...args: unknown[]) => Promise<unknown>>;
 
 const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -64,6 +64,13 @@ export interface ModelTypeStat {
   members?: { label: string; count: number }[];
 }
 
+// Registrations per month, for the growth trend chart.
+export interface GrowthPoint {
+  month: string;
+  models: number;
+  datasets: number;
+}
+
 // Per-widget loading flags so a slow endpoint never blocks a fast widget.
 export interface DashboardLoading {
   health: boolean;
@@ -103,6 +110,10 @@ export const useDashboard = () => {
   const runBuckets = ref<RunBucket[]>([]);
   const datasetTypeStats = ref<DatasetTypeStat[]>([]);
   const modelTypeStats = ref<ModelTypeStat[]>([]);
+  // Monthly registration counts, keyed "YYYY-MM", captured from the models/datasets
+  // stats endpoints and merged into the growth chart.
+  const modelsByMonth = ref<Record<string, number>>({});
+  const datasetsByMonth = ref<Record<string, number>>({});
 
   // Owner attribution — counts are captured separately by the models/datasets
   // fetches (which run in parallel) and merged into a sorted leaderboard.
@@ -116,6 +127,29 @@ export const useDashboard = () => {
       .split(' ')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
+  };
+
+  // Stats endpoints return `by_owner: [{user_id, count}]` and
+  // `by_month: [{month, count}]` — normalise both to `{ key: count }` maps.
+  const ownerArrayToMap = (arr: unknown): Record<string, number> => {
+    const out: Record<string, number> = {};
+    if (Array.isArray(arr)) {
+      for (const o of arr) {
+        const id = String((o as { user_id?: unknown })?.user_id ?? '').trim();
+        if (id) out[id] = Number((o as { count?: unknown })?.count) || 0;
+      }
+    }
+    return out;
+  };
+  const monthArrayToMap = (arr: unknown): Record<string, number> => {
+    const out: Record<string, number> = {};
+    if (Array.isArray(arr)) {
+      for (const it of arr) {
+        const m = String((it as { month?: unknown })?.month ?? '').trim();
+        if (m) out[m] = Number((it as { count?: unknown })?.count) || 0;
+      }
+    }
+    return out;
   };
 
   const ownerStats = computed<OwnerStat[]>(() => {
@@ -138,6 +172,46 @@ export const useDashboard = () => {
       .sort((a, b) => b.total - a.total);
   });
 
+  // Growth chart — merge the models/datasets monthly counts into the last 6
+  // contiguous months (zero-filled). Derived from the stats endpoints, so no
+  // separate growth call is needed.
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const growthSeries = computed<GrowthPoint[]>(() => {
+    const mm = modelsByMonth.value;
+    const dm = datasetsByMonth.value;
+    const keys = [...new Set([...Object.keys(mm), ...Object.keys(dm)])].sort();
+    if (keys.length === 0) return [];
+    const latest = keys[keys.length - 1]; // "YYYY-MM"
+    let [y, mo] = latest.split('-').map(Number);
+    const seq: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      seq.unshift(`${y}-${String(mo).padStart(2, '0')}`);
+      mo -= 1;
+      if (mo === 0) {
+        mo = 12;
+        y -= 1;
+      }
+    }
+    return seq.map((k) => ({
+      month: monthNames[Number(k.split('-')[1]) - 1],
+      models: mm[k] ?? 0,
+      datasets: dm[k] ?? 0,
+    }));
+  });
+
   const loading = ref<DashboardLoading>({
     health: true,
     models: true,
@@ -158,20 +232,34 @@ export const useDashboard = () => {
   });
   const lastUpdated = ref<Date | null>(null);
 
+  // Dataset source types — the stats endpoint returns backend labels
+  // (file / table / broker / nats / prometheus); older numeric mappings kept too.
   const typeIconMap: Record<string, string> = {
     file: 'lucide:file-text',
+    table: 'lucide:table-2',
+    broker: 'lucide:radio',
+    nats: 'lucide:antenna',
+    prometheus: 'lucide:activity',
     database: 'lucide:database',
     stream: 'lucide:radio',
     time_series: 'lucide:calendar',
   };
   const typeColorMap: Record<string, string> = {
     file: 'text-blue-600 dark:text-blue-400',
+    table: 'text-purple-600 dark:text-purple-400',
+    broker: 'text-orange-600 dark:text-orange-400',
+    nats: 'text-teal-600 dark:text-teal-400',
+    prometheus: 'text-green-600 dark:text-green-400',
     database: 'text-purple-600 dark:text-purple-400',
     stream: 'text-orange-600 dark:text-orange-400',
     time_series: 'text-green-600 dark:text-green-400',
   };
   const typeNameMap: Record<string, string> = {
     file: 'File',
+    table: 'Table',
+    broker: 'Broker',
+    nats: 'NATS',
+    prometheus: 'Prometheus',
     database: 'Database',
     stream: 'Stream',
     time_series: 'Time Series',
@@ -270,8 +358,14 @@ export const useDashboard = () => {
         owner: s.user_id ? String(s.user_id) : null,
         status: String(s.status ?? 'unknown').toLowerCase(),
         hasCanary: Boolean(s.has_canary),
-        stableTraffic: s.stable_traffic_percent != null ? Number(s.stable_traffic_percent) : null,
-        canaryTraffic: s.canary_traffic_percent != null ? Number(s.canary_traffic_percent) : null,
+        stableTraffic:
+          s.stable_traffic_percent != null
+            ? Number(s.stable_traffic_percent)
+            : null,
+        canaryTraffic:
+          s.canary_traffic_percent != null
+            ? Number(s.canary_traffic_percent)
+            : null,
         createdAt: String(s.creation_timestamp ?? ''),
         age: String(s.age ?? ''),
       }));
@@ -282,32 +376,31 @@ export const useDashboard = () => {
     }
   };
 
+  // Lightweight stats endpoint — counts only, no dataset rows transferred.
   const fetchDatasets = async () => {
     loading.value.datasets = true;
     error.value.datasets = false;
     try {
-      const res = await api.getDatasets({ limit: 1000 });
-      const rawDatasets =
-        (res as { data?: Record<string, unknown>[] })?.data ?? [];
-      kpis.value.datasetsTotal = rawDatasets.length;
-      const typeCount: Record<string, number> = {};
-      const ownerCount: Record<string, number> = {};
-      for (const d of rawDatasets) {
-        const typeName = getDataTypeFromValue(Number(d.data_source_type)) ?? 'unknown';
-        typeCount[typeName] = (typeCount[typeName] ?? 0) + 1;
-        const owner = String(d.user_id ?? '').trim();
-        if (owner) ownerCount[owner] = (ownerCount[owner] ?? 0) + 1;
-      }
-      datasetOwnerCounts.value = ownerCount;
-      datasetTypeStats.value = Object.entries(typeCount)
+      const res = await api.getDatasetsStats();
+      const d = (res as { data?: Record<string, unknown> })?.data ?? {};
+      kpis.value.datasetsTotal = Number(d.total ?? 0);
+
+      // Dataset Inventory — breakdown by source type.
+      const bySource = (d.by_source_type as Record<string, number>) ?? {};
+      datasetTypeStats.value = Object.entries(bySource)
+        .filter(([, count]) => Number(count) > 0)
         .map(([type, count]) => ({
           type,
           label: typeNameMap[type] ?? prettify(type),
-          count,
+          count: Number(count),
           icon: typeIconMap[type] ?? 'lucide:layers',
           colorClass: typeColorMap[type] ?? 'text-muted-foreground',
         }))
         .sort((a, b) => b.count - a.count);
+
+      // Assets-by-Owner + growth chart inputs.
+      datasetOwnerCounts.value = ownerArrayToMap(d.by_owner);
+      datasetsByMonth.value = monthArrayToMap(d.by_month);
     } catch {
       error.value.datasets = true;
     } finally {
@@ -348,14 +441,17 @@ export const useDashboard = () => {
       // 6 weekly buckets over 30 days
       const bucketCount = 6;
       const bucketMs = ms30d / bucketCount;
-      const bucketList: RunBucket[] = Array.from({ length: bucketCount }, (_, i) => ({
-        label: `W${bucketCount - i}`,
-        succeeded: 0,
-        running: 0,
-        failed: 0,
-        skipped: 0,
-        total: 0,
-      }));
+      const bucketList: RunBucket[] = Array.from(
+        { length: bucketCount },
+        (_, i) => ({
+          label: `W${bucketCount - i}`,
+          succeeded: 0,
+          running: 0,
+          failed: 0,
+          skipped: 0,
+          total: 0,
+        }),
+      );
       for (const r of rawRuns) {
         const ts = runTs(r);
         if (ts <= 0) continue;
@@ -412,28 +508,29 @@ export const useDashboard = () => {
     }
   };
 
-  // Models KPI.
+  // Lightweight stats endpoint — counts only, no model rows transferred.
   const fetchModels = async () => {
     loading.value.models = true;
     error.value.models = false;
     try {
-      const res = await api.getModels({ limit: 1000 });
-      const modelsData =
-        (res as { data?: Record<string, unknown>[] })?.data ?? [];
-      kpis.value.modelsTotal = modelsData.length;
-      const counts: Record<string, number> = {};
+      const res = await api.getModelsStats();
+      const d = (res as { data?: Record<string, unknown> })?.data ?? {};
+      kpis.value.modelsTotal = Number(d.total ?? 0);
+
+      // Model Inventory — fold raw `type` counts into curated categories + Other.
+      const byType = (d.by_type as Record<string, number>) ?? {};
       const canonCount: Record<string, number> = {};
       const otherMembers: Record<string, number> = {};
-      for (const m of modelsData) {
-        const owner = String(m.register_user_id ?? '').trim();
-        if (owner) counts[owner] = (counts[owner] ?? 0) + 1;
-        const raw = String(m.type ?? '').trim().toLowerCase();
-        if (!raw) continue;
+      for (const [rawKey, cntRaw] of Object.entries(byType)) {
+        const count = Number(cntRaw) || 0;
+        const raw = String(rawKey).trim().toLowerCase();
+        if (!raw || count === 0) continue;
         const canon = frameworkCanonicalMap[raw] ?? 'other';
-        canonCount[canon] = (canonCount[canon] ?? 0) + 1;
-        if (canon === 'other') otherMembers[raw] = (otherMembers[raw] ?? 0) + 1;
+        canonCount[canon] = (canonCount[canon] ?? 0) + count;
+        if (canon === 'other') {
+          otherMembers[raw] = (otherMembers[raw] ?? 0) + count;
+        }
       }
-      modelOwnerCounts.value = counts;
       modelTypeStats.value = Object.entries(canonCount)
         .map(([type, count]) => ({
           type,
@@ -454,6 +551,10 @@ export const useDashboard = () => {
           if (b.type === 'other') return -1;
           return b.count - a.count;
         });
+
+      // Assets-by-Owner + growth chart inputs.
+      modelOwnerCounts.value = ownerArrayToMap(d.by_owner);
+      modelsByMonth.value = monthArrayToMap(d.by_month);
     } catch {
       error.value.models = true;
     } finally {
@@ -479,9 +580,7 @@ export const useDashboard = () => {
   };
 
   // True only while every widget is still loading (used for the header refresh spinner).
-  const anyLoading = computed(() =>
-    Object.values(loading.value).some(Boolean),
-  );
+  const anyLoading = computed(() => Object.values(loading.value).some(Boolean));
 
   onMounted(() => {
     refresh();
@@ -495,6 +594,7 @@ export const useDashboard = () => {
     runBuckets,
     datasetTypeStats,
     modelTypeStats,
+    growthSeries,
     ownerStats,
     loading,
     error,

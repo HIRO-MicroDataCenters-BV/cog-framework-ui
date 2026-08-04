@@ -21,6 +21,8 @@ import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.promethe
 import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
 import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
+import modelsStatsData from '@/mocks/get.models-stats.json';
+import datasetsStatsData from '@/mocks/get.datasets-stats.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
 import modelsDetailsAssociationsData from '@/mocks/get.models.details.associations.json';
 import componentsData from '@/mocks/get.training-builder-components.json';
@@ -362,6 +364,17 @@ export const useApi = () => {
       const q = new URLSearchParams(mapped).toString();
 
       return await request(`/models?${q}`, 'GET', undefined, options);
+    },
+
+    /**
+     * Lightweight model statistics for the dashboard (counts only, no rows).
+     * Returns { total, by_type, by_owner, by_month }.
+     */
+    getModelsStats: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(modelsStatsData);
+      }
+      return await request(`/models/stats`);
     },
 
     /**
@@ -1344,6 +1357,16 @@ export const useApi = () => {
       ).toString();
       const res = await request(`/datasets?${q}`);
       return res;
+    },
+    /**
+     * Lightweight dataset statistics for the dashboard (counts only, no rows).
+     * Returns { total, by_source_type, by_type, by_owner, by_month }.
+     */
+    getDatasetsStats: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(datasetsStatsData);
+      }
+      return await request(`/datasets/stats`);
     },
     /**
      * Updates an existing dataset file

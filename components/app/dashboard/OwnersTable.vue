@@ -18,7 +18,8 @@ const palette = [
 ];
 function tint(email: string) {
   let h = 0;
-  for (let i = 0; i < email.length; i++) h = (h + email.charCodeAt(i)) % palette.length;
+  for (let i = 0; i < email.length; i++)
+    h = (h + email.charCodeAt(i)) % palette.length;
   return palette[h];
 }
 function initials(name: string) {
@@ -31,13 +32,19 @@ function initials(name: string) {
 </script>
 
 <template>
-  <div class="rounded-xl border border-border/60 bg-card flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border/50">
+  <div
+    class="rounded-xl border border-border/60 bg-card flex flex-col overflow-hidden"
+  >
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-border/50"
+    >
       <div class="flex items-center gap-2">
         <Icon name="lucide:users-round" class="size-4 text-muted-foreground" />
         <span class="text-sm font-medium">Assets by Owner</span>
       </div>
-      <span class="text-xs text-muted-foreground">{{ owners.length }} owners</span>
+      <span class="text-xs text-muted-foreground"
+        >{{ owners.length }} owners</span
+      >
     </div>
 
     <div class="overflow-auto flex-1 max-h-[320px]">
@@ -54,21 +61,32 @@ function initials(name: string) {
           <template v-if="loading">
             <tr v-for="i in 4" :key="i" class="border-b border-border/20">
               <td v-for="j in 4" :key="j" class="px-4 py-2.5">
-                <span class="inline-block h-3 w-20 rounded bg-muted animate-pulse" />
+                <span
+                  class="inline-block h-3 w-20 rounded bg-muted animate-pulse"
+                />
               </td>
             </tr>
           </template>
           <template v-else-if="error">
             <tr>
-              <td colspan="4" class="px-4 py-8 text-center text-muted-foreground">
-                <Icon name="lucide:triangle-alert" class="size-4 inline mr-1 text-red-500" />
+              <td
+                colspan="4"
+                class="px-4 py-8 text-center text-muted-foreground"
+              >
+                <Icon
+                  name="lucide:triangle-alert"
+                  class="size-4 inline mr-1 text-red-500"
+                />
                 Failed to load ownership data
               </td>
             </tr>
           </template>
           <template v-else-if="owners.length === 0">
             <tr>
-              <td colspan="4" class="px-4 py-8 text-center text-muted-foreground">
+              <td
+                colspan="4"
+                class="px-4 py-8 text-center text-muted-foreground"
+              >
                 No owned assets found
               </td>
             </tr>
@@ -89,13 +107,21 @@ function initials(name: string) {
                   </span>
                   <div class="min-w-0">
                     <div class="font-medium truncate">{{ owner.name }}</div>
-                    <div class="text-[10px] text-muted-foreground truncate">{{ owner.email }}</div>
+                    <div class="text-[10px] text-muted-foreground truncate">
+                      {{ owner.email }}
+                    </div>
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-2.5 text-right tabular-nums">{{ owner.models }}</td>
-              <td class="px-4 py-2.5 text-right tabular-nums">{{ owner.datasets }}</td>
-              <td class="px-4 py-2.5 text-right font-semibold tabular-nums">{{ owner.total }}</td>
+              <td class="px-4 py-2.5 text-right tabular-nums">
+                {{ owner.models }}
+              </td>
+              <td class="px-4 py-2.5 text-right tabular-nums">
+                {{ owner.datasets }}
+              </td>
+              <td class="px-4 py-2.5 text-right font-semibold tabular-nums">
+                {{ owner.total }}
+              </td>
             </tr>
           </template>
         </tbody>

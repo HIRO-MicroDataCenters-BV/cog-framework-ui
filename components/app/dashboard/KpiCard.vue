@@ -11,7 +11,9 @@ defineProps<{
 </script>
 
 <template>
-  <div class="rounded-xl border border-border/60 bg-card p-2 flex flex-col gap-1">
+  <div
+    class="rounded-xl border border-border/60 bg-card p-2 flex flex-col gap-1"
+  >
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-muted-foreground">{{ label }}</span>
       <Icon :name="icon" class="size-4" :class="color" />

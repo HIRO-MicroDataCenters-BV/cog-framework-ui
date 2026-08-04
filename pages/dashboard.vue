@@ -8,6 +8,7 @@ import KpiCard from '~/components/app/dashboard/KpiCard.vue';
 import ServingTable from '~/components/app/dashboard/ServingTable.vue';
 import RunsChart from '~/components/app/dashboard/RunsChart.vue';
 import InventoryPanel from '~/components/app/dashboard/InventoryPanel.vue';
+import GrowthTrends from '~/components/app/dashboard/GrowthTrends.vue';
 import OwnersTable from '~/components/app/dashboard/OwnersTable.vue';
 
 const { setPage } = useApp();
@@ -36,6 +37,7 @@ const {
   runBuckets,
   datasetTypeStats,
   modelTypeStats,
+  growthSeries,
   ownerStats,
   loading,
   error,
@@ -94,11 +96,12 @@ const kpiCards = computed(() => [
 
 <template>
   <div class="flex flex-col gap-3 p-6 min-h-full">
-
     <!-- ── Page header ─────────────────────────────────────── -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-xl font-semibold tracking-tight">Executive Dashboard</h1>
+        <h1 class="text-xl font-semibold tracking-tight">
+          Executive Dashboard
+        </h1>
         <p class="text-sm text-muted-foreground mt-0.5">
           Cognitive Framework — platform health at a glance
         </p>
@@ -119,7 +122,11 @@ const kpiCards = computed(() => [
           :class="{ 'opacity-50 pointer-events-none': anyLoading }"
           @click="refresh"
         >
-          <Icon name="lucide:refresh-cw" class="size-3" :class="{ 'animate-spin': anyLoading }" />
+          <Icon
+            name="lucide:refresh-cw"
+            class="size-3"
+            :class="{ 'animate-spin': anyLoading }"
+          />
           Refresh
         </button>
       </div>
@@ -136,7 +143,9 @@ const kpiCards = computed(() => [
         :color="card.color"
         :loading="loading[card.key]"
         :error="error[card.key]"
-        :error-title="card.key === 'users' ? 'Requires admin access' : 'Failed to load'"
+        :error-title="
+          card.key === 'users' ? 'Requires admin access' : 'Failed to load'
+        "
       />
     </div>
 
@@ -182,14 +191,18 @@ const kpiCards = computed(() => [
       />
     </div>
 
-    <!-- ── Row 4: Assets by owner (full width) ── -->
-    <div>
+    <!-- ── Row 4: Growth trends (50%) + Assets by owner (50%) ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <GrowthTrends
+        :series="growthSeries"
+        :loading="loading.models || loading.datasets"
+        :error="error.models && error.datasets"
+      />
       <OwnersTable
         :owners="ownerStats"
         :loading="loading.models || loading.datasets"
         :error="error.models && error.datasets"
       />
     </div>
-
   </div>
 </template>

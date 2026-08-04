@@ -11,8 +11,10 @@ const dayjs = useDayjs();
 
 function statusPill(status: string) {
   const s = status.toLowerCase();
-  if (s === 'ready') return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
-  if (s === 'pending' || s === 'unknown') return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300';
+  if (s === 'ready')
+    return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+  if (s === 'pending' || s === 'unknown')
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300';
   return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
 }
 
@@ -42,13 +44,19 @@ function uptime(createdAt: string, fallbackAge: string): string {
 </script>
 
 <template>
-  <div class="rounded-xl border border-border/60 bg-card flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border/50">
+  <div
+    class="rounded-xl border border-border/60 bg-card flex flex-col overflow-hidden"
+  >
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-border/50"
+    >
       <div class="flex items-center gap-2">
         <Icon name="lucide:server" class="size-4 text-muted-foreground" />
         <span class="text-sm font-medium">Model Serving Status</span>
       </div>
-      <span class="text-xs text-muted-foreground">{{ rows.length }} deployments</span>
+      <span class="text-xs text-muted-foreground"
+        >{{ rows.length }} deployments</span
+      >
     </div>
 
     <div class="overflow-auto flex-1 max-h-[320px]">
@@ -66,21 +74,32 @@ function uptime(createdAt: string, fallbackAge: string): string {
           <template v-if="loading">
             <tr v-for="i in 5" :key="i" class="border-b border-border/20">
               <td v-for="j in 5" :key="j" class="px-4 py-2.5">
-                <span class="inline-block h-3 w-24 rounded bg-muted animate-pulse" />
+                <span
+                  class="inline-block h-3 w-24 rounded bg-muted animate-pulse"
+                />
               </td>
             </tr>
           </template>
           <template v-else-if="error">
             <tr>
-              <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">
-                <Icon name="lucide:triangle-alert" class="size-4 inline mr-1 text-red-500" />
+              <td
+                colspan="5"
+                class="px-4 py-8 text-center text-muted-foreground"
+              >
+                <Icon
+                  name="lucide:triangle-alert"
+                  class="size-4 inline mr-1 text-red-500"
+                />
                 Failed to load serving status
               </td>
             </tr>
           </template>
           <template v-else-if="rows.length === 0">
             <tr>
-              <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">
+              <td
+                colspan="5"
+                class="px-4 py-8 text-center text-muted-foreground"
+              >
                 No inference services found
               </td>
             </tr>
@@ -94,7 +113,10 @@ function uptime(createdAt: string, fallbackAge: string): string {
               <td class="px-4 py-2.5 font-medium">{{ row.isvcName }}</td>
               <td class="px-4 py-2.5 text-muted-foreground">
                 {{ row.modelName ?? '—' }}
-                <span v-if="row.framework" class="ml-1 text-[10px] text-muted-foreground/60">
+                <span
+                  v-if="row.framework"
+                  class="ml-1 text-[10px] text-muted-foreground/60"
+                >
                   ({{ row.framework }})
                 </span>
               </td>
@@ -158,9 +180,12 @@ function uptime(createdAt: string, fallbackAge: string): string {
     </div>
 
     <!-- Canary bug footnote -->
-    <div class="px-4 py-2 border-t border-border/30 flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400">
+    <div
+      class="px-4 py-2 border-t border-border/30 flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400"
+    >
       <Icon name="lucide:triangle-alert" class="size-3 shrink-0" />
-      Known issue: canary/stable traffic percentages may be swapped if KServe returns revisions in unexpected order
+      Known issue: canary/stable traffic percentages may be swapped if KServe
+      returns revisions in unexpected order
     </div>
   </div>
 </template>

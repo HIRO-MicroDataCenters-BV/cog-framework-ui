@@ -18,7 +18,9 @@ function barWidth(count: number) {
 
 <template>
   <div class="rounded-xl border border-border/60 bg-card flex flex-col">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border/50">
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-border/50"
+    >
       <div class="flex items-center gap-2">
         <Icon name="lucide:route" class="size-4 text-muted-foreground" />
         <span class="text-sm font-medium">Pipeline Runs (30d)</span>
@@ -32,14 +34,22 @@ function barWidth(count: number) {
         </div>
       </template>
       <template v-else-if="error">
-        <div class="flex flex-col items-center justify-center py-8 text-muted-foreground">
+        <div
+          class="flex flex-col items-center justify-center py-8 text-muted-foreground"
+        >
           <Icon name="lucide:triangle-alert" class="size-5 text-red-500 mb-1" />
           <span class="text-xs">Failed to load pipeline runs</span>
         </div>
       </template>
       <template v-else>
-        <div v-for="bucket in buckets" :key="bucket.label" class="flex items-center gap-2">
-          <span class="w-5 shrink-0 text-[10px] text-muted-foreground">{{ bucket.label }}</span>
+        <div
+          v-for="bucket in buckets"
+          :key="bucket.label"
+          class="flex items-center gap-2"
+        >
+          <span class="w-5 shrink-0 text-[10px] text-muted-foreground">{{
+            bucket.label
+          }}</span>
           <div class="flex-1 flex h-5 rounded overflow-hidden bg-muted/30">
             <div
               v-if="bucket.succeeded"
@@ -66,7 +76,9 @@ function barWidth(count: number) {
               :title="`${bucket.skipped} skipped`"
             />
           </div>
-          <span class="w-5 shrink-0 text-right text-[10px] text-muted-foreground">
+          <span
+            class="w-5 shrink-0 text-right text-[10px] text-muted-foreground"
+          >
             {{ bucket.total }}
           </span>
         </div>
