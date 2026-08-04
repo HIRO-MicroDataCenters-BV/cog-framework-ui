@@ -22,7 +22,7 @@ function barWidth(count: number) {
       class="flex items-center justify-between px-4 py-3 border-b border-border/50"
     >
       <div class="flex items-center gap-2">
-        <Icon name="lucide:route" class="size-4 text-muted-foreground" />
+        <Icon name="lucide:route" class="size-4 text-orange-500" />
         <span class="text-sm font-medium">Pipeline Runs (30d)</span>
       </div>
     </div>
