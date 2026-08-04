@@ -1,0 +1,39 @@
+{
+  "status_code": 200,
+  "message": "Dataset statistics",
+  "data": {
+    "total": 51,
+    "by_source_type": {
+      "file": 28,
+      "table": 2,
+      "broker": 10,
+      "nats": 4,
+      "prometheus": 7
+    },
+    "by_type": {
+      "train": 14,
+      "inference": 15,
+      "both": 19,
+      "llm": 0,
+      "jsonl": 3
+    },
+    "by_owner": [
+      { "user_id": "admin@hiro.com", "count": 27 },
+      { "user_id": "0", "count": 17 },
+      { "user_id": "admin", "count": 5 },
+      { "user_id": "test@hiro.com", "count": 2 }
+    ],
+    "by_month": [
+      { "month": "2025-08", "count": 17 },
+      { "month": "2025-09", "count": 9 },
+      { "month": "2025-10", "count": 8 },
+      { "month": "2025-11", "count": 4 },
+      { "month": "2025-12", "count": 3 },
+      { "month": "2026-01", "count": 2 },
+      { "month": "2026-02", "count": 3 },
+      { "month": "2026-03", "count": 2 },
+      { "month": "2026-06", "count": 3 }
+    ]
+  },
+  "pagination": null
+}

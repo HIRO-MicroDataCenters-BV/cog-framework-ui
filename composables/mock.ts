@@ -1493,7 +1493,7 @@ export const useApiWithMock = () => {
       if (mock.value.enabled) {
         await mockDelay(100);
         const json = await import('~/mocks/get.health.json');
-        return Promise.resolve(json);
+        return Promise.resolve(json.default ?? json);
       }
       return request(`/health`);
     },
@@ -1522,8 +1522,9 @@ export const useApiWithMock = () => {
         // Derive a small, stable experiment set from the dashboard runs mock.
         const json = await import('~/mocks/get.pipeline-runs-v2.json');
         type V2Run = { experiment_id?: string };
+        const runs = ((json.default ?? json) as { runs?: V2Run[] }).runs ?? [];
         const ids = new Set(
-          (json.runs as V2Run[])
+          runs
             .map((r) => r.experiment_id)
             .filter((id): id is string => Boolean(id)),
         );
@@ -1554,7 +1555,7 @@ export const useApiWithMock = () => {
         // Simulate a slower admin endpoint so per-widget loading is visible in demo mode
         await mockDelay(1800);
         const json = await import('~/mocks/get.users.json');
-        return Promise.resolve(json);
+        return Promise.resolve(json.default ?? json);
       }
       return request(`/users`);
     },
@@ -1576,7 +1577,9 @@ export const useApiWithMock = () => {
           experiment_id?: string;
         };
 
-        let filteredRuns: V2Run[] = [...(json.runs as V2Run[])];
+        let filteredRuns: V2Run[] = [
+          ...(((json.default ?? json) as { runs?: V2Run[] }).runs ?? []),
+        ];
 
         if (searchParams.status) {
           filteredRuns = filteredRuns.filter(
@@ -1605,7 +1608,9 @@ export const useApiWithMock = () => {
         return Promise.resolve({
           status_code: 200,
           message: 'Validation metrics retrieved.',
-          data: hasMetrics ? json.data : [],
+          data: hasMetrics
+            ? (((json.default ?? json) as { data?: unknown[] }).data ?? [])
+            : [],
         });
       }
       return request(`/models/${model_id}/validation/metrics`);
