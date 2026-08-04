@@ -1,78 +1,64 @@
 {
   "status_code": 200,
-  "message": "Users retrieved successfully.",
-  "data": [
-    {
-      "id": 1,
-      "username": "admin",
-      "email": "admin@hiro.com",
-      "first_name": "Admin",
-      "last_name": "User",
-      "role": "admin",
-      "created_at": "2025-09-01T08:00:00.000000"
-    },
-    {
-      "id": 2,
-      "username": "sai_kireeti",
-      "email": "sai.kireeti@hiro-microdatacenters.nl",
-      "first_name": "Sai",
-      "last_name": "Kireeti",
-      "role": "user",
-      "created_at": "2025-09-10T09:00:00.000000"
-    },
-    {
-      "id": 3,
-      "username": "fred_buining",
-      "email": "fred.buining@hiro-microdatacenters.nl",
-      "first_name": "Fred",
-      "last_name": "Buining",
-      "role": "user",
-      "created_at": "2025-09-12T10:00:00.000000"
-    },
-    {
-      "id": 4,
-      "username": "ali_shalbaf",
-      "email": "ali.shalbaf@hiro-microdatacenters.nl",
-      "first_name": "Ali",
-      "last_name": "Shalbaf",
-      "role": "user",
-      "created_at": "2025-10-01T11:00:00.000000"
-    },
-    {
-      "id": 5,
-      "username": "bola_nasr",
-      "email": "bola.nasr@hiro-microdatacenters.nl",
-      "first_name": "Bola",
-      "last_name": "Nasr",
-      "role": "user",
-      "created_at": "2025-10-05T12:00:00.000000"
-    },
-    {
-      "id": 6,
-      "username": "rui_min",
-      "email": "rui.min@hiro-microdatacenters.nl",
-      "first_name": "Rui",
-      "last_name": "Min",
-      "role": "user",
-      "created_at": "2025-10-15T09:30:00.000000"
-    },
-    {
-      "id": 7,
-      "username": "veena_rao",
-      "email": "veena.rao@hiro-microdatacenters.nl",
-      "first_name": "Veena",
-      "last_name": "Rao",
-      "role": "user",
-      "created_at": "2025-11-01T08:45:00.000000"
-    },
-    {
-      "id": 8,
-      "username": "renuka_gollu",
-      "email": "renuka.gollu@hiro-microdatacenters.nl",
-      "first_name": "Renuka",
-      "last_name": "Gollu",
-      "role": "user",
-      "created_at": "2025-11-10T10:00:00.000000"
-    }
-  ]
+  "message": "Users retrieved successfully",
+  "data": {
+    "passwords": [
+      {
+        "email": "rui.min@hiro.com",
+        "username": "rui.min@hiro.com",
+        "user_id": "0b585aab-93cf-4e18-b71c-2a4184256ae3",
+        "department": "Research"
+      },
+      {
+        "email": "test1@hiro.com",
+        "username": "test1@hiro.com",
+        "user_id": "b5f3e4e2-3317-40b0-b00a-ffd53b9c5514",
+        "department": null
+      },
+      {
+        "email": "test2@hiro.com",
+        "username": "test2@hiro.com",
+        "user_id": "b5f3e4e2-3317-40b0-b00b-ffd53b9c5515",
+        "department": null
+      },
+      {
+        "email": "test4@hiro.com",
+        "username": "test4@hiro.com",
+        "user_id": "558628cd-aa1b-45dd-a73e-49d6295af4ec",
+        "department": "Data Science"
+      },
+      {
+        "email": "test5@hiro.com",
+        "username": "test5@hiro.com",
+        "user_id": "511e915d-a07e-42db-8fad-59d2571db667",
+        "department": null
+      },
+      {
+        "email": "test6@hiro.com",
+        "username": "test6@hiro.com",
+        "user_id": "41ec8ae1-d7e6-4b53-a01e-c7e526ed9096",
+        "department": "Engineering"
+      },
+      {
+        "email": "test@hiro.com",
+        "username": "test@hiro.com",
+        "user_id": "b5f3e4e2-3316-40b0-b00a-ffd53b9c5514",
+        "department": "QA"
+      },
+      {
+        "email": "test@test.com",
+        "username": "test@test.com",
+        "user_id": "a9fb22b9-d61b-4d7c-bc92-0d38d241a2f8",
+        "department": null
+      },
+      {
+        "email": "admin@hiro.com",
+        "username": "admin@hiro.com",
+        "user_id": "eac0e267-e728-4c23-8e17-d7bf80e59cef",
+        "department": "Platform"
+      }
+    ],
+    "total_count": 9
+  },
+  "pagination": null
 }
