@@ -42,11 +42,8 @@ const {
   loading,
   error,
   anyLoading,
-  lastUpdated,
   refresh,
 } = useDashboard();
-
-const dayjs = useDayjs();
 
 const kpiCards = computed(() => [
   {
@@ -113,10 +110,7 @@ const kpiCards = computed(() => [
           :error="error.health"
         />
 
-        <!-- Last updated + refresh -->
-        <span v-if="lastUpdated" class="text-xs text-muted-foreground">
-          Updated {{ dayjs(lastUpdated).format('HH:mm') }}
-        </span>
+        <!-- Refresh -->
         <button
           class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted transition-colors"
           :class="{ 'opacity-50 pointer-events-none': anyLoading }"
