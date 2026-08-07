@@ -48,17 +48,10 @@ const {
 const kpiCards = computed(() => [
   {
     key: 'models' as const,
-    label: 'Models in Registry',
+    label: 'Models Registered',
     value: kpis.value.modelsTotal,
     icon: 'lucide:bot',
     color: 'text-blue-500',
-  },
-  {
-    key: 'serving' as const,
-    label: 'Live Deployments',
-    value: kpis.value.liveDeployments,
-    icon: 'lucide:server',
-    color: 'text-green-500',
   },
   {
     key: 'datasets' as const,
@@ -66,6 +59,13 @@ const kpiCards = computed(() => [
     value: kpis.value.datasetsTotal,
     icon: 'lucide:table-2',
     color: 'text-purple-500',
+  },
+  {
+    key: 'serving' as const,
+    label: 'Live Deployments',
+    value: kpis.value.liveDeployments,
+    icon: 'lucide:server',
+    color: 'text-green-500',
   },
   {
     key: 'runs' as const,

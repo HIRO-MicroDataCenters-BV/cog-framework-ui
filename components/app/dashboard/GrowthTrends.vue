@@ -48,7 +48,9 @@ function dimClass(key: string): string {
     >
       <div class="flex items-center gap-2">
         <Icon name="lucide:trending-up" class="size-4 text-teal-500" />
-        <span class="text-sm font-medium">Registrations · last 6 months</span>
+        <span class="text-sm font-medium"
+          >Registration trend · last 6 months</span
+        >
       </div>
       <div class="flex items-center gap-3">
         <span
