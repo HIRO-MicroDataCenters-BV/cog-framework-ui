@@ -55,13 +55,12 @@ function initials(name: string) {
             <th class="text-left px-4 py-2 font-medium">Department</th>
             <th class="text-right px-4 py-2 font-medium">Models</th>
             <th class="text-right px-4 py-2 font-medium">Datasets</th>
-            <th class="text-right px-4 py-2 font-medium">Total</th>
           </tr>
         </thead>
         <tbody>
           <template v-if="loading">
             <tr v-for="i in 4" :key="i" class="border-b border-border/20">
-              <td v-for="j in 5" :key="j" class="px-4 py-2.5">
+              <td v-for="j in 4" :key="j" class="px-4 py-2.5">
                 <span
                   class="inline-block h-3 w-20 rounded bg-muted animate-pulse"
                 />
@@ -71,7 +70,7 @@ function initials(name: string) {
           <template v-else-if="error">
             <tr>
               <td
-                colspan="5"
+                colspan="4"
                 class="px-4 py-8 text-center text-muted-foreground"
               >
                 <Icon
@@ -85,7 +84,7 @@ function initials(name: string) {
           <template v-else-if="owners.length === 0">
             <tr>
               <td
-                colspan="5"
+                colspan="4"
                 class="px-4 py-8 text-center text-muted-foreground"
               >
                 No owned assets found
@@ -125,9 +124,6 @@ function initials(name: string) {
               </td>
               <td class="px-4 py-2.5 text-right tabular-nums">
                 {{ owner.datasets }}
-              </td>
-              <td class="px-4 py-2.5 text-right font-semibold tabular-nums">
-                {{ owner.total }}
               </td>
             </tr>
           </template>
