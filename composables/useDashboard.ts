@@ -41,6 +41,7 @@ export interface RunBucket {
 export interface OwnerStat {
   email: string;
   name: string;
+  department: string | null;
   models: number;
   datasets: number;
   total: number;
@@ -119,6 +120,8 @@ export const useDashboard = () => {
   // fetches (which run in parallel) and merged into a sorted leaderboard.
   const modelOwnerCounts = ref<Record<string, number>>({});
   const datasetOwnerCounts = ref<Record<string, number>>({});
+  // email (lowercased) → department, from the users endpoint.
+  const userDepartments = ref<Record<string, string>>({});
 
   const nameFromEmail = (email: string): string => {
     const part = email.split('@')[0];
@@ -165,6 +168,7 @@ export const useDashboard = () => {
       .map(([email, c]) => ({
         email,
         name: nameFromEmail(email),
+        department: userDepartments.value[email.toLowerCase()] ?? null,
         models: c.models,
         datasets: c.datasets,
         total: c.models + c.datasets,
@@ -498,8 +502,27 @@ export const useDashboard = () => {
     error.value.users = false;
     try {
       const res = await api.getUsers();
-      const rawUsers = (res as { data?: unknown[] })?.data ?? [];
-      kpis.value.usersTotal = rawUsers.length;
+      const data =
+        (
+          res as {
+            data?: {
+              passwords?: { email?: string; department?: string | null }[];
+              total_count?: number;
+            };
+          }
+        )?.data ?? {};
+      const passwords = data.passwords ?? [];
+      kpis.value.usersTotal = data.total_count ?? passwords.length;
+      // Map email → department so the owners leaderboard can show it.
+      const depts: Record<string, string> = {};
+      for (const p of passwords) {
+        const email = String(p.email ?? '')
+          .trim()
+          .toLowerCase();
+        const dept = p.department ? String(p.department).trim() : '';
+        if (email && dept) depts[email] = dept;
+      }
+      userDepartments.value = depts;
     } catch {
       // /users is admin-gated — a 403 for non-admins is expected, not a hard error
       error.value.users = true;

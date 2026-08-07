@@ -103,7 +103,7 @@ const kpiCards = computed(() => [
           Executive Dashboard
         </h1>
         <p class="text-sm text-muted-foreground mt-0.5">
-          Cognitive Framework — platform health at a glance
+          Key metrics and trends across the Cognitive Framework platform
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -172,6 +172,7 @@ const kpiCards = computed(() => [
       <InventoryPanel
         title="Dataset Inventory"
         header-icon="lucide:table-2"
+        header-color="text-purple-500"
         unit="datasets"
         :stats="datasetTypeStats"
         :total="kpis.datasetsTotal"
@@ -182,6 +183,7 @@ const kpiCards = computed(() => [
       <InventoryPanel
         title="Model Inventory"
         header-icon="lucide:bot"
+        header-color="text-blue-500"
         unit="models"
         :stats="modelTypeStats"
         :total="kpis.modelsTotal"

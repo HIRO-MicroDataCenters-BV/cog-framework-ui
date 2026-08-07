@@ -14,6 +14,7 @@ interface InventoryStat {
 const props = defineProps<{
   title: string;
   headerIcon: string;
+  headerColor?: string;
   total: number;
   unit: string;
   stats: InventoryStat[];
@@ -70,7 +71,11 @@ function trackCursor(e: MouseEvent) {
 <template>
   <div class="rounded-xl border border-border/60 bg-card flex flex-col">
     <div class="flex items-center gap-2 px-4 py-3 border-b border-border/50">
-      <Icon :name="headerIcon" class="size-4 text-muted-foreground" />
+      <Icon
+        :name="headerIcon"
+        class="size-4"
+        :class="headerColor ?? 'text-muted-foreground'"
+      />
       <span class="text-sm font-medium">{{ title }}</span>
     </div>
 

@@ -8,34 +8,36 @@ const props = defineProps<{
 }>();
 
 const seriesDefs = [
-  { key: 'models' as const, label: 'Models', color: 'bg-blue-500' },
-  { key: 'datasets' as const, label: 'Datasets', color: 'bg-purple-500' },
+  {
+    key: 'models' as const,
+    label: 'Models',
+    bar: 'bg-blue-500',
+    text: 'text-blue-600 dark:text-blue-400',
+  },
+  {
+    key: 'datasets' as const,
+    label: 'Datasets',
+    bar: 'bg-purple-500',
+    text: 'text-purple-600 dark:text-purple-400',
+  },
 ];
 
 const maxVal = computed(() =>
   Math.max(1, ...props.series.flatMap((p) => [p.models, p.datasets])),
 );
 
+// Cap at 82% so the value label above the tallest bar always has headroom.
 function barHeight(v: number): string {
-  return `${Math.max(4, Math.round((v / maxVal.value) * 100))}%`;
+  if (v <= 0) return '0%';
+  return `${Math.max(6, Math.round((v / maxVal.value) * 82))}%`;
 }
 
-// ── Hover tooltip ────────────────────────────────────────────────────────────
-const hovered = ref<{
-  month: string;
-  key: string;
-  label: string;
-  value: number;
-  color: string;
-} | null>(null);
-const tip = ref({ x: 0, y: 0 });
-const chartRef = ref<HTMLElement | null>(null);
-
-function trackCursor(e: MouseEvent) {
-  const el = chartRef.value;
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  tip.value = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+// Hovering a bar or legend entry highlights that series and dims the other.
+const hoveredKey = ref<string | null>(null);
+function dimClass(key: string): string {
+  return hoveredKey.value && hoveredKey.value !== key
+    ? 'opacity-30'
+    : 'opacity-100';
 }
 </script>
 
@@ -45,16 +47,19 @@ function trackCursor(e: MouseEvent) {
       class="flex items-center justify-between px-4 py-3 border-b border-border/50"
     >
       <div class="flex items-center gap-2">
-        <Icon name="lucide:trending-up" class="size-4 text-muted-foreground" />
+        <Icon name="lucide:trending-up" class="size-4 text-teal-500" />
         <span class="text-sm font-medium">Registrations · last 6 months</span>
       </div>
       <div class="flex items-center gap-3">
         <span
           v-for="d in seriesDefs"
           :key="d.key"
-          class="flex items-center gap-1.5 text-[11px] text-muted-foreground"
+          class="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-default transition-opacity"
+          :class="dimClass(d.key)"
+          @mouseenter="hoveredKey = d.key"
+          @mouseleave="hoveredKey = null"
         >
-          <span class="size-2 rounded-full" :class="d.color" />
+          <span class="size-2 rounded-full" :class="d.bar" />
           {{ d.label }}
         </span>
       </div>
@@ -87,64 +92,58 @@ function trackCursor(e: MouseEvent) {
       No activity yet
     </p>
 
-    <div
-      v-else
-      ref="chartRef"
-      class="relative flex-1 flex items-stretch justify-between gap-3 px-5 py-5 min-h-[200px]"
-      @mousemove="trackCursor"
-      @mouseleave="hovered = null"
-    >
+    <div v-else class="flex-1 flex flex-col px-5 pt-6 pb-4 min-h-[210px]">
+      <!-- Plot area: bars over faint gridlines -->
       <div
-        v-for="p in series"
-        :key="p.month"
-        class="flex-1 flex flex-col items-center gap-2"
+        class="relative flex-1 flex items-end justify-between gap-3"
+        @mouseleave="hoveredKey = null"
       >
         <div
-          class="flex-1 flex items-end justify-center gap-1 w-full min-h-[120px]"
+          class="pointer-events-none absolute inset-0 flex flex-col justify-between"
+        >
+          <span
+            v-for="n in 5"
+            :key="n"
+            class="border-t border-dashed border-border/25"
+          />
+        </div>
+
+        <div
+          v-for="p in series"
+          :key="p.month"
+          class="relative flex-1 flex items-end justify-center gap-2 h-full"
         >
           <div
             v-for="d in seriesDefs"
             :key="d.key"
-            class="w-2.5 rounded-t-sm cursor-pointer transition-all duration-150"
-            :class="[
-              d.color,
-              hovered && !(hovered.month === p.month && hovered.key === d.key)
-                ? 'opacity-40'
-                : 'opacity-100',
-            ]"
-            :style="{ height: barHeight(p[d.key]) }"
-            @mouseenter="
-              hovered = {
-                month: p.month,
-                key: d.key,
-                label: d.label,
-                value: p[d.key],
-                color: d.color,
-              }
-            "
-          />
+            class="flex flex-col items-center justify-end h-full cursor-pointer"
+            @mouseenter="hoveredKey = d.key"
+          >
+            <span
+              v-if="p[d.key] > 0"
+              class="text-[10px] font-semibold leading-none mb-1 tabular-nums transition-opacity"
+              :class="[d.text, dimClass(d.key)]"
+            >
+              {{ p[d.key] }}
+            </span>
+            <div
+              class="w-4 rounded-t-md transition-all duration-150"
+              :class="[d.bar, dimClass(d.key)]"
+              :style="{ height: barHeight(p[d.key]) }"
+            />
+          </div>
         </div>
-        <span class="text-[11px] text-muted-foreground">{{ p.month }}</span>
       </div>
 
-      <!-- Floating tooltip -->
-      <div
-        v-if="hovered"
-        class="pointer-events-none absolute z-20 rounded-md border border-border bg-popover px-2 py-1 text-popover-foreground shadow-md whitespace-nowrap"
-        :style="{
-          left: `${tip.x}px`,
-          top: `${tip.y}px`,
-          transform: 'translate(-50%, -135%)',
-        }"
-      >
-        <div class="text-[10px] text-muted-foreground">{{ hovered.month }}</div>
-        <div class="flex items-center gap-1.5 text-xs font-medium">
-          <span class="size-2 rounded-full" :class="hovered.color" />
-          {{ hovered.label }}
-          <span class="tabular-nums font-semibold ml-0.5">{{
-            hovered.value
-          }}</span>
-        </div>
+      <!-- Month axis -->
+      <div class="flex justify-between gap-3 mt-2">
+        <span
+          v-for="p in series"
+          :key="p.month"
+          class="flex-1 text-center text-[11px] text-muted-foreground"
+        >
+          {{ p.month }}
+        </span>
       </div>
     </div>
   </div>
