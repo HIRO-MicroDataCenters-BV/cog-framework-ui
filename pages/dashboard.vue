@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useApp } from '~/composables/app';
 import { useDashboard } from '~/composables/useDashboard';
-import { useCurrentUser } from '~/composables/useCurrentUser';
 
 import HealthBadge from '~/components/app/dashboard/HealthBadge.vue';
 import KpiCard from '~/components/app/dashboard/KpiCard.vue';
@@ -11,23 +10,14 @@ import InventoryPanel from '~/components/app/dashboard/InventoryPanel.vue';
 import GrowthTrends from '~/components/app/dashboard/GrowthTrends.vue';
 import OwnersTable from '~/components/app/dashboard/OwnersTable.vue';
 
-const { setPage } = useApp();
-const { user: currentUser } = useCurrentUser();
-
-// Admin guard — only admin@hiro.com can view this page (known tech debt: hardcoded string).
-// Skipped in mock/demo mode where the seeded user is not the admin account.
-const router = useRouter();
-const config = useRuntimeConfig();
-const mockEnabled = config.public.mockEnabled;
-watchEffect(() => {
-  if (
-    !mockEnabled &&
-    currentUser.value &&
-    currentUser.value.email !== 'admin@hiro.com'
-  ) {
-    router.replace('/datasets');
-  }
+// Tier guard — the dashboard is an admin-only feature. The middleware runs
+// before this component mounts, so lower tiers are redirected without the
+// page (or its data fetches) ever starting.
+definePageMeta({
+  middleware: 'admin',
 });
+
+const { setPage } = useApp();
 
 setPage({ section: 'dashboard' });
 

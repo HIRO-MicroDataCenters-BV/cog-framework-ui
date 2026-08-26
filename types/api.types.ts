@@ -258,6 +258,53 @@ export interface HeadersResponse {
 }
 
 /**
+ * Known subscription tiers returned by the entitlements API, in ascending
+ * order of access: `free` < `enterprise` < `admin`.
+ * Backend may introduce new tiers, so comparisons should stay defensive.
+ */
+export type EntitlementTier = 'free' | 'enterprise' | 'admin';
+
+/**
+ * Subscription details attached to the entitlements payload.
+ * `null` for tiers without an active subscription (e.g. free).
+ */
+export interface EntitlementSubscription {
+  /** Plan name, e.g. `enterprise` */
+  plan: string;
+  /** ISO start date of the subscription */
+  start_date: string | null;
+  /** ISO end date, `null` when open-ended */
+  end_date: string | null;
+}
+
+/**
+ * Entitlements API response data
+ */
+export interface EntitlementsData {
+  /** User the entitlements were resolved for */
+  user_id: string;
+  /** Subscription tier driving feature access */
+  tier: EntitlementTier | (string & {});
+  /** Policy role bound to the tier, e.g. `admin_tier` */
+  policy_role: string;
+  /** Granted permissions, e.g. `model:serve` */
+  permissions: string[];
+  /** Whether the backend enforces these entitlements */
+  enforced: boolean;
+  /** Active subscription, `null` when there is none */
+  subscription: EntitlementSubscription | null;
+}
+
+/**
+ * Entitlements API response
+ */
+export interface EntitlementsResponse {
+  status_code: number;
+  message: string;
+  data: EntitlementsData;
+}
+
+/**
  * Model artifact file
  */
 export interface ModelArtifactFile {
