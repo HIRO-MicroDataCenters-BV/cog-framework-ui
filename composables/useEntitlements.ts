@@ -33,7 +33,7 @@ let inflight: Promise<void> | null = null;
  *
  * Fetches `/entitlements` and exposes the subscription tier and granted
  * permissions so features can be gated in the UI (e.g. the Dashboard is
- * enterprise-only).
+ * admin-only).
  *
  * Note: this deliberately does not go through {@link useApi}. The entitlements
  * guard runs inside route middleware, where there is no component setup context
@@ -140,9 +140,16 @@ export const useEntitlements = () => {
   const tier = computed(() => state.value.data?.tier ?? null);
   const permissions = computed(() => state.value.data?.permissions ?? []);
 
+  /**
+   * Rank of the resolved tier. An unresolved or unrecognized tier falls back to
+   * the `free` baseline — every user gets at least free access, so a slow or
+   * failed entitlements call never hides the standard navigation. Restricted
+   * tiers still fail closed, because nothing outranks `free` until the real
+   * tier arrives.
+   */
   const tierRank = computed(() => {
     const key = (tier.value ?? '').toLowerCase() as EntitlementTier;
-    return TIER_RANK[key] ?? -1;
+    return TIER_RANK[key] ?? TIER_RANK.free;
   });
 
   /** Admin tier — currently the only tier that may see the Dashboard */
@@ -150,7 +157,8 @@ export const useEntitlements = () => {
 
   /**
    * Checks whether the resolved tier is at least `minTier`.
-   * Returns false while entitlements are unresolved, so callers fail closed.
+   * While entitlements are unresolved only the `free` baseline is granted, so
+   * gates above free fail closed.
    *
    * @param minTier - Lowest tier that grants access
    */

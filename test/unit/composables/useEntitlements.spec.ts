@@ -128,7 +128,7 @@ describe('useEntitlements', () => {
     expect(hasPermission('model:read')).toBe(true);
   });
 
-  it('denies every tier gate when the tier is unknown', async () => {
+  it('falls back to the free baseline when the tier is unknown', async () => {
     fetchMock.mockResolvedValue(
       respond({ ...freePayload, tier: 'something-new' }),
     );
@@ -137,7 +137,18 @@ describe('useEntitlements', () => {
     await fetchEntitlements();
 
     expect(isAdmin.value).toBe(false);
-    expect(meetsTier('free')).toBe(false);
+    expect(meetsTier('enterprise')).toBe(false);
+    expect(meetsTier('free')).toBe(true);
+  });
+
+  it('grants the free baseline before entitlements resolve', () => {
+    const { meetsTier, isAdmin, loaded } = useEntitlements();
+
+    // Nothing fetched yet — unrestricted navigation must still render.
+    expect(loaded.value).toBe(false);
+    expect(meetsTier('free')).toBe(true);
+    expect(meetsTier('admin')).toBe(false);
+    expect(isAdmin.value).toBe(false);
   });
 
   it('fetches once and reuses the cached entitlements', async () => {
@@ -180,11 +191,14 @@ describe('useEntitlements', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    const { fetchEntitlements, isAdmin, loaded, error } = useEntitlements();
+    const { fetchEntitlements, isAdmin, meetsTier, loaded, error } =
+      useEntitlements();
     await fetchEntitlements();
 
     expect(loaded.value).toBe(true);
     expect(isAdmin.value).toBe(false);
+    // A failed request must not blank out unrestricted navigation.
+    expect(meetsTier('free')).toBe(true);
     expect(error.value).toBe('boom');
 
     consoleError.mockRestore();
