@@ -6,7 +6,9 @@ import type {
 
 /**
  * Tier ladder used for access checks — a tier grants everything the tiers
- * below it grant. Unknown tiers rank below `free`, so they are denied.
+ * below it grant. Unknown and unresolved tiers fall back to the `free`
+ * baseline (see `tierRank`), so they keep unrestricted access and are denied
+ * everything above it.
  */
 const TIER_RANK: Record<EntitlementTier, number> = {
   free: 0,
@@ -17,7 +19,10 @@ const TIER_RANK: Record<EntitlementTier, number> = {
 interface EntitlementsState {
   data: EntitlementsData | null;
   loading: boolean;
-  /** True once a fetch has settled (successfully or not) */
+  /**
+   * True once a fetch has settled (successfully or not). Reset by
+   * `clearEntitlements()`, and never set by a request that clear superseded.
+   */
   loaded: boolean;
   error: string | null;
 }
@@ -32,9 +37,9 @@ let inflight: Promise<void> | null = null;
 let inflightController: AbortController | null = null;
 
 /**
- * Bumped by {@link useEntitlements.clearEntitlements}. A request captures the
- * value at start and discards its result if it no longer matches, so a response
- * that lands after logout cannot repopulate state for the logged-out user.
+ * Bumped by `clearEntitlements()`. A request captures the value at start and
+ * discards its result if it no longer matches, so a response that lands after
+ * logout cannot repopulate state for the logged-out user.
  */
 let generation = 0;
 

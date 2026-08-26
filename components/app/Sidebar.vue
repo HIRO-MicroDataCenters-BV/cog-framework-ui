@@ -11,8 +11,10 @@ const { meetsTier, fetchEntitlements } = useEntitlements();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
 
-// Entitlement-gated navigation: tier-restricted entries (Dashboard) stay hidden
-// until the tier is resolved, so lower tiers never see them flash in.
+// Entitlement-gated navigation. Entries at the `free` baseline always render —
+// including before entitlements resolve, and if the request fails — so the nav
+// is never empty. Only entries above it (Dashboard) wait for the real tier, so
+// lower tiers never see them flash in.
 const mainMenu = computed(() =>
   menu.value.main.filter((item) => meetsTier(item.minTier)),
 );
