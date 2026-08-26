@@ -28,6 +28,16 @@ interface EntitlementsState {
  */
 let inflight: Promise<void> | null = null;
 
+/** Aborts the in-flight request when entitlements are cleared (logout). */
+let inflightController: AbortController | null = null;
+
+/**
+ * Bumped by {@link useEntitlements.clearEntitlements}. A request captures the
+ * value at start and discards its result if it no longer matches, so a response
+ * that lands after logout cannot repopulate state for the logged-out user.
+ */
+let generation = 0;
+
 /**
  * Composable for the current user's entitlements
  *
@@ -74,7 +84,9 @@ export const useEntitlements = () => {
    * Issues the entitlements request, or resolves the mock fixture when mock
    * mode is enabled.
    */
-  const requestEntitlements = async (): Promise<EntitlementsResponse> => {
+  const requestEntitlements = async (
+    signal: AbortSignal,
+  ): Promise<EntitlementsResponse> => {
     if (mockEnabled) {
       const json = await import('~/mocks/get.entitlements.json');
       const fixture = (json.default ?? json) as unknown as EntitlementsResponse;
@@ -92,7 +104,7 @@ export const useEntitlements = () => {
       headers['Authorization'] = `Bearer ${token.value}`;
     }
 
-    const res = await fetch(`${baseUrl}/entitlements`, { headers });
+    const res = await fetch(`${baseUrl}/entitlements`, { headers, signal });
     if (!res.ok) {
       throw new Error(`Entitlements request failed with status ${res.status}`);
     }
@@ -102,18 +114,28 @@ export const useEntitlements = () => {
   /**
    * Fetches entitlements once and caches them for the session.
    *
-   * @param force - Refetch even when entitlements are already loaded
+   * Only a successful response is cached. After a failed or malformed one
+   * `data` stays null, so the next caller retries — a transient network error
+   * must not deny gated routes for the rest of the session.
+   *
+   * @param force - Refetch even when entitlements are already cached
    */
   const fetchEntitlements = async (force: boolean = false): Promise<void> => {
-    if (state.value.loaded && !force) return;
+    if (state.value.data && !force) return;
     if (inflight) return inflight;
+
+    // Captured so a response arriving after clearEntitlements() is discarded.
+    const startedAt = generation;
+    const controller = new AbortController();
+    inflightController = controller;
 
     state.value.loading = true;
     state.value.error = null;
 
     inflight = (async () => {
       try {
-        const response = await requestEntitlements();
+        const response = await requestEntitlements(controller.signal);
+        if (startedAt !== generation) return;
         if (response?.data?.tier) {
           state.value.data = response.data;
         } else {
@@ -121,6 +143,7 @@ export const useEntitlements = () => {
           state.value.error = 'Entitlements not found in response';
         }
       } catch (error) {
+        if (startedAt !== generation) return;
         state.value.data = null;
         state.value.error =
           error instanceof Error
@@ -128,9 +151,14 @@ export const useEntitlements = () => {
             : 'Failed to fetch entitlements';
         console.error('Failed to fetch entitlements:', error);
       } finally {
-        state.value.loading = false;
-        state.value.loaded = true;
-        inflight = null;
+        // A newer generation owns the state (and already reset these), so a
+        // superseded request must not touch it on the way out.
+        if (startedAt === generation) {
+          state.value.loading = false;
+          state.value.loaded = true;
+          inflight = null;
+          inflightController = null;
+        }
       }
     })();
 
@@ -175,9 +203,18 @@ export const useEntitlements = () => {
    * Clears cached entitlements (e.g. on logout)
    */
   const clearEntitlements = (): void => {
+    // Invalidate any in-flight request first: abort the network call, drop the
+    // shared promise so the next caller starts fresh, and bump the generation
+    // so a response already in transit cannot write back into state.
+    generation += 1;
+    inflightController?.abort();
+    inflightController = null;
+    inflight = null;
+
     state.value.data = null;
     state.value.error = null;
     state.value.loaded = false;
+    state.value.loading = false;
   };
 
   return {

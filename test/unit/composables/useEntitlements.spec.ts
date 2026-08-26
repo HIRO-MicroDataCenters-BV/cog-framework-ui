@@ -172,7 +172,50 @@ describe('useEntitlements', () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-token',
       },
+      signal: expect.any(AbortSignal),
     });
+  });
+
+  it('retries after a failed fetch instead of caching the failure', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+
+    const { fetchEntitlements, isAdmin, error } = useEntitlements();
+    await fetchEntitlements();
+
+    expect(isAdmin.value).toBe(false);
+    expect(error.value).toBe('network down');
+
+    // A transient failure must not deny gated routes for the whole session.
+    fetchMock.mockResolvedValue(respond(adminPayload));
+    await fetchEntitlements();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(isAdmin.value).toBe(true);
+    expect(error.value).toBeNull();
+
+    consoleError.mockRestore();
+  });
+
+  it('retries when the response carries no tier', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status_code: 200, message: 'empty', data: null }),
+    });
+
+    const { fetchEntitlements, isAdmin } = useEntitlements();
+    await fetchEntitlements();
+
+    expect(isAdmin.value).toBe(false);
+
+    fetchMock.mockResolvedValue(respond(adminPayload));
+    await fetchEntitlements();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(isAdmin.value).toBe(true);
   });
 
   it('refetches when forced', async () => {
@@ -202,6 +245,73 @@ describe('useEntitlements', () => {
     expect(error.value).toBe('boom');
 
     consoleError.mockRestore();
+  });
+
+  it('discards a response that lands after entitlements are cleared', async () => {
+    let settleFetch: (value: unknown) => void = () => {};
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        settleFetch = resolve;
+      }),
+    );
+
+    const { fetchEntitlements, clearEntitlements, isAdmin, loading, loaded } =
+      useEntitlements();
+    const pending = fetchEntitlements();
+
+    expect(loading.value).toBe(true);
+
+    // Logout while the request is still in flight.
+    clearEntitlements();
+    expect(loading.value).toBe(false);
+    expect(loaded.value).toBe(false);
+
+    settleFetch(respond(adminPayload));
+    await pending;
+
+    // The late response must not repopulate state for the logged-out user.
+    expect(isAdmin.value).toBe(false);
+    expect(loading.value).toBe(false);
+    expect(loaded.value).toBe(false);
+  });
+
+  it('starts a fresh request after being cleared mid-flight', async () => {
+    let settleFetch: (value: unknown) => void = () => {};
+    fetchMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settleFetch = resolve;
+      }),
+    );
+
+    const { fetchEntitlements, clearEntitlements, isAdmin } = useEntitlements();
+    const pending = fetchEntitlements();
+    clearEntitlements();
+    settleFetch(respond(freePayload));
+    await pending;
+
+    // The stale promise must not gate the next fetch.
+    fetchMock.mockResolvedValue(respond(adminPayload));
+    await fetchEntitlements();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(isAdmin.value).toBe(true);
+  });
+
+  it('aborts the in-flight request when cleared', async () => {
+    let capturedSignal: AbortSignal | undefined;
+    fetchMock.mockImplementation(
+      (_url: string, init: { signal: AbortSignal }) => {
+        capturedSignal = init.signal;
+        return new Promise(() => {});
+      },
+    );
+
+    const { fetchEntitlements, clearEntitlements } = useEntitlements();
+    fetchEntitlements();
+
+    expect(capturedSignal?.aborted).toBe(false);
+    clearEntitlements();
+    expect(capturedSignal?.aborted).toBe(true);
   });
 
   it('clears cached entitlements on logout', async () => {
