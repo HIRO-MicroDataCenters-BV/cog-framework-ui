@@ -1,0 +1,27 @@
+{
+  "status_code": 200,
+  "message": "Entitlements resolved.",
+  "data": {
+    "user_id": "admin@hiro.com",
+    "tier": "admin",
+    "policy_role": "admin_tier",
+    "permissions": [
+      "dataset:create",
+      "dataset:read",
+      "model:create",
+      "model:fine-tune",
+      "model:read",
+      "model:serve",
+      "model:upload",
+      "pipeline:create",
+      "pipeline:read",
+      "pipeline:run"
+    ],
+    "enforced": true,
+    "subscription": {
+      "plan": "admin",
+      "start_date": "2026-01-01T00:00:00",
+      "end_date": null
+    }
+  }
+}

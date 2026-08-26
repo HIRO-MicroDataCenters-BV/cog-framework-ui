@@ -1,3 +1,5 @@
+import type { EntitlementTier } from '~/types/api.types';
+
 export const uselistMenus = () => {
   const { t } = useI18n();
   return useState('listMenus', () => {
@@ -10,6 +12,8 @@ export const uselistMenus = () => {
           icon: 'lucide:layout-dashboard',
           items: [],
           isActive: false,
+          // Premium feature: only visible from the admin tier upwards
+          minTier: 'admin' as EntitlementTier,
         },
         {
           key: 'datasets',
@@ -18,6 +22,7 @@ export const uselistMenus = () => {
           icon: 'lucide:table-2',
           items: [],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
         {
           key: 'models',
@@ -26,6 +31,7 @@ export const uselistMenus = () => {
           icon: 'lucide:bot',
           items: [],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
         {
           key: 'model-serving',
@@ -34,6 +40,7 @@ export const uselistMenus = () => {
           icon: 'lucide:server',
           items: [],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
         {
           key: 'fine-tune',
@@ -42,6 +49,7 @@ export const uselistMenus = () => {
           icon: 'lucide:sliders-horizontal',
           items: [],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
         {
           key: 'pipelines',
@@ -69,6 +77,7 @@ export const uselistMenus = () => {
             },
           ],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
         {
           key: 'flowise',
@@ -77,6 +86,7 @@ export const uselistMenus = () => {
           icon: 'lucide:sparkles',
           items: [],
           isActive: false,
+          minTier: 'free' as EntitlementTier,
         },
       ],
       footer: [],

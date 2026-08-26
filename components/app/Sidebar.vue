@@ -7,8 +7,21 @@ import ColorModeSwitch from './ColorModeSwitch.vue';
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
+const { meetsTier, fetchEntitlements } = useEntitlements();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
+
+// Entitlement-gated navigation. Entries at the `free` baseline always render —
+// including before entitlements resolve, and if the request fails — so the nav
+// is never empty. Only entries above it (Dashboard) wait for the real tier, so
+// lower tiers never see them flash in.
+const mainMenu = computed(() =>
+  menu.value.main.filter((item) => meetsTier(item.minTier)),
+);
+
+onMounted(() => {
+  fetchEntitlements();
+});
 
 // Infra Dashboard lives at the bare origin (e.g. https://dashboard.cog.hiro-develop.nl/).
 // Our UI is mounted under a context path (/uidev or /cogui), so strip the path
@@ -121,7 +134,7 @@ const toggleTheme = () => {
       <SidebarGroup>
         <SidebarGroupLabel>{{ t('title.platform') }}</SidebarGroupLabel>
         <SidebarMenu>
-          <template v-for="item in menu.main" :key="item.title">
+          <template v-for="item in mainMenu" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
                 as-child

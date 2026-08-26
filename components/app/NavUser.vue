@@ -7,6 +7,7 @@ const {
   fetchCurrentUser,
   clearUser,
 } = useCurrentUser();
+const { clearEntitlements } = useEntitlements();
 
 const handleLogout = async () => {
   try {
@@ -15,6 +16,7 @@ const handleLogout = async () => {
     console.error('Logout error:', error);
   } finally {
     clearUser();
+    clearEntitlements();
     navigateTo('/');
   }
 };
