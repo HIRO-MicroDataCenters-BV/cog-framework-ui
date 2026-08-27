@@ -9,16 +9,18 @@ const {
 } = useCurrentUser();
 const { clearEntitlements } = useEntitlements();
 
-const handleLogout = async () => {
-  try {
-    await $fetch('/authservice/logout', { method: 'GET' });
-  } catch (error) {
-    console.error('Logout error:', error);
-  } finally {
-    clearUser();
-    clearEntitlements();
-    navigateTo('/');
-  }
+const handleLogout = () => {
+  // Clear local state first - the form submit below navigates away from the SPA.
+  clearUser();
+  clearEntitlements();
+
+  // Top-level form POST so the authservice_session cookie is sent and
+  // oidc-authservice's 302 takes the browser straight to the Dex login page.
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/authservice/logout';
+  document.body.appendChild(form);
+  form.submit();
 };
 
 // Track avatar image load failure so we show initials fallback instead of broken icon
