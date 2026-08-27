@@ -271,10 +271,14 @@ export type EntitlementTier = 'free' | 'enterprise' | 'admin';
 export interface EntitlementSubscription {
   /** Plan name, e.g. `enterprise` */
   plan: string;
+  /** Subscription state, e.g. `active` */
+  status?: string;
   /** ISO start date of the subscription */
   start_date: string | null;
   /** ISO end date, `null` when open-ended */
   end_date: string | null;
+  /** Days until expiry, `null` when open-ended */
+  expires_in_days?: number | null;
 }
 
 /**
@@ -285,8 +289,9 @@ export interface EntitlementsData {
   user_id: string;
   /** Subscription tier driving feature access */
   tier: EntitlementTier | (string & {});
-  /** Policy role bound to the tier, e.g. `admin_tier` */
-  policy_role: string;
+  /** Policy role bound to the tier, e.g. `admin_tier`. Absent on some
+   * responses, so never rely on it for access decisions. */
+  policy_role?: string;
   /** Granted permissions, e.g. `model:serve` */
   permissions: string[];
   /** Whether the backend enforces these entitlements */

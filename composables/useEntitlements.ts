@@ -86,6 +86,32 @@ export const useEntitlements = () => {
   };
 
   /**
+   * Mock-mode only: lets the granted permissions be swapped at runtime for
+   * manual testing, via `?perms=dataset:read,model:read` on any URL. Persisted
+   * like the tier override, so it survives navigation.
+   *
+   * `?perms=` clears the override back to the fixture; `?perms=none` grants an
+   * empty set, which the empty string cannot express.
+   *
+   * @param fallback - Permissions from the fixture, used when no override is set
+   */
+  const resolveMockPermissions = (fallback: string[]): string[] => {
+    const override = useLocalStorage('mock_permissions', '');
+    if (import.meta.client) {
+      const fromQuery = new URLSearchParams(window.location.search).get(
+        'perms',
+      );
+      if (fromQuery !== null) override.value = fromQuery;
+    }
+    if (!override.value) return fallback;
+    if (override.value === 'none') return [];
+    return override.value
+      .split(',')
+      .map((permission) => permission.trim())
+      .filter(Boolean);
+  };
+
+  /**
    * Issues the entitlements request, or resolves the mock fixture when mock
    * mode is enabled.
    */
@@ -96,9 +122,15 @@ export const useEntitlements = () => {
       const json = await import('~/mocks/get.entitlements.json');
       const fixture = (json.default ?? json) as unknown as EntitlementsResponse;
       const tier = resolveMockTier(fixture.data.tier);
+      const permissions = resolveMockPermissions(fixture.data.permissions);
       return {
         ...fixture,
-        data: { ...fixture.data, tier, policy_role: `${tier}_tier` },
+        data: {
+          ...fixture.data,
+          tier,
+          policy_role: `${tier}_tier`,
+          permissions,
+        },
       };
     }
 

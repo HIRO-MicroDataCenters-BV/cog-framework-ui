@@ -12,6 +12,7 @@ const config = useRuntimeConfig();
 const menu = uselistMenus();
 const {
   meetsTier,
+  hasPermission,
   loaded: entitlementsLoaded,
   error: entitlementsError,
   fetchEntitlements,
@@ -35,6 +36,26 @@ const mainMenu = computed(() =>
 // A lock asserts "your plan doesn't include this", so it needs a resolved tier:
 // not while the fetch is in flight, and not when it failed and the tier is
 // simply unknown. Those entries still link to pages that explain the state.
+// Read-permission gate. Without it the page is useless, so the entry stays
+// visible but goes inert with a lock — same treatment as the create buttons.
+const READ_PERMISSION: Record<string, string> = {
+  datasets: 'dataset:read',
+  models: 'model:read',
+};
+
+const isReadLocked = (key: string) => {
+  const permission = READ_PERMISSION[key];
+  return Boolean(
+    permission &&
+      entitlementsLoaded.value &&
+      !entitlementsError.value &&
+      !hasPermission(permission),
+  );
+};
+
+const readLockedReason = (key: string) =>
+  t(`description.no_read_permission_${key}`);
+
 const isFeatureLocked = (featureTier?: EntitlementTier) =>
   Boolean(featureTier) &&
   entitlementsLoaded.value &&
@@ -183,6 +204,7 @@ const toggleTheme = () => {
           <template v-for="item in mainMenu" :key="item.title">
             <SidebarMenuItem v-if="item.items.length === 0">
               <SidebarMenuButton
+                v-if="!isReadLocked(item.key)"
                 as-child
                 :is-active="isMainActive(item.url, false)"
                 :tooltip="item.title"
@@ -198,6 +220,22 @@ const toggleTheme = () => {
                     class="ml-auto size-3.5 text-muted-foreground"
                   />
                 </NuxtLink>
+              </SidebarMenuButton>
+
+              <SidebarMenuButton
+                v-else
+                disabled
+                :tooltip="readLockedReason(item.key)"
+                :title="readLockedReason(item.key)"
+              >
+                <span class="text-lg">
+                  <Icon :name="item.icon" />
+                </span>
+                <span>{{ item.title }}</span>
+                <Icon
+                  name="lucide:lock"
+                  class="ml-auto size-3.5 text-muted-foreground"
+                />
               </SidebarMenuButton>
             </SidebarMenuItem>
 

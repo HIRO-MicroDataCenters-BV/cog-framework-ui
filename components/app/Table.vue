@@ -133,6 +133,78 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { page } = useApp();
+
+// Permission-gated create actions. The button stays visible but goes disabled
+// with a lock when the user's entitlements don't grant the matching permission.
+//
+// The lock is only asserted once entitlements resolved without error — an
+// unresolved or failed fetch means "unknown", not "denied", and the backend
+// enforces these permissions regardless (`enforced` in the payload).
+const {
+  hasPermission,
+  loaded: entitlementsLoaded,
+  error: entitlementsError,
+} = useEntitlements();
+
+const CREATE_PERMISSION: Record<string, string> = {
+  datasets: 'dataset:create',
+  models: 'model:create',
+};
+
+// `page.section` is optional, so normalise once rather than guarding at each use.
+const section = computed(() => page.value.section ?? '');
+
+const requiredCreatePermission = computed(
+  () => CREATE_PERMISSION[section.value] ?? null,
+);
+
+// Plain-language reason for the disabled create button — the raw permission
+// string means nothing to the person reading the tooltip.
+const createLockedReason = computed(() =>
+  t(`description.no_create_permission_${section.value}`),
+);
+
+const createLocked = computed(() => {
+  const permission = requiredCreatePermission.value;
+  return Boolean(
+    permission &&
+      entitlementsLoaded.value &&
+      !entitlementsError.value &&
+      !hasPermission(permission),
+  );
+});
+
+// Read gate. The table still renders — faded and inert behind a lock — so the
+// user can see the page exists rather than being bounced or shown an empty
+// table that reads as "you have no data".
+const READ_PERMISSION: Record<string, string> = {
+  datasets: 'dataset:read',
+  models: 'model:read',
+};
+
+const readLocked = computed(() => {
+  const permission = READ_PERMISSION[section.value];
+  return Boolean(
+    permission &&
+      entitlementsLoaded.value &&
+      !entitlementsError.value &&
+      !hasPermission(permission),
+  );
+});
+
+const readLockedReason = computed(() =>
+  t(`description.no_read_permission_${section.value}`),
+);
+
+const addLabel = computed(() =>
+  t(
+    `action.add_${section.value === 'pipeline_runs' ? 'pipelines' : section.value}`,
+  ),
+);
+
+const showAddButton = computed(() =>
+  ['datasets', 'models', 'pipelines', 'pipeline_runs'].includes(section.value),
+);
 const menu = uselistMenus();
 
 const data = shallowRef<DataItem[]>([]);
@@ -965,21 +1037,32 @@ defineExpose({ fetchData, totalItems, resetExpanded });
               </TooltipProvider>
 
               <Button
-                v-if="
-                  ['datasets', 'models', 'pipelines', 'pipeline_runs'].includes(
-                    page.section,
-                  )
-                "
+                v-if="showAddButton && !createLocked"
                 class="cursor-pointer"
                 @click="() => add()"
               >
                 <Icon name="lucide:plus" />
-                {{
-                  t(
-                    `action.add_${page.section === 'pipeline_runs' ? 'pipelines' : page.section}`,
-                  )
-                }}
+                {{ addLabel }}
               </Button>
+
+              <TooltipProvider v-else-if="showAddButton">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <!-- A disabled button fires no events, so the tooltip needs
+                         an enabled wrapper to hover. -->
+                    <span class="inline-flex">
+                      <Button disabled>
+                        <Icon name="lucide:plus" />
+                        {{ addLabel }}
+                        <Icon name="lucide:lock" class="size-3.5 ml-1" />
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {{ createLockedReason }}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <slot name="header-actions-end" />
             </div>
@@ -993,9 +1076,32 @@ defineExpose({ fetchData, totalItems, resetExpanded });
     <!-- Scrollable table with sticky header (header + body share scroll) -->
     <div
       class="overflow-auto w-full flex-1 bg-sidebar-background relative pb-10"
+      :class="readLocked && 'overflow-hidden'"
     >
+      <!-- Read-locked: the lock sits above the faded table, centred in view. -->
+      <div
+        v-if="readLocked"
+        class="absolute inset-0 z-20 flex items-center justify-center"
+      >
+        <div
+          class="flex flex-col items-center gap-2 rounded-xl border border-border bg-card/95 px-6 py-5 text-center shadow-sm"
+        >
+          <Icon
+            name="lucide:lock"
+            class="size-6 text-red-600 dark:text-red-400"
+          />
+          <p class="text-sm font-medium">{{ readLockedReason }}</p>
+          <p class="text-xs text-muted-foreground">
+            Ask your workspace administrator for access.
+          </p>
+        </div>
+      </div>
+
       <table
         class="border-b w-full border-collapse table-fixed bg-sidebar-background"
+        :class="
+          readLocked && 'pointer-events-none select-none opacity-30 blur-[2px]'
+        "
       >
         <colgroup>
           <col

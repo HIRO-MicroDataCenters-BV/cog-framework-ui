@@ -6,7 +6,7 @@
  */
 
 /** Address free-tier users are asked to email to request an upgrade. */
-export const ENTERPRISE_CONTACT_EMAIL = 'admin@hiro-microdatacenters.com';
+export const ENTERPRISE_CONTACT_EMAIL = 'support@hiro-microdatacenters.com';
 
 /** Target of the "Learn More" button on the upsell panels. */
 export const ENTERPRISE_LEARN_MORE_URL = 'https://hiro-microdatacenters.nl';
