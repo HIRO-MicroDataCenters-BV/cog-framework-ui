@@ -52,12 +52,26 @@ const fetchMock = vi.fn();
   if (!stateStore.has(key)) stateStore.set(key, ref(init()));
   return stateStore.get(key);
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).useRuntimeConfig = () => ({
+// Mutable so the mock-mode tests can flip `mockEnabled` on for a single case.
+const runtimeConfig = {
   public: { apiBase: '/apidev', mockEnabled: false },
-});
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).useLocalStorage = () => ref('test-token');
+(globalThis as any).useRuntimeConfig = () => runtimeConfig;
+
+// Per-key store: `access_token`, `mock_tier` and `mock_permissions` each need
+// their own ref, so tests can set one without disturbing the others.
+const localStorageStore = new Map<string, ReturnType<typeof ref>>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).useLocalStorage = (key: string, initial: unknown) => {
+  if (!localStorageStore.has(key)) {
+    localStorageStore.set(
+      key,
+      ref(key === 'access_token' ? 'test-token' : initial),
+    );
+  }
+  return localStorageStore.get(key);
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).fetch = fetchMock;
 
@@ -76,7 +90,9 @@ const respond = (data: EntitlementsData) => ({
 describe('useEntitlements', () => {
   beforeEach(() => {
     stateStore.clear();
+    localStorageStore.clear();
     fetchMock.mockReset();
+    runtimeConfig.public.mockEnabled = false;
   });
 
   it('marks an admin user as entitled to admin-only features', async () => {
@@ -312,6 +328,80 @@ describe('useEntitlements', () => {
     expect(capturedSignal?.aborted).toBe(false);
     clearEntitlements();
     expect(capturedSignal?.aborted).toBe(true);
+  });
+
+  describe('mock mode', () => {
+    // The `?perms=` / `?tier=` query parsing sits behind `import.meta.client`
+    // and needs a browser; these cover the persisted-override logic underneath,
+    // which is where the parsing and the `none` special case live.
+    const enableMock = () => {
+      runtimeConfig.public.mockEnabled = true;
+    };
+
+    const setOverride = (key: string, value: string) => {
+      localStorageStore.set(key, ref(value));
+    };
+
+    it('serves the fixture permissions when no override is set', async () => {
+      enableMock();
+
+      const { fetchEntitlements, permissions, tier } = useEntitlements();
+      await fetchEntitlements();
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(tier.value).toBe('admin');
+      expect(permissions.value).toContain('dataset:create');
+    });
+
+    it('replaces permissions from the `perms` override', async () => {
+      enableMock();
+      setOverride('mock_permissions', 'dataset:read,model:read');
+
+      const { fetchEntitlements, permissions, hasPermission } =
+        useEntitlements();
+      await fetchEntitlements();
+
+      expect(permissions.value).toEqual(['dataset:read', 'model:read']);
+      expect(hasPermission('dataset:read')).toBe(true);
+      expect(hasPermission('dataset:create')).toBe(false);
+    });
+
+    it('trims whitespace and drops empty entries in the override', async () => {
+      enableMock();
+      setOverride('mock_permissions', ' dataset:read , , model:read ');
+
+      const { fetchEntitlements, permissions } = useEntitlements();
+      await fetchEntitlements();
+
+      expect(permissions.value).toEqual(['dataset:read', 'model:read']);
+    });
+
+    it('grants an empty permission set for `none`', async () => {
+      enableMock();
+      setOverride('mock_permissions', 'none');
+
+      const { fetchEntitlements, permissions, hasPermission } =
+        useEntitlements();
+      await fetchEntitlements();
+
+      expect(permissions.value).toEqual([]);
+      expect(hasPermission('dataset:read')).toBe(false);
+    });
+
+    it('keeps the permission and tier overrides independent', async () => {
+      enableMock();
+      setOverride('mock_permissions', 'none');
+      setOverride('mock_tier', 'free');
+
+      const { fetchEntitlements, permissions, tier, isAdmin } =
+        useEntitlements();
+      await fetchEntitlements();
+
+      // Clearing permissions must not disturb the tier, and vice versa.
+      expect(tier.value).toBe('free');
+      expect(isAdmin.value).toBe(false);
+      expect(permissions.value).toEqual([]);
+    });
   });
 
   it('clears cached entitlements on logout', async () => {

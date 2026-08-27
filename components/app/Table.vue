@@ -1107,6 +1107,8 @@ defineExpose({ fetchData, totalItems, resetExpanded });
         :class="
           readLocked && 'pointer-events-none select-none opacity-30 blur-[2px]'
         "
+        :inert="readLocked || undefined"
+        :aria-hidden="readLocked || undefined"
       >
         <colgroup>
           <col
