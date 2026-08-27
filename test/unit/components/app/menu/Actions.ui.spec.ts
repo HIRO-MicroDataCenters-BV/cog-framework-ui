@@ -22,7 +22,9 @@ const globalStubs = {
   AlertDialogHeader: { template: '<div><slot /></div>' },
   AlertDialogTitle: { template: '<div><slot /></div>' },
   AlertDialogDescription: { template: '<div><slot /></div>' },
-  AlertDialogFooter: { template: '<div><slot /></div>' },
+  AlertDialogFooter: {
+    template: '<div data-test="dialog-footer"><slot /></div>',
+  },
   AlertDialogCancel: {
     template:
       '<button data-test="cancel-dialog" @click="$emit(\'click\')"><slot /></button>',
@@ -117,6 +119,56 @@ describe('Actions menu confirmation dialog', () => {
 
     await wrapper.find('[data-test="menu-item"]').trigger('click');
     expect(wrapper.text()).toContain('alert.delete_resource:Test Resource');
+  });
+
+  it('runs the action when confirm is clicked', async () => {
+    const actionSpy = vi.fn();
+    const wrapper = buildWrapper([
+      {
+        key: 'archive_run',
+        label: 'archive_run',
+        hasConfirmation: true,
+        action: actionSpy,
+      },
+    ]);
+
+    await wrapper.find('[data-test="menu-item"]').trigger('click');
+    expect(wrapper.text()).toContain('alert.archive_run_p1');
+
+    const footerButtons = wrapper.findAll('[data-test="dialog-footer"] button');
+    await footerButtons[footerButtons.length - 1].trigger('click');
+
+    expect(actionSpy).toHaveBeenCalledTimes(1);
+    // Pending state is cleared once the action settles.
+    expect(wrapper.text()).not.toContain('alert.archive_run_p1');
+  });
+
+  it('does not use AlertDialogAction for confirm', async () => {
+    // Reka's AlertDialogAction closes the dialog from its own click handler, which
+    // runs before the fallthrough one — @update:open then clears the pending
+    // callback and the action never fires. The confirm control must be a plain
+    // Button so this component controls when the dialog closes.
+    const wrapper = buildWrapper();
+
+    await wrapper.find('[data-test="menu-item"]').trigger('click');
+    expect(wrapper.find('[data-test="confirm-dialog"]').exists()).toBe(false);
+  });
+
+  it('does not run the action when the dialog is dismissed', async () => {
+    const actionSpy = vi.fn();
+    const wrapper = buildWrapper([
+      {
+        key: 'archive_run',
+        label: 'archive_run',
+        hasConfirmation: true,
+        action: actionSpy,
+      },
+    ]);
+
+    await wrapper.find('[data-test="menu-item"]').trigger('click');
+    await wrapper.find('[data-test="close-dialog"]').trigger('click');
+
+    expect(actionSpy).not.toHaveBeenCalled();
   });
 
   it('executes non-confirm action immediately', async () => {

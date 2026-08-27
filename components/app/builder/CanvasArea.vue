@@ -471,13 +471,29 @@ const { outputNodeIds, toggleOutputNode } = usePipelineBuilder();
 // every node change (e.g. drag from library) is jarring; users can use Fit view.
 watch(
   () => props.nodes,
-  (newNodes) => {
+  (newNodes, oldNodes) => {
     if (!props.readonly) return;
-    if (newNodes && newNodes.length > 0) {
-      nextTick(() => {
-        fitView({ padding: 0.15, duration: 300 });
-      });
-    }
+    if (!newNodes || newNodes.length === 0) return;
+
+    // A polling refresh of a running run replaces the array with the same nodes
+    // carrying new statuses. Re-fitting then would yank the viewport out from
+    // under anyone who has panned or zoomed, so only fit when the graph itself
+    // changes shape.
+    // Sorted so the comparison is about the node *set*, not its order: a
+    // reordered array carrying the same nodes is still a status-only refresh.
+    const ids = newNodes
+      .map((n) => n.id)
+      .sort()
+      .join('|');
+    const previousIds = (oldNodes || [])
+      .map((n) => n.id)
+      .sort()
+      .join('|');
+    if (ids === previousIds) return;
+
+    nextTick(() => {
+      fitView({ padding: 0.15, duration: 300 });
+    });
   },
   { immediate: false },
 );

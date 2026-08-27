@@ -300,13 +300,23 @@ const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
 };
 
 const isRefreshing = ref(false);
+/** Serialized rows of the last render; lets a silent refresh skip a no-op redraw. */
+const lastRowsSignature = ref<string | null>(null);
 
-const fetchData = async () => {
-  isRefreshing.value = true;
+/**
+ * @param options.silent Background refresh (polling): leaves the refresh
+ *   spinner alone, tells the data source not to raise the global loading bar,
+ *   and leaves the rows untouched when the response is identical — replacing
+ *   them would remount every row and close any open row menu.
+ */
+const fetchData = async (options: { silent?: boolean } = {}) => {
+  const { silent = false } = options;
+  if (!silent) isRefreshing.value = true;
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
     sort_order: (route.query.sort_order as string) || 'desc',
+    ...(silent ? { silent: true } : {}),
   };
 
   if (route.query.sort_by) {
@@ -342,9 +352,19 @@ const fetchData = async () => {
       const tableData = response.data;
       const pagination = response.pagination;
       const rawData = (Array.isArray(tableData) ? tableData : []) as DataItem[];
-      data.value = props.groupBy
-        ? groupDataByColumn(rawData, props.groupBy)
-        : rawData;
+
+      // Only the row assignment is skipped, and only when a silent refresh
+      // brought back identical rows — reassigning would remount every row and
+      // close an open row menu. Pagination below always runs, so a changed
+      // total still lands even when the visible rows are unchanged.
+      const rowsSignature = JSON.stringify(rawData);
+      if (!silent || rowsSignature !== lastRowsSignature.value) {
+        lastRowsSignature.value = rowsSignature;
+
+        data.value = props.groupBy
+          ? groupDataByColumn(rawData, props.groupBy)
+          : rawData;
+      }
 
       if (pagination) {
         if (route.query.limit) {
@@ -368,16 +388,22 @@ const fetchData = async () => {
         totalItems.value = data.value.length;
       }
     } else {
+      // A failed background refresh keeps whatever is on screen. Clearing here
+      // would blank the table into "No results found" on one bad poll.
+      if (silent) return;
+      lastRowsSignature.value = null;
       data.value = [];
       pageSize.value = props.pageSize;
       totalItems.value = 0;
     }
   } catch (error) {
+    if (silent) return;
+    lastRowsSignature.value = null;
     data.value = [];
     pageSize.value = props.pageSize;
     totalItems.value = 0;
   } finally {
-    isRefreshing.value = false;
+    if (!silent) isRefreshing.value = false;
   }
 };
 

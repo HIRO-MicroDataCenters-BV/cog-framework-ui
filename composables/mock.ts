@@ -527,6 +527,16 @@ export const useMock = () => {
 export const useApiWithMock = () => {
   const mock = useMock();
 
+  /**
+   * In-memory record of run mutations (archive / restore / delete) so those
+   * actions are observable in mock mode — the JSON fixtures are read-only.
+   * Resets on reload, like every other mock.
+   */
+  const runMutations = useState<{
+    storageStateById: Record<string, string>;
+    deletedIds: string[];
+  }>('mock-run-mutations', () => ({ storageStateById: {}, deletedIds: [] }));
+
   // Prevent infinite recursion by directly accessing real API
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
@@ -560,6 +570,28 @@ export const useApiWithMock = () => {
       headers['Authorization'] = `Bearer ${token.value}`;
     }
     return headers;
+  };
+
+  /**
+   * Direct call to the KFP v2beta1 API for the branches that run when mock mode
+   * is off at runtime. `useApi()` picks this wrapper from
+   * `config.public.mockEnabled`, fixed at build time, while `mock.value.enabled`
+   * is reactive state — the two can diverge, so these fallbacks must work.
+   *
+   * `request()` is unusable here: it prefixes `baseUrl`, which would concatenate
+   * two absolute URLs.
+   */
+  const kfpFetch = async (path: string, method: string = 'GET') => {
+    const apiRuns = String(config.public.apiRuns || '').replace(/\/$/, '');
+    const response = await fetch(`${apiRuns}${path}`, {
+      method,
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `HTTP error! status: ${response.status}`);
+    }
+    return response;
   };
 
   const request = async (
@@ -1040,9 +1072,12 @@ export const useApiWithMock = () => {
 
     getPipelineRunsListV2: async (params = {}) => {
       if (mock.value.enabled) {
-        await mockDelay();
-        const kfpJson = await import('~/mocks/get.kfp-runs.json');
         const searchParams = params as Record<string, string>;
+        // Polling refresh: no loading bar, and no artificial latency to sit through.
+        if (searchParams.silent) await new Promise((r) => setTimeout(r, 50));
+        else await mockDelay();
+        const kfpJson = await import('~/mocks/get.kfp-runs.json');
+        const { storageStateById, deletedIds } = runMutations.value;
 
         type KfpRun = {
           run_id: string;
@@ -1056,7 +1091,15 @@ export const useApiWithMock = () => {
           experiment?: { experiment_id?: string };
         };
 
-        let filteredRuns: KfpRun[] = [...(kfpJson.runs as KfpRun[])];
+        // Apply archive/restore/delete performed during this session so the
+        // Active/Archived tabs reflect the mutation, same as the real KFP API.
+        let filteredRuns: KfpRun[] = (kfpJson.runs as KfpRun[])
+          .filter((r) => !deletedIds.includes(r.run_id))
+          .map((r) =>
+            storageStateById[r.run_id]
+              ? { ...r, storage_state: storageStateById[r.run_id] }
+              : r,
+          );
 
         // Filter by storage_state (archived/active)
         if (searchParams.storage_state) {
@@ -1176,6 +1219,48 @@ export const useApiWithMock = () => {
       throw new Error(
         'Mock data not available. Please enable mock mode or check KFP endpoint configuration.',
       );
+    },
+
+    archivePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          storageStateById: {
+            ...runMutations.value.storageStateById,
+            [id]: 'ARCHIVED',
+          },
+        };
+        return;
+      }
+      await kfpFetch(`/runs/${encodeURIComponent(id)}:archive`, 'POST');
+    },
+
+    unarchivePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          storageStateById: {
+            ...runMutations.value.storageStateById,
+            [id]: 'AVAILABLE',
+          },
+        };
+        return;
+      }
+      await kfpFetch(`/runs/${encodeURIComponent(id)}:unarchive`, 'POST');
+    },
+
+    deletePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          deletedIds: [...runMutations.value.deletedIds, id],
+        };
+        return;
+      }
+      await kfpFetch(`/runs/${encodeURIComponent(id)}`, 'DELETE');
     },
 
     deleteDatasetFile: async (id: number | string) => {
@@ -1322,11 +1407,9 @@ export const useApiWithMock = () => {
           },
         });
       }
-      // This uses external API, not the base URL
-      const config = useRuntimeConfig();
-      const apiRuns = config.public.apiRuns;
-      const url = `${apiRuns}/runs/${id}`;
-      return request(url);
+      // Direct KFP call — `request()` would prefix `baseUrl` onto this absolute URL.
+      const response = await kfpFetch(`/runs/${encodeURIComponent(id)}`);
+      return response.json();
     },
 
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
@@ -1349,7 +1432,21 @@ export const useApiWithMock = () => {
           data: null,
         });
       }
-      return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+      // Mirrors `useApi().getPipelineVersion`, which reports a failure as null
+      // rather than throwing — the run detail page treats null as "no spec".
+      try {
+        const response = await kfpFetch(
+          `/pipelines/${encodeURIComponent(pipelineId)}/versions/${encodeURIComponent(versionId)}`,
+        );
+        return {
+          status_code: 200,
+          message: 'Pipeline version',
+          data: await response.json(),
+        };
+      } catch (err) {
+        console.error('Error fetching pipeline version from KFP:', err);
+        return null;
+      }
     },
 
     getTrainingBuilderComponents: async () => {

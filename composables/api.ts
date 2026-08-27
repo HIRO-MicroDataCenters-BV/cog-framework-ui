@@ -47,6 +47,16 @@ import modelsServingData from '@/mocks/get.models-serving.json';
 const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
 
 /**
+ * Cache for fetched pipeline versions, keyed by `pipelineId/versionId`.
+ *
+ * KFP pipeline versions are immutable — publishing a change creates a new
+ * version — so a fetched spec never goes stale. The run detail page polls a
+ * running run every few seconds and would otherwise refetch the same spec on
+ * every tick; runs sharing a version also reuse the cached entry.
+ */
+const pipelineVersionCache = new Map<string, unknown>();
+
+/**
  * Token cache for KFP experiments list pagination (cursor-based).
  * Same pattern as {@link pipelineRunsTokenCache} / `getPipelineRunsListV2`.
  */
@@ -2563,11 +2573,14 @@ export const useApi = () => {
         limit?: number;
         page_token?: string;
         namespace?: string;
+        /** Background refresh (polling): do not raise the global loading bar. */
+        silent?: boolean;
       } = {},
     ) => {
       const namespace = params.namespace || 'admin';
       const pageSize = params.limit || 10;
       const currentPage = params.page || 1;
+      const silent = params.silent === true;
 
       const sortBy = params.sort_by
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
@@ -2652,11 +2665,13 @@ export const useApi = () => {
       const url = `${apiRuns}/runs?${kfpParams.toString()}`;
 
       try {
-        setPage({ ...page.value, isLoading: true });
+        if (!silent) setPage({ ...page.value, isLoading: true });
         const response = await fetch(url, { headers: getHeaders() });
 
         if (!response.ok) {
-          toaster.show('error', 'server_error');
+          // A failing poll must not nag every few seconds; the next non-silent
+          // fetch (manual refresh, tab switch, search) still reports it.
+          if (!silent) toaster.show('error', 'server_error');
           return null;
         }
 
@@ -2722,11 +2737,12 @@ export const useApi = () => {
           },
         };
       } catch (err) {
+        // Logged either way — only the user-facing toast is suppressed.
         console.error('Error fetching pipeline runs from KFP:', err);
-        toaster.show('error', 'connection_error');
+        if (!silent) toaster.show('error', 'connection_error');
         return null;
       } finally {
-        setPage({ ...page.value, isLoading: false });
+        if (!silent) setPage({ ...page.value, isLoading: false });
       }
     },
 
@@ -3681,9 +3697,18 @@ export const useApi = () => {
     },
 
     /**
-     * Gets pipeline version by pipeline ID and version ID
+     * Gets pipeline version by pipeline ID and version ID directly from the
+     * KFP API (v2beta1).
      *
-     * Retrieves a specific pipeline version including its pipeline_spec.
+     * GET `{apiRuns}/pipelines/{pipelineId}/versions/{versionId}`
+     *
+     * Retrieves a specific pipeline version including its pipeline_spec. Used
+     * by the run detail page for runs that carry a `pipeline_version_reference`
+     * instead of an inline `pipeline_spec`.
+     *
+     * KFP returns the version object at the top level; it is wrapped in the
+     * app's standard `{ status_code, message, data }` envelope so callers and
+     * the mock fixture share one shape.
      *
      * @param {string} pipelineId - The pipeline ID
      * @param {string} versionId - The version ID
@@ -3696,7 +3721,43 @@ export const useApi = () => {
      * ```
      */
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
-      return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+      const cacheKey = `${pipelineId}/${versionId}`;
+      // has(), not truthiness: a get() check cannot tell "never fetched" from
+      // "fetched, value is falsy", and would refetch on every poll tick.
+      if (pipelineVersionCache.has(cacheKey)) {
+        return {
+          status_code: 200,
+          message: 'Pipeline version',
+          data: pipelineVersionCache.get(cacheKey),
+        };
+      }
+
+      const url = `${apiRuns.replace(/\/$/, '')}/pipelines/${encodeURIComponent(
+        pipelineId,
+      )}/versions/${encodeURIComponent(versionId)}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        const data = await response.json();
+        // Only a real payload is cached. Storing an empty body would pin a
+        // permanent miss for a version that is immutable and never re-fetched.
+        if (data) pipelineVersionCache.set(cacheKey, data);
+
+        return { status_code: 200, message: 'Pipeline version', data };
+      } catch (err) {
+        console.error('Error fetching pipeline version from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
     },
 
     // ============================================================================
