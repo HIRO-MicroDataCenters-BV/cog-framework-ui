@@ -3722,9 +3722,14 @@ export const useApi = () => {
      */
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
       const cacheKey = `${pipelineId}/${versionId}`;
-      const cached = pipelineVersionCache.get(cacheKey);
-      if (cached) {
-        return { status_code: 200, message: 'Pipeline version', data: cached };
+      // has(), not truthiness: a get() check cannot tell "never fetched" from
+      // "fetched, value is falsy", and would refetch on every poll tick.
+      if (pipelineVersionCache.has(cacheKey)) {
+        return {
+          status_code: 200,
+          message: 'Pipeline version',
+          data: pipelineVersionCache.get(cacheKey),
+        };
       }
 
       const url = `${apiRuns.replace(/\/$/, '')}/pipelines/${encodeURIComponent(
@@ -3741,7 +3746,9 @@ export const useApi = () => {
         }
 
         const data = await response.json();
-        pipelineVersionCache.set(cacheKey, data);
+        // Only a real payload is cached. Storing an empty body would pin a
+        // permanent miss for a version that is immutable and never re-fetched.
+        if (data) pipelineVersionCache.set(cacheKey, data);
 
         return { status_code: 200, message: 'Pipeline version', data };
       } catch (err) {
