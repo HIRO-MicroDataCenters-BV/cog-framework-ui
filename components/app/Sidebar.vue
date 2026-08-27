@@ -12,6 +12,7 @@ const menu = uselistMenus();
 const {
   meetsTier,
   loaded: entitlementsLoaded,
+  error: entitlementsError,
   fetchEntitlements,
 } = useEntitlements();
 const appVersion = config.public.appVersion;
@@ -38,9 +39,26 @@ const infraDashboardUrl = computed(() => useRequestURL().origin);
 // route of its own — it is an external link. So the entry stays in place for
 // every tier and free users get the upgrade dialog instead of the link. Until
 // entitlements resolve the entry is inert, so an entitled user clicking early
-// never gets the upsell by mistake.
+// never gets the upsell by mistake. If the fetch failed the tier is unknown
+// rather than free, so the entry offers a retry instead of claiming a paywall.
 const hasInfraDashboard = computed(() => meetsTier('enterprise'));
 const infraUpgradeOpen = ref(false);
+
+const retryingEntitlements = ref(false);
+const retryEntitlements = async () => {
+  retryingEntitlements.value = true;
+  try {
+    await fetchEntitlements(true);
+  } finally {
+    retryingEntitlements.value = false;
+  }
+};
+
+const infraTooltip = computed(() =>
+  entitlementsError.value
+    ? `${t('menu.infra_dashboard')} — couldn't check your plan, click to retry`
+    : t('menu.infra_dashboard'),
+);
 
 const route = useRoute();
 const query = computed(() => route.query);
@@ -232,18 +250,27 @@ const toggleTheme = () => {
             </SidebarMenuButton>
             <SidebarMenuButton
               v-else
-              :tooltip="t('menu.infra_dashboard')"
-              :disabled="!entitlementsLoaded"
-              @click="infraUpgradeOpen = true"
+              :tooltip="infraTooltip"
+              :disabled="!entitlementsLoaded || retryingEntitlements"
+              @click="
+                entitlementsError
+                  ? retryEntitlements()
+                  : (infraUpgradeOpen = true)
+              "
             >
               <span class="text-lg">
                 <Icon name="lucide:layout-dashboard" />
               </span>
               <span>{{ t('menu.infra_dashboard') }}</span>
               <Icon
-                v-if="!entitlementsLoaded"
+                v-if="!entitlementsLoaded || retryingEntitlements"
                 name="lucide:loader-circle"
                 class="ml-auto size-3.5 animate-spin text-muted-foreground/50"
+              />
+              <Icon
+                v-else-if="entitlementsError"
+                name="lucide:refresh-cw"
+                class="ml-auto size-3.5 text-muted-foreground"
               />
               <Icon
                 v-else

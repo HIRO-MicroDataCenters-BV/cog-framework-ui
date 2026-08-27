@@ -13,6 +13,7 @@
 import { ref } from 'vue';
 import FineTuneCreate from '~/components/app/dialog/FineTuneCreate.vue';
 import UpgradePanel from '~/components/app/UpgradePanel.vue';
+import EntitlementsUnavailable from '~/components/app/EntitlementsUnavailable.vue';
 import {
   ENTERPRISE_CONTACT_EMAIL,
   ENTERPRISE_LEARN_MORE_URL,
@@ -29,8 +30,19 @@ const { t } = useI18n();
 const {
   meetsTier,
   loaded: entitlementsLoaded,
+  error: entitlementsError,
   fetchEntitlements,
 } = useEntitlements();
+
+const retryingEntitlements = ref(false);
+const retryEntitlements = async () => {
+  retryingEntitlements.value = true;
+  try {
+    await fetchEntitlements(true);
+  } finally {
+    retryingEntitlements.value = false;
+  }
+};
 const hasFineTune = computed(() => meetsTier('enterprise'));
 
 const upgradeFeatures = [
@@ -98,6 +110,16 @@ const handleCreated = (payload: {
       <Icon
         name="lucide:loader-circle"
         class="size-6 animate-spin text-muted-foreground/50"
+      />
+    </div>
+
+    <div
+      v-else-if="entitlementsError"
+      class="flex-1 flex items-center justify-center p-6"
+    >
+      <EntitlementsUnavailable
+        :retrying="retryingEntitlements"
+        @retry="retryEntitlements"
       />
     </div>
 

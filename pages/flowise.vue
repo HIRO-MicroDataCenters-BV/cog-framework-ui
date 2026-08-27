@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import UpgradePanel from '~/components/app/UpgradePanel.vue';
+import EntitlementsUnavailable from '~/components/app/EntitlementsUnavailable.vue';
 import {
   ENTERPRISE_CONTACT_EMAIL,
   ENTERPRISE_LEARN_MORE_URL,
@@ -14,8 +15,19 @@ const config = useRuntimeConfig();
 const {
   meetsTier,
   loaded: entitlementsLoaded,
+  error: entitlementsError,
   fetchEntitlements,
 } = useEntitlements();
+
+const retryingEntitlements = ref(false);
+const retryEntitlements = async () => {
+  retryingEntitlements.value = true;
+  try {
+    await fetchEntitlements(true);
+  } finally {
+    retryingEntitlements.value = false;
+  }
+};
 const hasGenAi = computed(() => meetsTier('enterprise'));
 
 const flowiseHost = computed(() =>
@@ -55,8 +67,8 @@ setPage({
 // cleanup below never tears down something that was skipped by the tier gate.
 const chatbotStarted = ref(false);
 
-onMounted(async () => {
-  await fetchEntitlements();
+const startChatbot = async () => {
+  if (chatbotStarted.value) return;
   if (!hasGenAi.value) return;
   if (!flowiseHost.value || !flowiseChatflowId.value) return;
 
@@ -77,6 +89,17 @@ onMounted(async () => {
     },
   });
   chatbotStarted.value = true;
+};
+
+onMounted(async () => {
+  await fetchEntitlements();
+  await startChatbot();
+});
+
+// A retry after a failed entitlements fetch can grant access after mount, so
+// the bot is started then too rather than only on the initial load.
+watch(hasGenAi, () => {
+  startChatbot();
 });
 
 onUnmounted(async () => {
@@ -97,6 +120,16 @@ onUnmounted(async () => {
       <Icon
         name="lucide:loader-circle"
         class="size-6 animate-spin text-muted-foreground/50"
+      />
+    </div>
+
+    <div
+      v-else-if="entitlementsError"
+      class="h-full w-full flex items-center justify-center p-6"
+    >
+      <EntitlementsUnavailable
+        :retrying="retryingEntitlements"
+        @retry="retryEntitlements"
       />
     </div>
 
