@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useIntervalFn } from '@vueuse/core';
 import type { TableRowType } from '@/types/row.types';
 import Badge from '@/components/ui/badge/Badge.vue';
 import DropdownAction from '@/components/app/menu/Actions.vue';
@@ -6,6 +7,7 @@ import { useApi } from '@/composables/api';
 import { usePipelineActions } from '@/composables/usePipelineActions';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import { shortenUuid } from '~/utils';
+import { isRunStateInFlight } from '~/utils/runStates';
 import SimpleTabs from '~/components/app/SimpleTabs.vue';
 
 const { t } = useI18n();
@@ -72,6 +74,11 @@ const tabs = [
 // Store counts for both tabs
 const activeCounts = ref({ active: 0, archived: 0 });
 
+/** How often the list is re-read while it shows an unfinished run. */
+const RUN_POLL_MS = 5000;
+
+const hasUnfinishedRuns = ref(false);
+
 // Wrapper function that adds storage_state filter based on active tab
 const getPipelineRunsWithFilter = async (
   params: Record<string, unknown> = {},
@@ -88,8 +95,32 @@ const getPipelineRunsWithFilter = async (
     activeCounts.value[activeTab.value] = result.pagination.total_items;
   }
 
+  // Drives the poll below: only keep refreshing while something can still move.
+  if (Array.isArray(result?.data)) {
+    hasUnfinishedRuns.value = result.data.some((run: { status?: string }) =>
+      isRunStateInFlight(run?.status),
+    );
+  }
+
   return result;
 };
+
+const { pause: pauseRunPolling, resume: resumeRunPolling } = useIntervalFn(
+  () => {
+    void tableRef.value?.fetchData({ silent: true });
+  },
+  RUN_POLL_MS,
+  { immediate: false },
+);
+
+watch(
+  hasUnfinishedRuns,
+  (unfinished) => {
+    if (unfinished) resumeRunPolling();
+    else pauseRunPolling();
+  },
+  { immediate: true },
+);
 
 // Counts are updated automatically from table data via getPipelineRunsWithFilter
 // No need to fetch counts separately on mount - saves unnecessary API calls

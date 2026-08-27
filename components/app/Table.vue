@@ -300,13 +300,23 @@ const groupDataByColumn = (items: DataItem[], columnId: string): DataItem[] => {
 };
 
 const isRefreshing = ref(false);
+/** Serialized rows of the last render; lets a silent refresh skip a no-op redraw. */
+const lastRowsSignature = ref<string | null>(null);
 
-const fetchData = async () => {
-  isRefreshing.value = true;
+/**
+ * @param options.silent Background refresh (polling): leaves the refresh
+ *   spinner alone, tells the data source not to raise the global loading bar,
+ *   and leaves the rows untouched when the response is identical — replacing
+ *   them would remount every row and close any open row menu.
+ */
+const fetchData = async (options: { silent?: boolean } = {}) => {
+  const { silent = false } = options;
+  if (!silent) isRefreshing.value = true;
   const params: Record<string, unknown> = {
     page: currentPage.value,
     limit: pageSize.value,
     sort_order: (route.query.sort_order as string) || 'desc',
+    ...(silent ? { silent: true } : {}),
   };
 
   if (route.query.sort_by) {
@@ -342,6 +352,11 @@ const fetchData = async () => {
       const tableData = response.data;
       const pagination = response.pagination;
       const rawData = (Array.isArray(tableData) ? tableData : []) as DataItem[];
+
+      const rowsSignature = JSON.stringify(rawData);
+      if (silent && rowsSignature === lastRowsSignature.value) return;
+      lastRowsSignature.value = rowsSignature;
+
       data.value = props.groupBy
         ? groupDataByColumn(rawData, props.groupBy)
         : rawData;
@@ -368,16 +383,18 @@ const fetchData = async () => {
         totalItems.value = data.value.length;
       }
     } else {
+      lastRowsSignature.value = null;
       data.value = [];
       pageSize.value = props.pageSize;
       totalItems.value = 0;
     }
   } catch (error) {
+    lastRowsSignature.value = null;
     data.value = [];
     pageSize.value = props.pageSize;
     totalItems.value = 0;
   } finally {
-    isRefreshing.value = false;
+    if (!silent) isRefreshing.value = false;
   }
 };
 

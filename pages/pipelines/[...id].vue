@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Position, MarkerType } from '@vue-flow/core';
 import { useIntervalFn } from '@vueuse/core';
+import { isRunStateInFlight } from '~/utils/runStates';
 import type {
   Node,
   Edge,
@@ -722,21 +723,12 @@ watch(
 );
 
 /**
- * A run that has not reached a terminal state keeps changing server-side, so
- * the page polls it until it settles. Anything not in this set — including an
- * unreported state — counts as still in flight; polling stops on unmount.
+ * A run that has not settled keeps changing server-side, so the page polls it
+ * until it does. Polling also stops on unmount.
  */
-const TERMINAL_RUN_STATES = new Set([
-  'SUCCEEDED',
-  'FAILED',
-  'CANCELED',
-  'SKIPPED',
-]);
-
 const isRunInFlight = computed(() => {
   if (!runDetails.value) return false;
-  const state = String(runDetails.value.status ?? '').toUpperCase();
-  return !TERMINAL_RUN_STATES.has(state);
+  return isRunStateInFlight(runDetails.value.status as string | undefined);
 });
 
 const { pause: pauseRunPolling, resume: resumeRunPolling } = useIntervalFn(

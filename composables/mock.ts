@@ -1050,9 +1050,11 @@ export const useApiWithMock = () => {
 
     getPipelineRunsListV2: async (params = {}) => {
       if (mock.value.enabled) {
-        await mockDelay();
-        const kfpJson = await import('~/mocks/get.kfp-runs.json');
         const searchParams = params as Record<string, string>;
+        // Polling refresh: no loading bar, and no artificial latency to sit through.
+        if (searchParams.silent) await new Promise((r) => setTimeout(r, 50));
+        else await mockDelay();
+        const kfpJson = await import('~/mocks/get.kfp-runs.json');
         const { storageStateById, deletedIds } = runMutations.value;
 
         type KfpRun = {

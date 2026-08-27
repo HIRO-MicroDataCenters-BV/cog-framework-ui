@@ -2573,11 +2573,14 @@ export const useApi = () => {
         limit?: number;
         page_token?: string;
         namespace?: string;
+        /** Background refresh (polling): do not raise the global loading bar. */
+        silent?: boolean;
       } = {},
     ) => {
       const namespace = params.namespace || 'admin';
       const pageSize = params.limit || 10;
       const currentPage = params.page || 1;
+      const silent = params.silent === true;
 
       const sortBy = params.sort_by
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
@@ -2662,7 +2665,7 @@ export const useApi = () => {
       const url = `${apiRuns}/runs?${kfpParams.toString()}`;
 
       try {
-        setPage({ ...page.value, isLoading: true });
+        if (!silent) setPage({ ...page.value, isLoading: true });
         const response = await fetch(url, { headers: getHeaders() });
 
         if (!response.ok) {
@@ -2736,7 +2739,7 @@ export const useApi = () => {
         toaster.show('error', 'connection_error');
         return null;
       } finally {
-        setPage({ ...page.value, isLoading: false });
+        if (!silent) setPage({ ...page.value, isLoading: false });
       }
     },
 
