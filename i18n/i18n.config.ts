@@ -165,6 +165,7 @@ export default defineI18nConfig(() => ({
           'Configure and register a new dataset source for your project.',
       },
       description: {
+        ask_admin_for_access: 'Ask your workspace administrator for access.',
         no_read_permission_datasets:
           "You don't have permission to view datasets",
         no_read_permission_models: "You don't have permission to view models",
