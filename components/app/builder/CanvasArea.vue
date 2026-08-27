@@ -479,8 +479,16 @@ watch(
     // carrying new statuses. Re-fitting then would yank the viewport out from
     // under anyone who has panned or zoomed, so only fit when the graph itself
     // changes shape.
-    const ids = newNodes.map((n) => n.id).join('|');
-    const previousIds = (oldNodes || []).map((n) => n.id).join('|');
+    // Sorted so the comparison is about the node *set*, not its order: a
+    // reordered array carrying the same nodes is still a status-only refresh.
+    const ids = newNodes
+      .map((n) => n.id)
+      .sort()
+      .join('|');
+    const previousIds = (oldNodes || [])
+      .map((n) => n.id)
+      .sort()
+      .join('|');
     if (ids === previousIds) return;
 
     nextTick(() => {

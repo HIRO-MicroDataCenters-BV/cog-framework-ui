@@ -2669,7 +2669,9 @@ export const useApi = () => {
         const response = await fetch(url, { headers: getHeaders() });
 
         if (!response.ok) {
-          toaster.show('error', 'server_error');
+          // A failing poll must not nag every few seconds; the next non-silent
+          // fetch (manual refresh, tab switch, search) still reports it.
+          if (!silent) toaster.show('error', 'server_error');
           return null;
         }
 
@@ -2735,8 +2737,9 @@ export const useApi = () => {
           },
         };
       } catch (err) {
+        // Logged either way — only the user-facing toast is suppressed.
         console.error('Error fetching pipeline runs from KFP:', err);
-        toaster.show('error', 'connection_error');
+        if (!silent) toaster.show('error', 'connection_error');
         return null;
       } finally {
         if (!silent) setPage({ ...page.value, isLoading: false });

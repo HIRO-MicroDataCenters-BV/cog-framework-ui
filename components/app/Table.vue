@@ -353,13 +353,18 @@ const fetchData = async (options: { silent?: boolean } = {}) => {
       const pagination = response.pagination;
       const rawData = (Array.isArray(tableData) ? tableData : []) as DataItem[];
 
+      // Only the row assignment is skipped, and only when a silent refresh
+      // brought back identical rows — reassigning would remount every row and
+      // close an open row menu. Pagination below always runs, so a changed
+      // total still lands even when the visible rows are unchanged.
       const rowsSignature = JSON.stringify(rawData);
-      if (silent && rowsSignature === lastRowsSignature.value) return;
-      lastRowsSignature.value = rowsSignature;
+      if (!silent || rowsSignature !== lastRowsSignature.value) {
+        lastRowsSignature.value = rowsSignature;
 
-      data.value = props.groupBy
-        ? groupDataByColumn(rawData, props.groupBy)
-        : rawData;
+        data.value = props.groupBy
+          ? groupDataByColumn(rawData, props.groupBy)
+          : rawData;
+      }
 
       if (pagination) {
         if (route.query.limit) {
@@ -383,12 +388,16 @@ const fetchData = async (options: { silent?: boolean } = {}) => {
         totalItems.value = data.value.length;
       }
     } else {
+      // A failed background refresh keeps whatever is on screen. Clearing here
+      // would blank the table into "No results found" on one bad poll.
+      if (silent) return;
       lastRowsSignature.value = null;
       data.value = [];
       pageSize.value = props.pageSize;
       totalItems.value = 0;
     }
   } catch (error) {
+    if (silent) return;
     lastRowsSignature.value = null;
     data.value = [];
     pageSize.value = props.pageSize;

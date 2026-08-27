@@ -734,7 +734,12 @@ const isRunInFlight = computed(() => {
 const { pause: pauseRunPolling, resume: resumeRunPolling } = useIntervalFn(
   () => {
     const runId = pipelineRunRouteId.value;
-    if (runId) void fetchPipelineData(runId, { silent: true });
+    if (!runId) return;
+    // getPipelineRunFlow throws on a bad response; unhandled here it would
+    // surface as an unhandled rejection every tick. The next tick retries.
+    void fetchPipelineData(runId, { silent: true }).catch((err) => {
+      console.error('Pipeline run poll failed:', err);
+    });
   },
   RUN_POLL_MS,
   { immediate: false },
