@@ -165,6 +165,13 @@ export default defineI18nConfig(() => ({
           'Configure and register a new dataset source for your project.',
       },
       description: {
+        no_read_permission_datasets:
+          "You don't have permission to view datasets",
+        no_read_permission_models: "You don't have permission to view models",
+        no_create_permission_datasets:
+          "You don't have permission to create datasets",
+        no_create_permission_models:
+          "You don't have permission to create models",
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
         pipeline_experiments:
