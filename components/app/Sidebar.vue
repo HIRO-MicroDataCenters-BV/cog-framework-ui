@@ -2,7 +2,9 @@
 import { useStorage } from '@vueuse/core';
 import { useSidebar } from '../ui/sidebar';
 import NavUser from './NavUser.vue';
+import EnterpriseContactDialog from './EnterpriseContactDialog.vue';
 import ColorModeSwitch from './ColorModeSwitch.vue';
+import { ENTERPRISE_CONTACT_EMAIL } from '~/utils/enterprise';
 
 const { t } = useI18n();
 const config = useRuntimeConfig();
@@ -27,6 +29,12 @@ onMounted(() => {
 // Our UI is mounted under a context path (/uidev or /cogui), so strip the path
 // by using only the origin from the current request URL.
 const infraDashboardUrl = computed(() => useRequestURL().origin);
+
+// The Infra Dashboard is enterprise-only, but unlike the gated pages it has no
+// route of its own — it is an external link. So the entry stays in place for
+// every tier and free users get the upgrade dialog instead of the link.
+const hasInfraDashboard = computed(() => meetsTier('enterprise'));
+const infraUpgradeOpen = ref(false);
 
 const route = useRoute();
 const query = computed(() => route.query);
@@ -200,7 +208,11 @@ const toggleTheme = () => {
           </template>
 
           <SidebarMenuItem>
-            <SidebarMenuButton as-child :tooltip="t('menu.infra_dashboard')">
+            <SidebarMenuButton
+              v-if="hasInfraDashboard"
+              as-child
+              :tooltip="t('menu.infra_dashboard')"
+            >
               <a
                 :href="infraDashboardUrl"
                 target="_blank"
@@ -212,11 +224,31 @@ const toggleTheme = () => {
                 <span>{{ t('menu.infra_dashboard') }}</span>
               </a>
             </SidebarMenuButton>
+            <SidebarMenuButton
+              v-else
+              :tooltip="t('menu.infra_dashboard')"
+              @click="infraUpgradeOpen = true"
+            >
+              <span class="text-lg">
+                <Icon name="lucide:layout-dashboard" />
+              </span>
+              <span>{{ t('menu.infra_dashboard') }}</span>
+              <Icon
+                name="lucide:lock"
+                class="ml-auto size-3.5 text-muted-foreground"
+              />
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
     </SidebarContent>
     <div class="mx-0 border-t border-border" />
+    <EnterpriseContactDialog
+      v-model:open="infraUpgradeOpen"
+      feature-name="The Infra Dashboard"
+      :contact-email="ENTERPRISE_CONTACT_EMAIL"
+    />
+
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem v-for="item in menu.footer" :key="item.key">
