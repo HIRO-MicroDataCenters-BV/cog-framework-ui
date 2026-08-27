@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { Position, MarkerType } from '@vue-flow/core';
+import { useIntervalFn } from '@vueuse/core';
 import type {
   Node,
   Edge,
@@ -17,6 +18,9 @@ import Badge from '~/components/ui/badge/Badge.vue';
 import { Spinner } from '~/components/ui/spinner';
 
 const { setPage } = useApp();
+// Resolved here, not inside fetchPipelineData: the poll below calls that from a
+// timer, where Nuxt composables are outside the setup context and would throw.
+const api = useApi();
 const { initialize: resetBuilderGraph } = usePipelineBuilder();
 const { t } = useI18n();
 const route = useRoute();
@@ -30,6 +34,11 @@ const pipelineData = ref<PipelineData | null>(null);
 const isRunSheetOpen = ref(false);
 const selectedNodeName = ref<string | null>(null);
 const isPipelineFlowLoading = ref(false);
+/** Node ids + statuses of the rendered graph; lets a poll skip a no-op redraw. */
+const graphSignature = ref<string | null>(null);
+
+/** How often an unfinished run is re-read from KFP. */
+const RUN_POLL_MS = 5000;
 
 const activeTab = ref<'flow' | 'details'>('flow');
 const tabs = [
@@ -594,8 +603,11 @@ const getOutputPaths = (template: PipelineTemplate) => [
   ...extractPaths(template.outputs?.parameters, 'String'),
 ];
 
-const fetchPipelineData = async (expectedRunId: string) => {
-  const api = useApi();
+const fetchPipelineData = async (
+  expectedRunId: string,
+  options: { silent?: boolean } = {},
+) => {
+  const { silent = false } = options;
 
   const isStale = () => pipelineRunRouteId.value !== expectedRunId;
 
@@ -660,6 +672,16 @@ const fetchPipelineData = async (expectedRunId: string) => {
 
     const title = pipelineData.value.display_name || 'Pipeline';
 
+    // A poll that changed nothing must not touch page data: the builder syncs
+    // the canvas from it on every update, which would rebuild the graph (and
+    // re-fit the view) several times a minute for no reason.
+    const signature = JSON.stringify([
+      title,
+      nodes.map((n) => [n.id, (n.data as { status?: string })?.status ?? '']),
+    ]);
+    if (silent && signature === graphSignature.value) return;
+    graphSignature.value = signature;
+
     setPage({
       section: 'pipeline_runs',
       title,
@@ -673,7 +695,7 @@ const fetchPipelineData = async (expectedRunId: string) => {
       },
     });
   } finally {
-    if (pipelineRunRouteId.value === expectedRunId) {
+    if (!silent && pipelineRunRouteId.value === expectedRunId) {
       isPipelineFlowLoading.value = false;
     }
   }
@@ -691,9 +713,46 @@ watch(
     isPipelineFlowLoading.value = true;
     pipelineData.value = null;
     runDetails.value = null;
+    graphSignature.value = null;
     resetBuilderGraph([], []);
 
     await fetchPipelineData(runId);
+  },
+  { immediate: true },
+);
+
+/**
+ * A run that has not reached a terminal state keeps changing server-side, so
+ * the page polls it until it settles. Anything not in this set — including an
+ * unreported state — counts as still in flight; polling stops on unmount.
+ */
+const TERMINAL_RUN_STATES = new Set([
+  'SUCCEEDED',
+  'FAILED',
+  'CANCELED',
+  'SKIPPED',
+]);
+
+const isRunInFlight = computed(() => {
+  if (!runDetails.value) return false;
+  const state = String(runDetails.value.status ?? '').toUpperCase();
+  return !TERMINAL_RUN_STATES.has(state);
+});
+
+const { pause: pauseRunPolling, resume: resumeRunPolling } = useIntervalFn(
+  () => {
+    const runId = pipelineRunRouteId.value;
+    if (runId) void fetchPipelineData(runId, { silent: true });
+  },
+  RUN_POLL_MS,
+  { immediate: false },
+);
+
+watch(
+  isRunInFlight,
+  (inFlight) => {
+    if (inFlight) resumeRunPolling();
+    else pauseRunPolling();
   },
   { immediate: true },
 );

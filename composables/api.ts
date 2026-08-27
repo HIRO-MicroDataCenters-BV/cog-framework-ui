@@ -47,6 +47,16 @@ import modelsServingData from '@/mocks/get.models-serving.json';
 const pipelineRunsTokenCache = new Map<string, Map<number, string>>();
 
 /**
+ * Cache for fetched pipeline versions, keyed by `pipelineId/versionId`.
+ *
+ * KFP pipeline versions are immutable — publishing a change creates a new
+ * version — so a fetched spec never goes stale. The run detail page polls a
+ * running run every few seconds and would otherwise refetch the same spec on
+ * every tick; runs sharing a version also reuse the cached entry.
+ */
+const pipelineVersionCache = new Map<string, unknown>();
+
+/**
  * Token cache for KFP experiments list pagination (cursor-based).
  * Same pattern as {@link pipelineRunsTokenCache} / `getPipelineRunsListV2`.
  */
@@ -3705,6 +3715,12 @@ export const useApi = () => {
      * ```
      */
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
+      const cacheKey = `${pipelineId}/${versionId}`;
+      const cached = pipelineVersionCache.get(cacheKey);
+      if (cached) {
+        return { status_code: 200, message: 'Pipeline version', data: cached };
+      }
+
       const url = `${apiRuns.replace(/\/$/, '')}/pipelines/${encodeURIComponent(
         pipelineId,
       )}/versions/${encodeURIComponent(versionId)}`;
@@ -3718,11 +3734,10 @@ export const useApi = () => {
           return null;
         }
 
-        return {
-          status_code: 200,
-          message: 'Pipeline version',
-          data: await response.json(),
-        };
+        const data = await response.json();
+        pipelineVersionCache.set(cacheKey, data);
+
+        return { status_code: 200, message: 'Pipeline version', data };
       } catch (err) {
         console.error('Error fetching pipeline version from KFP:', err);
         toaster.show('error', 'connection_error');
