@@ -12,11 +12,61 @@
  */
 import { ref } from 'vue';
 import FineTuneCreate from '~/components/app/dialog/FineTuneCreate.vue';
+import UpgradePanel from '~/components/app/UpgradePanel.vue';
+import EntitlementsUnavailable from '~/components/app/EntitlementsUnavailable.vue';
+import {
+  ENTERPRISE_CONTACT_EMAIL,
+  ENTERPRISE_LEARN_MORE_URL,
+} from '~/utils/enterprise';
 import { Button } from '~/components/ui/button';
 
 const { setPage } = useApp();
 const router = useRouter();
 const { t } = useI18n();
+
+// Tier gate — fine-tuning is an enterprise feature. As with GenAI the nav entry
+// stays visible to every tier: free users reach this page and see what
+// upgrading unlocks, instead of the feature being hidden.
+const {
+  meetsTier,
+  loaded: entitlementsLoaded,
+  error: entitlementsError,
+  fetchEntitlements,
+} = useEntitlements();
+
+const retryingEntitlements = ref(false);
+const retryEntitlements = async () => {
+  retryingEntitlements.value = true;
+  try {
+    await fetchEntitlements(true);
+  } finally {
+    retryingEntitlements.value = false;
+  }
+};
+const hasFineTune = computed(() => meetsTier('enterprise'));
+
+const upgradeFeatures = [
+  {
+    title: 'Parameter-Efficient LoRA Training',
+    description: 'Adapt an existing LLM without retraining the full model',
+  },
+  {
+    title: 'Train on Your Own Data',
+    description: 'Point a run at any JSONL dataset registered on the platform',
+  },
+  {
+    title: 'Tunable Training Knobs',
+    description: 'Control gates, training steps and learning rate per run',
+  },
+  {
+    title: 'Straight to Serving',
+    description: 'Completed adapters appear in the model-serving picker',
+  },
+];
+
+onMounted(() => {
+  fetchEntitlements();
+});
 
 setPage({
   section: 'fine-tune',
@@ -47,13 +97,47 @@ const handleCreated = (payload: {
           {{ t('description.fine_tune') }}
         </p>
       </div>
-      <Button @click="dialogOpen = true">
+      <Button v-if="hasFineTune" @click="dialogOpen = true">
         <Icon name="lucide:plus" class="size-4 mr-2" />
         {{ t('action.add_fine_tune') }}
       </Button>
     </div>
 
-    <div class="flex-1 flex items-center justify-center p-8">
+    <div
+      v-if="!entitlementsLoaded"
+      class="flex-1 flex items-center justify-center"
+    >
+      <Icon
+        name="lucide:loader-circle"
+        class="size-6 animate-spin text-muted-foreground/50"
+      />
+    </div>
+
+    <div
+      v-else-if="entitlementsError"
+      class="flex-1 flex items-center justify-center p-6"
+    >
+      <EntitlementsUnavailable
+        :retrying="retryingEntitlements"
+        @retry="retryEntitlements"
+      />
+    </div>
+
+    <div v-else-if="!hasFineTune" class="flex-1 overflow-y-auto p-6">
+      <UpgradePanel
+        class="mx-auto max-w-4xl"
+        title="Advanced Fine-Tuning Features"
+        subtitle="Adapt open LLMs to your own data and serve the result on the platform."
+        banner="Fine-tuning is available on the Enterprise plan"
+        banner-badge="Enterprise"
+        :features="upgradeFeatures"
+        feature-name="Fine-tuning"
+        :contact-email="ENTERPRISE_CONTACT_EMAIL"
+        :learn-more-url="ENTERPRISE_LEARN_MORE_URL"
+      />
+    </div>
+
+    <div v-else class="flex-1 flex items-center justify-center p-8">
       <div class="text-center max-w-md">
         <Icon
           name="lucide:sliders-horizontal"
@@ -72,6 +156,10 @@ const handleCreated = (payload: {
       </div>
     </div>
 
-    <FineTuneCreate v-model:open="dialogOpen" @created="handleCreated" />
+    <FineTuneCreate
+      v-if="hasFineTune"
+      v-model:open="dialogOpen"
+      @created="handleCreated"
+    />
   </div>
 </template>
