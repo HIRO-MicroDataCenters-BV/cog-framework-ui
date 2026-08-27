@@ -1410,7 +1410,8 @@ export const useApiWithMock = () => {
           data: null,
         });
       }
-      return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+      // Unreachable: the real API fetches this from KFP v2beta1 directly.
+      throw new Error('Mock mode is not enabled');
     },
 
     getTrainingBuilderComponents: async () => {

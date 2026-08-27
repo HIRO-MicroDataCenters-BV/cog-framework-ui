@@ -3681,9 +3681,18 @@ export const useApi = () => {
     },
 
     /**
-     * Gets pipeline version by pipeline ID and version ID
+     * Gets pipeline version by pipeline ID and version ID directly from the
+     * KFP API (v2beta1).
      *
-     * Retrieves a specific pipeline version including its pipeline_spec.
+     * GET `{apiRuns}/pipelines/{pipelineId}/versions/{versionId}`
+     *
+     * Retrieves a specific pipeline version including its pipeline_spec. Used
+     * by the run detail page for runs that carry a `pipeline_version_reference`
+     * instead of an inline `pipeline_spec`.
+     *
+     * KFP returns the version object at the top level; it is wrapped in the
+     * app's standard `{ status_code, message, data }` envelope so callers and
+     * the mock fixture share one shape.
      *
      * @param {string} pipelineId - The pipeline ID
      * @param {string} versionId - The version ID
@@ -3696,7 +3705,31 @@ export const useApi = () => {
      * ```
      */
     getPipelineVersion: async (pipelineId: string, versionId: string) => {
-      return request(`/pipelines/${pipelineId}/versions/${versionId}`);
+      const url = `${apiRuns.replace(/\/$/, '')}/pipelines/${encodeURIComponent(
+        pipelineId,
+      )}/versions/${encodeURIComponent(versionId)}`;
+
+      try {
+        setPage({ ...page.value, isLoading: true });
+        const response = await fetch(url, { headers: getHeaders() });
+
+        if (!response.ok) {
+          toaster.show('error', 'server_error');
+          return null;
+        }
+
+        return {
+          status_code: 200,
+          message: 'Pipeline version',
+          data: await response.json(),
+        };
+      } catch (err) {
+        console.error('Error fetching pipeline version from KFP:', err);
+        toaster.show('error', 'connection_error');
+        return null;
+      } finally {
+        setPage({ ...page.value, isLoading: false });
+      }
     },
 
     // ============================================================================
