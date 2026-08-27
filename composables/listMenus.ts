@@ -50,6 +50,9 @@ export const uselistMenus = () => {
           items: [],
           isActive: false,
           minTier: 'free' as EntitlementTier,
+          // Entry stays visible below `featureTier`, but shows a lock and the
+          // page serves the upgrade panel instead of the feature.
+          featureTier: 'enterprise' as EntitlementTier,
         },
         {
           key: 'pipelines',
@@ -87,6 +90,7 @@ export const uselistMenus = () => {
           items: [],
           isActive: false,
           minTier: 'free' as EntitlementTier,
+          featureTier: 'enterprise' as EntitlementTier,
         },
       ],
       footer: [],

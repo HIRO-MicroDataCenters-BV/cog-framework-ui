@@ -5,11 +5,16 @@ import NavUser from './NavUser.vue';
 import EnterpriseContactDialog from './EnterpriseContactDialog.vue';
 import ColorModeSwitch from './ColorModeSwitch.vue';
 import { ENTERPRISE_CONTACT_EMAIL } from '~/utils/enterprise';
+import type { EntitlementTier } from '~/types/api.types';
 
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
-const { meetsTier, fetchEntitlements } = useEntitlements();
+const {
+  meetsTier,
+  loaded: entitlementsLoaded,
+  fetchEntitlements,
+} = useEntitlements();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
 
@@ -17,9 +22,19 @@ const baseUrl = config.app.baseURL;
 // including before entitlements resolve, and if the request fails — so the nav
 // is never empty. Only entries above it (Dashboard) wait for the real tier, so
 // lower tiers never see them flash in.
+//
+// Separately, an entry may stay visible while its feature is gated (GenAI,
+// Fine-tune): it keeps its link — the page serves the upgrade panel — and gets
+// a lock icon here. The lock waits for entitlements to resolve so it never
+// flashes at a user who turns out to be entitled.
 const mainMenu = computed(() =>
   menu.value.main.filter((item) => meetsTier(item.minTier)),
 );
+
+const isFeatureLocked = (featureTier?: EntitlementTier) =>
+  Boolean(featureTier) &&
+  entitlementsLoaded.value &&
+  !meetsTier(featureTier as EntitlementTier);
 
 onMounted(() => {
   fetchEntitlements();
@@ -154,6 +169,11 @@ const toggleTheme = () => {
                     <Icon :name="item.icon" />
                   </span>
                   <span>{{ item.title }}</span>
+                  <Icon
+                    v-if="isFeatureLocked(item.featureTier)"
+                    name="lucide:lock"
+                    class="ml-auto size-3.5 text-muted-foreground"
+                  />
                 </NuxtLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

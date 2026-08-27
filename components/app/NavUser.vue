@@ -9,24 +9,19 @@ const {
 } = useCurrentUser();
 const { clearEntitlements } = useEntitlements();
 
-// Reused across clicks so a POST that fails to navigate doesn't leave forms behind.
-let logoutForm: HTMLFormElement | null = null;
+const { app: appConfig } = useRuntimeConfig();
 
 const handleLogout = () => {
-  // Clear local state first - the form submit below navigates away from the SPA.
+  // Clear local state first - the navigation below leaves the SPA entirely.
   clearUser();
   clearEntitlements();
 
-  // Top-level form POST so the authservice_session cookie is sent and
-  // oidc-authservice's 302 takes the browser straight to the Dex login page.
-  if (!logoutForm) {
-    logoutForm = document.createElement('form');
-    logoutForm.method = 'POST';
-    logoutForm.action = '/authservice/logout';
-    logoutForm.hidden = true;
-    document.body.appendChild(logoutForm);
-  }
-  logoutForm.submit();
+  // Full-page navigation to the nginx logout location, which expires the
+  // HttpOnly session cookie. The redirect it returns is then unauthenticated,
+  // so authservice challenges it and the browser lands on the Dex login page.
+  // Note: authservice's own /authservice/logout authenticates via the
+  // Authorization header, not the cookie, so the browser cannot call it.
+  window.location.href = `${appConfig.baseURL}logout`;
 };
 
 // Track avatar image load failure so we show initials fallback instead of broken icon
