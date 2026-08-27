@@ -5,6 +5,7 @@ import NavUser from './NavUser.vue';
 import EnterpriseContactDialog from './EnterpriseContactDialog.vue';
 import ColorModeSwitch from './ColorModeSwitch.vue';
 import { ENTERPRISE_CONTACT_EMAIL } from '~/utils/enterprise';
+import type { EntitlementTier } from '~/types/api.types';
 
 const { t } = useI18n();
 const config = useRuntimeConfig();
@@ -22,9 +23,23 @@ const baseUrl = config.app.baseURL;
 // including before entitlements resolve, and if the request fails — so the nav
 // is never empty. Only entries above it (Dashboard) wait for the real tier, so
 // lower tiers never see them flash in.
+//
+// Separately, an entry may stay visible while its feature is gated (GenAI,
+// Fine-tune): it keeps its link — the page serves the upgrade panel — and gets
+// a lock icon here. The lock waits for entitlements to resolve so it never
+// flashes at a user who turns out to be entitled.
 const mainMenu = computed(() =>
   menu.value.main.filter((item) => meetsTier(item.minTier)),
 );
+
+// A lock asserts "your plan doesn't include this", so it needs a resolved tier:
+// not while the fetch is in flight, and not when it failed and the tier is
+// simply unknown. Those entries still link to pages that explain the state.
+const isFeatureLocked = (featureTier?: EntitlementTier) =>
+  Boolean(featureTier) &&
+  entitlementsLoaded.value &&
+  !entitlementsError.value &&
+  !meetsTier(featureTier as EntitlementTier);
 
 onMounted(() => {
   fetchEntitlements();
@@ -37,13 +52,12 @@ const infraDashboardUrl = computed(() => useRequestURL().origin);
 
 // The Infra Dashboard is enterprise-only, but unlike the gated pages it has no
 // route of its own — it is an external link. So the entry stays in place for
-// every tier and free users get the upgrade dialog instead of the link. Until
-// entitlements resolve the entry is inert, so an entitled user clicking early
-// never gets the upsell by mistake. If the fetch failed the tier is unknown
-// rather than free, so the entry offers a retry instead of claiming a paywall.
+// every tier and free users get the upgrade dialog instead of the link.
 const hasInfraDashboard = computed(() => meetsTier('enterprise'));
 const infraUpgradeOpen = ref(false);
 
+// A failed fetch means the tier is unknown, not free, so the entry offers a
+// retry rather than claiming a paywall — matching what the gated pages do.
 const retryingEntitlements = ref(false);
 const retryEntitlements = async () => {
   retryingEntitlements.value = true;
@@ -178,6 +192,11 @@ const toggleTheme = () => {
                     <Icon :name="item.icon" />
                   </span>
                   <span>{{ item.title }}</span>
+                  <Icon
+                    v-if="isFeatureLocked(item.featureTier)"
+                    name="lucide:lock"
+                    class="ml-auto size-3.5 text-muted-foreground"
+                  />
                 </NuxtLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
