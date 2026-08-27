@@ -68,7 +68,9 @@ describe('EnterpriseContactDialog component', () => {
     copy.mockResolvedValue(undefined);
     const wrapper = mountDialog();
 
-    await wrapper.get('button[title="Copy email address"]').trigger('click');
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
 
     expect(copy).toHaveBeenCalledWith('admin@hiro-microdatacenters.com');
     expect(toast).toHaveBeenCalledWith('success', 'copied_to_clipboard');
@@ -80,7 +82,9 @@ describe('EnterpriseContactDialog component', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const wrapper = mountDialog();
 
-    await wrapper.get('button[title="Copy email address"]').trigger('click');
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
     await new Promise((resolve) => setTimeout(resolve));
 
     expect(toast).toHaveBeenCalledWith('error', 'failed_to_copy');
@@ -93,7 +97,9 @@ describe('EnterpriseContactDialog component', () => {
     isSupported.value = false;
     const wrapper = mountDialog();
 
-    await wrapper.get('button[title="Copy email address"]').trigger('click');
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
 
     expect(toast).toHaveBeenCalledWith('error', 'clipboard_not_supported');
     expect(copy).not.toHaveBeenCalled();
