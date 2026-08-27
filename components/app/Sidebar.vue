@@ -9,7 +9,11 @@ import { ENTERPRISE_CONTACT_EMAIL } from '~/utils/enterprise';
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const menu = uselistMenus();
-const { meetsTier, fetchEntitlements } = useEntitlements();
+const {
+  meetsTier,
+  loaded: entitlementsLoaded,
+  fetchEntitlements,
+} = useEntitlements();
 const appVersion = config.public.appVersion;
 const baseUrl = config.app.baseURL;
 
@@ -32,7 +36,9 @@ const infraDashboardUrl = computed(() => useRequestURL().origin);
 
 // The Infra Dashboard is enterprise-only, but unlike the gated pages it has no
 // route of its own — it is an external link. So the entry stays in place for
-// every tier and free users get the upgrade dialog instead of the link.
+// every tier and free users get the upgrade dialog instead of the link. Until
+// entitlements resolve the entry is inert, so an entitled user clicking early
+// never gets the upsell by mistake.
 const hasInfraDashboard = computed(() => meetsTier('enterprise'));
 const infraUpgradeOpen = ref(false);
 
@@ -227,6 +233,7 @@ const toggleTheme = () => {
             <SidebarMenuButton
               v-else
               :tooltip="t('menu.infra_dashboard')"
+              :disabled="!entitlementsLoaded"
               @click="infraUpgradeOpen = true"
             >
               <span class="text-lg">
@@ -234,6 +241,12 @@ const toggleTheme = () => {
               </span>
               <span>{{ t('menu.infra_dashboard') }}</span>
               <Icon
+                v-if="!entitlementsLoaded"
+                name="lucide:loader-circle"
+                class="ml-auto size-3.5 animate-spin text-muted-foreground/50"
+              />
+              <Icon
+                v-else
                 name="lucide:lock"
                 class="ml-auto size-3.5 text-muted-foreground"
               />
