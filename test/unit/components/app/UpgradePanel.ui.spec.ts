@@ -66,7 +66,7 @@ describe('UpgradePanel component', () => {
 
     expect(wrapper.text()).toContain('Try Enterprise Features');
 
-    const learnMore = wrapper.get('a[href="https://hiro-microdatacenters.nl"]');
+    const learnMore = wrapper.get(`a[href="${baseProps.learnMoreUrl}"]`);
     expect(learnMore.text()).toContain('Learn More');
     expect(learnMore.attributes('target')).toBe('_blank');
     expect(learnMore.attributes('rel')).toContain('noopener');

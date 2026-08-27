@@ -3,12 +3,18 @@ import { mount } from '@vue/test-utils';
 import EnterpriseContactDialog from '~/components/app/EnterpriseContactDialog.vue';
 
 const copy = vi.fn();
+const isSupported = { value: true };
+const toast = vi.fn();
+
+vi.mock('~/composables/toaster', () => ({
+  useToaster: () => ({ show: toast }),
+}));
 
 // Partial mock: reka-ui (behind the shadcn Dialog) pulls in @vueuse/core too,
 // so only useClipboard is swapped out.
 vi.mock('@vueuse/core', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@vueuse/core')>()),
-  useClipboard: () => ({ copy, isSupported: { value: true } }),
+  useClipboard: () => ({ copy, isSupported }),
 }));
 
 // The real dialog teleports its content out of the wrapper, so the primitives
@@ -58,10 +64,45 @@ describe('EnterpriseContactDialog component', () => {
 
   it('copies the address to the clipboard', async () => {
     copy.mockClear();
+    toast.mockClear();
+    copy.mockResolvedValue(undefined);
     const wrapper = mountDialog();
 
-    await wrapper.get('button[title="Copy email address"]').trigger('click');
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
 
     expect(copy).toHaveBeenCalledWith('admin@hiro-microdatacenters.com');
+    expect(toast).toHaveBeenCalledWith('success', 'copied_to_clipboard');
+  });
+
+  it('toasts an error when the clipboard write rejects', async () => {
+    toast.mockClear();
+    copy.mockRejectedValue(new Error('NotAllowedError'));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const wrapper = mountDialog();
+
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(toast).toHaveBeenCalledWith('error', 'failed_to_copy');
+    spy.mockRestore();
+  });
+
+  it('toasts when the clipboard API is unavailable, without copying', async () => {
+    copy.mockClear();
+    toast.mockClear();
+    isSupported.value = false;
+    const wrapper = mountDialog();
+
+    await wrapper
+      .get('button[aria-label="Copy email address"]')
+      .trigger('click');
+
+    expect(toast).toHaveBeenCalledWith('error', 'clipboard_not_supported');
+    expect(copy).not.toHaveBeenCalled();
+    isSupported.value = true;
   });
 });
