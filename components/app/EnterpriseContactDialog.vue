@@ -46,8 +46,13 @@ const copyEmail = async () => {
     toaster.show('error', 'clipboard_not_supported');
     return;
   }
-  await copy(props.contactEmail);
-  toaster.show('success', 'copied_to_clipboard');
+  try {
+    await copy(props.contactEmail);
+    toaster.show('success', 'copied_to_clipboard');
+  } catch (error) {
+    console.error('Failed to copy:', error);
+    toaster.show('error', 'failed_to_copy');
+  }
 };
 </script>
 
@@ -74,6 +79,7 @@ const copyEmail = async () => {
           type="button"
           class="shrink-0 rounded-md p-1.5 text-amber-700 hover:bg-amber-100/60 hover:text-amber-800 dark:text-amber-200 dark:hover:bg-amber-900/40"
           title="Copy email address"
+          aria-label="Copy email address"
           @click="copyEmail"
         >
           <Icon name="lucide:copy" class="size-4" />
