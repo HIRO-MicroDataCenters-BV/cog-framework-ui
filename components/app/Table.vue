@@ -1048,15 +1048,20 @@ defineExpose({ fetchData, totalItems, resetExpanded });
               <TooltipProvider v-else-if="showAddButton">
                 <Tooltip>
                   <TooltipTrigger as-child>
-                    <!-- A disabled button fires no events, so the tooltip needs
-                         an enabled wrapper to hover. -->
-                    <span class="inline-flex">
-                      <Button disabled>
-                        <Icon name="lucide:plus" />
-                        {{ addLabel }}
-                        <Icon name="lucide:lock" class="size-3.5 ml-1" />
-                      </Button>
-                    </span>
+                    <!-- `aria-disabled` rather than `disabled`: a disabled
+                         button is removed from the tab order and fires no
+                         pointer events, so neither keyboard nor mouse users
+                         could reach the tooltip explaining why it is locked.
+                         It carries no click handler, so activating it is a
+                         no-op. -->
+                    <Button
+                      aria-disabled="true"
+                      class="opacity-50 cursor-not-allowed"
+                    >
+                      <Icon name="lucide:plus" />
+                      {{ addLabel }}
+                      <Icon name="lucide:lock" class="size-3.5 ml-1" />
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
                     {{ createLockedReason }}
@@ -1092,7 +1097,7 @@ defineExpose({ fetchData, totalItems, resetExpanded });
           />
           <p class="text-sm font-medium">{{ readLockedReason }}</p>
           <p class="text-xs text-muted-foreground">
-            Ask your workspace administrator for access.
+            {{ t('description.ask_admin_for_access') }}
           </p>
         </div>
       </div>
@@ -1102,6 +1107,8 @@ defineExpose({ fetchData, totalItems, resetExpanded });
         :class="
           readLocked && 'pointer-events-none select-none opacity-30 blur-[2px]'
         "
+        :inert="readLocked || undefined"
+        :aria-hidden="readLocked || undefined"
       >
         <colgroup>
           <col
