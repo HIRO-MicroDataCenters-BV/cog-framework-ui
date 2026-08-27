@@ -53,8 +53,10 @@ const isOpenConfirm = ref(false);
 /** UI copy (title, key); cleared when dialog closes — do not use for invoking the action. */
 const pendingAction = ref<Item | null>(null);
 /**
- * Callback captured when opening the dialog. Reka/Radix closes the dialog before or after click
- * and @update:open clears pendingAction — this ref must stay set until confirm runs.
+ * Callback captured when opening the dialog. The confirm button is a plain Button (not
+ * AlertDialogAction): Reka's AlertDialogAction closes the dialog from its own click handler,
+ * which runs before the fallthrough one and clears this ref via @update:open, so the action
+ * never fired. We close the dialog ourselves once the action has settled instead.
  */
 const pendingConfirmFn = ref<(() => void | Promise<void>) | null>(null);
 const confirmInFlight = ref(false);
@@ -194,7 +196,7 @@ function onActionMenuItemClick(item: Item) {
           @click="onCancelConfirmDialog"
           >{{ $t('action.cancel') }}</AlertDialogCancel
         >
-        <AlertDialogAction
+        <Button
           :variant="
             pendingAction?.key === 'archive_run' ||
             pendingAction?.key === 'restore_run'
@@ -203,7 +205,7 @@ function onActionMenuItemClick(item: Item) {
           "
           class="cursor-pointer"
           :disabled="confirmInFlight"
-          @click.prevent="onConfirmDialogAction"
+          @click="onConfirmDialogAction"
         >
           <template v-if="pendingAction?.key === 'archive_run'">{{
             $t('action.archive')
@@ -212,7 +214,7 @@ function onActionMenuItemClick(item: Item) {
             $t('action.restore_run')
           }}</template>
           <template v-else>{{ $t('action.delete') }}</template>
-        </AlertDialogAction>
+        </Button>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

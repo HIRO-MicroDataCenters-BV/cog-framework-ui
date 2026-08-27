@@ -527,6 +527,16 @@ export const useMock = () => {
 export const useApiWithMock = () => {
   const mock = useMock();
 
+  /**
+   * In-memory record of run mutations (archive / restore / delete) so those
+   * actions are observable in mock mode — the JSON fixtures are read-only.
+   * Resets on reload, like every other mock.
+   */
+  const runMutations = useState<{
+    storageStateById: Record<string, string>;
+    deletedIds: string[];
+  }>('mock-run-mutations', () => ({ storageStateById: {}, deletedIds: [] }));
+
   // Prevent infinite recursion by directly accessing real API
   const config = useRuntimeConfig();
   const baseUrl = config.public.apiBase;
@@ -1043,6 +1053,7 @@ export const useApiWithMock = () => {
         await mockDelay();
         const kfpJson = await import('~/mocks/get.kfp-runs.json');
         const searchParams = params as Record<string, string>;
+        const { storageStateById, deletedIds } = runMutations.value;
 
         type KfpRun = {
           run_id: string;
@@ -1056,7 +1067,15 @@ export const useApiWithMock = () => {
           experiment?: { experiment_id?: string };
         };
 
-        let filteredRuns: KfpRun[] = [...(kfpJson.runs as KfpRun[])];
+        // Apply archive/restore/delete performed during this session so the
+        // Active/Archived tabs reflect the mutation, same as the real KFP API.
+        let filteredRuns: KfpRun[] = (kfpJson.runs as KfpRun[])
+          .filter((r) => !deletedIds.includes(r.run_id))
+          .map((r) =>
+            storageStateById[r.run_id]
+              ? { ...r, storage_state: storageStateById[r.run_id] }
+              : r,
+          );
 
         // Filter by storage_state (archived/active)
         if (searchParams.storage_state) {
@@ -1176,6 +1195,48 @@ export const useApiWithMock = () => {
       throw new Error(
         'Mock data not available. Please enable mock mode or check KFP endpoint configuration.',
       );
+    },
+
+    archivePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          storageStateById: {
+            ...runMutations.value.storageStateById,
+            [id]: 'ARCHIVED',
+          },
+        };
+        return;
+      }
+      throw new Error('Mock mode is not enabled');
+    },
+
+    unarchivePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          storageStateById: {
+            ...runMutations.value.storageStateById,
+            [id]: 'AVAILABLE',
+          },
+        };
+        return;
+      }
+      throw new Error('Mock mode is not enabled');
+    },
+
+    deletePipelineRun: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        runMutations.value = {
+          ...runMutations.value,
+          deletedIds: [...runMutations.value.deletedIds, id],
+        };
+        return;
+      }
+      throw new Error('Mock mode is not enabled');
     },
 
     deleteDatasetFile: async (id: number | string) => {
