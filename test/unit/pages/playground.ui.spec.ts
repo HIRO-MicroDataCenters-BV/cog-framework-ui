@@ -4,8 +4,10 @@
  * Stubs the UI primitives and the API composable so the tests focus on
  * behaviour: the ready-only service filter (with all-services fallback),
  * served model names loading on selection, one completion request per
- * served name with the Question/Answer-wrapped prompt, and answer cards
- * rendering text, latency, token usage and inline errors.
+ * served name with the Question/Answer-wrapped prompt, answer cards
+ * rendering text, latency, token usage and inline errors, the service
+ * Refresh button, and pinned answers (moved out of the live columns, kept
+ * across a re-ask on another service, persisted in localStorage).
  */
 
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
@@ -122,7 +124,20 @@ beforeEach(() => {
   getServedModels.mockReset();
   postServedCompletion.mockReset();
   setPage.mockReset();
+  window.localStorage.clear();
 });
+
+/** Mount, pick `isvc`, type `request` and Ask; resolves once answers land. */
+const askOn = async (
+  wrapper: ReturnType<typeof mountPage>,
+  isvc: string,
+  request: string,
+) => {
+  await selectService(wrapper, isvc);
+  await wrapper.find('textarea').setValue(request);
+  await wrapper.find('[data-testid="ask"]').trigger('click');
+  await flushPromises();
+};
 
 describe('pages/playground/index.vue', () => {
   it('sets the page section so the breadcrumb resolves menu.playground', () => {
@@ -372,6 +387,266 @@ describe('pages/playground/index.vue', () => {
       'hint.playground_request_failed',
     );
     expect(cards[1].find('[data-testid="answer-text"]').exists()).toBe(false);
+  });
+
+  it('Refresh reloads the services and drops a selection that disappeared', async () => {
+    getModelsServing
+      .mockResolvedValueOnce({ data: [readyService('svc-base')] })
+      // The base service was deleted to free the GPU for the NTK one.
+      .mockResolvedValueOnce({ data: [readyService('svc-ntk')] });
+    getServedModels.mockResolvedValue({
+      data: { isvc_name: 'svc-base', served_model_url: '', models: ['base'] },
+    });
+
+    const wrapper = mountPage();
+    await flushPromises();
+    await selectService(wrapper, 'svc-base');
+    expect(wrapper.findAll('[data-testid="served-model"]')).toHaveLength(1);
+
+    await wrapper.find('[data-testid="refresh-services"]').trigger('click');
+    await flushPromises();
+
+    expect(getModelsServing).toHaveBeenCalledTimes(2);
+    const values = wrapper
+      .findAll('[data-value]')
+      .map((el) => el.attributes('data-value'));
+    expect(values).toEqual(['svc-ntk']);
+    // The stale selection is gone: back to the "select a service" hint, no
+    // dead name, no error, no lingering served names.
+    expect(wrapper.findAll('[data-testid="served-model"]')).toHaveLength(0);
+    expect(wrapper.text()).toContain('hint.playground_select_service');
+    expect(wrapper.text()).not.toContain('hint.playground_no_models');
+    expect(
+      wrapper.find('[data-testid="ask"]').attributes('disabled'),
+    ).toBeDefined();
+  });
+
+  it('Refresh keeps a selection that is still listed', async () => {
+    getModelsServing.mockResolvedValue({ data: [readyService('svc')] });
+    getServedModels.mockResolvedValue({
+      data: { isvc_name: 'svc', served_model_url: '', models: ['base'] },
+    });
+
+    const wrapper = mountPage();
+    await flushPromises();
+    await selectService(wrapper, 'svc');
+
+    await wrapper.find('[data-testid="refresh-services"]').trigger('click');
+    await flushPromises();
+
+    expect(getModelsServing).toHaveBeenCalledTimes(2);
+    expect(wrapper.findAll('[data-testid="served-model"]')).toHaveLength(1);
+    // Still one names load — the selection did not bounce through ''.
+    expect(getServedModels).toHaveBeenCalledTimes(1);
+  });
+
+  it('Pin moves an answer out of the live columns into the pinned panel with service, model and request', async () => {
+    getModelsServing.mockResolvedValueOnce({ data: [readyService('svc')] });
+    getServedModels.mockResolvedValueOnce({
+      data: {
+        isvc_name: 'svc',
+        served_model_url: '',
+        models: ['base', 'lora'],
+      },
+    });
+    postServedCompletion.mockImplementation(
+      async (_isvc: string, body: { model: string }) =>
+        body.model === 'lora'
+          ? completion('lora answer', 7)
+          : completion('base answer', 5),
+    );
+
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(wrapper.find('[data-testid="pinned-panel"]').exists()).toBe(false);
+
+    await askOn(wrapper, 'svc', 'Deploy nginx');
+    expect(wrapper.findAll('[data-testid="answer-card"]')).toHaveLength(2);
+    expect(wrapper.findAll('[data-testid="pin"]')).toHaveLength(2);
+
+    await wrapper.findAll('[data-testid="pin"]')[0].trigger('click');
+    await flushPromises();
+
+    const panel = wrapper.find('[data-testid="pinned-panel"]');
+    expect(panel.exists()).toBe(true);
+    const pins = panel.findAll('[data-testid="pinned-card"]');
+    expect(pins).toHaveLength(1);
+    expect(pins[0].find('[data-testid="pinned-model"]').text()).toBe('base');
+    expect(pins[0].find('[data-testid="pinned-service"]').text()).toBe('svc');
+    expect(pins[0].find('[data-testid="pinned-request"]').text()).toBe(
+      'Deploy nginx',
+    );
+    expect(pins[0].find('[data-testid="pinned-time"]').exists()).toBe(true);
+    expect(pins[0].find('[data-testid="pinned-text"]').text()).toBe(
+      'base answer',
+    );
+    expect(pins[0].text()).toContain('label.completion_tokens: 5');
+
+    // Pinned answers render before (to the left of) the live ones.
+    const order = wrapper
+      .findAll('[data-testid="pinned-card"], [data-testid="answer-card"]')
+      .map((el) => el.attributes('data-testid'));
+    expect(order).toEqual(['pinned-card', 'answer-card']);
+
+    // The live column moved — only the unpinned answer is left.
+    const live = wrapper.findAll('[data-testid="answer-card"]');
+    expect(live).toHaveLength(1);
+    expect(live[0].find('[data-testid="answer-text"]').text()).toBe(
+      'lora answer',
+    );
+  });
+
+  it('Clear pinned empties the panel; Unpin removes one card', async () => {
+    getModelsServing.mockResolvedValueOnce({ data: [readyService('svc')] });
+    getServedModels.mockResolvedValueOnce({
+      data: {
+        isvc_name: 'svc',
+        served_model_url: '',
+        models: ['base', 'lora'],
+      },
+    });
+    postServedCompletion.mockResolvedValue(completion('answer'));
+
+    const wrapper = mountPage();
+    await flushPromises();
+    await askOn(wrapper, 'svc', 'hello');
+
+    await wrapper.findAll('[data-testid="pin"]')[0].trigger('click');
+    await wrapper.findAll('[data-testid="pin"]')[0].trigger('click');
+    await flushPromises();
+    expect(wrapper.findAll('[data-testid="pinned-card"]')).toHaveLength(2);
+    expect(wrapper.findAll('[data-testid="answer-card"]')).toHaveLength(0);
+
+    await wrapper.findAll('[data-testid="unpin"]')[0].trigger('click');
+    await flushPromises();
+    const left = wrapper.findAll('[data-testid="pinned-card"]');
+    expect(left).toHaveLength(1);
+    expect(left[0].find('[data-testid="pinned-model"]').text()).toBe('lora');
+
+    await wrapper.find('[data-testid="clear-pinned"]').trigger('click');
+    await flushPromises();
+    expect(wrapper.find('[data-testid="pinned-panel"]').exists()).toBe(false);
+    expect(window.localStorage.getItem('playground.pins')).toBeNull();
+  });
+
+  it('pinned answers survive a re-ask on another service (base vs NTK comparison)', async () => {
+    getModelsServing.mockResolvedValue({
+      data: [readyService('svc-base'), readyService('svc-ntk')],
+    });
+    getServedModels.mockImplementation(async (isvc: string) => ({
+      data: {
+        isvc_name: isvc,
+        served_model_url: '',
+        models: [isvc === 'svc-base' ? 'Qwen/Base' : 'Qwen/Base-ntk'],
+      },
+    }));
+    postServedCompletion.mockImplementation(async (isvc: string) =>
+      completion(isvc === 'svc-base' ? 'generic kubectl' : 'tight pulumi'),
+    );
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    // First half: ask the base service and pin its answer.
+    await askOn(wrapper, 'svc-base', 'Deploy nginx');
+    await wrapper.find('[data-testid="pin"]').trigger('click');
+    await flushPromises();
+    expect(wrapper.findAll('[data-testid="answer-card"]')).toHaveLength(0);
+
+    // Second half: switch service (live answers reset), ask again.
+    await selectService(wrapper, 'svc-ntk');
+    expect(wrapper.findAll('[data-testid="pinned-card"]')).toHaveLength(1);
+    await wrapper.find('[data-testid="ask"]').trigger('click');
+    await flushPromises();
+
+    expect(postServedCompletion).toHaveBeenLastCalledWith(
+      'svc-ntk',
+      expect.objectContaining({ model: 'Qwen/Base-ntk' }),
+    );
+    const live = wrapper.findAll('[data-testid="answer-card"]');
+    expect(live).toHaveLength(1);
+    expect(live[0].find('[data-testid="answer-text"]').text()).toBe(
+      'tight pulumi',
+    );
+    const pins = wrapper.findAll('[data-testid="pinned-card"]');
+    expect(pins).toHaveLength(1);
+    expect(pins[0].find('[data-testid="pinned-service"]').text()).toBe(
+      'svc-base',
+    );
+    expect(pins[0].find('[data-testid="pinned-model"]').text()).toBe(
+      'Qwen/Base',
+    );
+    expect(pins[0].find('[data-testid="pinned-text"]').text()).toBe(
+      'generic kubectl',
+    );
+  });
+
+  it('pins persist in localStorage across mounts and a blocked storage never breaks the page', async () => {
+    getModelsServing.mockResolvedValue({ data: [readyService('svc')] });
+    getServedModels.mockResolvedValue({
+      data: { isvc_name: 'svc', served_model_url: '', models: ['base'] },
+    });
+    postServedCompletion.mockResolvedValue(completion('kept'));
+
+    const first = mountPage();
+    await flushPromises();
+    await askOn(first, 'svc', 'hello');
+    await first.find('[data-testid="pin"]').trigger('click');
+    await flushPromises();
+    const stored = JSON.parse(
+      window.localStorage.getItem('playground.pins') ?? '[]',
+    );
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toEqual(
+      expect.objectContaining({
+        isvc: 'svc',
+        model: 'base',
+        request: 'hello',
+        text: 'kept',
+      }),
+    );
+    first.unmount();
+
+    const second = mountPage();
+    await flushPromises();
+    const pins = second.findAll('[data-testid="pinned-card"]');
+    expect(pins).toHaveLength(1);
+    expect(pins[0].find('[data-testid="pinned-text"]').text()).toBe('kept');
+    second.unmount();
+
+    // Garbage in storage is ignored rather than rendered.
+    window.localStorage.setItem('playground.pins', '{"not":"a list"}');
+    const third = mountPage();
+    await flushPromises();
+    expect(third.find('[data-testid="pinned-panel"]').exists()).toBe(false);
+    third.unmount();
+
+    // A storage that throws (private mode, blocked site data) must not
+    // break mounting or pinning.
+    const getItem = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
+    try {
+      const fourth = mountPage();
+      await flushPromises();
+      expect(fourth.find('[data-testid="pinned-panel"]').exists()).toBe(false);
+      await askOn(fourth, 'svc', 'hello');
+      await fourth.find('[data-testid="pin"]').trigger('click');
+      await flushPromises();
+      // Pinned in memory for the session even though storage refused it.
+      expect(fourth.findAll('[data-testid="pinned-card"]')).toHaveLength(1);
+      fourth.unmount();
+    } finally {
+      getItem.mockRestore();
+      setItem.mockRestore();
+    }
   });
 
   it('example chips fill the request textarea', async () => {
