@@ -12,7 +12,10 @@ import type {
   PipelineComponentParams,
   PodParams,
 } from '~/types/api.types';
-import type { ModelServingResponse } from '~/types/model.types';
+import type {
+  ModelServingResponse,
+  ServedCompletionRequest,
+} from '~/types/model.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -409,7 +412,14 @@ export const useApi = () => {
             lora_model_ids?: string[];
           }
         | {
-            hf_model_id: string;
+            /** Hugging Face id; exactly one of this or `model_id` is required. */
+            hf_model_id?: string;
+            /** Catalog id of a `type='llm'` row (alternative to `hf_model_id`). */
+            model_id?: string;
+            /** Catalog ids of `type='lora'` adapters to attach on the base. */
+            lora_model_ids?: string[];
+            /** vLLM `--max-lora-rank`; must cover every attached adapter's rank. */
+            max_lora_rank?: number;
             isvc_name?: string;
             served_model_name?: string;
             hf_token?: string;
@@ -435,7 +445,6 @@ export const useApi = () => {
         useResponseMessage?: boolean;
       },
     ) => {
-      console.log(data);
       return request(`/models-serving`, 'POST', data, options);
     },
 
@@ -481,6 +490,79 @@ export const useApi = () => {
         'DELETE',
         undefined,
         { successMessage: 'model_serving_deleted' },
+      );
+    },
+
+    /**
+     * Lists the model names an LLM inference service answers to.
+     *
+     * GET `/models-serving/{isvc_name}/models`
+     *
+     * A service that carries LoRA adapters exposes the base under one name
+     * and each adapter under another; the Playground sends the same prompt
+     * to every name so base and fine-tuned answers can be compared.
+     *
+     * @param {string} isvcName - Inference service name
+     * @returns {Promise<Object>} Standard response whose `data` is
+     *   `{ isvc_name, served_model_url, models: string[] }`
+     *
+     * @example
+     * ```typescript
+     * const res = await api.getServedModels('qwen25-coder');
+     * res.data.models; // ['Qwen/Qwen2.5-Coder-7B-Instruct', 'pulumi-lora']
+     * ```
+     */
+    getServedModels: async (isvcName: string) => {
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/models`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
+    },
+
+    /**
+     * Runs a text completion against one model name on an inference service.
+     *
+     * POST `/models-serving/{isvc_name}/completions`
+     *
+     * Proxies to the service's OpenAI-compatible completions endpoint so the
+     * browser never needs the in-cluster URL. No toast is raised on success
+     * (callers fire one per served model) nor on failure — the helper returns
+     * `null` and the caller renders the error inline.
+     *
+     * @param {string} isvcName - Inference service name
+     * @param {Object} body - Completion request
+     * @param {string} body.model - Served model name (from `getServedModels`)
+     * @param {string} body.prompt - Prompt text
+     * @param {number} [body.max_tokens] - Generation cap
+     * @param {number} [body.temperature] - Sampling temperature (0 = greedy)
+     * @param {number} [body.top_p] - Nucleus sampling cutoff
+     * @param {string[]} [body.stop] - Stop sequences
+     * @returns {Promise<Object>} Standard response whose `data` is the
+     *   OpenAI completion object (`choices[0].text`, `usage`)
+     *
+     * @example
+     * ```typescript
+     * const res = await api.postServedCompletion('qwen25-coder', {
+     *   model: 'pulumi-lora',
+     *   prompt: 'Question: Deploy nginx.\nAnswer:',
+     *   max_tokens: 700,
+     *   temperature: 0,
+     *   stop: ['Question:'],
+     * });
+     * res.data.choices[0].text;
+     * ```
+     */
+    postServedCompletion: async (
+      isvcName: string,
+      body: ServedCompletionRequest,
+    ) => {
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/completions`,
+        'POST',
+        body,
+        { showToast: false },
       );
     },
 
@@ -3808,7 +3890,10 @@ export const useApi = () => {
      * @param {Object} data - Fine-tune request body matching the backend
      *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
      *   `export` to `'lora'` on the server; pinned hyperparams in
-     *   `hyperparams` override the recommender defaults.
+     *   `hyperparams` override the recommender defaults. When
+     *   `eval_dataset_id` is set the run also scores the base model before
+     *   training and the tuned model after on that held-out JSONL set and
+     *   logs perplexity/NLL plus training-cost metrics on the MLflow run.
      * @param {boolean} [runPipeline=true] - When false, the backend
      *   validates every prerequisite and reserves the output `model_id`
      *   without submitting the kfp run (no `model_info` row is created and
@@ -3823,6 +3908,8 @@ export const useApi = () => {
       data: {
         base_model_id: string;
         dataset_id: string;
+        /** Optional held-out JSONL set scored before and after training. */
+        eval_dataset_id?: string;
         output_name: string;
         method?: 'ntk';
         export?: 'lora' | 'ntk_model';

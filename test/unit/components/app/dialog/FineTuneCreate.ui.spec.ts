@@ -255,6 +255,132 @@ describe('FineTuneCreate', () => {
     });
   });
 
+  it('eval picker lists JSONL datasets minus the one chosen for training', async () => {
+    getModels.mockResolvedValueOnce({ data: [] });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'train', train_and_inference_type: 5 },
+        { id: 'd-2', dataset_name: 'heldout', train_and_inference_type: 5 },
+        { id: 'd-csv', dataset_name: 'csv', train_and_inference_type: 0 },
+      ],
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    // Selects: [0] base model, [1] training dataset, [2] eval dataset.
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    const evalItems = () =>
+      selects[2]
+        .findAll('[data-value]')
+        .map((el) => el.attributes('data-value'));
+
+    // Before a training pick: both JSONL rows (never the CSV one) plus "None".
+    expect(evalItems()).toContain('d-1');
+    expect(evalItems()).toContain('d-2');
+    expect(evalItems()).not.toContain('d-csv');
+
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    expect(evalItems()).not.toContain('d-1');
+    expect(evalItems()).toContain('d-2');
+  });
+
+  it('submits eval_dataset_id when a held-out dataset is picked', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'train', train_and_inference_type: 5 },
+        { id: 'd-2', dataset_name: 'heldout', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValueOnce({ data: {} });
+    createFineTune.mockResolvedValueOnce({
+      data: { model_id: 'mi-1', run_id: 'run-1' },
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    selects[2].vm.$emit('update:modelValue', 'd-2');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.launch_fine_tune'))!
+      .trigger('click');
+    await flushPromises();
+
+    expect(createFineTune).toHaveBeenCalledWith(
+      expect.objectContaining({
+        base_model_id: 'm-1',
+        dataset_id: 'd-1',
+        eval_dataset_id: 'd-2',
+        export: 'lora',
+      }),
+    );
+  });
+
+  it('omits eval_dataset_id when "None" is picked or the training set is re-picked as eval', async () => {
+    getModels.mockResolvedValue({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValue({
+      data: [
+        { id: 'd-1', dataset_name: 'train', train_and_inference_type: 5 },
+        { id: 'd-2', dataset_name: 'heldout', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValue({ data: {} });
+    createFineTune.mockResolvedValue({
+      data: { model_id: 'mi-1', run_id: 'run-1' },
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    // Pick the eval set first, then choose the same row for training: the
+    // eval choice must be dropped rather than sent twice.
+    selects[2].vm.$emit('update:modelValue', 'd-2');
+    selects[1].vm.$emit('update:modelValue', 'd-2');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    const submit = () =>
+      wrapper
+        .findAll('button')
+        .find((b) => b.text().includes('action.launch_fine_tune'))!
+        .trigger('click');
+
+    await submit();
+    await flushPromises();
+    expect(createFineTune).toHaveBeenLastCalledWith(
+      expect.not.objectContaining({ eval_dataset_id: expect.anything() }),
+    );
+
+    // Explicit "None" sentinel must map to "no key" as well.
+    selects[2].vm.$emit('update:modelValue', '__none__');
+    await flushPromises();
+    await submit();
+    await flushPromises();
+    expect(createFineTune).toHaveBeenCalledTimes(2);
+    expect(createFineTune.mock.calls[1][0]).not.toHaveProperty(
+      'eval_dataset_id',
+    );
+  });
+
   it('caps max_log_gate at 1 to match the backend bound (le=1.0)', async () => {
     getModels.mockResolvedValueOnce({ data: [] });
     getDatasets.mockResolvedValueOnce({ data: [] });

@@ -2,6 +2,59 @@ import {
   apiErrorResponseSchema,
   apiResponseSchema,
 } from '~/schemas/response.schema';
+import type { ServedCompletionRequest } from '~/types/model.types';
+
+/**
+ * Canned Playground answers so the page demos end to end in mock mode. A
+ * name containing "lora" plays the fine-tuned adapter (tight Pulumi program);
+ * anything else plays the base model (chatty, generic).
+ */
+const mockServedCompletion = (body: ServedCompletionRequest) => {
+  const isAdapter = /lora|tune/i.test(body.model);
+  const text = isAdapter
+    ? [
+        'import * as k8s from "@pulumi/kubernetes";',
+        '',
+        'const ns = new k8s.core.v1.Namespace("web", {',
+        '  metadata: { name: "web" },',
+        '});',
+        '',
+        'const app = new k8s.apps.v1.Deployment("nginx", {',
+        '  metadata: { namespace: ns.metadata.name },',
+        '  spec: {',
+        '    replicas: 2,',
+        '    selector: { matchLabels: { app: "nginx" } },',
+        '    template: {',
+        '      metadata: { labels: { app: "nginx" } },',
+        '      spec: {',
+        '        containers: [{ name: "nginx", image: "nginx:1.27", ports: [{ containerPort: 80 }] }],',
+        '      },',
+        '    },',
+        '  },',
+        '});',
+        '',
+        'new k8s.core.v1.Service("nginx", {',
+        '  metadata: { namespace: ns.metadata.name },',
+        '  spec: { type: "ClusterIP", selector: { app: "nginx" }, ports: [{ port: 80 }] },',
+        '});',
+      ].join('\n')
+    : [
+        ' Sure! To deploy this you can write a Kubernetes manifest. First create',
+        'a Deployment with the image you want, then expose it with a Service.',
+        'You could also use Helm or kubectl directly. Let me know if you want',
+        'an example in YAML.',
+      ].join('\n');
+  return {
+    id: `cmpl-mock-${Date.now()}`,
+    model: body.model,
+    choices: [{ text, index: 0, finish_reason: 'stop' }],
+    usage: {
+      prompt_tokens: Math.ceil(body.prompt.length / 4),
+      completion_tokens: Math.ceil(text.length / 4),
+      total_tokens: Math.ceil((body.prompt.length + text.length) / 4),
+    },
+  };
+};
 
 /**
  * Mock API network delay in milliseconds
@@ -847,6 +900,48 @@ export const useApiWithMock = () => {
       });
     },
 
+    getServedModels: async (isvcName: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Served models.',
+          data: {
+            isvc_name: isvcName,
+            served_model_url: `http://${isvcName}.admin.dashboard.cog.hiro-develop.nl`,
+            // Base + one adapter, so the Playground renders two columns.
+            models: ['Qwen/Qwen2.5-Coder-7B-Instruct', `${isvcName}-lora`],
+          },
+        });
+      }
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/models`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
+    },
+
+    postServedCompletion: async (
+      isvcName: string,
+      body: ServedCompletionRequest,
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Completion.',
+          data: mockServedCompletion(body),
+        });
+      }
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/completions`,
+        'POST',
+        body,
+        { showToast: false },
+      );
+    },
+
     recommendModelServing: async (
       data: {
         hf_model_id: string;
@@ -881,6 +976,8 @@ export const useApiWithMock = () => {
       data: {
         base_model_id: string;
         dataset_id: string;
+        /** Optional held-out JSONL dataset the adapter is scored against. */
+        eval_dataset_id?: string;
         output_name: string;
         method?: 'ntk';
         export?: 'lora' | 'ntk_model';

@@ -582,6 +582,8 @@ const trainAndInferenceType = {
   0: 'train',
   1: 'inference',
   2: 'train_and_inference',
+  // 5 == DatasetTypeEnum.JSONL (fine-tune input).
+  5: 'jsonl',
 };
 
 onMounted(async () => {
