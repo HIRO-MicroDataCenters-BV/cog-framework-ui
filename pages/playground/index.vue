@@ -9,6 +9,13 @@
  * `POST /models-serving/{isvc}/completions` per name in parallel and renders
  * each answer in its own column — so a freshly fine-tuned adapter can be
  * eyeballed against its base without leaving the platform.
+ *
+ * An exact NTK fine-tune is served as its own service, and the single GPU
+ * hosts one service at a time. Comparing base vs NTK therefore spans two
+ * services: ask the base, pin its answers, replace the service with the NTK
+ * one, ask again. Pinned answers sit in their own panel to the left of the
+ * live columns, survive service switches and page reloads (localStorage),
+ * and are cleared explicitly.
  */
 import { computed, onMounted, ref, watch } from 'vue';
 import { Button } from '~/components/ui/button';
@@ -84,6 +91,16 @@ const loadServices = async () => {
     noneReady.value = false;
   } finally {
     servicesLoading.value = false;
+    // Services come and go between the two halves of a comparison (the base
+    // service is deleted before the fine-tuned one is served). A selection
+    // that no longer exists falls back to "select a service" rather than
+    // leaving a dead name in the picker.
+    if (
+      selectedIsvc.value &&
+      !services.value.some((svc) => svc.isvc_name === selectedIsvc.value)
+    ) {
+      selectedIsvc.value = '';
+    }
   }
 };
 
@@ -153,6 +170,10 @@ const numberOr = (value: unknown, fallback: number) => {
 // --- answers ----------------------------------------------------------------
 
 interface AnswerCard {
+  /** Service the answer came from — pinned cards keep it after a switch. */
+  isvc: string;
+  /** The raw request text (before Q/A wrapping) the answer replies to. */
+  request: string;
   model: string;
   pending: boolean;
   text: string | null;
@@ -178,10 +199,13 @@ const now = () =>
 const askOne = async (
   isvcName: string,
   model: string,
+  request: string,
   prompt: string,
 ): Promise<AnswerCard> => {
   const started = now();
   const card: AnswerCard = {
+    isvc: isvcName,
+    request,
     model,
     pending: false,
     text: null,
@@ -228,9 +252,12 @@ const ask = async () => {
   if (!canAsk.value) return;
   const isvcName = selectedIsvc.value;
   const models = [...servedModels.value];
+  const request = requestText.value.trim();
   const prompt = buildPrompt(requestText.value);
   asking.value = true;
   answers.value = models.map((model) => ({
+    isvc: isvcName,
+    request,
     model,
     pending: true,
     text: null,
@@ -242,7 +269,7 @@ const ask = async () => {
     // One request per served name, all in flight together, so the columns
     // land at roughly the same time and the latencies are comparable.
     const results = await Promise.all(
-      models.map((model) => askOne(isvcName, model, prompt)),
+      models.map((model) => askOne(isvcName, model, request, prompt)),
     );
     // Only apply if the service hasn't changed underneath us.
     if (selectedIsvc.value === isvcName) answers.value = results;
@@ -251,15 +278,121 @@ const ask = async () => {
   }
 };
 
-// One to three columns; more names than that wrap onto the next row.
-const answerGridClass = computed(() => {
-  const n = answers.value.length;
+// One to three columns; more cards than that wrap onto the next row.
+const gridColsFor = (n: number) => {
   if (n <= 1) return 'grid-cols-1';
   if (n === 2) return 'grid-cols-1 md:grid-cols-2';
   return 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
-});
+};
+
+const answerGridClass = computed(() => gridColsFor(answers.value.length));
+
+// --- pinned answers ---------------------------------------------------------
+
+/** A finished answer frozen for comparison against a later service. */
+interface PinnedAnswer {
+  id: string;
+  isvc: string;
+  model: string;
+  request: string;
+  text: string;
+  latencyMs: number | null;
+  completionTokens: number | null;
+  /** ISO timestamp of the pin, shown as a local time on the card. */
+  pinnedAt: string;
+}
+
+const PINS_STORAGE_KEY = 'playground.pins';
+
+const pinned = ref<PinnedAnswer[]>([]);
+
+const pinnedGridClass = computed(() => gridColsFor(pinned.value.length));
+
+// Shape check for what comes back out of storage: anything else (an older
+// layout, a hand-edited value) is dropped rather than rendered half-empty.
+const isPinnedAnswer = (value: unknown): value is PinnedAnswer => {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.id === 'string' &&
+    typeof v.isvc === 'string' &&
+    typeof v.model === 'string' &&
+    typeof v.request === 'string' &&
+    typeof v.text === 'string' &&
+    typeof v.pinnedAt === 'string'
+  );
+};
+
+// Storage access is wrapped: it is absent during SSR and throws in browsers
+// that block site data, and neither must break the page — pins then simply
+// live for the session.
+const readPins = (): PinnedAnswer[] => {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(PINS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter(isPinnedAnswer) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writePins = (pins: PinnedAnswer[]) => {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    if (pins.length) {
+      localStorage.setItem(PINS_STORAGE_KEY, JSON.stringify(pins));
+    } else {
+      localStorage.removeItem(PINS_STORAGE_KEY);
+    }
+  } catch {
+    /* storage blocked — pins stay in memory for this session */
+  }
+};
+
+const newPinId = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+/** Move a finished live answer into the pinned panel. */
+const pinAnswer = (index: number) => {
+  const card = answers.value[index];
+  if (!card || card.pending || card.text === null) return;
+  pinned.value = [
+    ...pinned.value,
+    {
+      id: newPinId(),
+      isvc: card.isvc,
+      model: card.model,
+      request: card.request,
+      text: card.text,
+      latencyMs: card.latencyMs,
+      completionTokens: card.completionTokens,
+      pinnedAt: new Date().toISOString(),
+    },
+  ];
+  answers.value = answers.value.filter((_, i) => i !== index);
+  writePins(pinned.value);
+};
+
+const unpinAnswer = (id: string) => {
+  pinned.value = pinned.value.filter((pin) => pin.id !== id);
+  writePins(pinned.value);
+};
+
+const clearPinned = () => {
+  pinned.value = [];
+  writePins(pinned.value);
+};
+
+const formatPinnedAt = (iso: string) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
 onMounted(() => {
+  pinned.value = readPins();
   void loadServices();
 });
 </script>
@@ -280,28 +413,45 @@ onMounted(() => {
       <div class="grid gap-4 md:grid-cols-[minmax(0,380px)_1fr] items-start">
         <div class="space-y-2">
           <Label for="pg-service">{{ t('label.inference_service') }}</Label>
-          <Select v-model="selectedIsvc">
-            <SelectTrigger id="pg-service" class="w-full">
-              <SelectValue
-                :placeholder="t('placeholder.select_inference_service')"
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="svc in services"
-                :key="svc.isvc_name"
-                :value="svc.isvc_name"
-              >
-                {{ svc.isvc_name }}
-                <span
-                  v-if="(svc.status || '').toLowerCase() !== 'ready'"
-                  class="ml-1 text-xs text-muted-foreground"
+          <div class="flex items-center gap-2">
+            <Select v-model="selectedIsvc">
+              <SelectTrigger id="pg-service" class="w-full">
+                <SelectValue
+                  :placeholder="t('placeholder.select_inference_service')"
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="svc in services"
+                  :key="svc.isvc_name"
+                  :value="svc.isvc_name"
                 >
-                  ({{ svc.status }})
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+                  {{ svc.isvc_name }}
+                  <span
+                    v-if="(svc.status || '').toLowerCase() !== 'ready'"
+                    class="ml-1 text-xs text-muted-foreground"
+                  >
+                    ({{ svc.status }})
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <!-- Services change between the two halves of a comparison. -->
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              class="shrink-0 cursor-pointer"
+              :disabled="servicesLoading"
+              :title="t('action.refresh')"
+              :aria-label="t('action.refresh')"
+              data-testid="refresh-services"
+              @click="loadServices"
+            >
+              <Spinner v-if="servicesLoading" class="size-4" />
+              <Icon v-else name="lucide:refresh-cw" class="size-4" />
+            </Button>
+          </div>
           <p
             v-if="!servicesLoading && services.length === 0"
             class="text-sm text-muted-foreground"
@@ -439,62 +589,191 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Answers: one column per served model name -->
-      <div v-if="answers.length" :class="['grid gap-4', answerGridClass]">
-        <Card
-          v-for="card in answers"
-          :key="card.model"
-          class="min-w-0"
-          data-testid="answer-card"
+      <!-- Pinned answers (left) next to the live answers (right). Stacked on
+           narrow screens, side by side from xl up. -->
+      <div
+        v-if="pinned.length || answers.length"
+        class="flex flex-col xl:flex-row gap-4 items-start"
+      >
+        <section
+          v-if="pinned.length"
+          class="w-full xl:w-auto xl:max-w-[60%] shrink-0 rounded-lg border border-dashed p-3 space-y-3"
+          data-testid="pinned-panel"
         >
-          <CardHeader class="pb-2">
-            <CardTitle
-              class="flex flex-wrap items-center justify-between gap-2 text-sm"
-            >
-              <span class="font-mono truncate" :title="card.model">
-                {{ card.model }}
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <span class="flex items-center gap-1.5 text-sm font-medium">
+                <Icon name="lucide:pin" class="size-4" />
+                {{ t('label.pinned') }} ({{ pinned.length }})
               </span>
-              <span
-                v-if="!card.pending"
-                class="flex items-center gap-2 text-xs font-normal text-muted-foreground"
+              <p class="text-xs text-muted-foreground mt-0.5">
+                {{ t('hint.playground_pinned') }}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="h-7 px-2 text-xs cursor-pointer"
+              data-testid="clear-pinned"
+              @click="clearPinned"
+            >
+              <Icon name="lucide:x" class="size-3.5 mr-1" />
+              {{ t('action.clear_pinned') }}
+            </Button>
+          </div>
+
+          <div :class="['grid gap-3', pinnedGridClass]">
+            <Card
+              v-for="pin in pinned"
+              :key="pin.id"
+              class="min-w-0 bg-muted/20"
+              data-testid="pinned-card"
+            >
+              <CardHeader class="pb-2">
+                <CardTitle class="flex flex-col gap-1 text-sm">
+                  <span class="flex items-center justify-between gap-2">
+                    <span
+                      class="font-mono truncate"
+                      :title="pin.model"
+                      data-testid="pinned-model"
+                    >
+                      {{ pin.model }}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      class="size-6 shrink-0 cursor-pointer"
+                      :title="t('action.unpin')"
+                      :aria-label="t('action.unpin')"
+                      data-testid="unpin"
+                      @click="unpinAnswer(pin.id)"
+                    >
+                      <Icon name="lucide:pin-off" class="size-3.5" />
+                    </Button>
+                  </span>
+                  <span
+                    class="flex flex-wrap items-center gap-x-2 text-xs font-normal text-muted-foreground"
+                  >
+                    <span
+                      class="inline-flex items-center gap-1 truncate"
+                      :title="pin.isvc"
+                      data-testid="pinned-service"
+                    >
+                      <Icon name="lucide:server" class="size-3 shrink-0" />
+                      {{ pin.isvc }}
+                    </span>
+                    <span
+                      v-if="formatPinnedAt(pin.pinnedAt)"
+                      :title="`${t('label.pinned_at')}: ${pin.pinnedAt}`"
+                      data-testid="pinned-time"
+                    >
+                      {{ formatPinnedAt(pin.pinnedAt) }}
+                    </span>
+                    <span v-if="pin.latencyMs !== null">
+                      {{ t('label.latency') }}: {{ pin.latencyMs }} ms
+                    </span>
+                    <span v-if="pin.completionTokens !== null">
+                      {{ t('label.completion_tokens') }}:
+                      {{ pin.completionTokens }}
+                    </span>
+                  </span>
+                  <span
+                    class="block truncate text-xs font-normal text-muted-foreground"
+                    :title="pin.request"
+                    data-testid="pinned-request"
+                  >
+                    {{ pin.request }}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre
+                  class="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed max-h-[480px] overflow-auto rounded-md bg-muted/40 p-3"
+                  data-testid="pinned-text"
+                  >{{ pin.text }}</pre
+                >
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <!-- Live answers: one column per served model name -->
+        <div
+          v-if="answers.length"
+          :class="['flex-1 min-w-0 w-full grid gap-4', answerGridClass]"
+        >
+          <Card
+            v-for="(card, index) in answers"
+            :key="card.model"
+            class="min-w-0"
+            data-testid="answer-card"
+          >
+            <CardHeader class="pb-2">
+              <CardTitle
+                class="flex flex-wrap items-center justify-between gap-2 text-sm"
               >
-                <span v-if="card.latencyMs !== null" data-testid="latency">
-                  {{ t('label.latency') }}: {{ card.latencyMs }} ms
+                <span class="font-mono truncate" :title="card.model">
+                  {{ card.model }}
                 </span>
                 <span
-                  v-if="card.completionTokens !== null"
-                  data-testid="completion-tokens"
+                  v-if="!card.pending"
+                  class="flex items-center gap-2 text-xs font-normal text-muted-foreground"
                 >
-                  {{ t('label.completion_tokens') }}:
-                  {{ card.completionTokens }}
+                  <span v-if="card.latencyMs !== null" data-testid="latency">
+                    {{ t('label.latency') }}: {{ card.latencyMs }} ms
+                  </span>
+                  <span
+                    v-if="card.completionTokens !== null"
+                    data-testid="completion-tokens"
+                  >
+                    {{ t('label.completion_tokens') }}:
+                    {{ card.completionTokens }}
+                  </span>
+                  <Button
+                    v-if="card.text !== null"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    class="h-6 px-2 text-xs cursor-pointer"
+                    data-testid="pin"
+                    @click="pinAnswer(index)"
+                  >
+                    <Icon name="lucide:pin" class="size-3.5 mr-1" />
+                    {{ t('action.pin') }}
+                  </Button>
                 </span>
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              v-if="card.pending"
-              class="flex items-center gap-2 text-sm text-muted-foreground"
-            >
-              <Spinner class="size-3" />
-              {{ t('hint.playground_waiting') }}
-            </div>
-            <p
-              v-else-if="card.error"
-              class="text-sm text-destructive flex items-start gap-1"
-              data-testid="answer-error"
-            >
-              <Icon name="lucide:alert-circle" class="size-4 mt-0.5 shrink-0" />
-              <span>{{ card.error }}</span>
-            </p>
-            <pre
-              v-else
-              class="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed max-h-[480px] overflow-auto rounded-md bg-muted/40 p-3"
-              data-testid="answer-text"
-              >{{ card.text }}</pre
-            >
-          </CardContent>
-        </Card>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                v-if="card.pending"
+                class="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <Spinner class="size-3" />
+                {{ t('hint.playground_waiting') }}
+              </div>
+              <p
+                v-else-if="card.error"
+                class="text-sm text-destructive flex items-start gap-1"
+                data-testid="answer-error"
+              >
+                <Icon
+                  name="lucide:alert-circle"
+                  class="size-4 mt-0.5 shrink-0"
+                />
+                <span>{{ card.error }}</span>
+              </p>
+              <pre
+                v-else
+                class="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed max-h-[480px] overflow-auto rounded-md bg-muted/40 p-3"
+                data-testid="answer-text"
+                >{{ card.text }}</pre
+              >
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   </div>

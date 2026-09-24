@@ -181,11 +181,11 @@ export default defineI18nConfig(() => ({
         edit_model_serving: 'Update traffic percentage for {name}',
         logs_unavailable: 'Logs are not available for this component',
         fine_tune:
-          'Train a parameter-efficient LoRA adapter on an existing LLM via the NTK fine-tune method. Cheap to train, serves on the standard LoRA path.',
+          'Train an NTK controller on an existing LLM. Cheap to train; serve it exactly on the NTK runtime or export a LoRA adapter for the standard vLLM path.',
         fine_tune_dialog:
-          'Train an ntkmirror controller over a JSONL dataset; the result is exported as a standard LoRA adapter and appears in the existing model-serving picker once the run completes.',
+          'Train an ntkmirror controller over a JSONL dataset; the result is registered as an exact NTK controller or exported as a LoRA adapter and appears in the model-serving adapter picker once the run completes.',
         fine_tune_empty:
-          'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting LoRA adapter will appear in the model-serving picker once the run completes.',
+          'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting controller or adapter will appear in the model-serving picker once the run completes.',
         playground:
           'Send one request to every model an inference service exposes and compare the answers side by side.',
       },
@@ -375,6 +375,14 @@ export default defineI18nConfig(() => ({
         latency: 'Latency',
         completion_tokens: 'Completion tokens',
         output_adapter_name: 'Output adapter name',
+        export: 'Export',
+        export_ntk_model: 'NTK controller (exact)',
+        export_lora: 'LoRA adapter (approximate, stock vLLM)',
+        fine_tuned_adapter: 'Fine-tuned adapter',
+        adapter_kind_ntk: 'NTK, exact',
+        adapter_kind_lora: 'LoRA',
+        pinned: 'Pinned',
+        pinned_at: 'Pinned at',
         training_knobs: 'Training knobs',
         gates: 'Gates',
         max_log_gate: 'Max log gate',
@@ -508,6 +516,9 @@ export default defineI18nConfig(() => ({
         start_fine_tune: 'Start a fine-tune',
         launch_fine_tune: 'Launch fine-tune',
         ask: 'Ask',
+        pin: 'Pin',
+        unpin: 'Unpin',
+        clear_pinned: 'Clear pinned',
       },
       share: {
         title: 'Share Dataset',
@@ -614,6 +625,14 @@ export default defineI18nConfig(() => ({
         fine_tune_lr_range: 'Learning rate must be between 0.0001 and 1.',
         fine_tune_eval_dataset:
           'Optional. The exported adapter is scored on this set after training and the metrics are logged on the run.',
+        fine_tune_export:
+          'The NTK controller is served exactly on the NTK runtime; the LoRA export can attach next to the base on one service but approximates the effect.',
+        serve_adapter_pick:
+          'Optional: pick a fine-tuned adapter to serve on top of the base, or leave empty to serve the base only.',
+        serve_adapter_ntk:
+          'The NTK controller is applied exactly on top of the base on the NTK runtime, as its own service.',
+        serve_adapter_lora:
+          'The LoRA adapter is attached on top of the base and served as a second model name on the same service; it approximates the fine-tune.',
         playground_none_ready:
           'No service is ready yet — showing every service; requests may fail until one becomes ready.',
         playground_no_services:
@@ -624,6 +643,8 @@ export default defineI18nConfig(() => ({
         playground_request_failed:
           'Request failed. Check the service status and try again.',
         playground_waiting: 'Waiting for the answer…',
+        playground_pinned:
+          'Pinned answers stay while you re-ask another service: serve the fine-tuned model, send the same request and compare.',
       },
       menu: {
         upload: 'Upload',

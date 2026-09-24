@@ -13,6 +13,7 @@ import type {
   PodParams,
 } from '~/types/api.types';
 import type {
+  LlmAdapterSpec,
   ModelServingResponse,
   ServedCompletionRequest,
 } from '~/types/model.types';
@@ -416,10 +417,19 @@ export const useApi = () => {
             hf_model_id?: string;
             /** Catalog id of a `type='llm'` row (alternative to `hf_model_id`). */
             model_id?: string;
-            /** Catalog ids of `type='lora'` adapters to attach on the base. */
+            /**
+             * Catalog ids of `type='lora'` adapters to attach on the base.
+             * Mutually exclusive with `llm_adapter`.
+             */
             lora_model_ids?: string[];
             /** vLLM `--max-lora-rank`; must cover every attached adapter's rank. */
             max_lora_rank?: number;
+            /**
+             * Exact serving of a `type='ntk_controller'` row on the NTK
+             * runtime, applied on top of `model_id`. Send it alone: the
+             * backend rejects it next to `lora_model_ids` / `max_lora_rank`.
+             */
+            llm_adapter?: LlmAdapterSpec;
             isvc_name?: string;
             served_model_name?: string;
             hf_token?: string;
@@ -3881,15 +3891,19 @@ export const useApi = () => {
     /**
      * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
      *
-     * The kfp run trains the controller, converts it to a standard PEFT
-     * LoRA adapter (default `export: 'lora'`), and only on completion
-     * registers the `model_info(type='lora')` row — at which point the new
-     * adapter appears in the existing LoRA picker on the model-serving flow.
-     * The request itself just reserves `model_id`; no row exists until then.
+     * The kfp run trains the controller and, only on completion, registers
+     * the output row — its type follows `export`: `'ntk_model'` keeps the
+     * raw controller as a `model_info(type='ntk_controller')` row that the
+     * serving flow attaches exactly via `llm_adapter`, while `'lora'`
+     * converts it to a standard PEFT adapter registered as
+     * `model_info(type='lora')` for the stock vLLM LoRA path. Either row
+     * appears in the model-serving adapter picker. The request itself just
+     * reserves `model_id`; no row exists until then.
      *
      * @param {Object} data - Fine-tune request body matching the backend
-     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
-     *   `export` to `'lora'` on the server; pinned hyperparams in
+     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` on the
+     *   server; the UI always sends `export` explicitly (`'ntk_model'` by
+     *   default). Pinned hyperparams in
      *   `hyperparams` override the recommender defaults. When
      *   `eval_dataset_id` is set the run also scores the base model before
      *   training and the tuned model after on that held-out JSONL set and
@@ -3912,6 +3926,10 @@ export const useApi = () => {
         eval_dataset_id?: string;
         output_name: string;
         method?: 'ntk';
+        /**
+         * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
+         * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
+         */
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
           gates?: number;
