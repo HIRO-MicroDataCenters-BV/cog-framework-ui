@@ -91,6 +91,19 @@ export interface ModelServingResponse {
   data: ModelServing[];
 }
 
+/**
+ * Exact-serving adapter spec for `POST /models-serving`.
+ *
+ * Points the NTK runtime at a `type='ntk_controller'` catalog row so the
+ * controller is applied exactly on top of the base LLM (`model_id`). The
+ * backend rejects `llm_adapter` together with `lora_model_ids`.
+ */
+export interface LlmAdapterSpec {
+  kind: 'ntk_model';
+  /** Catalog id of the `ntk_controller` row produced by a fine-tune run. */
+  adapter_model_id: string;
+}
+
 /** `GET /models-serving/{isvc_name}/models` payload. */
 export interface ServedModelsData {
   isvc_name: string;

@@ -3,9 +3,13 @@
  * Fine-tune launch dialog.
  *
  * Submits `POST /cogapi/models/fine-tune` against the existing
- * `FineTuneRequest` schema. Phase 1 supports the NTK method with LoRA
- * export only; the resulting `model_info(type='lora')` row appears in
- * the existing LoRA picker once the kfp run completes.
+ * `FineTuneRequest` schema. The NTK method is the only one offered; the
+ * user picks the export: `ntk_model` (default) keeps the raw controller as
+ * a `model_info(type='ntk_controller')` row that the serving dialog
+ * attaches exactly via `llm_adapter`, while `lora` converts it to a PEFT
+ * adapter (`model_info(type='lora')`) for the stock vLLM LoRA path. Either
+ * row appears in the serving dialog's adapter picker once the run
+ * completes.
  *
  * Hyperparam knobs are filled by `POST /cogapi/fine-tune/recommend`
  * when a base model is selected: the recommended gates/max_log_gate/
@@ -49,6 +53,15 @@ interface DatasetOption {
   train_and_inference_type?: number;
 }
 
+/** Backend `FineTuneRequest.export` values. */
+type FineTuneExport = 'ntk_model' | 'lora';
+
+/** Export picker rows; `labelKey` resolves under `label.*`. */
+const EXPORT_OPTIONS: Array<{ value: FineTuneExport; labelKey: string }> = [
+  { value: 'ntk_model', labelKey: 'label.export_ntk_model' },
+  { value: 'lora', labelKey: 'label.export_lora' },
+];
+
 const props = defineProps<{
   open: boolean;
 }>();
@@ -76,6 +89,9 @@ const form = ref({
   // adapter against it and logs the metrics on the MLflow run.
   eval_dataset_id: '',
   output_name: '',
+  // What the run registers: the exact NTK controller (default) or a LoRA
+  // approximation of it.
+  export: 'ntk_model' as FineTuneExport,
   gates: 5000,
   max_log_gate: 0.05,
   train_steps: 240,
@@ -250,7 +266,7 @@ const handleSubmit = async () => {
       ...(evalDatasetId ? { eval_dataset_id: evalDatasetId } : {}),
       output_name: form.value.output_name.trim(),
       method: 'ntk',
-      export: 'lora',
+      export: form.value.export,
       // Coerce to numbers: the custom Input wrapper emits raw strings, so an
       // edited field can hold a string. Guarantee a numeric payload (and
       // avoid tripping strict backend validation).
@@ -287,6 +303,7 @@ const resetForm = () => {
     dataset_id: '',
     eval_dataset_id: '',
     output_name: '',
+    export: 'ntk_model',
     gates: 5000,
     max_log_gate: 0.05,
     train_steps: 240,
@@ -425,6 +442,28 @@ watch(
             v-model="form.output_name"
             :placeholder="t('placeholder.output_adapter_name')"
           />
+        </div>
+
+        <!-- Export: exact NTK controller (default) or a LoRA approximation. -->
+        <div class="space-y-2">
+          <Label for="ft-export">{{ t('label.export') }}</Label>
+          <Select v-model="form.export">
+            <SelectTrigger id="ft-export" class="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in EXPORT_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ t(opt.labelKey) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-sm text-muted-foreground">
+            {{ t('hint.fine_tune_export') }}
+          </p>
         </div>
 
         <!-- Hyperparams; pre-filled from the recommender when a base

@@ -980,6 +980,10 @@ export const useApiWithMock = () => {
         eval_dataset_id?: string;
         output_name: string;
         method?: 'ntk';
+        /**
+         * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
+         * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
+         */
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
           gates?: number;

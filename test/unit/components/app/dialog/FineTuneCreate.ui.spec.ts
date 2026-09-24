@@ -241,7 +241,8 @@ describe('FineTuneCreate', () => {
       dataset_id: 'd-1',
       output_name: 'adapter-x',
       method: 'ntk',
-      export: 'lora',
+      // Default export: the exact NTK controller.
+      export: 'ntk_model',
       hyperparams: {
         gates: 5000,
         max_log_gate: 0.05,
@@ -253,6 +254,54 @@ describe('FineTuneCreate', () => {
       model_id: 'mi-1',
       run_id: 'run-1',
     });
+  });
+
+  it('offers both exports with the NTK controller first and sends "lora" when chosen', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({
+      data: [
+        { id: 'd-1', dataset_name: 'jsonl-1', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValueOnce({ data: {} });
+    createFineTune.mockResolvedValueOnce({
+      data: { model_id: 'mi-1', run_id: 'run-1' },
+    });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    // Selects: [0] base model, [1] training dataset, [2] eval dataset,
+    // [3] export.
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    expect(
+      selects[3]
+        .findAll('[data-value]')
+        .map((el) => el.attributes('data-value')),
+    ).toEqual(['ntk_model', 'lora']);
+    expect(selects[3].text()).toContain('label.export_ntk_model');
+    expect(selects[3].text()).toContain('label.export_lora');
+    expect(wrapper.text()).toContain('hint.fine_tune_export');
+
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.launch_fine_tune'))!
+      .trigger('click');
+    await flushPromises();
+
+    expect(createFineTune).toHaveBeenCalledWith(
+      expect.objectContaining({ method: 'ntk', export: 'lora' }),
+    );
   });
 
   it('eval picker lists JSONL datasets minus the one chosen for training', async () => {
@@ -324,7 +373,7 @@ describe('FineTuneCreate', () => {
         base_model_id: 'm-1',
         dataset_id: 'd-1',
         eval_dataset_id: 'd-2',
-        export: 'lora',
+        export: 'ntk_model',
       }),
     );
   });
@@ -403,7 +452,12 @@ describe('FineTuneCreate', () => {
     const wrapper = mountDialog();
     await flushPromises();
 
-    expect(wrapper.findAll('[data-value]')).toHaveLength(0);
+    // Selects: [0] base, [1] dataset, [2] eval come from the API and stay
+    // empty; [3] export is static and always renders its two options.
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    expect(
+      selects.slice(0, 3).flatMap((s) => s.findAll('[data-value]')),
+    ).toHaveLength(0);
     expect(toasterShow).not.toHaveBeenCalled();
   });
 
