@@ -1036,6 +1036,7 @@ const displayDatasetType = computed(() => {
     0: t('label.train'),
     1: t('label.inference'),
     2: t('label.train_and_inference'),
+    5: t('label.jsonl_fine_tune'),
   };
   return typeof val === 'number' ? labels[val] || '—' : '—';
 });
