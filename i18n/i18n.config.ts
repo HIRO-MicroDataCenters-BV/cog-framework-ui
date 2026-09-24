@@ -626,7 +626,7 @@ export default defineI18nConfig(() => ({
         fine_tune_eval_dataset:
           'Optional. The exported adapter is scored on this set after training and the metrics are logged on the run.',
         fine_tune_export:
-          "Both options train the same NTK controller (5,000 gates). 'Exact' is served natively on the NTK runtime; the LoRA export can attach next to the base on a stock vLLM service but approximates the effect.",
+          "Both options train the same NTK controller (the gate count set below). 'Exact' is served natively on the NTK runtime; the LoRA export can attach next to the base on a stock vLLM service but approximates the effect.",
         serve_adapter_pick:
           'Optional: pick a fine-tuned adapter to serve on top of the base, or leave empty to serve the base only.',
         serve_adapter_ntk:
