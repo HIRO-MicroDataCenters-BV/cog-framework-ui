@@ -793,4 +793,21 @@ describe('FineTuneCreate', () => {
     // Never `null`/Infinity: the schema still expects a number.
     expect(createFineTune.mock.calls[0][0].hyperparams.gates).toBe(5000);
   });
+  it('blank or non-positive stale NTK knobs fall back to defaults under LoRA', async () => {
+    const wrapper = await mountWithPickers();
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter');
+    await wrapper.find('#ft-gates').setValue('');
+    await wrapper.find('#ft-max-log-gate').setValue('0');
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    await launchButton(wrapper).trigger('click');
+    await flushPromises();
+    const body = createFineTune.mock.calls[0][0];
+    expect(body.hyperparams.gates).toBe(5000);
+    expect(body.hyperparams.max_log_gate).toBe(0.05);
+  });
 });

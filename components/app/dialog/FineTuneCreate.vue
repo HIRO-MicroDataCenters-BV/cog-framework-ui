@@ -304,10 +304,13 @@ const fillFromRecommender = async () => {
   }
 };
 
-// Number() with a fallback for non-finite results (empty/NaN/Infinity).
-const finiteOr = (value: unknown, fallback: number) => {
+// Coerce a stale, hidden NTK knob to a number the schema accepts. Blank
+// strings (Number('') === 0), NaN, Infinity and non-positive values all fall
+// back: the backend requires gates >= 1 and max_log_gate > 0.
+const positiveOr = (value: unknown, fallback: number) => {
+  if (typeof value === 'string' && value.trim() === '') return fallback;
   const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
 const handleSubmit = async () => {
@@ -340,10 +343,10 @@ const handleSubmit = async () => {
         // backend, but the schema still wants numbers — fall back to the
         // static defaults if a stale NTK edit left them non-finite.
         gates: lora
-          ? finiteOr(form.value.gates, 5000)
+          ? positiveOr(form.value.gates, 5000)
           : Number(form.value.gates),
         max_log_gate: lora
-          ? finiteOr(form.value.max_log_gate, 0.05)
+          ? positiveOr(form.value.max_log_gate, 0.05)
           : Number(form.value.max_log_gate),
         train_steps: Number(form.value.train_steps),
         lr: Number(form.value.lr),
