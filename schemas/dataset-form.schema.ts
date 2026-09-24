@@ -11,6 +11,8 @@ const portRegex =
 
 // Database URL validation pattern (supports any protocol scheme)
 // Examples: postgresql://, mysql://, mongodb://, redis://, mssql://, oracle://, jdbc:, etc.
+export const DATASET_TYPE_VALUES = [0, 1, 2, 5];
+
 const dbUrlPattern = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/?\/?[^\s]+$/i;
 
 export const datasetFormSchema = toTypedSchema(
@@ -23,11 +25,16 @@ export const datasetFormSchema = toTypedSchema(
           description: z.string().min(1),
         })
         .optional(),
+      // Backend DatasetTypeEnum values the upload dialog offers: 0 train,
+      // 1 inference, 2 train+inference, 5 JSONL (fine-tune). 3/4 are not
+      // user-selectable here, so an explicit allow-list beats a range check.
       dataset_type: z
         .number()
         .int()
-        .min(0)
-        .max(2, 'validation.invalid_dataset_type')
+        .refine(
+          (value) => DATASET_TYPE_VALUES.includes(value),
+          'validation.invalid_dataset_type',
+        )
         .optional(),
       data_source_type: z
         .number()

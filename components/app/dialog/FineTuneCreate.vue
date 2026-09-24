@@ -72,6 +72,9 @@ const loadingPickers = ref(false);
 const form = ref({
   base_model_id: '',
   dataset_id: '',
+  // Optional held-out JSONL dataset; the backend evaluates the exported
+  // adapter against it and logs the metrics on the MLflow run.
+  eval_dataset_id: '',
   output_name: '',
   gates: 5000,
   max_log_gate: 0.05,
@@ -81,6 +84,17 @@ const form = ref({
 
 const submitting = ref(false);
 const recommending = ref(false);
+
+// The eval picker offers the same JSONL rows as the training picker, minus
+// the one currently chosen for training — evaluating on the training set
+// would only measure memorisation.
+const evalDatasets = computed(() =>
+  datasets.value.filter((d) => d.id !== form.value.dataset_id),
+);
+
+// Sentinel for the eval picker's "none" row: reka-ui's Select cannot select
+// an empty-string item, so a real value stands in and maps to '' on submit.
+const NO_EVAL_DATASET = '__none__';
 
 // Coerce-then-validate a knob. The custom Input wrapper emits raw strings
 // (it doesn't implement modelModifiers, so `v-model.number` would be a no-op),
@@ -223,9 +237,17 @@ const handleSubmit = async () => {
   if (!canSubmit.value || submitting.value) return;
   submitting.value = true;
   try {
+    const evalDatasetId =
+      form.value.eval_dataset_id &&
+      form.value.eval_dataset_id !== NO_EVAL_DATASET
+        ? form.value.eval_dataset_id
+        : '';
     const resp = await createFineTune({
       base_model_id: form.value.base_model_id,
       dataset_id: form.value.dataset_id,
+      // Omit the key entirely when no eval set was picked: the backend treats
+      // `eval_dataset_id` as optional and must not receive an empty string.
+      ...(evalDatasetId ? { eval_dataset_id: evalDatasetId } : {}),
       output_name: form.value.output_name.trim(),
       method: 'ntk',
       export: 'lora',
@@ -263,6 +285,7 @@ const resetForm = () => {
   form.value = {
     base_model_id: '',
     dataset_id: '',
+    eval_dataset_id: '',
     output_name: '',
     gates: 5000,
     max_log_gate: 0.05,
@@ -300,6 +323,17 @@ watch(
 );
 
 watch(() => form.value.base_model_id, fillFromRecommender);
+
+// Picking the eval set as the training set (or vice versa) would silently
+// hand the backend the same id twice — drop the eval choice instead.
+watch(
+  () => form.value.dataset_id,
+  (trainingId) => {
+    if (trainingId && form.value.eval_dataset_id === trainingId) {
+      form.value.eval_dataset_id = '';
+    }
+  },
+);
 </script>
 
 <template>
@@ -356,6 +390,29 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             class="text-sm text-muted-foreground"
           >
             {{ t('hint.fine_tune_no_dataset') }}
+          </p>
+        </div>
+
+        <!-- Optional held-out eval dataset (JSONL, excludes the training set). -->
+        <div class="space-y-2">
+          <Label for="ft-eval-dataset">{{ t('label.eval_dataset') }}</Label>
+          <Select v-model="form.eval_dataset_id">
+            <SelectTrigger id="ft-eval-dataset" class="w-full">
+              <SelectValue
+                :placeholder="t('placeholder.select_eval_dataset')"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-if="evalDatasets.length" :value="NO_EVAL_DATASET">
+                {{ t('label.none') }}
+              </SelectItem>
+              <SelectItem v-for="d in evalDatasets" :key="d.id" :value="d.id">
+                {{ d.dataset_name || d.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-sm text-muted-foreground">
+            {{ t('hint.fine_tune_eval_dataset') }}
           </p>
         </div>
 

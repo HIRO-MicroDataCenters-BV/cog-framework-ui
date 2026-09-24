@@ -90,3 +90,33 @@ export interface ModelServingResponse {
   message: string;
   data: ModelServing[];
 }
+
+/** `GET /models-serving/{isvc_name}/models` payload. */
+export interface ServedModelsData {
+  isvc_name: string;
+  served_model_url: string;
+  /** Model names the service answers to: the base plus one per LoRA adapter. */
+  models: string[];
+}
+
+/** `POST /models-serving/{isvc_name}/completions` body. */
+export interface ServedCompletionRequest {
+  model: string;
+  prompt: string;
+  max_tokens?: number;
+  temperature?: number;
+  top_p?: number;
+  stop?: string[];
+}
+
+/** OpenAI-style completion object returned in `data` by the completions route. */
+export interface ServedCompletionData {
+  id?: string;
+  model?: string;
+  choices: Array<{ text: string; index?: number; finish_reason?: string }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+}
