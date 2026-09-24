@@ -304,14 +304,9 @@ const fillFromRecommender = async () => {
   }
 };
 
-// Coerce a stale, hidden NTK knob to a number the schema accepts. Blank
-// strings (Number('') === 0), NaN, Infinity and non-positive values all fall
-// back: the backend requires gates >= 1 and max_log_gate > 0.
-const positiveOr = (value: unknown, fallback: number) => {
-  if (typeof value === 'string' && value.trim() === '') return fallback;
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-};
+// NTK-only knobs are hidden and ignored by the backend under LoRA; send the
+// schema defaults so a stale edit can never violate the NTK bounds.
+const NTK_DEFAULTS = { gates: 5000, max_log_gate: 0.05 } as const;
 
 const handleSubmit = async () => {
   if (!canSubmit.value || submitting.value) return;
@@ -342,11 +337,9 @@ const handleSubmit = async () => {
         // Under LoRA these two are hidden, unvalidated and ignored by the
         // backend, but the schema still wants numbers — fall back to the
         // static defaults if a stale NTK edit left them non-finite.
-        gates: lora
-          ? positiveOr(form.value.gates, 5000)
-          : Number(form.value.gates),
+        gates: lora ? NTK_DEFAULTS.gates : Number(form.value.gates),
         max_log_gate: lora
-          ? positiveOr(form.value.max_log_gate, 0.05)
+          ? NTK_DEFAULTS.max_log_gate
           : Number(form.value.max_log_gate),
         train_steps: Number(form.value.train_steps),
         lr: Number(form.value.lr),
