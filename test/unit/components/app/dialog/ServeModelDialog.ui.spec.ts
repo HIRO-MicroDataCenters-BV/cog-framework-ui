@@ -259,6 +259,8 @@ describe('ServeModelDialog', () => {
     wrapper.findAllComponents({ name: 'Select' });
   const itemValues = (select: ReturnType<W['findComponent']>) =>
     select.findAll('[data-value]').map((el) => el.attributes('data-value'));
+  const itemTexts = (select: ReturnType<W['findComponent']>) =>
+    select.findAll('[data-value]').map((el) => el.text().replace(/\s+/g, ' '));
 
   it('catalog source loads the catalog lazily and lists only LLM rows with hf_model_id as bases', async () => {
     getModels.mockResolvedValue({ data: catalogRows });
@@ -274,8 +276,59 @@ describe('ServeModelDialog', () => {
     expect(wrapper.text()).toContain('Base LLM');
 
     expect(itemValues(catalogSelects(wrapper)[0])).toEqual(['llm-1', 'llm-2']);
+    // Base option label: "{name} ({hf_model_id}) · {id.slice(0, 8)}" — the
+    // short id suffix disambiguates duplicate catalog names.
+    expect(itemTexts(catalogSelects(wrapper)[0])).toEqual([
+      'Qwen Coder (Qwen/7B) · llm-1',
+      'Llama (meta/llama) · llm-2',
+    ]);
     // No base picked yet → no adapters offered.
     expect(itemValues(catalogSelects(wrapper)[1])).toEqual([]);
+  });
+
+  it('suffixes duplicate-named base options with distinct short ids (adapter labels untouched)', async () => {
+    getModels.mockResolvedValue({
+      data: [
+        {
+          id: 'aaaaaaaa-1111',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+        {
+          id: 'bbbbbbbb-2222',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+        {
+          id: 'cccccccc-3333',
+          name: 'style-lora',
+          type: 'lora',
+          base_model_id: 'aaaaaaaa-1111',
+        },
+      ],
+    });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    const labels = itemTexts(catalogSelects(wrapper)[0]);
+    expect(labels).toEqual([
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · aaaaaaaa',
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · bbbbbbbb',
+    ]);
+    expect(new Set(labels).size).toBe(2);
+
+    // Adapter option labels keep the "{name} ({kind})" shape — no id suffix.
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'aaaaaaaa-1111');
+    await flushPromises();
+    expect(itemTexts(catalogSelects(wrapper)[1])).toContain(
+      'style-lora (label.adapter_kind_lora)',
+    );
+    expect(itemTexts(catalogSelects(wrapper)[1]).join(' ')).not.toContain(
+      '· cccccccc',
+    );
   });
 
   it('adapter picker lists lora and ntk_controller rows whose base_model_id matches the chosen base, with the kind as suffix', async () => {

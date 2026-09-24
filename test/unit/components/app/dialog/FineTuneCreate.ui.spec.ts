@@ -95,7 +95,12 @@ describe('FineTuneCreate', () => {
   it('filters base-model picker to LLM rows with hf_model_id only', async () => {
     getModels.mockResolvedValueOnce({
       data: [
-        { id: 'm-1', name: 'qwen-7b', type: 'llm', hf_model_id: 'Qwen/7b' },
+        {
+          id: 'm-1234567890',
+          name: 'qwen-7b',
+          type: 'llm',
+          hf_model_id: 'Qwen/7b',
+        },
         // type=classical → must be filtered out
         { id: 'm-2', name: 'classical', type: 'classical', hf_model_id: 'X' },
         // LLM without hf_model_id → filtered out (kfp component needs it)
@@ -108,12 +113,53 @@ describe('FineTuneCreate', () => {
     await flushPromises();
 
     // Rendered SelectItem elements carry data-value=<id>
-    const itemIds = wrapper
-      .findAll('[data-value]')
-      .map((el) => el.attributes('data-value'));
-    expect(itemIds).toContain('m-1');
+    const items = wrapper.findAll('[data-value]');
+    const itemIds = items.map((el) => el.attributes('data-value'));
+    expect(itemIds).toContain('m-1234567890');
     expect(itemIds).not.toContain('m-2');
     expect(itemIds).not.toContain('m-3');
+    // Base option label: "{name} ({hf_model_id}) · {id.slice(0, 8)}" — the
+    // short id suffix disambiguates duplicate catalog names.
+    const base = items.find(
+      (el) => el.attributes('data-value') === 'm-1234567890',
+    )!;
+    expect(base.text().replace(/\s+/g, ' ')).toBe(
+      'qwen-7b (Qwen/7b) · m-123456',
+    );
+  });
+
+  it('suffixes duplicate-named base options with distinct short ids', async () => {
+    getModels.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'aaaaaaaa-1111',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+        {
+          id: 'bbbbbbbb-2222',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+      ],
+    });
+    getDatasets.mockResolvedValueOnce({ data: [] });
+
+    const wrapper = mountDialog();
+    await flushPromises();
+
+    // Selects: [0] base model (the export Select also renders items).
+    const labels = wrapper
+      .findAllComponents({ name: 'Select' })[0]
+      .findAll('[data-value]')
+      .map((el) => el.text().replace(/\s+/g, ' '));
+    expect(labels).toEqual([
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · aaaaaaaa',
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · bbbbbbbb',
+    ]);
+    expect(new Set(labels).size).toBe(2);
   });
 
   it('filters dataset picker to JSONL (train_and_inference_type=5) only', async () => {

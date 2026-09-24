@@ -377,7 +377,7 @@ export default defineI18nConfig(() => ({
         output_adapter_name: 'Output adapter name',
         export: 'Export',
         export_ntk_model: 'NTK controller (exact)',
-        export_lora: 'LoRA adapter (approximate, stock vLLM)',
+        export_lora: 'NTK controller exported as a LoRA adapter (approximate)',
         fine_tuned_adapter: 'Fine-tuned adapter',
         adapter_kind_ntk: 'NTK, exact',
         adapter_kind_lora: 'LoRA',
@@ -626,7 +626,7 @@ export default defineI18nConfig(() => ({
         fine_tune_eval_dataset:
           'Optional. The exported adapter is scored on this set after training and the metrics are logged on the run.',
         fine_tune_export:
-          'The NTK controller is served exactly on the NTK runtime; the LoRA export can attach next to the base on one service but approximates the effect.',
+          "Both options train the same NTK controller (5,000 gates). 'Exact' is served natively on the NTK runtime; the LoRA export can attach next to the base on a stock vLLM service but approximates the effect.",
         serve_adapter_pick:
           'Optional: pick a fine-tuned adapter to serve on top of the base, or leave empty to serve the base only.',
         serve_adapter_ntk:
