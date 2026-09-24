@@ -224,6 +224,9 @@
               </p>
             </FieldRow>
             <template v-else>
+              <!-- Short id suffix disambiguates duplicate catalog names that
+                   share one hf_model_id; SelectValue mirrors the item text,
+                   so the trigger shows the same suffix once picked. -->
               <FieldRow label="Base LLM" required>
                 <Select v-model="llm.base_model_id">
                   <SelectTrigger class="w-full">
@@ -231,7 +234,8 @@
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="m in baseLlms" :key="m.id" :value="m.id">
-                      {{ m.name }} ({{ m.hf_model_id }})
+                      {{ m.name }} ({{ m.hf_model_id }}) ·
+                      {{ m.id.slice(0, 8) }}
                     </SelectItem>
                   </SelectContent>
                 </Select>

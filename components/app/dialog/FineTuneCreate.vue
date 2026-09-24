@@ -366,7 +366,10 @@ watch(
       </div>
 
       <div class="px-6 pb-4 space-y-4">
-        <!-- Base model picker (LLM rows with hf_model_id only). -->
+        <!-- Base model picker (LLM rows with hf_model_id only). The short
+             id suffix disambiguates duplicate catalog names sharing one
+             hf_model_id; SelectValue mirrors the item text, so the trigger
+             shows the same suffix for the picked row. -->
         <div class="space-y-2">
           <Label for="ft-base-model">{{ t('label.base_llm') }}</Label>
           <Select v-model="form.base_model_id">
@@ -375,7 +378,7 @@ watch(
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="m in baseModels" :key="m.id" :value="m.id">
-                {{ m.name }} ({{ m.hf_model_id }})
+                {{ m.name }} ({{ m.hf_model_id }}) · {{ m.id.slice(0, 8) }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -444,7 +447,8 @@ watch(
           />
         </div>
 
-        <!-- Export: exact NTK controller (default) or a LoRA approximation. -->
+        <!-- Export: both train the same NTK controller; `ntk_model` keeps it
+             exact, `lora` converts the result to an approximate adapter. -->
         <div class="space-y-2">
           <Label for="ft-export">{{ t('label.export') }}</Label>
           <Select v-model="form.export">
