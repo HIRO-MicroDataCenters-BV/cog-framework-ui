@@ -3889,21 +3889,28 @@ export const useApi = () => {
     },
 
     /**
-     * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
+     * Kicks off a fine-tune of an existing LLM against a JSONL dataset.
      *
-     * The kfp run trains the controller and, only on completion, registers
-     * the output row — its type follows `export`: `'ntk_model'` keeps the
+     * `method` picks the training recipe: `'ntk'` trains an NTK controller
+     * (gate scalars on a frozen base), `'lora'` trains a standard PEFT LoRA
+     * adapter (low-rank matrices on every linear layer).
+     *
+     * For `'ntk'` the kfp run trains the controller and, only on completion,
+     * registers the output row — its type follows `export`: `'ntk_model'` keeps the
      * raw controller as a `model_info(type='ntk_controller')` row that the
      * serving flow attaches exactly via `llm_adapter`, while `'lora'`
      * converts it to a standard PEFT adapter registered as
      * `model_info(type='lora')` for the stock vLLM LoRA path. Either row
-     * appears in the model-serving adapter picker. The request itself just
-     * reserves `model_id`; no row exists until then.
+     * appears in the model-serving adapter picker. For `'lora'` the export
+     * is always `'lora'` (the backend rejects `'ntk_model'`), `gates` /
+     * `max_log_gate` are ignored, and `lora_rank` (default 8) / `lora_alpha`
+     * (default 16) size the adapter. The request itself just reserves
+     * `model_id`; no row exists until the run completes.
      *
      * @param {Object} data - Fine-tune request body matching the backend
      *   `FineTuneRequest` schema. `method` defaults to `'ntk'` on the
-     *   server; the UI always sends `export` explicitly (`'ntk_model'` by
-     *   default). Pinned hyperparams in
+     *   server; the UI always sends `method` and `export` explicitly
+     *   (`'ntk'` / `'ntk_model'` by default). Pinned hyperparams in
      *   `hyperparams` override the recommender defaults. When
      *   `eval_dataset_id` is set the run also scores the base model before
      *   training and the tuned model after on that held-out JSONL set and
@@ -3925,17 +3932,25 @@ export const useApi = () => {
         /** Optional held-out JSONL set scored before and after training. */
         eval_dataset_id?: string;
         output_name: string;
-        method?: 'ntk';
+        /** `'ntk'` (NTK controller, default) or `'lora'` (standard PEFT LoRA). */
+        method?: 'ntk' | 'lora';
         /**
          * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
          * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
+         * Must be `'lora'` when `method` is `'lora'`.
          */
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
+          /** NTK only; ignored for `method: 'lora'`. */
           gates?: number;
+          /** NTK only; ignored for `method: 'lora'`. */
           max_log_gate?: number;
           train_steps?: number;
           lr?: number;
+          /** LoRA only: adapter rank (int ≥ 1, default 8). */
+          lora_rank?: number;
+          /** LoRA only: scaling alpha (int ≥ 1, default 16). */
+          lora_alpha?: number;
         };
       },
       runPipeline = true,

@@ -375,6 +375,9 @@ export default defineI18nConfig(() => ({
         latency: 'Latency',
         completion_tokens: 'Completion tokens',
         output_adapter_name: 'Output adapter name',
+        method: 'Method',
+        method_ntk: 'NTK controller (5,000 gates, ~100 KB)',
+        method_lora: 'Standard LoRA (PEFT adapter)',
         export: 'Export',
         export_ntk_model: 'NTK controller (exact)',
         export_lora: 'NTK controller exported as a LoRA adapter (approximate)',
@@ -388,6 +391,8 @@ export default defineI18nConfig(() => ({
         max_log_gate: 'Max log gate',
         steps: 'Steps',
         learning_rate: 'Learning rate',
+        lora_rank: 'Rank',
+        lora_alpha: 'Alpha',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -623,8 +628,12 @@ export default defineI18nConfig(() => ({
           'Max log gate must be between 0.001 and 1.',
         fine_tune_steps_range: 'Steps must be a number ≥ 1.',
         fine_tune_lr_range: 'Learning rate must be between 0.0001 and 1.',
+        fine_tune_lora_rank_range: 'Rank must be a whole number ≥ 1.',
+        fine_tune_lora_alpha_range: 'Alpha must be a whole number ≥ 1.',
         fine_tune_eval_dataset:
           'Optional. The exported adapter is scored on this set after training and the metrics are logged on the run.',
+        fine_tune_method:
+          'NTK trains a few thousand gate scalars on a frozen base; LoRA trains low-rank matrices on every linear layer. Both are scored on the held-out set so the model pages can be compared.',
         fine_tune_export:
           "Both options train the same NTK controller (the gate count set below). 'Exact' is served natively on the NTK runtime; the LoRA export can attach next to the base on a stock vLLM service but approximates the effect.",
         serve_adapter_pick:
