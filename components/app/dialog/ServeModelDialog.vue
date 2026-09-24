@@ -278,7 +278,7 @@
               </FieldRow>
               <FieldRow v-if="hasAdapter" label="Max LoRA rank">
                 <Input
-                  v-model.number="llm.max_lora_rank"
+                  v-model="maxLoraRankModel"
                   type="number"
                   min="1"
                   max="512"
@@ -713,6 +713,17 @@ const effectiveHfModelId = computed(() =>
 );
 
 // Optional; when present it must be a whole number vLLM will accept.
+// The shared Input emits raw strings and ignores the ``.number`` modifier,
+// so coerce here: empty -> undefined, otherwise a number (NaN stays a
+// number and fails ``isValidMaxLoraRank``, which keeps Serve disabled).
+const maxLoraRankModel = computed<string | number>({
+  get: () => llm.max_lora_rank ?? '',
+  set: (v) => {
+    llm.max_lora_rank =
+      v === '' || v === null || v === undefined ? undefined : Number(v);
+  },
+});
+
 const isValidMaxLoraRank = computed(
   () =>
     llm.max_lora_rank === undefined ||
