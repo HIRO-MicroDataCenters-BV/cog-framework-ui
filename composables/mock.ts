@@ -979,10 +979,12 @@ export const useApiWithMock = () => {
         /** Optional held-out JSONL dataset the adapter is scored against. */
         eval_dataset_id?: string;
         output_name: string;
-        method?: 'ntk';
+        /** `'ntk'` (NTK controller, default) or `'lora'` (standard PEFT LoRA). */
+        method?: 'ntk' | 'lora';
         /**
          * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
          * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
+         * Must be `'lora'` when `method` is `'lora'`.
          */
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
@@ -990,6 +992,8 @@ export const useApiWithMock = () => {
           max_log_gate?: number;
           train_steps?: number;
           lr?: number;
+          lora_rank?: number;
+          lora_alpha?: number;
         };
       },
       runPipeline = true,

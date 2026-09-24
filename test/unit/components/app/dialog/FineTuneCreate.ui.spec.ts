@@ -4,8 +4,9 @@
  * Stub out the heavy UI primitives so the test focuses on the
  * dialog's behavior: picker filtering (LLMs with hf_model_id only;
  * JSONL datasets only), auto-fill from the fine-tune recommender on
- * base-model select, the submitted FineTuneRequest payload shape, and
- * the max_log_gate bound.
+ * base-model select, the submitted FineTuneRequest payload shape, the
+ * max_log_gate bound, and the NTK <-> LoRA method switch (which fields
+ * show, the per-method learning-rate default, and the payload keys).
  */
 
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
@@ -296,6 +297,10 @@ describe('FineTuneCreate', () => {
         lr: 0.005,
       },
     });
+    // NTK never sends the LoRA-only knobs.
+    const hyperparams = createFineTune.mock.calls[0][0].hyperparams;
+    expect(hyperparams).not.toHaveProperty('lora_rank');
+    expect(hyperparams).not.toHaveProperty('lora_alpha');
     expect(wrapper.emitted('created')?.[0]?.[0]).toEqual({
       model_id: 'mi-1',
       run_id: 'run-1',
@@ -322,20 +327,20 @@ describe('FineTuneCreate', () => {
     await flushPromises();
 
     // Selects: [0] base model, [1] training dataset, [2] eval dataset,
-    // [3] export.
+    // [3] method, [4] export.
     const selects = wrapper.findAllComponents({ name: 'Select' });
     expect(
-      selects[3]
+      selects[4]
         .findAll('[data-value]')
         .map((el) => el.attributes('data-value')),
     ).toEqual(['ntk_model', 'lora']);
-    expect(selects[3].text()).toContain('label.export_ntk_model');
-    expect(selects[3].text()).toContain('label.export_lora');
+    expect(selects[4].text()).toContain('label.export_ntk_model');
+    expect(selects[4].text()).toContain('label.export_lora');
     expect(wrapper.text()).toContain('hint.fine_tune_export');
 
     selects[0].vm.$emit('update:modelValue', 'm-1');
     selects[1].vm.$emit('update:modelValue', 'd-1');
-    selects[3].vm.$emit('update:modelValue', 'lora');
+    selects[4].vm.$emit('update:modelValue', 'lora');
     await flushPromises();
     await wrapper.find('#ft-output-name').setValue('adapter-x');
 
@@ -499,7 +504,8 @@ describe('FineTuneCreate', () => {
     await flushPromises();
 
     // Selects: [0] base, [1] dataset, [2] eval come from the API and stay
-    // empty; [3] export is static and always renders its two options.
+    // empty; [3] method and [4] export are static and always render their
+    // two options each.
     const selects = wrapper.findAllComponents({ name: 'Select' });
     expect(
       selects.slice(0, 3).flatMap((s) => s.findAll('[data-value]')),
@@ -593,5 +599,198 @@ describe('FineTuneCreate', () => {
     await submit!.trigger('click');
     await flushPromises();
     expect(createFineTune).not.toHaveBeenCalled();
+  });
+
+  // ---- Method: NTK (default) vs standard LoRA -------------------------------
+
+  const mountWithPickers = async () => {
+    getModels.mockResolvedValue({
+      data: [
+        { id: 'm-1', name: 'qwen', type: 'llm', hf_model_id: 'Qwen/0.5B' },
+      ],
+    });
+    getDatasets.mockResolvedValue({
+      data: [
+        { id: 'd-1', dataset_name: 'jsonl-1', train_and_inference_type: 5 },
+      ],
+    });
+    recommendFineTune.mockResolvedValue({ data: {} });
+    createFineTune.mockResolvedValue({
+      data: { model_id: 'mi-1', run_id: 'run-1' },
+    });
+    const wrapper = mountDialog();
+    await flushPromises();
+    return wrapper;
+  };
+
+  const inputValue = (wrapper: ReturnType<typeof mountDialog>, id: string) =>
+    (wrapper.find(id).element as HTMLInputElement).value;
+
+  const launchButton = (wrapper: ReturnType<typeof mountDialog>) =>
+    wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('action.launch_fine_tune'))!;
+
+  it('offers NTK (default) and LoRA methods above the export picker', async () => {
+    const wrapper = await mountWithPickers();
+
+    // Selects: [0] base, [1] dataset, [2] eval, [3] method, [4] export.
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    expect(
+      selects[3]
+        .findAll('[data-value]')
+        .map((el) => el.attributes('data-value')),
+    ).toEqual(['ntk', 'lora']);
+    expect(selects[3].text()).toContain('label.method_ntk');
+    expect(selects[3].text()).toContain('label.method_lora');
+    expect(wrapper.text()).toContain('hint.fine_tune_method');
+    expect(selects[3].props('modelValue')).toBe('ntk');
+
+    // NTK default: export + gates visible, LoRA knobs absent, lr 0.005.
+    expect(wrapper.find('#ft-export').exists()).toBe(true);
+    expect(wrapper.find('#ft-gates').exists()).toBe(true);
+    expect(wrapper.find('#ft-max-log-gate').exists()).toBe(true);
+    expect(wrapper.find('#ft-lora-rank').exists()).toBe(false);
+    expect(wrapper.find('#ft-lora-alpha').exists()).toBe(false);
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.005');
+  });
+
+  it('LoRA method hides export/gates, shows rank/alpha, sets lr 0.0002 and sends the LoRA payload', async () => {
+    const wrapper = await mountWithPickers();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+
+    expect(wrapper.find('#ft-export').exists()).toBe(false);
+    expect(wrapper.find('#ft-gates').exists()).toBe(false);
+    expect(wrapper.find('#ft-max-log-gate').exists()).toBe(false);
+    expect(wrapper.find('#ft-lora-rank').exists()).toBe(true);
+    expect(wrapper.find('#ft-lora-alpha').exists()).toBe(true);
+    expect(inputValue(wrapper, '#ft-lora-rank')).toBe('8');
+    expect(inputValue(wrapper, '#ft-lora-alpha')).toBe('16');
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.0002');
+    // Steps / learning rate stay shared between the two methods.
+    expect(wrapper.find('#ft-train-steps').exists()).toBe(true);
+
+    await launchButton(wrapper).trigger('click');
+    await flushPromises();
+
+    expect(createFineTune).toHaveBeenCalledWith({
+      base_model_id: 'm-1',
+      dataset_id: 'd-1',
+      output_name: 'adapter-x',
+      method: 'lora',
+      // Forced: the backend rejects `ntk_model` for the LoRA method.
+      export: 'lora',
+      hyperparams: {
+        // Still sent (numeric); ignored by the backend for LoRA.
+        gates: 5000,
+        max_log_gate: 0.05,
+        train_steps: 240,
+        lr: 0.0002,
+        lora_rank: 8,
+        lora_alpha: 16,
+      },
+    });
+  });
+
+  it('switching back to NTK restores export/gates, hides rank/alpha and resets lr to 0.005', async () => {
+    const wrapper = await mountWithPickers();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.0002');
+
+    selects[3].vm.$emit('update:modelValue', 'ntk');
+    await flushPromises();
+
+    expect(wrapper.find('#ft-export').exists()).toBe(true);
+    expect(wrapper.find('#ft-gates').exists()).toBe(true);
+    expect(wrapper.find('#ft-max-log-gate').exists()).toBe(true);
+    expect(wrapper.find('#ft-lora-rank').exists()).toBe(false);
+    expect(wrapper.find('#ft-lora-alpha').exists()).toBe(false);
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.005');
+  });
+
+  it('keeps a user-edited learning rate across method switches', async () => {
+    const wrapper = await mountWithPickers();
+
+    await wrapper.find('#ft-lr').setValue('0.001');
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.001');
+
+    selects[3].vm.$emit('update:modelValue', 'ntk');
+    await flushPromises();
+    expect(inputValue(wrapper, '#ft-lr')).toBe('0.001');
+  });
+
+  it('blocks Launch under LoRA unless rank and alpha are positive integers', async () => {
+    const wrapper = await mountWithPickers();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+    expect(launchButton(wrapper).attributes('disabled')).toBeUndefined();
+
+    // Non-integer rank.
+    await wrapper.find('#ft-lora-rank').setValue('2.5');
+    expect(launchButton(wrapper).attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('hint.fine_tune_lora_rank_range');
+
+    // Zero alpha (rank valid again).
+    await wrapper.find('#ft-lora-rank').setValue('4');
+    await wrapper.find('#ft-lora-alpha').setValue('0');
+    expect(launchButton(wrapper).attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('hint.fine_tune_lora_alpha_range');
+
+    await launchButton(wrapper).trigger('click');
+    await flushPromises();
+    expect(createFineTune).not.toHaveBeenCalled();
+
+    // Valid again → submit goes through with the edited ints.
+    await wrapper.find('#ft-lora-alpha').setValue('32');
+    expect(launchButton(wrapper).attributes('disabled')).toBeUndefined();
+    await launchButton(wrapper).trigger('click');
+    await flushPromises();
+    expect(createFineTune).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'lora',
+        export: 'lora',
+        hyperparams: expect.objectContaining({ lora_rank: 4, lora_alpha: 32 }),
+      }),
+    );
+  });
+
+  it('a stale invalid gates edit does not block LoRA and is sent as the numeric default', async () => {
+    const wrapper = await mountWithPickers();
+
+    const selects = wrapper.findAllComponents({ name: 'Select' });
+    selects[0].vm.$emit('update:modelValue', 'm-1');
+    selects[1].vm.$emit('update:modelValue', 'd-1');
+    await flushPromises();
+    await wrapper.find('#ft-output-name').setValue('adapter-x');
+    // Break an NTK-only knob, then switch to LoRA (which hides it).
+    await wrapper.find('#ft-gates').setValue('1e999');
+    expect(launchButton(wrapper).attributes('disabled')).toBeDefined();
+
+    selects[3].vm.$emit('update:modelValue', 'lora');
+    await flushPromises();
+    expect(launchButton(wrapper).attributes('disabled')).toBeUndefined();
+
+    await launchButton(wrapper).trigger('click');
+    await flushPromises();
+    // Never `null`/Infinity: the schema still expects a number.
+    expect(createFineTune.mock.calls[0][0].hyperparams.gates).toBe(5000);
   });
 });
