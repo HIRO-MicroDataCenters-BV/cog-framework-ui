@@ -1,9 +1,14 @@
-import type { HeadersResponse } from '~/types/api.types';
+import type { HeadersResponse, WorkgroupNamespace } from '~/types/api.types';
 
 export interface CurrentUser {
   email: string;
   name: string;
   avatarUrl?: string;
+  /** Namespace this user acts in; null when they own no workspace. */
+  namespace: string | null;
+  /** Every namespace the user belongs to, owned or shared. */
+  namespaces: WorkgroupNamespace[];
+  isClusterAdmin: boolean;
 }
 
 interface CurrentUserState {
@@ -24,8 +29,6 @@ export const useCurrentUser = () => {
     loading: false,
     error: null,
   }));
-
-  const api = useApi();
 
   /**
    * Extracts user name from email
@@ -51,12 +54,24 @@ export const useCurrentUser = () => {
     state.value.error = null;
 
     try {
+      // Resolved here rather than at composable construction: `useApi()` reads
+      // this composable's namespace state, so constructing it up there would
+      // recurse between the two.
+      const api = useApi();
       const response = (await api.getHeaders()) as HeadersResponse;
       if (response?.data?.['kubeflow-userid']) {
         const email = response.data['kubeflow-userid'];
+        const env = await api.getWorkgroupEnvInfo();
+        const owned =
+          env.namespaces?.find((n) => n.role === 'owner') ??
+          env.namespaces?.[0];
+
         state.value.user = {
           email,
           name: extractNameFromEmail(email),
+          namespace: owned?.namespace ?? null,
+          namespaces: env.namespaces ?? [],
+          isClusterAdmin: env.isClusterAdmin ?? false,
         };
       } else {
         state.value.error = 'User ID not found in headers';
@@ -76,6 +91,9 @@ export const useCurrentUser = () => {
   const clearUser = (): void => {
     state.value.user = null;
     state.value.error = null;
+    // Drop the cached namespace too, so a different user signing in to the same
+    // tab is not scoped to the previous one's workspace.
+    resetWorkgroupEnvInfo();
   };
 
   return {

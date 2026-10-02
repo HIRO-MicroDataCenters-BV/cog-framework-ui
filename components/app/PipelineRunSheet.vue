@@ -766,8 +766,6 @@ const logsLoading = ref(false);
 const logsError = ref<string | null>(null);
 const podLogs = ref<string | null>(null);
 
-const POD_NAMESPACE = 'admin';
-
 const fetchPodLogs = async () => {
   const podname = logPodName.value;
   const runId = run.value?.run_id;
@@ -778,10 +776,12 @@ const fetchPodLogs = async () => {
   podLogs.value = null;
 
   try {
+    // No `podnamespace`: the API resolves the signed-in user's namespace. A KFP
+    // run carries no namespace of its own, and pinning one here would read
+    // another tenant's pod logs.
     const data = await api.getPipelinePodLogs({
       podname,
       runid: runId,
-      podnamespace: POD_NAMESPACE,
     });
     if (data == null) {
       logsError.value = t('description.logs_unavailable');

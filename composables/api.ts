@@ -11,6 +11,7 @@ import type {
   ModelRecommendParams,
   PipelineComponentParams,
   PodParams,
+  WorkgroupEnvInfo,
 } from '~/types/api.types';
 import type {
   LlmAdapterSpec,
@@ -67,6 +68,21 @@ const pipelineVersionCache = new Map<string, unknown>();
 const experimentsListTokenCache = new Map<string, Map<number, string>>();
 
 /**
+ * In-flight/settled `/api/workgroup/env-info` request, shared process-wide.
+ *
+ * Every pipeline query needs the signed-in user's namespace, so without this the
+ * first page load would fire one env-info request per query, and the runs pages
+ * would refire it on every poll tick. Held at module scope so it needs no Nuxt
+ * context — API methods also run from timers, where composables throw.
+ */
+let workgroupEnvInfoPromise: Promise<WorkgroupEnvInfo> | null = null;
+
+/** Drops the cached env-info so the next call re-reads it (e.g. after sign-out). */
+export const resetWorkgroupEnvInfo = () => {
+  workgroupEnvInfoPromise = null;
+};
+
+/**
  * Generate a cache key for pipeline runs pagination tokens
  */
 function getPipelineRunsCacheKey(params: {
@@ -77,7 +93,7 @@ function getPipelineRunsCacheKey(params: {
   sort_by?: string;
   sort_order?: string;
 }): string {
-  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+  return `${params.namespace || ''}_${params.storage_state || 'NOT_ARCHIVED'}_${params.status || ''}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
 }
 
 /**
@@ -90,7 +106,7 @@ function getExperimentsListCacheKey(params: {
   sort_by?: string;
   sort_order?: string;
 }): string {
-  return `${params.namespace || 'admin'}_${params.storage_state || 'NOT_ARCHIVED'}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
+  return `${params.namespace || ''}_${params.storage_state || 'NOT_ARCHIVED'}_${params.search || ''}_${params.sort_by || 'created_at'}_${params.sort_order || 'desc'}`;
 }
 
 /**
@@ -122,6 +138,58 @@ export const useApi = () => {
   const token = useLocalStorage(accessTokenKey, null);
   const { setPage, page } = useApp();
   const toaster = useToaster();
+
+  /**
+   * Reads the signed-in user's identity and namespaces from Kubeflow Central
+   * Dashboard (`GET /api/workgroup/env-info`).
+   *
+   * The origin is derived from `apiRuns` rather than a new env var: Central
+   * Dashboard and the KFP API are served from the same host.
+   *
+   * The result is cached process-wide — see {@link workgroupEnvInfoPromise}. A
+   * failed lookup clears the cache so the next call retries instead of pinning
+   * a transient error for the session.
+   */
+  const getWorkgroupEnvInfo = async (): Promise<WorkgroupEnvInfo> => {
+    if (!workgroupEnvInfoPromise) {
+      workgroupEnvInfoPromise = (async () => {
+        const origin = new URL(apiRuns).origin;
+        const res = await fetch(`${origin}/api/workgroup/env-info`, {
+          headers: getHeaders(),
+        });
+        if (!res.ok) throw new Error(`env-info failed: ${res.status}`);
+        return (await res.json()) as WorkgroupEnvInfo;
+      })().catch((err) => {
+        workgroupEnvInfoPromise = null;
+        throw err;
+      });
+    }
+    return workgroupEnvInfoPromise;
+  };
+
+  /**
+   * The namespace a pipeline query should run against.
+   *
+   * Resolved from the signed-in user rather than defaulting to `admin`, which
+   * would quietly read another tenant's runs. Awaiting here (instead of relying
+   * on a composable having been populated at mount) keeps it correct when a
+   * pipeline page is opened directly, before any user-info component mounts.
+   *
+   * Throws when the user owns no namespace — they genuinely have no workspace,
+   * and saying so beats querying one that isn't theirs.
+   */
+  const resolveNamespace = async (explicit?: string): Promise<string> => {
+    if (explicit) return explicit;
+
+    const env = await getWorkgroupEnvInfo();
+    const owned =
+      env.namespaces?.find((n) => n.role === 'owner') ?? env.namespaces?.[0];
+
+    if (!owned?.namespace) {
+      throw new Error('No Kubeflow namespace resolved for this user');
+    }
+    return owned.namespace;
+  };
 
   /**
    * Generates appropriate headers for API requests
@@ -326,6 +394,16 @@ export const useApi = () => {
   };
 
   return {
+    // ============================================================================
+    // IDENTITY / NAMESPACE
+    // ============================================================================
+
+    /**
+     * Signed-in user's identity and namespaces, from Kubeflow Central Dashboard.
+     * Cached per process; see the in-file helper for details.
+     */
+    getWorkgroupEnvInfo,
+
     // ============================================================================
     // MODELS API
     // ============================================================================
@@ -2642,7 +2720,8 @@ export const useApi = () => {
      * @param {number} [params.page] - Page number for pagination
      * @param {number} [params.limit] - Number of items per page
      * @param {string} [params.page_token] - KFP cursor token for next page
-     * @param {string} [params.namespace] - Kubernetes namespace (defaults to 'admin')
+     * @param {string} [params.namespace] - Kubernetes namespace; defaults to the
+     *   signed-in user's namespace from `/api/workgroup/env-info`
      *
      * @returns {Promise<Object>} Normalised response containing list of pipeline runs
      *
@@ -2669,10 +2748,19 @@ export const useApi = () => {
         silent?: boolean;
       } = {},
     ) => {
-      const namespace = params.namespace || 'admin';
+      const silent = params.silent === true;
+
+      let namespace: string;
+      try {
+        namespace = await resolveNamespace(params.namespace);
+      } catch (err) {
+        console.error('Cannot resolve namespace for pipeline runs:', err);
+        if (!silent) toaster.show('error', 'server_error');
+        return null;
+      }
+
       const pageSize = params.limit || 10;
       const currentPage = params.page || 1;
-      const silent = params.silent === true;
 
       const sortBy = params.sort_by
         ? `${params.sort_by} ${params.sort_order || 'desc'}`
@@ -2854,7 +2942,8 @@ export const useApi = () => {
      * @param {number} [params.limit=10] - Page size
      * @param {string} [params.page_token] - Optional KFP cursor; when omitted,
      *   page 2+ uses tokens cached from prior responses (same pattern as runs).
-     * @param {string} [params.namespace='admin'] - Kubernetes namespace
+     * @param {string} [params.namespace] - Kubernetes namespace; defaults to the
+     *   signed-in user's namespace
      *
      * @returns {Promise<Object>} Normalised response with experiments list
      */
@@ -2892,7 +2981,15 @@ export const useApi = () => {
         };
       }
 
-      const namespace = params.namespace || 'admin';
+      let namespace: string;
+      try {
+        namespace = await resolveNamespace(params.namespace);
+      } catch (err) {
+        console.error('Cannot resolve namespace for experiments:', err);
+        toaster.show('error', 'server_error');
+        return null;
+      }
+
       const pageSize = params.limit || 10;
       const currentPage = params.page || 1;
 
@@ -3030,7 +3127,8 @@ export const useApi = () => {
      * @param {string} experimentId - Experiment UUID to list runs for
      * @param {Object} [opts]
      * @param {number} [opts.limit=5] - Max runs to fetch
-     * @param {string} [opts.namespace='admin'] - Kubernetes namespace
+     * @param {string} [opts.namespace] - Kubernetes namespace; defaults to the
+     *   signed-in user's namespace
      *
      * @returns {Promise<Array<{run_id: string, run_name: string, status: string, created_at: string|null}>>}
      *   List of runs (newest first) or an empty array on error.
@@ -3041,7 +3139,14 @@ export const useApi = () => {
     ) => {
       if (!experimentId) return [];
 
-      const namespace = opts.namespace || 'admin';
+      let namespace: string;
+      try {
+        namespace = await resolveNamespace(opts.namespace);
+      } catch (err) {
+        console.error('Cannot resolve namespace for experiment runs:', err);
+        return [];
+      }
+
       const pageSize = opts.limit ?? 5;
 
       const filter = JSON.stringify({
@@ -3150,7 +3255,8 @@ export const useApi = () => {
      * @param {Object} params - Log parameters
      * @param {string} params.podname - Name of the pod
      * @param {string} params.runid - Run ID
-     * @param {string} [params.podnamespace='admin'] - Kubernetes namespace
+     * @param {string} [params.podnamespace] - Kubernetes namespace; defaults to
+     *   the signed-in user's namespace
      *
      * @returns {Promise<Object>} Response containing pod logs
      */
@@ -3159,14 +3265,18 @@ export const useApi = () => {
       runid: string;
       podnamespace?: string;
     }) => {
-      const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
-      const q = new URLSearchParams({
-        podname: params.podname,
-        runid: params.runid,
-        podnamespace: params.podnamespace || 'admin',
-      }).toString();
-      const url = `${base}/k8s/pod/logs?${q}`;
       try {
+        // Inside the try: resolving the namespace reads env-info over the
+        // network and can fail, and this method's contract is to report any
+        // failure as null rather than rejecting.
+        const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
+        const q = new URLSearchParams({
+          podname: params.podname,
+          runid: params.runid,
+          podnamespace: await resolveNamespace(params.podnamespace),
+        }).toString();
+        const url = `${base}/k8s/pod/logs?${q}`;
+
         const res = await fetch(url, { headers: getHeaders() });
         if (!res.ok) {
           const err = await res.text();

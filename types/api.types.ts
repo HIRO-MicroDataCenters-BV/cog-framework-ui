@@ -336,3 +336,30 @@ export interface ModelArtifactsResponse {
   message: string;
   data: ModelArtifactsData[];
 }
+
+/**
+ * A namespace (Kubeflow profile) the signed-in user belongs to.
+ */
+export interface WorkgroupNamespace {
+  user: string;
+  namespace: string;
+  role: string;
+}
+
+/**
+ * Response of Kubeflow Central Dashboard's `/api/workgroup/env-info`.
+ *
+ * Identifies the signed-in user and the namespaces they may act in. The app
+ * scopes every pipeline query to one of these rather than assuming `admin`.
+ */
+export interface WorkgroupEnvInfo {
+  user: string;
+  platform?: {
+    kubeflowVersion?: string;
+    provider?: string;
+    providerName?: string;
+    logoutUrl?: string;
+  };
+  namespaces: WorkgroupNamespace[];
+  isClusterAdmin: boolean;
+}

@@ -3,6 +3,7 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
+import type { WorkgroupEnvInfo } from '~/types/api.types';
 
 /**
  * Canned Playground answers so the page demos end to end in mock mode. A
@@ -900,48 +901,6 @@ export const useApiWithMock = () => {
       });
     },
 
-    getServedModels: async (isvcName: string) => {
-      if (mock.value.enabled) {
-        await mockDelay();
-        return Promise.resolve({
-          status_code: 200,
-          message: 'Served models.',
-          data: {
-            isvc_name: isvcName,
-            served_model_url: `http://${isvcName}.admin.dashboard.cog.hiro-develop.nl`,
-            // Base + one adapter, so the Playground renders two columns.
-            models: ['Qwen/Qwen2.5-Coder-7B-Instruct', `${isvcName}-lora`],
-          },
-        });
-      }
-      return request(
-        `/models-serving/${encodeURIComponent(isvcName)}/models`,
-        'GET',
-        undefined,
-        { showToast: false },
-      );
-    },
-
-    postServedCompletion: async (
-      isvcName: string,
-      body: ServedCompletionRequest,
-    ) => {
-      if (mock.value.enabled) {
-        await mockDelay();
-        return Promise.resolve({
-          status_code: 200,
-          message: 'Completion.',
-          data: mockServedCompletion(body),
-        });
-      }
-      return request(
-        `/models-serving/${encodeURIComponent(isvcName)}/completions`,
-        'POST',
-        body,
-        { showToast: false },
-      );
-    },
-
     recommendModelServing: async (
       data: {
         hf_model_id: string;
@@ -976,24 +935,14 @@ export const useApiWithMock = () => {
       data: {
         base_model_id: string;
         dataset_id: string;
-        /** Optional held-out JSONL dataset the adapter is scored against. */
-        eval_dataset_id?: string;
         output_name: string;
-        /** `'ntk'` (NTK controller, default) or `'lora'` (standard PEFT LoRA). */
-        method?: 'ntk' | 'lora';
-        /**
-         * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
-         * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
-         * Must be `'lora'` when `method` is `'lora'`.
-         */
+        method?: 'ntk';
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
           gates?: number;
           max_log_gate?: number;
           train_steps?: number;
           lr?: number;
-          lora_rank?: number;
-          lora_alpha?: number;
         };
       },
       runPipeline = true,

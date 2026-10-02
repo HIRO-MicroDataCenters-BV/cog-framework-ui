@@ -1,0 +1,17 @@
+{
+  "user": "john.doe@company.com",
+  "platform": {
+    "kubeflowVersion": "mock",
+    "provider": "mock://local",
+    "providerName": "mock",
+    "logoutUrl": "/authservice/logout"
+  },
+  "namespaces": [
+    {
+      "user": "john.doe@company.com",
+      "namespace": "john-doe",
+      "role": "owner"
+    }
+  ],
+  "isClusterAdmin": false
+}
