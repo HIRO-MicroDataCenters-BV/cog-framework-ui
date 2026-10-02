@@ -194,6 +194,11 @@
                     <SelectItem :value="2">
                       {{ t('label.train_and_inference') }}
                     </SelectItem>
+                    <!-- 5 == DatasetTypeEnum.JSONL on the backend: the only
+                         type the fine-tune dialog accepts. -->
+                    <SelectItem :value="5">
+                      {{ t('label.jsonl_fine_tune') }}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -231,7 +236,7 @@
                   <input
                     ref="fileInputRef"
                     type="file"
-                    accept=".csv,.json,.xlsx,.xls"
+                    accept=".csv,.json,.jsonl,.xlsx,.xls"
                     class="hidden"
                     @change="handleFileChange"
                   />
@@ -1031,6 +1036,7 @@ const displayDatasetType = computed(() => {
     0: t('label.train'),
     1: t('label.inference'),
     2: t('label.train_and_inference'),
+    5: t('label.jsonl_fine_tune'),
   };
   return typeof val === 'number' ? labels[val] || '—' : '—';
 });

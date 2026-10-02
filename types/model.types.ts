@@ -90,3 +90,46 @@ export interface ModelServingResponse {
   message: string;
   data: ModelServing[];
 }
+
+/**
+ * Exact-serving adapter spec for `POST /models-serving`.
+ *
+ * Points the NTK runtime at a `type='ntk_controller'` catalog row so the
+ * controller is applied exactly on top of the base LLM (`model_id`). The
+ * backend rejects `llm_adapter` together with `lora_model_ids`.
+ */
+export interface LlmAdapterSpec {
+  kind: 'ntk_model';
+  /** Catalog id of the `ntk_controller` row produced by a fine-tune run. */
+  adapter_model_id: string;
+}
+
+/** `GET /models-serving/{isvc_name}/models` payload. */
+export interface ServedModelsData {
+  isvc_name: string;
+  served_model_url: string;
+  /** Model names the service answers to: the base plus one per LoRA adapter. */
+  models: string[];
+}
+
+/** `POST /models-serving/{isvc_name}/completions` body. */
+export interface ServedCompletionRequest {
+  model: string;
+  prompt: string;
+  max_tokens?: number;
+  temperature?: number;
+  top_p?: number;
+  stop?: string[];
+}
+
+/** OpenAI-style completion object returned in `data` by the completions route. */
+export interface ServedCompletionData {
+  id?: string;
+  model?: string;
+  choices: Array<{ text: string; index?: number; finish_reason?: string }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+}

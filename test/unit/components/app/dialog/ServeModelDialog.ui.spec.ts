@@ -4,9 +4,10 @@ import ServeModelDialog from '~/components/app/dialog/ServeModelDialog.vue';
 
 const postModelServing = vi.fn();
 const recommendModelServing = vi.fn();
+const getModels = vi.fn();
 
 vi.mock('@/composables/api', () => ({
-  useApi: () => ({ postModelServing, recommendModelServing }),
+  useApi: () => ({ postModelServing, recommendModelServing, getModels }),
 }));
 
 beforeAll(() => {
@@ -41,6 +42,7 @@ const stubs = {
   },
   Label: { template: '<label><slot /></label>' },
   Select: {
+    name: 'Select',
     props: ['modelValue'],
     emits: ['update:modelValue'],
     template: '<div class="select-stub"><slot /></div>',
@@ -50,7 +52,7 @@ const stubs = {
   SelectContent: { template: '<div><slot /></div>' },
   SelectItem: {
     props: ['value'],
-    template: '<div><slot /></div>',
+    template: '<div :data-value="value"><slot /></div>',
   },
   Button: {
     inheritAttrs: true,
@@ -87,6 +89,7 @@ describe('ServeModelDialog', () => {
     // Default: recommend returns null so existing tier tests exercise the
     // local-fallback path via recommendForUsers().
     recommendModelServing.mockReset().mockResolvedValue(null);
+    getModels.mockReset().mockResolvedValue({ data: [] });
   });
 
   it('renders closed when open=false', () => {
@@ -223,6 +226,369 @@ describe('ServeModelDialog', () => {
       isvc_name: 'qwen25-coder',
       served_model_name: 'my-served-name',
     });
+  });
+
+  // ---------------------------------------------------------------------------
+  // LLM mode: "From catalog" source (base row + optional adapter, either a
+  // LoRA export or an exact NTK controller)
+  // ---------------------------------------------------------------------------
+
+  const catalogRows = [
+    { id: 'llm-1', name: 'Qwen Coder', type: 'llm', hf_model_id: 'Qwen/7B' },
+    { id: 'llm-2', name: 'Llama', type: 'llm', hf_model_id: 'meta/llama' },
+    // LLM without hf_model_id → not servable, filtered out.
+    { id: 'llm-3', name: 'no-hf', type: 'llm', hf_model_id: null },
+    { id: 'lora-1', name: 'pulumi-lora', type: 'lora', base_model_id: 'llm-1' },
+    { id: 'lora-2', name: 'other-lora', type: 'lora', base_model_id: 'llm-2' },
+    {
+      id: 'ntk-1',
+      name: 'iac-house-style-ntk-v3',
+      type: 'ntk_controller',
+      base_model_id: 'llm-1',
+    },
+    { id: 'skl-1', name: 'classical', type: 'sklearn' },
+  ];
+
+  const clickCatalogSource = async (wrapper: W) => {
+    await findButton(wrapper, 'From catalog')!.trigger('click');
+    await flushPromises();
+  };
+
+  // Catalog-mode Selects: [0] base LLM, [1] adapter, [2] dtype.
+  const catalogSelects = (wrapper: W) =>
+    wrapper.findAllComponents({ name: 'Select' });
+  const itemValues = (select: ReturnType<W['findComponent']>) =>
+    select.findAll('[data-value]').map((el) => el.attributes('data-value'));
+  const itemTexts = (select: ReturnType<W['findComponent']>) =>
+    select.findAll('[data-value]').map((el) => el.text().replace(/\s+/g, ' '));
+
+  it('catalog source loads the catalog lazily and lists only LLM rows with hf_model_id as bases', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    // HF source is the default: nothing fetched yet, HF input still present.
+    expect(getModels).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Hugging Face model ID');
+
+    await clickCatalogSource(wrapper);
+    expect(getModels).toHaveBeenCalledWith({ limit: 200 });
+    expect(wrapper.text()).not.toContain('Hugging Face model ID');
+    expect(wrapper.text()).toContain('Base LLM');
+
+    expect(itemValues(catalogSelects(wrapper)[0])).toEqual(['llm-1', 'llm-2']);
+    // Base option label: "{name} ({hf_model_id}) · {id.slice(0, 8)}" — the
+    // short id suffix disambiguates duplicate catalog names.
+    expect(itemTexts(catalogSelects(wrapper)[0])).toEqual([
+      'Qwen Coder (Qwen/7B) · llm-1',
+      'Llama (meta/llama) · llm-2',
+    ]);
+    // No base picked yet → no adapters offered.
+    expect(itemValues(catalogSelects(wrapper)[1])).toEqual([]);
+  });
+
+  it('suffixes duplicate-named base options with distinct short ids (adapter labels untouched)', async () => {
+    getModels.mockResolvedValue({
+      data: [
+        {
+          id: 'aaaaaaaa-1111',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+        {
+          id: 'bbbbbbbb-2222',
+          name: 'Qwen2.5-0.5B-Instruct',
+          type: 'llm',
+          hf_model_id: 'Qwen/Qwen2.5-0.5B-Instruct',
+        },
+        {
+          id: 'cccccccc-3333',
+          name: 'style-lora',
+          type: 'lora',
+          base_model_id: 'aaaaaaaa-1111',
+        },
+      ],
+    });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    const labels = itemTexts(catalogSelects(wrapper)[0]);
+    expect(labels).toEqual([
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · aaaaaaaa',
+      'Qwen2.5-0.5B-Instruct (Qwen/Qwen2.5-0.5B-Instruct) · bbbbbbbb',
+    ]);
+    expect(new Set(labels).size).toBe(2);
+
+    // Adapter option labels keep the "{name} ({kind})" shape — no id suffix.
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'aaaaaaaa-1111');
+    await flushPromises();
+    expect(itemTexts(catalogSelects(wrapper)[1])).toContain(
+      'style-lora (label.adapter_kind_lora)',
+    );
+    expect(itemTexts(catalogSelects(wrapper)[1]).join(' ')).not.toContain(
+      '· cccccccc',
+    );
+  });
+
+  it('adapter picker lists lora and ntk_controller rows whose base_model_id matches the chosen base, with the kind as suffix', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    expect(itemValues(catalogSelects(wrapper)[1])).toEqual([
+      '__none__',
+      'lora-1',
+      'ntk-1',
+    ]);
+    // The stubbed useI18n echoes keys, so the suffix renders as its key.
+    const items = catalogSelects(wrapper)[1]
+      .findAll('[data-value]')
+      .map((el) => el.text().replace(/\s+/g, ' '));
+    expect(items).toContain('pulumi-lora (label.adapter_kind_lora)');
+    expect(items).toContain('iac-house-style-ntk-v3 (label.adapter_kind_ntk)');
+
+    // Switching base drops an adapter that no longer belongs to it.
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+    expect(wrapper.text()).toContain('Max LoRA rank');
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-2');
+    await flushPromises();
+    expect(itemValues(catalogSelects(wrapper)[1])).toEqual([
+      '__none__',
+      'lora-2',
+    ]);
+    expect(wrapper.text()).not.toContain('Max LoRA rank');
+  });
+
+  it('catalog payload: model_id + lora_model_ids + max_lora_rank, never hf_model_id', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Serve')!.attributes('disabled'),
+    ).toBeUndefined();
+
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+    expect(wrapper.text()).toContain('hint.serve_adapter_lora');
+    // With a LoRA adapter chosen the inputs are: [0] max_lora_rank,
+    // [1] isvc_name
+    const inputs = wrapper.findAll('input');
+    await inputs[0].setValue('64');
+    await flushPromises();
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({
+      model_id: 'llm-1',
+      lora_model_ids: ['lora-1'],
+      max_lora_rank: 64,
+      // Derived from the adapter's name once one is chosen.
+      isvc_name: 'pulumi-lora-serving',
+    });
+    expect(body).not.toHaveProperty('hf_model_id');
+    expect(body).not.toHaveProperty('llm_adapter');
+  });
+
+  it('catalog payload for an NTK controller: model_id + llm_adapter only, no LoRA keys and no rank input', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'ntk-1');
+    await flushPromises();
+
+    // The exact path has no rank knob.
+    expect(wrapper.text()).not.toContain('Max LoRA rank');
+    expect(wrapper.text()).toContain('hint.serve_adapter_ntk');
+    // Inputs: [0] isvc_name — derived from the controller's name.
+    const inputs = wrapper.findAll('input');
+    expect((inputs[0].element as HTMLInputElement).value).toBe(
+      'iac-house-style-ntk-v3-serving',
+    );
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({
+      model_id: 'llm-1',
+      llm_adapter: { kind: 'ntk_model', adapter_model_id: 'ntk-1' },
+      isvc_name: 'iac-house-style-ntk-v3-serving',
+    });
+    expect(body).not.toHaveProperty('hf_model_id');
+    expect(body).not.toHaveProperty('lora_model_ids');
+    expect(body).not.toHaveProperty('max_lora_rank');
+  });
+
+  it('switching a LoRA adapter for an NTK controller drops the LoRA keys (never both)', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+    await wrapper.findAll('input')[0].setValue('64');
+    await flushPromises();
+
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'ntk-1');
+    await flushPromises();
+    expect(wrapper.text()).not.toContain('Max LoRA rank');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body.llm_adapter).toEqual({
+      kind: 'ntk_model',
+      adapter_model_id: 'ntk-1',
+    });
+    expect(body).not.toHaveProperty('lora_model_ids');
+    expect(body).not.toHaveProperty('max_lora_rank');
+
+    // And back to the LoRA adapter: llm_adapter must go away again.
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+    const [body2] = postModelServing.mock.calls[1];
+    expect(body2.lora_model_ids).toEqual(['lora-1']);
+    expect(body2).not.toHaveProperty('llm_adapter');
+  });
+
+  it('adapter-derived service name never overwrites a user-typed one', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    // Base-derived first; the user then types their own.
+    const isvc = () => wrapper.findAll('input')[0];
+    expect((isvc().element as HTMLInputElement).value).toBe(
+      'qwen-coder-serving',
+    );
+    await isvc().setValue('mine');
+    await flushPromises();
+
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'ntk-1');
+    await flushPromises();
+    expect((isvc().element as HTMLInputElement).value).toBe('mine');
+
+    // Clearing the typed name lets the derivation take over again, now from
+    // the chosen adapter. (With a LoRA adapter the rank input comes first,
+    // so the service name is input [1].)
+    await isvc().setValue('');
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+    expect(
+      (wrapper.findAll('input')[1].element as HTMLInputElement).value,
+    ).toBe('pulumi-lora-serving');
+  });
+
+  it('catalog payload without an adapter sends model_id only (no lora keys)', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-2');
+    await flushPromises();
+    // User overrides the derived service name.
+    const inputs = wrapper.findAll('input');
+    expect((inputs[0].element as HTMLInputElement).value).toBe('llama-serving');
+    await inputs[0].setValue('my-llama');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({ model_id: 'llm-2', isvc_name: 'my-llama' });
+  });
+
+  it('blocks Serve on an out-of-range max_lora_rank', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+
+    await wrapper.findAll('input')[0].setValue('1024');
+    await flushPromises();
+    expect(findButton(wrapper, 'Serve')!.attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('between 1 and 512');
+
+    await wrapper.findAll('input')[0].setValue('128');
+    await flushPromises();
+    expect(
+      findButton(wrapper, 'Serve')!.attributes('disabled'),
+    ).toBeUndefined();
+  });
+
+  it('catalog mode autofills from the base row hf_model_id', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+
+    // Inputs (no adapter): [0] isvc_name, [1] served_model_name, [2] concurrent_users
+    await wrapper.findAll('input')[2].setValue('5');
+    await flushPromises();
+    await findButton(wrapper, 'Autofill')!.trigger('click');
+    await flushPromises();
+
+    expect(recommendModelServing).toHaveBeenCalledWith(
+      expect.objectContaining({ hf_model_id: 'Qwen/7B', concurrent_users: 5 }),
+      expect.anything(),
+    );
+  });
+
+  it('switching back to the HF source sends hf_model_id only (no catalog leak)', async () => {
+    getModels.mockResolvedValue({ data: catalogRows });
+    const wrapper = mountDialog();
+    await clickLlmTab(wrapper);
+    await clickCatalogSource(wrapper);
+    catalogSelects(wrapper)[0].vm.$emit('update:modelValue', 'llm-1');
+    await flushPromises();
+    catalogSelects(wrapper)[1].vm.$emit('update:modelValue', 'lora-1');
+    await flushPromises();
+
+    await findButton(wrapper, 'Hugging Face id')!.trigger('click');
+    await flushPromises();
+    const inputs = wrapper.findAll('input');
+    await inputs[0].setValue('Qwen/Qwen2.5-Coder-7B-Instruct');
+    // The derived service name stays (it is a plain field the user can edit).
+    await inputs[1].setValue('');
+    await flushPromises();
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    const [body] = postModelServing.mock.calls[0];
+    expect(body).toEqual({ hf_model_id: 'Qwen/Qwen2.5-Coder-7B-Instruct' });
   });
 
   it('emits created + close after successful submit', async () => {

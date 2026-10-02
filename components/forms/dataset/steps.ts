@@ -83,6 +83,11 @@ export const getDatasetFormSteps = (
                   value: 2,
                   label: t('label.train_and_inference'),
                 },
+                {
+                  // 5 == DatasetTypeEnum.JSONL on the backend (fine-tune input).
+                  value: 5,
+                  label: t('label.jsonl_fine_tune'),
+                },
               ],
             },
           ],
@@ -98,7 +103,7 @@ export const getDatasetFormSteps = (
               name: 'source_settings.dataset_file',
               label: t('label.dataset_file'),
               placeholder: t('placeholder.browse'),
-              accept: '.csv,.json,.xlsx,.xls',
+              accept: '.csv,.json,.jsonl,.xlsx,.xls',
               condition: {
                 field: 'type',
                 operator: 'eq',

@@ -13,7 +13,11 @@ import type {
   PodParams,
   WorkgroupEnvInfo,
 } from '~/types/api.types';
-import type { ModelServingResponse } from '~/types/model.types';
+import type {
+  LlmAdapterSpec,
+  ModelServingResponse,
+  ServedCompletionRequest,
+} from '~/types/model.types';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -487,7 +491,23 @@ export const useApi = () => {
             lora_model_ids?: string[];
           }
         | {
-            hf_model_id: string;
+            /** Hugging Face id; exactly one of this or `model_id` is required. */
+            hf_model_id?: string;
+            /** Catalog id of a `type='llm'` row (alternative to `hf_model_id`). */
+            model_id?: string;
+            /**
+             * Catalog ids of `type='lora'` adapters to attach on the base.
+             * Mutually exclusive with `llm_adapter`.
+             */
+            lora_model_ids?: string[];
+            /** vLLM `--max-lora-rank`; must cover every attached adapter's rank. */
+            max_lora_rank?: number;
+            /**
+             * Exact serving of a `type='ntk_controller'` row on the NTK
+             * runtime, applied on top of `model_id`. Send it alone: the
+             * backend rejects it next to `lora_model_ids` / `max_lora_rank`.
+             */
+            llm_adapter?: LlmAdapterSpec;
             isvc_name?: string;
             served_model_name?: string;
             hf_token?: string;
@@ -513,7 +533,6 @@ export const useApi = () => {
         useResponseMessage?: boolean;
       },
     ) => {
-      console.log(data);
       return request(`/models-serving`, 'POST', data, options);
     },
 
@@ -559,6 +578,79 @@ export const useApi = () => {
         'DELETE',
         undefined,
         { successMessage: 'model_serving_deleted' },
+      );
+    },
+
+    /**
+     * Lists the model names an LLM inference service answers to.
+     *
+     * GET `/models-serving/{isvc_name}/models`
+     *
+     * A service that carries LoRA adapters exposes the base under one name
+     * and each adapter under another; the Playground sends the same prompt
+     * to every name so base and fine-tuned answers can be compared.
+     *
+     * @param {string} isvcName - Inference service name
+     * @returns {Promise<Object>} Standard response whose `data` is
+     *   `{ isvc_name, served_model_url, models: string[] }`
+     *
+     * @example
+     * ```typescript
+     * const res = await api.getServedModels('qwen25-coder');
+     * res.data.models; // ['Qwen/Qwen2.5-Coder-7B-Instruct', 'pulumi-lora']
+     * ```
+     */
+    getServedModels: async (isvcName: string) => {
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/models`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
+    },
+
+    /**
+     * Runs a text completion against one model name on an inference service.
+     *
+     * POST `/models-serving/{isvc_name}/completions`
+     *
+     * Proxies to the service's OpenAI-compatible completions endpoint so the
+     * browser never needs the in-cluster URL. No toast is raised on success
+     * (callers fire one per served model) nor on failure — the helper returns
+     * `null` and the caller renders the error inline.
+     *
+     * @param {string} isvcName - Inference service name
+     * @param {Object} body - Completion request
+     * @param {string} body.model - Served model name (from `getServedModels`)
+     * @param {string} body.prompt - Prompt text
+     * @param {number} [body.max_tokens] - Generation cap
+     * @param {number} [body.temperature] - Sampling temperature (0 = greedy)
+     * @param {number} [body.top_p] - Nucleus sampling cutoff
+     * @param {string[]} [body.stop] - Stop sequences
+     * @returns {Promise<Object>} Standard response whose `data` is the
+     *   OpenAI completion object (`choices[0].text`, `usage`)
+     *
+     * @example
+     * ```typescript
+     * const res = await api.postServedCompletion('qwen25-coder', {
+     *   model: 'pulumi-lora',
+     *   prompt: 'Question: Deploy nginx.\nAnswer:',
+     *   max_tokens: 700,
+     *   temperature: 0,
+     *   stop: ['Question:'],
+     * });
+     * res.data.choices[0].text;
+     * ```
+     */
+    postServedCompletion: async (
+      isvcName: string,
+      body: ServedCompletionRequest,
+    ) => {
+      return request(
+        `/models-serving/${encodeURIComponent(isvcName)}/completions`,
+        'POST',
+        body,
+        { showToast: false },
       );
     },
 
@@ -3907,18 +3999,32 @@ export const useApi = () => {
     },
 
     /**
-     * Kicks off an NTK fine-tune of an existing LLM against a JSONL dataset.
+     * Kicks off a fine-tune of an existing LLM against a JSONL dataset.
      *
-     * The kfp run trains the controller, converts it to a standard PEFT
-     * LoRA adapter (default `export: 'lora'`), and only on completion
-     * registers the `model_info(type='lora')` row — at which point the new
-     * adapter appears in the existing LoRA picker on the model-serving flow.
-     * The request itself just reserves `model_id`; no row exists until then.
+     * `method` picks the training recipe: `'ntk'` trains an NTK controller
+     * (gate scalars on a frozen base), `'lora'` trains a standard PEFT LoRA
+     * adapter (low-rank matrices on every linear layer).
+     *
+     * For `'ntk'` the kfp run trains the controller and, only on completion,
+     * registers the output row — its type follows `export`: `'ntk_model'` keeps the
+     * raw controller as a `model_info(type='ntk_controller')` row that the
+     * serving flow attaches exactly via `llm_adapter`, while `'lora'`
+     * converts it to a standard PEFT adapter registered as
+     * `model_info(type='lora')` for the stock vLLM LoRA path. Either row
+     * appears in the model-serving adapter picker. For `'lora'` the export
+     * is always `'lora'` (the backend rejects `'ntk_model'`), `gates` /
+     * `max_log_gate` are ignored, and `lora_rank` (default 8) / `lora_alpha`
+     * (default 16) size the adapter. The request itself just reserves
+     * `model_id`; no row exists until the run completes.
      *
      * @param {Object} data - Fine-tune request body matching the backend
-     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` and
-     *   `export` to `'lora'` on the server; pinned hyperparams in
-     *   `hyperparams` override the recommender defaults.
+     *   `FineTuneRequest` schema. `method` defaults to `'ntk'` on the
+     *   server; the UI always sends `method` and `export` explicitly
+     *   (`'ntk'` / `'ntk_model'` by default). Pinned hyperparams in
+     *   `hyperparams` override the recommender defaults. When
+     *   `eval_dataset_id` is set the run also scores the base model before
+     *   training and the tuned model after on that held-out JSONL set and
+     *   logs perplexity/NLL plus training-cost metrics on the MLflow run.
      * @param {boolean} [runPipeline=true] - When false, the backend
      *   validates every prerequisite and reserves the output `model_id`
      *   without submitting the kfp run (no `model_info` row is created and
@@ -3933,14 +4039,28 @@ export const useApi = () => {
       data: {
         base_model_id: string;
         dataset_id: string;
+        /** Optional held-out JSONL set scored before and after training. */
+        eval_dataset_id?: string;
         output_name: string;
-        method?: 'ntk';
+        /** `'ntk'` (NTK controller, default) or `'lora'` (standard PEFT LoRA). */
+        method?: 'ntk' | 'lora';
+        /**
+         * `'ntk_model'` registers the raw controller (`type='ntk_controller'`,
+         * served exactly); `'lora'` exports a PEFT adapter (`type='lora'`).
+         * Must be `'lora'` when `method` is `'lora'`.
+         */
         export?: 'lora' | 'ntk_model';
         hyperparams?: {
+          /** NTK only; ignored for `method: 'lora'`. */
           gates?: number;
+          /** NTK only; ignored for `method: 'lora'`. */
           max_log_gate?: number;
           train_steps?: number;
           lr?: number;
+          /** LoRA only: adapter rank (int ≥ 1, default 8). */
+          lora_rank?: number;
+          /** LoRA only: scaling alpha (int ≥ 1, default 16). */
+          lora_alpha?: number;
         };
       },
       runPipeline = true,

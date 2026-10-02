@@ -2,6 +2,59 @@ import {
   apiErrorResponseSchema,
   apiResponseSchema,
 } from '~/schemas/response.schema';
+import type { ServedCompletionRequest } from '~/types/model.types';
+
+/**
+ * Canned Playground answers so the page demos end to end in mock mode. A
+ * name containing "lora" plays the fine-tuned adapter (tight Pulumi program);
+ * anything else plays the base model (chatty, generic).
+ */
+const mockServedCompletion = (body: ServedCompletionRequest) => {
+  const isAdapter = /lora|tune/i.test(body.model);
+  const text = isAdapter
+    ? [
+        'import * as k8s from "@pulumi/kubernetes";',
+        '',
+        'const ns = new k8s.core.v1.Namespace("web", {',
+        '  metadata: { name: "web" },',
+        '});',
+        '',
+        'const app = new k8s.apps.v1.Deployment("nginx", {',
+        '  metadata: { namespace: ns.metadata.name },',
+        '  spec: {',
+        '    replicas: 2,',
+        '    selector: { matchLabels: { app: "nginx" } },',
+        '    template: {',
+        '      metadata: { labels: { app: "nginx" } },',
+        '      spec: {',
+        '        containers: [{ name: "nginx", image: "nginx:1.27", ports: [{ containerPort: 80 }] }],',
+        '      },',
+        '    },',
+        '  },',
+        '});',
+        '',
+        'new k8s.core.v1.Service("nginx", {',
+        '  metadata: { namespace: ns.metadata.name },',
+        '  spec: { type: "ClusterIP", selector: { app: "nginx" }, ports: [{ port: 80 }] },',
+        '});',
+      ].join('\n')
+    : [
+        ' Sure! To deploy this you can write a Kubernetes manifest. First create',
+        'a Deployment with the image you want, then expose it with a Service.',
+        'You could also use Helm or kubectl directly. Let me know if you want',
+        'an example in YAML.',
+      ].join('\n');
+  return {
+    id: `cmpl-mock-${Date.now()}`,
+    model: body.model,
+    choices: [{ text, index: 0, finish_reason: 'stop' }],
+    usage: {
+      prompt_tokens: Math.ceil(body.prompt.length / 4),
+      completion_tokens: Math.ceil(text.length / 4),
+      total_tokens: Math.ceil((body.prompt.length + text.length) / 4),
+    },
+  };
+};
 import type { WorkgroupEnvInfo } from '~/types/api.types';
 
 /**
@@ -1463,36 +1516,6 @@ export const useApiWithMock = () => {
         });
       }
       return request(`/training-builder-components`);
-    },
-
-    /**
-     * Mirrors the real `getWorkgroupEnvInfo`. Without it the mock wrapper — a
-     * plain object with no fallthrough to the real API — would leave the method
-     * undefined, and `useCurrentUser` would fail right after the header lookup.
-     *
-     * The namespace is derived from the mock user so demo mode stays coherent.
-     */
-    getWorkgroupEnvInfo: async (): Promise<WorkgroupEnvInfo> => {
-      if (mock.value.enabled) {
-        await mockDelay(100);
-        const json = await import('~/mocks/get.workgroup-env-info.json');
-        const envInfo = (json.default ?? json) as WorkgroupEnvInfo;
-        const email = mock.value.user.email;
-        return {
-          ...envInfo,
-          user: email,
-          namespaces: envInfo.namespaces.map((n) => ({ ...n, user: email })),
-        };
-      }
-      // Unreachable in practice; kept correct rather than throwing, matching
-      // the other direct-KFP fallbacks in this file.
-      const apiRuns = String(config.public.apiRuns || '');
-      const res = await fetch(
-        `${new URL(apiRuns).origin}/api/workgroup/env-info`,
-        { headers: getHeaders() },
-      );
-      if (!res.ok) throw new Error(`env-info failed: ${res.status}`);
-      return (await res.json()) as WorkgroupEnvInfo;
     },
 
     getHeaders: async () => {

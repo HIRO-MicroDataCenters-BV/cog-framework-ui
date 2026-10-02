@@ -5,8 +5,8 @@
         <DialogHeader>
           <DialogTitle>Serve model</DialogTitle>
           <DialogDescription>
-            Deploy a classical model artifact or an LLM from the Hugging Face
-            Hub.
+            Deploy a classical model artifact, or an LLM from the Hugging Face
+            Hub or the model catalog (optionally with a fine-tuned adapter).
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +171,50 @@
         <template v-else>
           <SectionHeader title="Basics" />
           <div class="space-y-3">
-            <FieldRow label="Hugging Face model ID" required>
+            <!-- Where the weights come from: a raw Hugging Face id, or a
+                 catalog LLM row (which may carry a fine-tuned adapter: an
+                 exact NTK controller or a LoRA approximation). -->
+            <FieldRow label="Model source">
+              <div
+                class="inline-flex h-8 items-stretch rounded-md border border-border bg-muted/40 p-0.5 text-xs"
+                role="radiogroup"
+                aria-label="Model source"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  :aria-checked="llm.source === 'hf'"
+                  :class="[
+                    'rounded px-3 font-medium transition-colors cursor-pointer',
+                    llm.source === 'hf'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  ]"
+                  @click="setLlmSource('hf')"
+                >
+                  Hugging Face id
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  :aria-checked="llm.source === 'catalog'"
+                  :class="[
+                    'rounded px-3 font-medium transition-colors cursor-pointer',
+                    llm.source === 'catalog'
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  ]"
+                  @click="setLlmSource('catalog')"
+                >
+                  From catalog
+                </button>
+              </div>
+            </FieldRow>
+            <FieldRow
+              v-if="llm.source === 'hf'"
+              label="Hugging Face model ID"
+              required
+            >
               <Input
                 v-model="llm.hf_model_id"
                 placeholder="e.g. Qwen/Qwen2.5-Coder-7B-Instruct"
@@ -180,6 +223,91 @@
                 Format: <code class="font-mono">org/model</code>
               </p>
             </FieldRow>
+            <template v-else>
+              <!-- Short id suffix disambiguates duplicate catalog names that
+                   share one hf_model_id; SelectValue mirrors the item text,
+                   so the trigger shows the same suffix once picked. -->
+              <FieldRow label="Base LLM" required>
+                <Select v-model="llm.base_model_id">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Select a catalog LLM" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="m in baseLlms" :key="m.id" :value="m.id">
+                      {{ m.name }} ({{ m.hf_model_id }}) ·
+                      {{ m.id.slice(0, 8) }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p
+                  v-if="catalogLoading"
+                  class="text-[11px] text-muted-foreground mt-1"
+                >
+                  Loading catalog…
+                </p>
+                <p
+                  v-else-if="catalogLoaded && baseLlms.length === 0"
+                  class="text-[11px] text-muted-foreground mt-1"
+                >
+                  No LLM rows with a Hugging Face id in the catalog yet.
+                </p>
+              </FieldRow>
+              <FieldRow :label="t('label.fine_tuned_adapter')">
+                <Select v-model="llm.adapter_model_id">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="None (serve the base only)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-if="adapters.length" :value="NO_ADAPTER">
+                      None (serve the base only)
+                    </SelectItem>
+                    <SelectItem v-for="a in adapters" :key="a.id" :value="a.id">
+                      {{ a.name }} ({{ t(adapterKindLabelKey(a)) }})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p class="text-[11px] text-muted-foreground mt-1">
+                  <template v-if="!llm.base_model_id">
+                    Pick a base LLM first; only adapters trained on it are
+                    listed.
+                  </template>
+                  <template v-else-if="adapters.length === 0">
+                    No fine-tuned adapters for this base yet.
+                  </template>
+                  <template v-else-if="adapterKind === 'ntk_model'">
+                    {{ t('hint.serve_adapter_ntk') }}
+                  </template>
+                  <template v-else-if="adapterKind === 'lora'">
+                    {{ t('hint.serve_adapter_lora') }}
+                  </template>
+                  <template v-else>
+                    {{ t('hint.serve_adapter_pick') }}
+                  </template>
+                </p>
+              </FieldRow>
+              <FieldRow v-if="hasLoraAdapter" label="Max LoRA rank">
+                <Input
+                  v-model="maxLoraRankModel"
+                  type="number"
+                  min="1"
+                  max="512"
+                  step="1"
+                  placeholder="e.g. 64"
+                  :aria-invalid="!isValidMaxLoraRank"
+                />
+                <p
+                  v-if="!isValidMaxLoraRank"
+                  class="text-[11px] text-destructive flex items-center gap-1 mt-1"
+                >
+                  <Icon name="lucide:alert-circle" class="w-3 h-3" />
+                  Must be a whole number between 1 and 512.
+                </p>
+                <p v-else class="text-[11px] text-muted-foreground mt-1">
+                  Must be at least the adapter's lora_rank metric; power of two
+                  up to 512.
+                </p>
+              </FieldRow>
+            </template>
             <FieldRow label="Service name">
               <Input
                 v-model="llm.isvc_name"
@@ -222,7 +350,7 @@
                   size="sm"
                   class="h-9 px-3 text-xs cursor-pointer"
                   :disabled="
-                    !llm.hf_model_id.trim() ||
+                    !effectiveHfModelId ||
                     typeof llm.concurrent_users !== 'number' ||
                     llm.concurrent_users < 1 ||
                     isAutofilling
@@ -448,6 +576,8 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { useApi } from '@/composables/api';
+import { sanitizeIsvcName } from '~/utils/sanitizeIsvcName';
+import type { LlmAdapterSpec } from '~/types/model.types';
 
 type Mode = 'classical' | 'llm';
 
@@ -457,8 +587,54 @@ const emit = defineEmits<{
   (e: 'created'): void;
 }>();
 
-const { postModelServing, recommendModelServing } = useApi();
+const { postModelServing, recommendModelServing, getModels } = useApi();
 const toaster = useToaster();
+const { t } = useI18n();
+
+/** Where an LLM's weights come from: a raw HF id or a catalog `llm` row. */
+type LlmSource = 'hf' | 'catalog';
+
+/** Subset of a `/models` row the catalog pickers need. */
+type CatalogModel = {
+  id: string;
+  name: string;
+  type?: string;
+  hf_model_id?: string | null;
+  /**
+   * Set on adapter rows (`lora` / `ntk_controller`): the catalog id of the
+   * LLM the adapter was trained on.
+   */
+  base_model_id?: string | null;
+};
+
+/**
+ * How an adapter row is attached to its base: a `lora` row rides on stock
+ * vLLM via `lora_model_ids`; an `ntk_controller` row is served exactly on
+ * the NTK runtime via `llm_adapter: { kind: 'ntk_model' }`.
+ */
+type AdapterKind = 'lora' | 'ntk_model';
+
+const ADAPTER_KIND_BY_TYPE: Record<string, AdapterKind> = {
+  lora: 'lora',
+  ntk_controller: 'ntk_model',
+};
+
+const isAdapterRow = (m: CatalogModel) =>
+  !!m.type && m.type in ADAPTER_KIND_BY_TYPE;
+
+/** Picker suffix so the two adapter kinds are told apart at a glance. */
+const adapterKindLabelKey = (m: CatalogModel) =>
+  ADAPTER_KIND_BY_TYPE[m.type ?? ''] === 'ntk_model'
+    ? 'label.adapter_kind_ntk'
+    : 'label.adapter_kind_lora';
+
+// Sentinel for the adapter picker's "none" row: reka-ui's Select cannot
+// select an empty-string item, so a real value stands in and maps to "no
+// adapter" everywhere else.
+const NO_ADAPTER = '__none__';
+
+/** vLLM's `--max-lora-rank` ceiling. */
+const MAX_LORA_RANK_LIMIT = 512;
 
 const mode = ref<Mode>('classical');
 const isSubmitting = ref(false);
@@ -478,9 +654,15 @@ const blankClassical = () => ({
 });
 
 const blankLlm = () => ({
+  source: 'hf' as LlmSource,
   isvc_name: '',
   served_model_name: '',
   hf_model_id: '',
+  base_model_id: '',
+  // Catalog id of the chosen adapter row (either kind); '' or NO_ADAPTER
+  // means "serve the base only".
+  adapter_model_id: '',
+  max_lora_rank: undefined as number | undefined,
   hf_token: '',
   dtype: '',
   max_model_len: undefined as number | undefined,
@@ -512,6 +694,151 @@ const blankLlm = () => ({
 const classical = reactive(blankClassical());
 const llm = reactive(blankLlm());
 
+// Catalog rows for the "From catalog" source, fetched lazily the first time
+// that source is picked (most serves are plain HF ids and never need them).
+const catalogModels = ref<CatalogModel[]>([]);
+const catalogLoading = ref(false);
+const catalogLoaded = ref(false);
+// Monotonic token so a slow load from a previous open can't apply after reset.
+let catalogLoadId = 0;
+
+const loadCatalog = async () => {
+  const loadId = ++catalogLoadId;
+  catalogLoading.value = true;
+  try {
+    // getModels has no type filter — fetch a page and narrow client-side.
+    const res = await getModels({ limit: 200 });
+    if (loadId !== catalogLoadId) return;
+    catalogModels.value = ((res?.data || []) as CatalogModel[]).filter(
+      (m) => !!m?.id,
+    );
+    catalogLoaded.value = true;
+  } catch (err) {
+    if (loadId !== catalogLoadId) return;
+    console.error('Failed to load model catalog', err);
+  } finally {
+    if (loadId === catalogLoadId) catalogLoading.value = false;
+  }
+};
+
+const baseLlms = computed(() =>
+  catalogModels.value.filter((m) => m.type === 'llm' && !!m.hf_model_id),
+);
+
+const selectedBase = computed(() =>
+  baseLlms.value.find((m) => m.id === llm.base_model_id),
+);
+
+// Adapters are only meaningful on the base they were trained against.
+const adapters = computed(() =>
+  llm.base_model_id
+    ? catalogModels.value.filter(
+        (m) => isAdapterRow(m) && m.base_model_id === llm.base_model_id,
+      )
+    : [],
+);
+
+const hasAdapter = computed(
+  () => !!llm.adapter_model_id && llm.adapter_model_id !== NO_ADAPTER,
+);
+
+const selectedAdapter = computed(() =>
+  hasAdapter.value
+    ? adapters.value.find((a) => a.id === llm.adapter_model_id)
+    : undefined,
+);
+
+// Which serving path the chosen adapter takes; null when none is chosen.
+const adapterKind = computed<AdapterKind | null>(() =>
+  selectedAdapter.value
+    ? (ADAPTER_KIND_BY_TYPE[selectedAdapter.value.type ?? ''] ?? null)
+    : null,
+);
+
+// Only the LoRA path has a rank knob; the NTK controller is applied exactly.
+const hasLoraAdapter = computed(() => adapterKind.value === 'lora');
+
+// The HF id the recommender should size for, whichever source is active.
+const effectiveHfModelId = computed(() =>
+  llm.source === 'hf'
+    ? llm.hf_model_id.trim()
+    : (selectedBase.value?.hf_model_id ?? '').trim(),
+);
+
+// Optional; when present it must be a whole number vLLM will accept.
+// The shared Input emits raw strings and ignores the ``.number`` modifier,
+// so coerce here: empty -> undefined, otherwise a number (NaN stays a
+// number and fails ``isValidMaxLoraRank``, which keeps Serve disabled).
+const maxLoraRankModel = computed<string | number>({
+  get: () => llm.max_lora_rank ?? '',
+  set: (v) => {
+    llm.max_lora_rank =
+      v === '' || v === null || v === undefined ? undefined : Number(v);
+  },
+});
+
+const isValidMaxLoraRank = computed(
+  () =>
+    llm.max_lora_rank === undefined ||
+    llm.max_lora_rank === null ||
+    (typeof llm.max_lora_rank === 'number' &&
+      Number.isInteger(llm.max_lora_rank) &&
+      llm.max_lora_rank >= 1 &&
+      llm.max_lora_rank <= MAX_LORA_RANK_LIMIT),
+);
+
+const setLlmSource = (next: LlmSource) => {
+  llm.source = next;
+  if (next === 'catalog' && !catalogLoaded.value && !catalogLoading.value) {
+    void loadCatalog();
+  }
+};
+
+// Track the service name the dialog derived itself so a user-typed name is
+// never overwritten, while an auto-derived one follows the catalog selection.
+let derivedIsvcName = '';
+
+// Derive the service name from the catalog selection (the backend derives it
+// from hf_model_id only in HF mode, and a catalog payload carries none). An
+// adapter names the service when one is chosen — the demo serves the base
+// and the fine-tuned model one after the other on the same GPU, so the two
+// services must not collide — otherwise the base row does.
+const applyDerivedIsvcName = () => {
+  const source = selectedAdapter.value ?? selectedBase.value;
+  if (!source) return;
+  const current = llm.isvc_name.trim();
+  if (current && current !== derivedIsvcName) return;
+  const sanitized = sanitizeIsvcName(source.name);
+  derivedIsvcName = sanitized ? `${sanitized}-serving` : '';
+  llm.isvc_name = derivedIsvcName;
+};
+
+watch(
+  () => llm.base_model_id,
+  (baseId) => {
+    // An adapter belongs to exactly one base — drop it on base change.
+    if (
+      hasAdapter.value &&
+      !adapters.value.some((a) => a.id === llm.adapter_model_id)
+    ) {
+      llm.adapter_model_id = '';
+    }
+    if (!baseId) return;
+    applyDerivedIsvcName();
+  },
+);
+
+watch(
+  () => llm.adapter_model_id,
+  () => {
+    applyDerivedIsvcName();
+  },
+);
+
+watch(hasLoraAdapter, (present) => {
+  if (!present) llm.max_lora_rank = undefined;
+});
+
 const ISVC_REGEX = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 const isValidIsvcName = (name: string) => ISVC_REGEX.test(name.trim());
 
@@ -533,8 +860,11 @@ const isValid = computed(() => {
         isValidJson(classical.transformer_parameters_json))
     );
   }
+  const hasWeights =
+    llm.source === 'hf' ? !!llm.hf_model_id.trim() : !!llm.base_model_id;
   return (
-    !!llm.hf_model_id.trim() &&
+    hasWeights &&
+    isValidMaxLoraRank.value &&
     (!llm.isvc_name.trim() || isValidIsvcName(llm.isvc_name))
   );
 });
@@ -623,7 +953,7 @@ const recommendForUsers = (users: number): RecommendedSettings => {
 
 const autofillModelSettings = async () => {
   const users = llm.concurrent_users;
-  const hfModelId = llm.hf_model_id.trim();
+  const hfModelId = effectiveHfModelId.value;
   if (!hfModelId || typeof users !== 'number' || users < 1) return;
 
   autofillError.value = null;
@@ -703,6 +1033,13 @@ const resetState = () => {
   mode.value = 'classical';
   isSubmitting.value = false;
   autofillError.value = null;
+  // Invalidate any in-flight catalog load and force a fresh fetch next time,
+  // so a newly registered adapter shows up on reopen.
+  catalogLoadId += 1;
+  catalogModels.value = [];
+  catalogLoading.value = false;
+  catalogLoaded.value = false;
+  derivedIsvcName = '';
 };
 
 watch(
@@ -732,8 +1069,17 @@ type ClassicalPayload = {
   lora_model_ids?: string[];
 };
 
+// Exactly one of `hf_model_id` / `model_id` is sent (the backend rejects
+// both or neither). Adapter keys only ride along with the catalog form, and
+// only one family at a time: `lora_model_ids` (+ `max_lora_rank`) for a
+// `lora` row, `llm_adapter` for an `ntk_controller` row — the backend rejects
+// `llm_adapter` next to `lora_model_ids`.
 type LlmPayload = {
-  hf_model_id: string;
+  hf_model_id?: string;
+  model_id?: string;
+  lora_model_ids?: string[];
+  max_lora_rank?: number;
+  llm_adapter?: LlmAdapterSpec;
   isvc_name?: string;
   served_model_name?: string;
   hf_token?: string;
@@ -787,9 +1133,22 @@ const buildClassicalPayload = (): ClassicalPayload => {
 };
 
 const buildLlmPayload = (): LlmPayload => {
-  const payload: LlmPayload = {
-    hf_model_id: llm.hf_model_id.trim(),
-  };
+  const payload: LlmPayload = {};
+  if (llm.source === 'hf') {
+    payload.hf_model_id = llm.hf_model_id.trim();
+  } else {
+    payload.model_id = llm.base_model_id;
+    if (adapterKind.value === 'ntk_model') {
+      payload.llm_adapter = {
+        kind: 'ntk_model',
+        adapter_model_id: llm.adapter_model_id,
+      };
+    } else if (adapterKind.value === 'lora') {
+      payload.lora_model_ids = [llm.adapter_model_id];
+      if (typeof llm.max_lora_rank === 'number')
+        payload.max_lora_rank = llm.max_lora_rank;
+    }
+  }
   if (llm.isvc_name.trim()) payload.isvc_name = llm.isvc_name.trim();
   if (llm.served_model_name.trim())
     payload.served_model_name = llm.served_model_name.trim();
@@ -840,11 +1199,6 @@ const submit = async () => {
   try {
     const payload =
       mode.value === 'classical' ? buildClassicalPayload() : buildLlmPayload();
-    // DEBUG: inspect request body before sending to the backend
-    console.log('[ServeModelDialog] POST /models-serving', {
-      mode: mode.value,
-      body: payload,
-    });
     await postModelServing(payload, {
       successMessage: 'model_serving_created',
     });

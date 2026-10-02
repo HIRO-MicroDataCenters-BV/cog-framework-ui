@@ -55,6 +55,15 @@ export const uselistMenus = () => {
           featureTier: 'enterprise' as EntitlementTier,
         },
         {
+          key: 'playground',
+          title: t('menu.playground'),
+          url: 'playground',
+          icon: 'lucide:messages-square',
+          items: [],
+          isActive: false,
+          minTier: 'free' as EntitlementTier,
+        },
+        {
           key: 'pipelines',
           title: t('menu.pipelines'),
           url: 'pipelines',

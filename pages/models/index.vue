@@ -115,6 +115,12 @@ const columns = [
         pyfunc: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-800 dark:text-cyan-100',
         classification:
           'bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-100',
+        // LLM catalog rows (base model, fine-tuned LoRA adapter, raw NTK
+        // controller) — same palette family so they read as one group.
+        llm: 'bg-violet-100 text-violet-700 dark:bg-violet-800 dark:text-violet-100',
+        lora: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-800 dark:text-fuchsia-100',
+        ntk_controller:
+          'bg-pink-100 text-pink-700 dark:bg-pink-800 dark:text-pink-100',
       };
       const modelTypeIcons: Record<string, string> = {
         sklearn: 'lucide:box',
@@ -125,6 +131,9 @@ const columns = [
         keras: 'lucide:box',
         pyfunc: 'lucide:box',
         classification: 'lucide:box',
+        llm: 'lucide:brain',
+        lora: 'lucide:layers',
+        ntk_controller: 'lucide:sliders-horizontal',
       };
       const classes = modelTypeBadgeClasses[value];
       if (!classes) return value || null;

@@ -3,9 +3,20 @@
  * Fine-tune launch dialog.
  *
  * Submits `POST /cogapi/models/fine-tune` against the existing
- * `FineTuneRequest` schema. Phase 1 supports the NTK method with LoRA
- * export only; the resulting `model_info(type='lora')` row appears in
- * the existing LoRA picker once the kfp run completes.
+ * `FineTuneRequest` schema. Two methods are offered:
+ *
+ * - `ntk` (default): trains an NTK controller (a few thousand gate scalars
+ *   on a frozen base). The user picks the export: `ntk_model` keeps the
+ *   raw controller as a `model_info(type='ntk_controller')` row that the
+ *   serving dialog attaches exactly via `llm_adapter`, while `lora`
+ *   converts it to a PEFT adapter (`model_info(type='lora')`) for the
+ *   stock vLLM LoRA path.
+ * - `lora`: standard PEFT LoRA training (low-rank matrices on every linear
+ *   layer). The export is always `lora` (the backend rejects `ntk_model`),
+ *   gates/max_log_gate are ignored, and `lora_rank`/`lora_alpha` apply.
+ *
+ * Either output row appears in the serving dialog's adapter picker once
+ * the run completes.
  *
  * Hyperparam knobs are filled by `POST /cogapi/fine-tune/recommend`
  * when a base model is selected: the recommended gates/max_log_gate/
@@ -49,6 +60,31 @@ interface DatasetOption {
   train_and_inference_type?: number;
 }
 
+/** Backend `FineTuneRequest.method` values. */
+type FineTuneMethod = 'ntk' | 'lora';
+
+/** Backend `FineTuneRequest.export` values. */
+type FineTuneExport = 'ntk_model' | 'lora';
+
+/** Method picker rows; `labelKey` resolves under `label.*`. */
+const METHOD_OPTIONS: Array<{ value: FineTuneMethod; labelKey: string }> = [
+  { value: 'ntk', labelKey: 'label.method_ntk' },
+  { value: 'lora', labelKey: 'label.method_lora' },
+];
+
+// Per-method learning-rate default. Applied on method switch unless the
+// user has already edited the field (see `lrTouched`).
+const DEFAULT_LR: Record<FineTuneMethod, number> = {
+  ntk: 0.005,
+  lora: 0.0002,
+};
+
+/** Export picker rows; `labelKey` resolves under `label.*`. */
+const EXPORT_OPTIONS: Array<{ value: FineTuneExport; labelKey: string }> = [
+  { value: 'ntk_model', labelKey: 'label.export_ntk_model' },
+  { value: 'lora', labelKey: 'label.export_lora' },
+];
+
 const props = defineProps<{
   open: boolean;
 }>();
@@ -72,15 +108,45 @@ const loadingPickers = ref(false);
 const form = ref({
   base_model_id: '',
   dataset_id: '',
+  // Optional held-out JSONL dataset; the backend evaluates the exported
+  // adapter against it and logs the metrics on the MLflow run.
+  eval_dataset_id: '',
   output_name: '',
+  // Training recipe: NTK controller (default) or standard PEFT LoRA.
+  method: 'ntk' as FineTuneMethod,
+  // What the run registers: the exact NTK controller (default) or a LoRA
+  // approximation of it. Only meaningful for `method: 'ntk'`; the LoRA
+  // method always exports `lora`.
+  export: 'ntk_model' as FineTuneExport,
   gates: 5000,
   max_log_gate: 0.05,
   train_steps: 240,
-  lr: 0.005,
+  lr: DEFAULT_LR.ntk,
+  // LoRA-only knobs (PEFT defaults).
+  lora_rank: 8,
+  lora_alpha: 16,
 });
 
 const submitting = ref(false);
 const recommending = ref(false);
+
+// True once the user has typed into the learning-rate field. A method switch
+// only overwrites `lr` with that method's default while this is false, so an
+// explicit user value survives toggling NTK <-> LoRA.
+const lrTouched = ref(false);
+
+const isLora = computed(() => form.value.method === 'lora');
+
+// The eval picker offers the same JSONL rows as the training picker, minus
+// the one currently chosen for training — evaluating on the training set
+// would only measure memorisation.
+const evalDatasets = computed(() =>
+  datasets.value.filter((d) => d.id !== form.value.dataset_id),
+);
+
+// Sentinel for the eval picker's "none" row: reka-ui's Select cannot select
+// an empty-string item, so a real value stands in and maps to '' on submit.
+const NO_EVAL_DATASET = '__none__';
 
 // Coerce-then-validate a knob. The custom Input wrapper emits raw strings
 // (it doesn't implement modelModifiers, so `v-model.number` would be a no-op),
@@ -95,15 +161,25 @@ const isValidKnob = (value: unknown, min: number, max = Infinity) => {
   return Number.isFinite(n) && n >= min && n <= max;
 };
 
+// LoRA rank/alpha must be positive integers (the backend types them as int).
+const isValidIntKnob = (value: unknown, min: number) =>
+  isValidKnob(value, min) && Number.isInteger(Number(value));
+
+// Only the knobs shown for the current method gate submit: gates/max_log_gate
+// are hidden (and ignored by the backend) under LoRA, rank/alpha under NTK.
 const canSubmit = computed(
   () =>
     !!form.value.base_model_id &&
     !!form.value.dataset_id &&
     form.value.output_name.trim().length > 0 &&
-    isValidKnob(form.value.gates, 1) &&
-    isValidKnob(form.value.max_log_gate, 0.001, 1) &&
+    (isLora.value ||
+      (isValidKnob(form.value.gates, 1) &&
+        isValidKnob(form.value.max_log_gate, 0.001, 1))) &&
     isValidKnob(form.value.train_steps, 1) &&
-    isValidKnob(form.value.lr, 0.0001, 1),
+    isValidKnob(form.value.lr, 0.0001, 1) &&
+    (!isLora.value ||
+      (isValidIntKnob(form.value.lora_rank, 1) &&
+        isValidIntKnob(form.value.lora_alpha, 1))),
 );
 
 // Surface *why* "Launch" is disabled: name the first unmet requirement so the
@@ -114,13 +190,22 @@ const validationHint = computed(() => {
   if (!form.value.dataset_id) return t('hint.fine_tune_select_dataset');
   if (form.value.output_name.trim().length === 0)
     return t('hint.fine_tune_enter_name');
-  if (!isValidKnob(form.value.gates, 1)) return t('hint.fine_tune_gates_range');
-  if (!isValidKnob(form.value.max_log_gate, 0.001, 1))
-    return t('hint.fine_tune_max_log_gate_range');
+  if (!isLora.value) {
+    if (!isValidKnob(form.value.gates, 1))
+      return t('hint.fine_tune_gates_range');
+    if (!isValidKnob(form.value.max_log_gate, 0.001, 1))
+      return t('hint.fine_tune_max_log_gate_range');
+  }
   if (!isValidKnob(form.value.train_steps, 1))
     return t('hint.fine_tune_steps_range');
   if (!isValidKnob(form.value.lr, 0.0001, 1))
     return t('hint.fine_tune_lr_range');
+  if (isLora.value) {
+    if (!isValidIntKnob(form.value.lora_rank, 1))
+      return t('hint.fine_tune_lora_rank_range');
+    if (!isValidIntKnob(form.value.lora_alpha, 1))
+      return t('hint.fine_tune_lora_alpha_range');
+  }
   return '';
 });
 
@@ -219,24 +304,51 @@ const fillFromRecommender = async () => {
   }
 };
 
+// NTK-only knobs are hidden and ignored by the backend under LoRA; send the
+// schema defaults so a stale edit can never violate the NTK bounds.
+const NTK_DEFAULTS = { gates: 5000, max_log_gate: 0.05 } as const;
+
 const handleSubmit = async () => {
   if (!canSubmit.value || submitting.value) return;
   submitting.value = true;
   try {
+    const lora = isLora.value;
+    const evalDatasetId =
+      form.value.eval_dataset_id &&
+      form.value.eval_dataset_id !== NO_EVAL_DATASET
+        ? form.value.eval_dataset_id
+        : '';
     const resp = await createFineTune({
       base_model_id: form.value.base_model_id,
       dataset_id: form.value.dataset_id,
+      // Omit the key entirely when no eval set was picked: the backend treats
+      // `eval_dataset_id` as optional and must not receive an empty string.
+      ...(evalDatasetId ? { eval_dataset_id: evalDatasetId } : {}),
       output_name: form.value.output_name.trim(),
-      method: 'ntk',
-      export: 'lora',
+      method: form.value.method,
+      // The LoRA method only ever produces a PEFT adapter; the backend
+      // rejects `ntk_model` there, so the export picker is hidden and the
+      // value forced.
+      export: lora ? 'lora' : form.value.export,
       // Coerce to numbers: the custom Input wrapper emits raw strings, so an
       // edited field can hold a string. Guarantee a numeric payload (and
       // avoid tripping strict backend validation).
       hyperparams: {
-        gates: Number(form.value.gates),
-        max_log_gate: Number(form.value.max_log_gate),
+        // Under LoRA these two are hidden, unvalidated and ignored by the
+        // backend, but the schema still wants numbers — fall back to the
+        // static defaults if a stale NTK edit left them non-finite.
+        gates: lora ? NTK_DEFAULTS.gates : Number(form.value.gates),
+        max_log_gate: lora
+          ? NTK_DEFAULTS.max_log_gate
+          : Number(form.value.max_log_gate),
         train_steps: Number(form.value.train_steps),
         lr: Number(form.value.lr),
+        ...(lora
+          ? {
+              lora_rank: Number(form.value.lora_rank),
+              lora_alpha: Number(form.value.lora_alpha),
+            }
+          : {}),
       },
     });
     const data = resp?.data;
@@ -263,12 +375,18 @@ const resetForm = () => {
   form.value = {
     base_model_id: '',
     dataset_id: '',
+    eval_dataset_id: '',
     output_name: '',
+    method: 'ntk',
+    export: 'ntk_model',
     gates: 5000,
     max_log_gate: 0.05,
     train_steps: 240,
-    lr: 0.005,
+    lr: DEFAULT_LR.ntk,
+    lora_rank: 8,
+    lora_alpha: 16,
   };
+  lrTouched.value = false;
 };
 
 watch(
@@ -300,6 +418,27 @@ watch(
 );
 
 watch(() => form.value.base_model_id, fillFromRecommender);
+
+// Each method has its own sensible learning rate (NTK 0.005, LoRA 0.0002).
+// Switching applies the new method's default unless the user has typed a
+// value themselves, in which case their choice is kept.
+watch(
+  () => form.value.method,
+  (method) => {
+    if (!lrTouched.value) form.value.lr = DEFAULT_LR[method];
+  },
+);
+
+// Picking the eval set as the training set (or vice versa) would silently
+// hand the backend the same id twice — drop the eval choice instead.
+watch(
+  () => form.value.dataset_id,
+  (trainingId) => {
+    if (trainingId && form.value.eval_dataset_id === trainingId) {
+      form.value.eval_dataset_id = '';
+    }
+  },
+);
 </script>
 
 <template>
@@ -315,7 +454,10 @@ watch(() => form.value.base_model_id, fillFromRecommender);
       </div>
 
       <div class="px-6 pb-4 space-y-4">
-        <!-- Base model picker (LLM rows with hf_model_id only). -->
+        <!-- Base model picker (LLM rows with hf_model_id only). The short
+             id suffix disambiguates duplicate catalog names sharing one
+             hf_model_id; SelectValue mirrors the item text, so the trigger
+             shows the same suffix for the picked row. -->
         <div class="space-y-2">
           <Label for="ft-base-model">{{ t('label.base_llm') }}</Label>
           <Select v-model="form.base_model_id">
@@ -324,7 +466,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="m in baseModels" :key="m.id" :value="m.id">
-                {{ m.name }} ({{ m.hf_model_id }})
+                {{ m.name }} ({{ m.hf_model_id }}) · {{ m.id.slice(0, 8) }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -359,6 +501,29 @@ watch(() => form.value.base_model_id, fillFromRecommender);
           </p>
         </div>
 
+        <!-- Optional held-out eval dataset (JSONL, excludes the training set). -->
+        <div class="space-y-2">
+          <Label for="ft-eval-dataset">{{ t('label.eval_dataset') }}</Label>
+          <Select v-model="form.eval_dataset_id">
+            <SelectTrigger id="ft-eval-dataset" class="w-full">
+              <SelectValue
+                :placeholder="t('placeholder.select_eval_dataset')"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-if="evalDatasets.length" :value="NO_EVAL_DATASET">
+                {{ t('label.none') }}
+              </SelectItem>
+              <SelectItem v-for="d in evalDatasets" :key="d.id" :value="d.id">
+                {{ d.dataset_name || d.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-sm text-muted-foreground">
+            {{ t('hint.fine_tune_eval_dataset') }}
+          </p>
+        </div>
+
         <div class="space-y-2">
           <Label for="ft-output-name">{{
             t('label.output_adapter_name')
@@ -368,6 +533,54 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             v-model="form.output_name"
             :placeholder="t('placeholder.output_adapter_name')"
           />
+        </div>
+
+        <!-- Method: NTK controller (default) or standard PEFT LoRA. Drives
+             which export/knob fields are shown below. -->
+        <div class="space-y-2">
+          <Label for="ft-method">{{ t('label.method') }}</Label>
+          <Select v-model="form.method">
+            <SelectTrigger id="ft-method" class="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in METHOD_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ t(opt.labelKey) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-sm text-muted-foreground">
+            {{ t('hint.fine_tune_method') }}
+          </p>
+        </div>
+
+        <!-- Export (NTK only): both train the same NTK controller;
+             `ntk_model` keeps it exact, `lora` converts the result to an
+             approximate adapter. The LoRA method always exports `lora`, so
+             the picker is hidden there. -->
+        <div v-if="!isLora" class="space-y-2">
+          <Label for="ft-export">{{ t('label.export') }}</Label>
+          <Select v-model="form.export">
+            <SelectTrigger id="ft-export" class="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in EXPORT_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ t(opt.labelKey) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p class="text-sm text-muted-foreground">
+            {{ t('hint.fine_tune_export') }}
+          </p>
         </div>
 
         <!-- Hyperparams; pre-filled from the recommender when a base
@@ -380,7 +593,9 @@ watch(() => form.value.base_model_id, fillFromRecommender);
             <Spinner v-if="recommending" class="size-3" />
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <div class="space-y-1">
+            <!-- Gates / max log gate are NTK-only; the backend ignores them
+                 for LoRA. -->
+            <div v-if="!isLora" class="space-y-1">
               <Label for="ft-gates" class="text-xs">{{
                 t('label.gates')
               }}</Label>
@@ -392,7 +607,7 @@ watch(() => form.value.base_model_id, fillFromRecommender);
                 step="1"
               />
             </div>
-            <div class="space-y-1">
+            <div v-if="!isLora" class="space-y-1">
               <Label for="ft-max-log-gate" class="text-xs">
                 {{ t('label.max_log_gate') }}
               </Label>
@@ -428,8 +643,36 @@ watch(() => form.value.base_model_id, fillFromRecommender);
                 step="0.0001"
                 min="0.0001"
                 max="1"
+                @update:model-value="lrTouched = true"
               />
             </div>
+            <!-- LoRA-only adapter shape (PEFT defaults r=8, alpha=16). -->
+            <template v-if="isLora">
+              <div class="space-y-1">
+                <Label for="ft-lora-rank" class="text-xs">{{
+                  t('label.lora_rank')
+                }}</Label>
+                <Input
+                  id="ft-lora-rank"
+                  v-model="form.lora_rank"
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="ft-lora-alpha" class="text-xs">{{
+                  t('label.lora_alpha')
+                }}</Label>
+                <Input
+                  id="ft-lora-alpha"
+                  v-model="form.lora_alpha"
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
+            </template>
           </div>
         </div>
       </div>

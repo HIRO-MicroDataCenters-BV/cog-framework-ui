@@ -133,6 +133,7 @@ export default defineI18nConfig(() => ({
         restore_run: 'Restore run',
         fine_tune: 'Fine-tune an LLM',
         fine_tune_empty: 'No fine-tune runs to show',
+        playground: 'Playground',
       },
       alert: {
         delete_dataset:
@@ -180,11 +181,13 @@ export default defineI18nConfig(() => ({
         edit_model_serving: 'Update traffic percentage for {name}',
         logs_unavailable: 'Logs are not available for this component',
         fine_tune:
-          'Train a parameter-efficient LoRA adapter on an existing LLM via the NTK fine-tune method. Cheap to train, serves on the standard LoRA path.',
+          'Train an NTK controller on an existing LLM. Cheap to train; serve it exactly on the NTK runtime or export a LoRA adapter for the standard vLLM path.',
         fine_tune_dialog:
-          'Train an ntkmirror controller over a JSONL dataset; the result is exported as a standard LoRA adapter and appears in the existing model-serving picker once the run completes.',
+          'Train an ntkmirror controller over a JSONL dataset; the result is registered as an exact NTK controller or exported as a LoRA adapter and appears in the model-serving adapter picker once the run completes.',
         fine_tune_empty:
-          'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting LoRA adapter will appear in the model-serving picker once the run completes.',
+          'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting controller or adapter will appear in the model-serving picker once the run completes.',
+        playground:
+          'Send one request to every model an inference service exposes and compare the answers side by side.',
       },
       builder: {
         components: 'Components',
@@ -355,12 +358,41 @@ export default defineI18nConfig(() => ({
         test_connection: 'Test Connection',
         base_llm: 'Base LLM',
         jsonl_dataset: 'JSONL dataset',
+        // Dataset type 5 (DatasetTypeEnum.JSONL): upload-dialog option and
+        // the detail page's `label.${type}` lookup.
+        jsonl_fine_tune: 'JSONL (fine-tune)',
+        jsonl: 'JSONL',
+        eval_dataset: 'Evaluation dataset (JSONL, held out)',
+        none: 'None',
+        inference_service: 'Inference service',
+        served_models: 'Served models',
+        request: 'Request',
+        examples: 'Examples',
+        wrap_qa: 'Wrap as Question/Answer',
+        advanced: 'Advanced',
+        max_tokens: 'Max tokens',
+        temperature: 'Temperature',
+        latency: 'Latency',
+        completion_tokens: 'Completion tokens',
         output_adapter_name: 'Output adapter name',
+        method: 'Method',
+        method_ntk: 'NTK controller (5,000 gates, ~100 KB)',
+        method_lora: 'Standard LoRA (PEFT adapter)',
+        export: 'Export',
+        export_ntk_model: 'NTK controller (exact)',
+        export_lora: 'NTK controller exported as a LoRA adapter (approximate)',
+        fine_tuned_adapter: 'Fine-tuned adapter',
+        adapter_kind_ntk: 'NTK, exact',
+        adapter_kind_lora: 'LoRA',
+        pinned: 'Pinned',
+        pinned_at: 'Pinned at',
         training_knobs: 'Training knobs',
         gates: 'Gates',
         max_log_gate: 'Max log gate',
         steps: 'Steps',
         learning_rate: 'Learning rate',
+        lora_rank: 'Rank',
+        lora_alpha: 'Alpha',
       },
       label_subtitle: {
         file: 'Upload a local or remote file (e.g., CSV, Excel).',
@@ -417,7 +449,11 @@ export default defineI18nConfig(() => ({
         select_type: 'Select type',
         select_llm: 'Select an LLM...',
         select_jsonl_dataset: 'Select a JSONL dataset...',
+        select_eval_dataset: 'Optional: select a held-out JSONL dataset...',
         output_adapter_name: 'e.g. qwen-math-lora-v1',
+        select_inference_service: 'Select an inference service...',
+        playground_request:
+          'Describe what you want deployed, e.g. "Deploy nginx:1.27 on port 80 with 2 replicas in namespace web."',
       },
       theme: {
         dark: 'Dark',
@@ -484,6 +520,10 @@ export default defineI18nConfig(() => ({
         add_fine_tune: 'New fine-tune',
         start_fine_tune: 'Start a fine-tune',
         launch_fine_tune: 'Launch fine-tune',
+        ask: 'Ask',
+        pin: 'Pin',
+        unpin: 'Unpin',
+        clear_pinned: 'Clear pinned',
       },
       share: {
         title: 'Share Dataset',
@@ -588,6 +628,32 @@ export default defineI18nConfig(() => ({
           'Max log gate must be between 0.001 and 1.',
         fine_tune_steps_range: 'Steps must be a number ≥ 1.',
         fine_tune_lr_range: 'Learning rate must be between 0.0001 and 1.',
+        fine_tune_lora_rank_range: 'Rank must be a whole number ≥ 1.',
+        fine_tune_lora_alpha_range: 'Alpha must be a whole number ≥ 1.',
+        fine_tune_eval_dataset:
+          'Optional. The exported adapter is scored on this set after training and the metrics are logged on the run.',
+        fine_tune_method:
+          'NTK trains a few thousand gate scalars on a frozen base; LoRA trains low-rank matrices on every linear layer. Both are scored on the held-out set so the model pages can be compared.',
+        fine_tune_export:
+          "Both options train the same NTK controller (the gate count set below). 'Exact' is served natively on the NTK runtime; the LoRA export can attach next to the base on a stock vLLM service but approximates the effect.",
+        serve_adapter_pick:
+          'Optional: pick a fine-tuned adapter to serve on top of the base, or leave empty to serve the base only.',
+        serve_adapter_ntk:
+          'The NTK controller is applied exactly on top of the base on the NTK runtime, as its own service.',
+        serve_adapter_lora:
+          'The LoRA adapter is attached on top of the base and served as a second model name on the same service; it approximates the fine-tune.',
+        playground_none_ready:
+          'No service is ready yet — showing every service; requests may fail until one becomes ready.',
+        playground_no_services:
+          'No inference services found. Serve a model first.',
+        playground_select_service:
+          'Select a service to load the model names it exposes.',
+        playground_no_models: 'This service exposes no model names.',
+        playground_request_failed:
+          'Request failed. Check the service status and try again.',
+        playground_waiting: 'Waiting for the answer…',
+        playground_pinned:
+          'Pinned answers stay while you re-ask another service: serve the fine-tuned model, send the same request and compare.',
       },
       menu: {
         upload: 'Upload',
@@ -607,6 +673,9 @@ export default defineI18nConfig(() => ({
         // Breadcrumb renders `menu.${page.section}` and the fine-tune page's
         // section is the hyphenated 'fine-tune' (mirrors 'model-serving').
         'fine-tune': 'Fine-tune',
+        // Section key and menu key coincide ('playground' has no hyphen), so
+        // one entry serves both the sidebar title and the breadcrumb.
+        playground: 'Playground',
         pipelines: 'Flow',
         pipelines_builder: 'Builder',
         datasets: 'Datasets',
