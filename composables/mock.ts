@@ -3,6 +3,7 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
+import type { WorkgroupEnvInfo } from '~/types/api.types';
 
 /**
  * Canned Playground answers so the page demos end to end in mock mode. A
@@ -55,7 +56,6 @@ const mockServedCompletion = (body: ServedCompletionRequest) => {
     },
   };
 };
-import type { WorkgroupEnvInfo } from '~/types/api.types';
 
 /**
  * Mock API network delay in milliseconds
