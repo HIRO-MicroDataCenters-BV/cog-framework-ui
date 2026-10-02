@@ -274,4 +274,26 @@ describe('useApi namespace resolution', () => {
     expect(bPageTwo).toContain('namespace=ns-b');
     expect(bPageTwo).not.toContain('TOKEN-FROM-A');
   });
+
+  // getPipelinePodLogs reports every failure as null — the sheet renders an
+  // inline message from it. A namespace failure must not break that contract.
+  it('returns null rather than rejecting when pod-log namespace resolution fails', async () => {
+    fetchMock.mockResolvedValueOnce(envInfo([]));
+
+    const result = await useApi().getPipelinePodLogs({
+      podname: 'p',
+      runid: 'r',
+    });
+
+    expect(result).toBeNull();
+    expect(calledUrls().some((u) => u.includes('/k8s/pod/logs'))).toBe(false);
+  });
+
+  it('returns null rather than rejecting when env-info errors for pod logs', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });
+
+    await expect(
+      useApi().getPipelinePodLogs({ podname: 'p', runid: 'r' }),
+    ).resolves.toBeNull();
+  });
 });

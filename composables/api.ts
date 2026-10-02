@@ -3173,14 +3173,18 @@ export const useApi = () => {
       runid: string;
       podnamespace?: string;
     }) => {
-      const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
-      const q = new URLSearchParams({
-        podname: params.podname,
-        runid: params.runid,
-        podnamespace: await resolveNamespace(params.podnamespace),
-      }).toString();
-      const url = `${base}/k8s/pod/logs?${q}`;
       try {
+        // Inside the try: resolving the namespace reads env-info over the
+        // network and can fail, and this method's contract is to report any
+        // failure as null rather than rejecting.
+        const base = (apiRuns || '').replace(/\/apis\/v2beta1\/?$/, '');
+        const q = new URLSearchParams({
+          podname: params.podname,
+          runid: params.runid,
+          podnamespace: await resolveNamespace(params.podnamespace),
+        }).toString();
+        const url = `${base}/k8s/pod/logs?${q}`;
+
         const res = await fetch(url, { headers: getHeaders() });
         if (!res.ok) {
           const err = await res.text();

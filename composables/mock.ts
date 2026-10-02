@@ -2,6 +2,7 @@ import {
   apiErrorResponseSchema,
   apiResponseSchema,
 } from '~/schemas/response.schema';
+import type { WorkgroupEnvInfo } from '~/types/api.types';
 
 /**
  * Mock API network delay in milliseconds
@@ -1462,6 +1463,36 @@ export const useApiWithMock = () => {
         });
       }
       return request(`/training-builder-components`);
+    },
+
+    /**
+     * Mirrors the real `getWorkgroupEnvInfo`. Without it the mock wrapper — a
+     * plain object with no fallthrough to the real API — would leave the method
+     * undefined, and `useCurrentUser` would fail right after the header lookup.
+     *
+     * The namespace is derived from the mock user so demo mode stays coherent.
+     */
+    getWorkgroupEnvInfo: async (): Promise<WorkgroupEnvInfo> => {
+      if (mock.value.enabled) {
+        await mockDelay(100);
+        const json = await import('~/mocks/get.workgroup-env-info.json');
+        const envInfo = (json.default ?? json) as WorkgroupEnvInfo;
+        const email = mock.value.user.email;
+        return {
+          ...envInfo,
+          user: email,
+          namespaces: envInfo.namespaces.map((n) => ({ ...n, user: email })),
+        };
+      }
+      // Unreachable in practice; kept correct rather than throwing, matching
+      // the other direct-KFP fallbacks in this file.
+      const apiRuns = String(config.public.apiRuns || '');
+      const res = await fetch(
+        `${new URL(apiRuns).origin}/api/workgroup/env-info`,
+        { headers: getHeaders() },
+      );
+      if (!res.ok) throw new Error(`env-info failed: ${res.status}`);
+      return (await res.json()) as WorkgroupEnvInfo;
     },
 
     getHeaders: async () => {
