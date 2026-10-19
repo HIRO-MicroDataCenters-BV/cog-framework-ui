@@ -137,6 +137,8 @@ export default defineI18nConfig(() => ({
         fine_tune_empty: 'No fine-tune runs to show',
         playground: 'Playground',
         training_jobs: 'Training Jobs',
+        // AppTable renders `title.${page.section}`; the section is hyphenated.
+        'training-jobs': 'Training Jobs',
         training_job_create: 'New training job',
         training_job_logs: 'Training job logs',
         training_job_actions: 'Training Job Actions',
