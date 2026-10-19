@@ -5,6 +5,7 @@ import {
 import type { ServedCompletionRequest } from '~/types/model.types';
 import type { WorkgroupEnvInfo } from '~/types/api.types';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
+import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
 import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
 
 /**
@@ -931,6 +932,15 @@ export const useApiWithMock = () => {
         );
       }
       return request(`/models-serving/recommend`, 'POST', data);
+    },
+
+    /** Dataset file details; the training-job dialog checks the file extension with it. */
+    getDatasetFileDetails: async (dataset_id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(datasetsDetailsFileData);
+      }
+      return request(`/datasets/${dataset_id}/file`);
     },
 
     // Training jobs: fixtures in mock mode, real API otherwise.

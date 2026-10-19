@@ -85,6 +85,10 @@ const hyperparams = ref<Record<string, unknown>>({});
 const datasetFileIssue = ref('');
 const checkingDataset = ref(false);
 const datasetFileName = ref('');
+// Monotonic token: a quick dataset switch must not let an earlier file
+// lookup land on the later selection. Declared here, before the immediate
+// `open` watcher below runs `resetForm()` (which bumps it) on a closed mount.
+let datasetCheckId = 0;
 
 const selectedAlgorithm = computed(
   () => algorithms.value.find((a) => a.id === form.value.algorithm_id) ?? null,
@@ -295,10 +299,6 @@ watch(selectedAlgorithm, (spec) => {
   // The accepted extensions may differ per algorithm: re-check the file.
   void checkDatasetFile(form.value.dataset_id);
 });
-
-// Monotonic token: a quick dataset switch must not let an earlier file
-// lookup land on the later selection.
-let datasetCheckId = 0;
 
 const checkDatasetFile = async (datasetId: string) => {
   const checkId = ++datasetCheckId;

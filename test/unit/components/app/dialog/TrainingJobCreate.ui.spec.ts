@@ -390,4 +390,19 @@ describe('TrainingJobCreate', () => {
       expect.objectContaining({ workers: 1, gpus: 0 }),
     );
   });
+
+  it('mounts closed without errors and loads pickers when opened', async () => {
+    const wrapper = mountDialog(false);
+    await flushPromises();
+    expect(getTrainingAlgorithms).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-testid="dialog"]').attributes('data-open')).toBe(
+      '0',
+    );
+    await wrapper.setProps({ open: true });
+    await flushPromises();
+    expect(getTrainingAlgorithms).toHaveBeenCalledTimes(1);
+    expect(wrapper.find('[data-testid="dialog"]').attributes('data-open')).toBe(
+      '1',
+    );
+  });
 });
