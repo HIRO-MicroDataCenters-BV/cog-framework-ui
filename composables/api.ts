@@ -12,6 +12,8 @@ import type {
   PipelineComponentParams,
   PodParams,
   WorkgroupEnvInfo,
+  TrainingJobCreateParams,
+  TrainingJobQueryParams,
 } from '~/types/api.types';
 import type {
   LlmAdapterSpec,
@@ -26,6 +28,8 @@ import datasetsDetailsPrometheusData from '@/mocks/get.datasets.details.promethe
 import datasetsDetailsStreamData from '@/mocks/get.datasets.details.stream.json';
 import datasetsDetailsTableData from '@/mocks/get.datasets.details.table.json';
 import modelsData from '@/mocks/get.models.json';
+import trainingJobsData from '@/mocks/get.training-jobs.json';
+import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
 import modelsStatsData from '@/mocks/get.models-stats.json';
 import datasetsStatsData from '@/mocks/get.datasets-stats.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
@@ -4090,6 +4094,85 @@ export const useApi = () => {
      * @returns {Promise<Object>} Recommendation containing gates,
      *   max_log_gate, train_steps, and rationale per knob.
      */
+    // -----------------------------------------------------------------
+    // Training jobs (`/cogapi/training-jobs`): run a catalog algorithm on a
+    // dataset as a Kubeflow PyTorchJob / TFJob; the trainer registers the
+    // resulting model and the job's `model_id` fills in once it has.
+    // -----------------------------------------------------------------
+
+    /** The algorithm catalog (frameworks, tasks, dataset rules, hyperparams). */
+    getTrainingAlgorithms: async () => {
+      if (mockEnabled) {
+        return Promise.resolve(trainingAlgorithmsData);
+      }
+      return request(`/training-jobs/algorithms`);
+    },
+
+    /** The caller's training jobs, newest first; in-flight rows are re-synced server-side. */
+    getTrainingJobs: async (params: TrainingJobQueryParams = {}) => {
+      if (mockEnabled) {
+        return Promise.resolve(trainingJobsData);
+      }
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(`/training-jobs${q ? `?${q}` : ''}`);
+    },
+
+    /** One training job (state synced while in flight). */
+    getTrainingJob: async (id: string) => {
+      if (mockEnabled) {
+        const row = trainingJobsData.data.find((j) => j.id === id);
+        return Promise.resolve(row ? { ...trainingJobsData, data: row } : null);
+      }
+      return request(`/training-jobs/${id}`);
+    },
+
+    /**
+     * Creates and submits a training job.
+     *
+     * @returns the created `TrainingJob` (state `created`); poll
+     *   `getTrainingJob` / `getTrainingJobs` for progress and `model_id`.
+     */
+    createTrainingJob: async (data: TrainingJobCreateParams) => {
+      return request(`/training-jobs`, 'POST', data, {
+        successMessage: 'training_job_created',
+      });
+    },
+
+    /** Log tail of one replica (`Master`/`Chief` by default, or `Worker`). */
+    getTrainingJobLogs: async (
+      id: string,
+      params: { replica?: string; tail?: number } = {},
+    ) => {
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(
+        `/training-jobs/${id}/logs${q ? `?${q}` : ''}`,
+        'GET',
+        undefined,
+        {
+          showToast: false,
+        },
+      );
+    },
+
+    /** Deletes the job and its Kubernetes resource (a registered model stays). */
+    deleteTrainingJob: async (id: string) => {
+      return request(`/training-jobs/${id}`, 'DELETE', undefined, {
+        successMessage: 'training_job_deleted',
+      });
+    },
+
     recommendFineTune: async (data: {
       hf_model_id?: string;
       model_id?: string;

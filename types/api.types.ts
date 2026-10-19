@@ -363,3 +363,102 @@ export interface WorkgroupEnvInfo {
   namespaces: WorkgroupNamespace[];
   isClusterAdmin: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Training jobs (`/cogapi/training-jobs`)
+// ---------------------------------------------------------------------------
+
+export type TrainingFramework = 'pytorch' | 'tensorflow';
+export type TrainingTask = 'classification' | 'regression';
+export type TrainingJobState =
+  | 'created'
+  | 'running'
+  | 'restarting'
+  | 'succeeded'
+  | 'failed'
+  | 'unknown';
+
+/** One tunable knob of a catalog algorithm (backend `HyperparamSpec`). */
+export interface TrainingHyperparamSpec {
+  name: string;
+  type: 'int' | 'float' | 'str' | 'bool' | 'enum';
+  default?: unknown;
+  description?: string;
+  min?: number | null;
+  max?: number | null;
+  choices?: string[] | null;
+  required?: boolean;
+}
+
+export interface TrainingDatasetRequirements {
+  dataset_types: number[];
+  data_source_types: number[];
+  file_extensions: string[];
+  target_column_required: boolean;
+  description?: string;
+}
+
+/** Catalog entry (backend `AlgorithmSpec`). */
+export interface TrainingAlgorithm {
+  id: string;
+  name: string;
+  framework: TrainingFramework;
+  task: TrainingTask;
+  description: string;
+  dataset_requirements: TrainingDatasetRequirements;
+  hyperparams: TrainingHyperparamSpec[];
+  image: string;
+  supports_distributed: boolean;
+  supports_gpu: boolean;
+}
+
+/** Body of `POST /training-jobs` (backend `TrainingJobCreate`). */
+export interface TrainingJobCreateParams {
+  algorithm_id: string;
+  dataset_id: string;
+  output_name: string;
+  target_column: string;
+  hyperparams?: Record<string, unknown>;
+  workers?: number;
+  gpus?: number;
+  description?: string;
+}
+
+/** A job as CogAPI records it (backend `TrainingJobInfo`). */
+export interface TrainingJob {
+  id: string;
+  user_id: string;
+  name: string;
+  job_name: string;
+  namespace: string;
+  framework: TrainingFramework;
+  algorithm_id: string;
+  task: TrainingTask;
+  dataset_id: string | null;
+  target_column: string;
+  hyperparams: Record<string, unknown>;
+  workers: number;
+  gpus: number;
+  image: string;
+  state: TrainingJobState;
+  message: string | null;
+  model_id: string | null;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+}
+
+export interface TrainingJobLogs {
+  job_id: string;
+  replica: string;
+  lines: string[];
+  message: string | null;
+}
+
+export interface TrainingJobQueryParams {
+  state?: TrainingJobState;
+  limit?: number;
+  page?: number;
+  [key: string]: unknown;
+}

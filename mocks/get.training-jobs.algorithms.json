@@ -1,0 +1,59 @@
+{
+  "status_code": 200,
+  "message": "Training algorithms retrieved successfully.",
+  "data": [
+    {
+      "id": "pytorch-tabular-classifier",
+      "name": "Tabular classifier (PyTorch MLP)",
+      "framework": "pytorch",
+      "task": "classification",
+      "description": "Multi-layer perceptron with softmax head for a categorical target column. Logs accuracy and macro-F1 per epoch.",
+      "dataset_requirements": {
+        "dataset_types": [0, 2],
+        "data_source_types": [0],
+        "file_extensions": [".csv", ".parquet"],
+        "target_column_required": true,
+        "description": "One uploaded CSV or parquet file with a header row."
+      },
+      "hyperparams": [
+        { "name": "epochs", "type": "int", "default": 20, "min": 1, "max": 1000, "description": "Training epochs." },
+        { "name": "batch_size", "type": "int", "default": 64, "min": 1, "max": 4096, "description": "Mini-batch size." },
+        { "name": "learning_rate", "type": "float", "default": 0.001, "min": 0.000001, "max": 1.0, "description": "Adam learning rate." },
+        { "name": "hidden_sizes", "type": "str", "default": "128,64", "description": "Comma-separated hidden layer widths." },
+        { "name": "dropout", "type": "float", "default": 0.1, "min": 0.0, "max": 0.9, "description": "Dropout after every hidden layer." },
+        { "name": "test_split", "type": "float", "default": 0.2, "min": 0.05, "max": 0.5, "description": "Validation fraction." },
+        { "name": "seed", "type": "int", "default": 42, "min": 0, "max": 2147483647, "description": "Random seed." },
+        { "name": "weight_decay", "type": "float", "default": 0.0, "min": 0.0, "max": 1.0, "description": "Adam L2 weight decay." }
+      ],
+      "image": "hiroregistry/cogflow:latest-beta-torch",
+      "supports_distributed": true,
+      "supports_gpu": true
+    },
+    {
+      "id": "tensorflow-tabular-regressor",
+      "name": "Tabular regressor (TensorFlow/Keras MLP)",
+      "framework": "tensorflow",
+      "task": "regression",
+      "description": "Keras Sequential MLP with a linear head for a numeric target column. Logs RMSE, MAE and R² per epoch.",
+      "dataset_requirements": {
+        "dataset_types": [0, 2],
+        "data_source_types": [0],
+        "file_extensions": [".csv", ".parquet"],
+        "target_column_required": true,
+        "description": "One uploaded CSV or parquet file with a header row."
+      },
+      "hyperparams": [
+        { "name": "epochs", "type": "int", "default": 20, "min": 1, "max": 1000, "description": "Training epochs." },
+        { "name": "batch_size", "type": "int", "default": 64, "min": 1, "max": 4096, "description": "Mini-batch size." },
+        { "name": "learning_rate", "type": "float", "default": 0.001, "min": 0.000001, "max": 1.0, "description": "Adam learning rate." },
+        { "name": "hidden_sizes", "type": "str", "default": "128,64", "description": "Comma-separated hidden layer widths." },
+        { "name": "dropout", "type": "float", "default": 0.1, "min": 0.0, "max": 0.9, "description": "Dropout after every hidden layer." },
+        { "name": "test_split", "type": "float", "default": 0.2, "min": 0.05, "max": 0.5, "description": "Validation fraction." },
+        { "name": "seed", "type": "int", "default": 42, "min": 0, "max": 2147483647, "description": "Random seed." }
+      ],
+      "image": "hiroregistry/cogflow:latest-beta-tensor",
+      "supports_distributed": true,
+      "supports_gpu": true
+    }
+  ]
+}
