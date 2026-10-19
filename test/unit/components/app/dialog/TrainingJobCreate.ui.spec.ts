@@ -13,12 +13,14 @@ import TrainingJobCreate from '~/components/app/dialog/TrainingJobCreate.vue';
 
 const getTrainingAlgorithms = vi.fn();
 const getDatasets = vi.fn();
+const getDatasetFileDetails = vi.fn();
 const createTrainingJob = vi.fn();
 
 vi.mock('@/composables/api', () => ({
   useApi: () => ({
     getTrainingAlgorithms,
     getDatasets,
+    getDatasetFileDetails,
     createTrainingJob,
   }),
 }));
@@ -72,8 +74,8 @@ const ALGORITHMS = [
       { name: 'epochs', type: 'int', default: 10, min: 1, max: 100 },
     ],
     image: 'hiroregistry/cogflow:latest-beta-tensor',
-    supports_distributed: true,
-    supports_gpu: true,
+    supports_distributed: false,
+    supports_gpu: false,
   },
 ];
 
@@ -174,6 +176,10 @@ beforeEach(() => {
   createTrainingJob.mockReset();
   getTrainingAlgorithms.mockResolvedValue({ data: ALGORITHMS });
   getDatasets.mockResolvedValue({ data: DATASETS });
+  getDatasetFileDetails.mockReset();
+  getDatasetFileDetails.mockImplementation(async (id: string) => ({
+    data: { file_name: id === 'ds-both' ? 'prices.PARQUET' : `${id}.csv` },
+  }));
 });
 
 describe('TrainingJobCreate', () => {
@@ -315,6 +321,73 @@ describe('TrainingJobCreate', () => {
     expect(wrapper.emitted('created')).toBeFalsy();
     expect(wrapper.find('[data-testid="dialog"]').attributes('data-open')).toBe(
       '1',
+    );
+  });
+
+  it('checks the uploaded file extension against the algorithm requirements', async () => {
+    getDatasetFileDetails.mockImplementation(async () => ({
+      data: { file_name: 'sheet.xlsx' },
+    }));
+    const wrapper = mountDialog();
+    await flushPromises();
+    await pickSelect(wrapper, 0, 'pytorch-tabular-classifier');
+    await pickSelect(wrapper, 1, 'ds-train');
+    await setInput(wrapper, 'tj-output-name', 'x');
+    await setInput(wrapper, 'tj-target-column', 'y');
+    expect(getDatasetFileDetails).toHaveBeenCalledWith('ds-train');
+    const launch = wrapper.find('[data-testid="launch-training-job"]');
+    expect(launch.attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('hint.training_job_dataset_file_type');
+
+    // A matching file re-enables submit.
+    getDatasetFileDetails.mockImplementation(async () => ({
+      data: { file_name: 'rows.csv' },
+    }));
+    await pickSelect(wrapper, 1, 'ds-both');
+    expect(
+      wrapper
+        .find('[data-testid="launch-training-job"]')
+        .attributes('disabled'),
+    ).toBeUndefined();
+  });
+
+  it('treats a failed file lookup as not launchable', async () => {
+    getDatasetFileDetails.mockResolvedValue(null);
+    const wrapper = mountDialog();
+    await flushPromises();
+    await pickSelect(wrapper, 0, 'pytorch-tabular-classifier');
+    await pickSelect(wrapper, 1, 'ds-train');
+    await setInput(wrapper, 'tj-output-name', 'x');
+    await setInput(wrapper, 'tj-target-column', 'y');
+    expect(wrapper.text()).toContain('hint.training_job_dataset_file_unknown');
+    expect(
+      wrapper
+        .find('[data-testid="launch-training-job"]')
+        .attributes('disabled'),
+    ).toBeDefined();
+  });
+
+  it('resets replicas and GPUs when the new algorithm does not support them', async () => {
+    createTrainingJob.mockResolvedValueOnce({ data: { id: 'job-2' } });
+    const wrapper = mountDialog();
+    await flushPromises();
+    await pickSelect(wrapper, 0, 'pytorch-tabular-classifier');
+    await setInput(wrapper, 'tj-workers', '4');
+    await setInput(wrapper, 'tj-gpus', '2');
+    await pickSelect(wrapper, 0, 'tensorflow-tabular-regressor');
+    expect(
+      (wrapper.find('#tj-workers').element as HTMLInputElement).value,
+    ).toBe('1');
+    expect((wrapper.find('#tj-gpus').element as HTMLInputElement).value).toBe(
+      '0',
+    );
+    await pickSelect(wrapper, 1, 'ds-train');
+    await setInput(wrapper, 'tj-output-name', 'x');
+    await setInput(wrapper, 'tj-target-column', 'y');
+    await wrapper.find('[data-testid="launch-training-job"]').trigger('click');
+    await flushPromises();
+    expect(createTrainingJob).toHaveBeenCalledWith(
+      expect.objectContaining({ workers: 1, gpus: 0 }),
     );
   });
 });

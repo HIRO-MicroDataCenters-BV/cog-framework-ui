@@ -554,7 +554,6 @@ export default defineI18nConfig(() => ({
         view_logs: 'View logs',
         open_model: 'Open model',
         delete_training_job: 'Delete',
-        refresh: 'Refresh',
         ask: 'Ask',
         pin: 'Pin',
         unpin: 'Unpin',
@@ -664,6 +663,11 @@ export default defineI18nConfig(() => ({
         training_job_no_dataset:
           'No compatible dataset. Upload a CSV or parquet file dataset of type Train or Both first.',
         training_job_no_algorithms: 'No algorithms available.',
+        training_job_dataset_file_type:
+          'Dataset file "{name}" is not one of {types}; pick a dataset with a matching file.',
+        training_job_dataset_checking: 'Checking the dataset file…',
+        training_job_dataset_file_unknown:
+          'Could not read the dataset file details; try another dataset.',
         training_job_hyperparam_invalid: '{name} is out of range.',
         training_job_workers:
           '1 runs the primary replica only; more adds worker replicas for distributed training.',

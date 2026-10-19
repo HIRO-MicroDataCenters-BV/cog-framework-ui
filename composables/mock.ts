@@ -999,9 +999,19 @@ export const useApiWithMock = () => {
           },
         });
       }
-      return request(`/training-jobs/${id}/logs`, 'GET', undefined, {
-        showToast: false,
-      });
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(
+        `/training-jobs/${id}/logs${q ? `?${q}` : ''}`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
     },
     deleteTrainingJob: async (id: string) => {
       if (mock.value.enabled) {

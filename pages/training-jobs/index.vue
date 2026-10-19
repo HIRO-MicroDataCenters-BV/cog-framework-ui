@@ -46,13 +46,14 @@ const hasUnfinishedJobs = ref(false);
 const listJobs = async (params: Record<string, unknown> = {}) => {
   const { silent: _silent, ...query } = params;
   const result = await getTrainingJobs(query);
-  const rows = Array.isArray(result?.data)
-    ? (result.data as TrainingJob[])
-    : [];
+  // request() returns null on a transient failure; AppTable keeps the rows
+  // it has, so the poll must keep running too — only a real jobs array may
+  // change the flag.
+  if (!result || !Array.isArray(result.data)) return result;
+  const rows = result.data as TrainingJob[];
   hasUnfinishedJobs.value = rows.some((job) =>
     isTrainingJobInFlight(job.state),
   );
-  if (!result) return result;
   // AppTable needs a pagination block to render rows; synthesise one when the
   // backend answered without it (e.g. a fixture).
   return {

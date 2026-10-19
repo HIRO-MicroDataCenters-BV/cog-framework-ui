@@ -38,6 +38,13 @@ const fetchLogs = async () => {
   try {
     const res = await getTrainingJobLogs(job.id, { tail: 500 });
     if (id !== loadId) return;
+    // request() returns null on HTTP/network failure instead of throwing,
+    // and this call suppresses the toast: treat it as a failed fetch.
+    if (!res) {
+      lines.value = [];
+      note.value = t('message.error.operation_failed');
+      return;
+    }
     const data = (res?.data ?? null) as TrainingJobLogs | null;
     lines.value = data?.lines ?? [];
     note.value = data?.message ?? null;

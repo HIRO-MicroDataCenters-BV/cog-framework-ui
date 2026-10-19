@@ -307,4 +307,25 @@ describe('pages/training-jobs/index.vue', () => {
     expect(apiMocks.deleteTrainingJob).toHaveBeenCalledWith('job-done');
     expect(fetchDataSpy).toHaveBeenCalled();
   });
+
+  it('keeps polling across a failed silent refresh', async () => {
+    apiMocks.getTrainingJobs.mockResolvedValueOnce({
+      status_code: 200,
+      data: [{ ...JOBS[0], id: 'job-run', state: 'running', model_id: null }],
+      pagination: { total_items: 1, page: 1, limit: 15 },
+    });
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(intervalMocks.resume).toHaveBeenCalledTimes(1);
+    intervalMocks.pause.mockClear();
+
+    // request() returns null on a transient failure.
+    apiMocks.getTrainingJobs.mockResolvedValueOnce(null);
+    const table = wrapper.findComponent({ name: 'AppTable' });
+    await (
+      table.vm as unknown as { fetchData: (o?: unknown) => Promise<unknown> }
+    ).fetchData({ silent: true });
+    await flushPromises();
+    expect(intervalMocks.pause).not.toHaveBeenCalled();
+  });
 });

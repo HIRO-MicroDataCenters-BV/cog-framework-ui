@@ -54,7 +54,12 @@ const emit = defineEmits<{
   (e: 'created', payload: TrainingJob): void;
 }>();
 
-const { getTrainingAlgorithms, getDatasets, createTrainingJob } = useApi();
+const {
+  getTrainingAlgorithms,
+  getDatasets,
+  getDatasetFileDetails,
+  createTrainingJob,
+} = useApi();
 const { t } = useI18n();
 
 const algorithms = ref<TrainingAlgorithm[]>([]);
@@ -73,6 +78,13 @@ const form = ref({
 
 /** Hyperparameter values keyed by name; reset from the spec on algorithm change. */
 const hyperparams = ref<Record<string, unknown>>({});
+
+// The dataset list carries no file name, so the uploaded file's extension is
+// checked against the algorithm's `file_extensions` when a dataset is picked.
+// '' = accepted; otherwise the hint shown under the picker (and submit is blocked).
+const datasetFileIssue = ref('');
+const checkingDataset = ref(false);
+const datasetFileName = ref('');
 
 const selectedAlgorithm = computed(
   () => algorithms.value.find((a) => a.id === form.value.algorithm_id) ?? null,
@@ -137,6 +149,8 @@ const canSubmit = computed(
   () =>
     !!selectedAlgorithm.value &&
     !!form.value.dataset_id &&
+    !checkingDataset.value &&
+    datasetFileIssue.value === '' &&
     form.value.output_name.trim().length > 0 &&
     form.value.target_column.trim().length > 0 &&
     firstInvalidKnob.value === null &&
@@ -148,6 +162,8 @@ const canSubmit = computed(
 const validationHint = computed(() => {
   if (!selectedAlgorithm.value) return t('hint.training_job_select_algorithm');
   if (!form.value.dataset_id) return t('hint.training_job_select_dataset');
+  if (checkingDataset.value) return t('hint.training_job_dataset_checking');
+  if (datasetFileIssue.value) return datasetFileIssue.value;
   if (form.value.output_name.trim().length === 0)
     return t('hint.training_job_enter_name');
   if (form.value.target_column.trim().length === 0)
@@ -240,6 +256,10 @@ const resetForm = () => {
     gpus: 0,
   };
   hyperparams.value = {};
+  datasetCheckId += 1;
+  datasetFileIssue.value = '';
+  datasetFileName.value = '';
+  checkingDataset.value = false;
 };
 
 watch(
@@ -259,7 +279,9 @@ watch(
 );
 
 // A new algorithm brings its own knobs and dataset rules: reset the knobs to
-// the catalog defaults and drop a dataset the new algorithm cannot use.
+// the catalog defaults, drop a dataset the new algorithm cannot use, and
+// clear resource settings the new algorithm does not support (the inputs
+// are disabled, so a stale value could not be corrected by the user).
 watch(selectedAlgorithm, (spec) => {
   hyperparams.value = spec ? defaultsFor(spec) : {};
   if (
@@ -268,7 +290,65 @@ watch(selectedAlgorithm, (spec) => {
   ) {
     form.value.dataset_id = '';
   }
+  if (spec && spec.supports_distributed === false) form.value.workers = 1;
+  if (spec && spec.supports_gpu === false) form.value.gpus = 0;
+  // The accepted extensions may differ per algorithm: re-check the file.
+  void checkDatasetFile(form.value.dataset_id);
 });
+
+// Monotonic token: a quick dataset switch must not let an earlier file
+// lookup land on the later selection.
+let datasetCheckId = 0;
+
+const checkDatasetFile = async (datasetId: string) => {
+  const checkId = ++datasetCheckId;
+  datasetFileIssue.value = '';
+  datasetFileName.value = '';
+  const spec = selectedAlgorithm.value;
+  if (!datasetId || !spec) {
+    checkingDataset.value = false;
+    return;
+  }
+  checkingDataset.value = true;
+  try {
+    const res = await getDatasetFileDetails(datasetId);
+    if (checkId !== datasetCheckId) return;
+    const details = (res?.data ?? null) as
+      | { file_name?: string }
+      | Array<{ file_name?: string }>
+      | null;
+    const first = Array.isArray(details) ? details[0] : details;
+    const fileName = first?.file_name ?? '';
+    datasetFileName.value = fileName;
+    if (!fileName) {
+      datasetFileIssue.value = t('hint.training_job_dataset_file_unknown');
+      return;
+    }
+    const allowed = spec.dataset_requirements.file_extensions.map((e) =>
+      e.toLowerCase(),
+    );
+    const ok = allowed.some((ext) => fileName.toLowerCase().endsWith(ext));
+    datasetFileIssue.value = ok
+      ? ''
+      : t('hint.training_job_dataset_file_type', {
+          name: fileName,
+          types: allowed.join(', '),
+        });
+  } catch (err) {
+    if (checkId !== datasetCheckId) return;
+    console.error('Failed to read dataset file details', err);
+    datasetFileIssue.value = t('hint.training_job_dataset_file_unknown');
+  } finally {
+    if (checkId === datasetCheckId) checkingDataset.value = false;
+  }
+};
+
+watch(
+  () => form.value.dataset_id,
+  (datasetId) => {
+    void checkDatasetFile(datasetId);
+  },
+);
 
 const inputStep = (h: TrainingHyperparamSpec) =>
   h.type === 'int' ? '1' : 'any';
