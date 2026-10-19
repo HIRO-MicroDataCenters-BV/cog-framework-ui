@@ -4,6 +4,9 @@ import {
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
 import type { WorkgroupEnvInfo } from '~/types/api.types';
+import trainingJobsData from '@/mocks/get.training-jobs.json';
+import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
+import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
 
 /**
  * Canned Playground answers so the page demos end to end in mock mode. A
@@ -929,6 +932,105 @@ export const useApiWithMock = () => {
         );
       }
       return request(`/models-serving/recommend`, 'POST', data);
+    },
+
+    /** Dataset file details; the training-job dialog checks the file extension with it. */
+    getDatasetFileDetails: async (dataset_id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(datasetsDetailsFileData);
+      }
+      return request(`/datasets/${dataset_id}/file`);
+    },
+
+    // Training jobs: fixtures in mock mode, real API otherwise.
+    getTrainingAlgorithms: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(trainingAlgorithmsData);
+      }
+      return request(`/training-jobs/algorithms`);
+    },
+    getTrainingJobs: async (params: Record<string, unknown> = {}) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(trainingJobsData);
+      }
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(`/training-jobs${q ? `?${q}` : ''}`);
+    },
+    getTrainingJob: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const row = trainingJobsData.data.find((j) => j.id === id);
+        return Promise.resolve(row ? { ...trainingJobsData, data: row } : null);
+      }
+      return request(`/training-jobs/${id}`);
+    },
+    createTrainingJob: async (data: Record<string, unknown>) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: 'Training job created.',
+          data: {
+            ...trainingJobsData.data[0],
+            ...data,
+            id: 'mock-training-job-id',
+            state: 'created',
+            model_id: null,
+          },
+        });
+      }
+      return request(`/training-jobs`, 'POST', data, {
+        successMessage: 'training_job_created',
+      });
+    },
+    getTrainingJobLogs: async (
+      id: string,
+      params: { replica?: string; tail?: number } = {},
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Training job logs retrieved successfully.',
+          data: {
+            job_id: id,
+            replica: params.replica || 'Master',
+            lines: ['epoch 1/20 val_loss=0.9', 'epoch 2/20 val_loss=0.6'],
+            message: null,
+          },
+        });
+      }
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(
+        `/training-jobs/${id}/logs${q ? `?${q}` : ''}`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
+    },
+    deleteTrainingJob: async (id: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(null);
+      }
+      return request(`/training-jobs/${id}`, 'DELETE', undefined, {
+        successMessage: 'training_job_deleted',
+      });
     },
 
     createFineTune: async (

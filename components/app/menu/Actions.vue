@@ -66,6 +66,7 @@ const confirmAlertKeyByAction: Record<string, string> = {
   delete_model: 'alert.delete_model',
   delete_model_service: 'alert.delete_model_service',
   delete_run: 'alert.delete_pipeline_run',
+  delete_training_job: 'alert.delete_training_job',
 };
 
 const getConfirmDescriptionKey = (actionKey?: string) => {

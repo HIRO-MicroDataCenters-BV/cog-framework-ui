@@ -27,6 +27,8 @@ export default defineI18nConfig(() => ({
           model_serving_created: 'Model serving created successfully',
           fine_tune_created: 'Fine-tune run started successfully',
           fine_tune_validated: 'Fine-tune validated; run not submitted',
+          training_job_created: 'Training job created',
+          training_job_deleted: 'Training job deleted',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
           copied_to_clipboard: 'Copied to clipboard',
@@ -134,6 +136,11 @@ export default defineI18nConfig(() => ({
         fine_tune: 'Fine-tune an LLM',
         fine_tune_empty: 'No fine-tune runs to show',
         playground: 'Playground',
+        training_jobs: 'Training Jobs',
+        training_job_create: 'New training job',
+        training_job_logs: 'Training job logs',
+        training_job_actions: 'Training Job Actions',
+        training_jobs_empty: 'No training jobs yet',
       },
       alert: {
         delete_dataset:
@@ -145,6 +152,8 @@ export default defineI18nConfig(() => ({
           'Restore "{name}" to the Active list? You can archive it again at any time.',
         delete_pipeline_run:
           'Permanently delete pipeline run "{name}"? This cannot be undone.',
+        delete_training_job:
+          'Delete training job "{name}"? A running job is stopped; a model it already registered is kept.',
         archive_run_p1:
           'Are you sure you want to archive this run? It will be moved to the Archive section, where you can still view its details.',
         archive_run_note_label: 'Note',
@@ -184,6 +193,12 @@ export default defineI18nConfig(() => ({
           'Train an NTK controller on an existing LLM. Cheap to train; serve it exactly on the NTK runtime or export a LoRA adapter for the standard vLLM path.',
         fine_tune_dialog:
           'Train an ntkmirror controller over a JSONL dataset; the result is registered as an exact NTK controller or exported as a LoRA adapter and appears in the model-serving adapter picker once the run completes.',
+        training_jobs:
+          'Train a model from the algorithm catalog on one of your datasets. Jobs run as Kubeflow training jobs; the result is registered under Models.',
+        training_job_dialog:
+          'Pick an algorithm and a dataset, name the output model and adjust the hyperparameters.',
+        training_jobs_empty:
+          'Launch a training job to turn a dataset into a registered model.',
         fine_tune_empty:
           'Launch your first fine-tune by selecting an LLM, a JSONL dataset, and training knobs. The resulting controller or adapter will appear in the model-serving picker once the run completes.',
         playground:
@@ -382,6 +397,16 @@ export default defineI18nConfig(() => ({
         export_ntk_model: 'NTK controller (exact)',
         export_lora: 'NTK controller exported as a LoRA adapter (approximate)',
         fine_tuned_adapter: 'Fine-tuned adapter',
+        algorithm: 'Algorithm',
+        framework: 'Framework',
+        task: 'Task',
+        target_column: 'Target column',
+        workers: 'Replicas',
+        gpus: 'GPUs per replica',
+        hyperparams: 'Hyperparameters',
+        output_model_name: 'Output model name',
+        training_dataset: 'Dataset',
+        replica: 'Replica',
         adapter_kind_ntk: 'NTK, exact',
         adapter_kind_lora: 'LoRA',
         pinned: 'Pinned',
@@ -401,6 +426,10 @@ export default defineI18nConfig(() => ({
         time_series: 'Connect to a time series data source (e.g., Prometheus).',
       },
       placeholder: {
+        select_algorithm: 'Select an algorithm',
+        select_training_dataset: 'Select a dataset',
+        target_column: 'e.g. species',
+        output_model_name: 'e.g. iris-mlp',
         select_parameter: 'Select Parameter',
         select_source_type: 'Select Source Type',
         select_component_output: 'Select Component Output',
@@ -520,6 +549,11 @@ export default defineI18nConfig(() => ({
         add_fine_tune: 'New fine-tune',
         start_fine_tune: 'Start a fine-tune',
         launch_fine_tune: 'Launch fine-tune',
+        add_training_job: 'New training job',
+        launch_training_job: 'Launch training',
+        view_logs: 'View logs',
+        open_model: 'Open model',
+        delete_training_job: 'Delete',
         ask: 'Ask',
         pin: 'Pin',
         unpin: 'Unpin',
@@ -622,6 +656,24 @@ export default defineI18nConfig(() => ({
           'No JSONL datasets registered yet. Upload one via the datasets page (type JSONL).',
         fine_tune_select_base: 'Select a base LLM.',
         fine_tune_select_dataset: 'Select a JSONL dataset.',
+        training_job_select_algorithm: 'Select an algorithm.',
+        training_job_select_dataset: 'Select a dataset.',
+        training_job_enter_target: 'Enter the target column.',
+        training_job_enter_name: 'Enter an output model name.',
+        training_job_no_dataset:
+          'No compatible dataset. Upload a CSV or parquet file dataset of type Train or Both first.',
+        training_job_no_algorithms: 'No algorithms available.',
+        training_job_dataset_file_type:
+          'Dataset file "{name}" is not one of {types}; pick a dataset with a matching file.',
+        training_job_dataset_checking: 'Checking the dataset file…',
+        training_job_dataset_file_unknown:
+          'Could not read the dataset file details; try another dataset.',
+        training_job_hyperparam_invalid: '{name} is out of range.',
+        training_job_workers:
+          '1 runs the primary replica only; more adds worker replicas for distributed training.',
+        training_job_gpus:
+          '0 trains on CPU. GPU jobs need a GPU node in the cluster.',
+        training_job_logs_empty: 'No log lines yet.',
         fine_tune_enter_name: 'Enter an output adapter name.',
         fine_tune_gates_range: 'Gates must be a number ≥ 1.',
         fine_tune_max_log_gate_range:
@@ -673,6 +725,8 @@ export default defineI18nConfig(() => ({
         // Breadcrumb renders `menu.${page.section}` and the fine-tune page's
         // section is the hyphenated 'fine-tune' (mirrors 'model-serving').
         'fine-tune': 'Fine-tune',
+        training_jobs: 'Training Jobs',
+        'training-jobs': 'Training Jobs',
         // Section key and menu key coincide ('playground' has no hyphen), so
         // one entry serves both the sidebar title and the breadcrumb.
         playground: 'Playground',
@@ -736,6 +790,11 @@ export default defineI18nConfig(() => ({
         traffic_percentage: 'Traffic',
         creation_timestamp: 'Created',
         age: 'Age',
+        job_name: 'Job',
+        algorithm_id: 'Algorithm',
+        state: 'State',
+        model_id: 'Model',
+        finished_at: 'Finished',
       },
       status: {
         completed: 'Completed',

@@ -55,6 +55,17 @@ export const uselistMenus = () => {
           featureTier: 'enterprise' as EntitlementTier,
         },
         {
+          key: 'training-jobs',
+          title: t('menu.training_jobs'),
+          url: 'training-jobs',
+          icon: 'lucide:brain-circuit',
+          items: [],
+          isActive: false,
+          // Gated on the pipeline permissions server-side (pipeline:read to
+          // browse, pipeline:run to launch); no separate feature tier.
+          minTier: 'free' as EntitlementTier,
+        },
+        {
           key: 'playground',
           title: t('menu.playground'),
           url: 'playground',
