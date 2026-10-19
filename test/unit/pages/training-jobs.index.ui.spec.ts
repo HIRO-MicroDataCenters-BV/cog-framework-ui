@@ -328,4 +328,21 @@ describe('pages/training-jobs/index.vue', () => {
     await flushPromises();
     expect(intervalMocks.pause).not.toHaveBeenCalled();
   });
+
+  it('reads naive API timestamps as UTC when computing the duration', async () => {
+    apiMocks.getTrainingJobs.mockResolvedValue({
+      status_code: 200,
+      data: [
+        {
+          ...JOBS[0],
+          started_at: '2026-10-19T10:00:00',
+          finished_at: '2026-10-19T10:00:28',
+        },
+      ],
+    });
+    const wrapper = mountPage();
+    await flushPromises();
+    const row = wrapper.find('[data-testid="row"]');
+    expect(row.find('[data-col="duration"]').text()).toBe('28s');
+  });
 });

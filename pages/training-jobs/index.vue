@@ -101,11 +101,19 @@ const handleDelete = async (job: TrainingJob) => {
   refresh();
 };
 
+/**
+ * CogAPI serialises its timestamps as naive UTC (`2026-10-19T19:04:19`, no
+ * zone). Parsing that as local time shifts every value by the viewer's
+ * offset and inflates running durations by it, so mark it UTC first.
+ */
+const asUtc = (value: string) =>
+  /(Z|[+-]\d\d:?\d\d)$/.test(value) ? dayjs(value) : dayjs(`${value}Z`);
+
 const formatDuration = (job: TrainingJob) => {
   const start = job.started_at || job.created_at;
   if (!start) return '-';
-  const end = job.finished_at ? dayjs(job.finished_at) : dayjs();
-  const seconds = Math.max(0, end.diff(dayjs(start), 'second'));
+  const end = job.finished_at ? asUtc(job.finished_at) : dayjs();
+  const seconds = Math.max(0, end.diff(asUtc(start), 'second'));
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
@@ -193,12 +201,13 @@ const columns = [
     cell: ({ row }: { row: TableRowType }) => {
       const createdAt = (row.original as TrainingJob).created_at;
       if (!createdAt) return '-';
+      const created = asUtc(createdAt);
       return h('div', { class: 'flex flex-col' }, [
-        h('div', {}, dayjs(createdAt).format('DD-MMM-YYYY')),
+        h('div', {}, created.format('DD-MMM-YYYY')),
         h(
           'div',
           { class: 'text-xs text-muted-foreground' },
-          dayjs(createdAt).format('HH:mm:ss'),
+          created.format('HH:mm:ss'),
         ),
       ]);
     },
