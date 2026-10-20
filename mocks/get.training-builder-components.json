@@ -3,6 +3,66 @@
   "message": "All components retrieved successfully.",
   "data": [
     {
+      "id": "5c3e1c2a-0001-4000-8000-000000000001",
+      "name": "Image dataset reader",
+      "input_path": [
+        {
+          "name": "dataset_id",
+          "type": "String"
+        },
+        {
+          "name": "image_size",
+          "type": "Integer",
+          "default": "32",
+          "optional": true
+        },
+        {
+          "name": "max_images_per_class",
+          "type": "Integer",
+          "default": "0",
+          "optional": true
+        }
+      ],
+      "output_path": [
+        {
+          "name": "dataset",
+          "type": "Dataset"
+        }
+      ],
+      "component_file": "s3://components/Image_dataset_reader.yaml",
+      "category": "data",
+      "creator": "HIRO",
+      "description": "Load a registered image dataset (a zip of one folder per class) into a Dataset bundle."
+    },
+    {
+      "id": "5c3e1c2a-0001-4000-8000-000000000002",
+      "name": "Classifier evaluator",
+      "input_path": [
+        {
+          "name": "model_ref",
+          "type": "String"
+        },
+        {
+          "name": "test",
+          "type": "Dataset"
+        }
+      ],
+      "output_path": [
+        {
+          "name": "metrics",
+          "type": "Metrics"
+        },
+        {
+          "name": "mlpipeline_metrics",
+          "type": "Metrics"
+        }
+      ],
+      "component_file": "s3://components/Classifier_evaluator.yaml",
+      "category": "evaluation",
+      "creator": "HIRO",
+      "description": "Evaluate a registered classifier on a test Dataset: accuracy, macro F1, per-class scores, confusion matrix."
+    },
+    {
       "id": "55455462-0957-4d57-9847-9cc36dd07068",
       "name": "FedSCVI server",
       "input_path": [
@@ -392,7 +452,7 @@
   ],
   "pagination": {
     "page": 1,
-    "limit": 10,
-    "total_items": 13
+    "limit": 12,
+    "total_items": 12
   }
 }

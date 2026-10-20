@@ -47,7 +47,17 @@
                     name="lucide:box"
                     class="w-4 h-4 text-muted-foreground"
                   />
-                  <span class="text-sm flex-1">{{ component.name }}</span>
+                  <span
+                    class="text-sm flex-1"
+                    :title="component.description || undefined"
+                    >{{ component.name }}</span
+                  >
+                  <span
+                    v-if="isPlatformComponent(component)"
+                    class="text-[10px] uppercase tracking-wide text-muted-foreground"
+                    :title="$t('label.platform_component')"
+                    >{{ component.creator }}</span
+                  >
                   <Icon
                     name="lucide:arrow-right"
                     class="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-50 transition-opacity duration-200"
@@ -63,33 +73,19 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import type { Component, Category } from '~/types/canvas.types';
-import { useBuilderColors } from '~/composables/useBuilderColors';
+import {
+  fetchAllComponents,
+  getCategories,
+  isPlatformComponent,
+  type ComponentsPage,
+} from '~/utils/builderLibrary';
 
 const api = useApi();
-const { getCategoryColor } = useBuilderColors();
 
 const components = ref<Component[]>([]);
-
-const getCategories = (items: Component[]) => {
-  const list = items.map((item, index) => {
-    return {
-      id: item.category ?? `category-empty`,
-      name: item.category,
-      isOpen: item.category ? false : true,
-      components: components.value.filter(
-        (component: Component) => component.category == item.category,
-      ),
-    };
-  });
-  return list.reduce((items: Category[], current) => {
-    if (items.findIndex((object) => object.id === current.id) === -1) {
-      items.push(current as Category);
-    }
-    return items;
-  }, [] as Category[]);
-};
-const categories = ref(getCategories(components.value));
+const categories = ref<Category[]>([]);
 
 const emit = defineEmits<{
   dragStart: [component: Component];
@@ -104,29 +100,29 @@ const onDragStart = (event: DragEvent, component: Component) => {
 };
 
 onMounted(() => {
-  console.log('onMounted');
   fetchComponents();
 });
 
+/**
+ * Load the whole catalog. The API pages the list (10 rows by default), so a
+ * single request would hide every component past the first page.
+ */
 const fetchComponents = async () => {
-  console.log('[LibrarySidebar] Fetching components...');
   try {
-    const res = await api.getTrainingBuilderComponents();
-    if (res && 'data' in res) {
-      components.value = res.data as unknown as Component[];
-
-      // Debug: Show first component's input_path to verify defaults
-      if (components.value.length > 0) {
-        const firstComp = components.value[0];
-      }
-
-      categories.value = getCategories(components.value);
-    }
-  } catch (error) {
-    // Toast is shown by API layer, just set empty arrays
+    components.value = await fetchAllComponents(
+      // The endpoint returns the generic API envelope (or null on failure);
+      // this is the one place that reads it as a component catalog page.
+      async (page, limit) =>
+        (await api.getTrainingBuilderComponents({
+          page,
+          limit,
+        })) as ComponentsPage | null,
+    );
+  } catch {
+    // Toast is shown by the API layer; show an empty library.
     components.value = [];
-    categories.value = [];
   }
+  categories.value = getCategories(components.value);
 };
 
 defineExpose({

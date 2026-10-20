@@ -78,6 +78,8 @@ export interface Component {
   component_file: string | null;
   category: string | null;
   creator: string | null;
+  /** Catalog description (platform components carry one); shown as a tooltip */
+  description?: string | null;
 }
 
 /** Group of components shown in the library sidebar */

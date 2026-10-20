@@ -6,6 +6,7 @@ export const useBuilderColors = () => {
     Model: 'hsl(43 74% 66%)', // Yellow
     Dataset: 'hsl(27 87% 67%)', // Coral
     Artifact: 'hsl(240 5.9% 10%)', // Primary dark
+    Metrics: 'hsl(262 83% 58%)', // Purple (evaluation output)
     Array: 'hsl(142 76% 36%)', // Green
     Object: 'hsl(262 83% 58%)', // Purple
     Boolean: 'hsl(330 81% 60%)', // Pink
@@ -66,10 +67,11 @@ export const useBuilderColors = () => {
     return typeColors[type as keyof typeof typeColors] || typeColors['Any'];
   };
 
-  const getCategoryColor = (category: string): string => {
+  const getCategoryColor = (category: string | null | undefined): string => {
     return (
-      categoryColors[category.toLowerCase() as keyof typeof categoryColors] ||
-      categoryColors['general']
+      categoryColors[
+        (category ?? 'general').toLowerCase() as keyof typeof categoryColors
+      ] || categoryColors['general']
     );
   };
 
