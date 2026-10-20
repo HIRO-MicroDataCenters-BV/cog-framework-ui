@@ -6,6 +6,7 @@ export const useBuilderIcons = () => {
     Model: 'lucide:brain',
     Dataset: 'lucide:database',
     Artifact: 'lucide:package',
+    Metrics: 'lucide:gauge',
     Array: 'lucide:list',
     Object: 'lucide:braces',
     Boolean: 'lucide:toggle-left',

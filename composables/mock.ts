@@ -1605,19 +1605,40 @@ export const useApiWithMock = () => {
       }
     },
 
-    getTrainingBuilderComponents: async () => {
+    getTrainingBuilderComponents: async (
+      params: {
+        name?: string;
+        category?: string;
+        page?: number;
+        limit?: number;
+      } = {},
+    ) => {
       if (mock.value.enabled) {
         await mockDelay();
         const componentsJson = await import(
           '~/mocks/get.training-builder-components.json'
         );
+        // The fixture is a single page: report it as such so callers that
+        // page through the catalog stop after the first request.
         return Promise.resolve({
           status_code: componentsJson.status_code,
           message: componentsJson.message,
           data: componentsJson.data,
+          pagination: {
+            page: 1,
+            limit: componentsJson.data.length,
+            total_items: componentsJson.data.length,
+          },
         });
       }
-      return request(`/training-builder-components`);
+      const q = new URLSearchParams(
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null)
+            .map(([k, v]) => [k, String(v)]),
+        ),
+      ).toString();
+      return request(`/training-builder-components?${q}`);
     },
 
     getHeaders: async () => {

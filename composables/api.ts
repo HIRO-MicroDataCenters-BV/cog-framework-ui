@@ -3425,10 +3425,16 @@ export const useApi = () => {
       params: {
         name?: string;
         category?: string;
+        page?: number;
+        limit?: number;
       } = {},
     ) => {
       const q = new URLSearchParams(
-        params as Record<string, string>,
+        Object.fromEntries(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined && v !== null)
+            .map(([k, v]) => [k, String(v)]),
+        ),
       ).toString();
       if (mockEnabled) {
         return Promise.resolve(componentsData);

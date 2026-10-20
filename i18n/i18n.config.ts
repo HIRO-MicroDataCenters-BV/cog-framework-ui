@@ -315,6 +315,7 @@ export default defineI18nConfig(() => ({
         stream: 'Stream',
         time_series: 'Time Series',
         no_category: 'No category',
+        platform_component: 'Platform component',
         files: 'Files',
         filters: 'Filters',
         type: 'Type',
