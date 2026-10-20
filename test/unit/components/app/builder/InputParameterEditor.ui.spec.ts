@@ -118,8 +118,9 @@ describe('InputParameterEditor dataset picker', () => {
     });
   });
 
-  it('retries the dataset request after a failure when the picker reopens', async () => {
-    getDatasets.mockRejectedValueOnce(new Error('boom'));
+  it('retries the dataset request after a null (failed) response when the picker reopens', async () => {
+    // the API layer resolves null on failure instead of rejecting
+    getDatasets.mockResolvedValueOnce(null);
     const wrapper = mountEditor('dataset_id');
     await flushPromises();
     expect(getDatasets).toHaveBeenCalledTimes(1);

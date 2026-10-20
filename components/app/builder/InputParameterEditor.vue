@@ -356,12 +356,17 @@ function loadDatasets(): Promise<void> {
   if (!datasetsRequest) {
     datasetsRequest = (async () => {
       try {
-        const res = await api.getDatasets({ limit: 200 });
-        datasets.value = ((res as { data?: DatasetChoice[] } | null)?.data ||
-          []) as DatasetChoice[];
+        const res = (await api.getDatasets({ limit: 200 })) as {
+          data?: DatasetChoice[];
+        } | null;
+        // The API layer resolves null on HTTP/network errors: treat that as
+        // a failure too, so reopening the picker retries.
+        if (!res || !Array.isArray(res.data)) {
+          throw new Error('dataset list unavailable');
+        }
+        datasets.value = res.data;
       } catch {
         datasets.value = [];
-        // Forget the failed request so reopening the picker retries.
         datasetsRequest = null;
       } finally {
         datasetsLoaded.value = true;
