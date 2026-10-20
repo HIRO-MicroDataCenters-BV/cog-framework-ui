@@ -175,14 +175,74 @@
 
           <!-- Constant Value Input -->
           <div v-if="localInput.value_source_type === 'constant'">
-            <Input
-              v-model="localInput.source"
-              type="text"
-              :placeholder="getConstantPlaceholder()"
-              class="h-8 text-xs font-mono"
-              @update:model-value="emitUpdate"
-              @blur="markTouched"
-            />
+            <!-- Dataset ids: pick from the platform's datasets -->
+            <div
+              v-if="isDatasetInput && !manualDatasetEntry"
+              class="flex items-center gap-1"
+              data-testid="dataset-picker"
+            >
+              <Select
+                v-model="localInput.source"
+                :modal="false"
+                @update:model-value="onDatasetSelected"
+                @update:open="onDatasetPickerOpen"
+              >
+                <SelectTrigger
+                  size="sm"
+                  class="w-full text-xs"
+                  @blur="markTouched"
+                >
+                  <SelectValue
+                    :placeholder="$t('placeholder.select_dataset')"
+                  />
+                </SelectTrigger>
+                <SelectContent align="start" side="bottom">
+                  <SelectItem
+                    v-for="option in datasetSelectOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    class="text-xs"
+                  >
+                    {{ option.label }}
+                  </SelectItem>
+                  <div
+                    v-if="datasetsLoaded && !datasetSelectOptions.length"
+                    class="px-2 py-1.5 text-xs text-muted-foreground"
+                  >
+                    {{ $t('label.no_datasets') }}
+                  </div>
+                </SelectContent>
+              </Select>
+              <button
+                type="button"
+                class="shrink-0 text-muted-foreground hover:text-foreground"
+                :title="$t('label.enter_id_manually')"
+                data-testid="dataset-manual-toggle"
+                @click="manualDatasetEntry = true"
+              >
+                <Icon name="lucide:pencil" class="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div v-else class="flex items-center gap-1">
+              <Input
+                v-model="localInput.source"
+                type="text"
+                :placeholder="getConstantPlaceholder()"
+                class="h-8 text-xs font-mono"
+                @update:model-value="emitUpdate"
+                @blur="markTouched"
+              />
+              <button
+                v-if="isDatasetInput"
+                type="button"
+                class="shrink-0 text-muted-foreground hover:text-foreground"
+                :title="$t('placeholder.select_dataset')"
+                data-testid="dataset-picker-toggle"
+                @click="manualDatasetEntry = false"
+              >
+                <Icon name="lucide:database" class="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -230,11 +290,17 @@ import type {
   PipelineInputParam,
 } from '~/types/canvas.types';
 import { validateComponentInput } from '~/utils/builder-validation';
+import {
+  datasetOptions,
+  isDatasetIdInput,
+  type DatasetChoice,
+} from '~/utils/builderDatasetInput';
 import { useBuilderColors } from '~/composables/useBuilderColors';
 import { useBuilderIcons } from '~/composables/useBuilderIcons';
 
 const { getTypeColor } = useBuilderColors();
 const { getTypeIcon } = useBuilderIcons();
+const api = useApi();
 
 interface Props {
   inputDefinition: ComponentPath;
@@ -270,6 +336,59 @@ const localInput = ref<ComponentInput>(
 
 // For component_output, we need to track the selected value separately
 const selectedComponentOutput = ref(localInput.value.source);
+
+// Dataset-id inputs (`dataset_id`, `eval_dataset_id`, …) get a picker over the
+// platform's datasets; the pencil switches back to typing an id by hand.
+const isDatasetInput = computed(() =>
+  isDatasetIdInput(props.inputDefinition.name, props.inputDefinition.type),
+);
+const manualDatasetEntry = ref(false);
+const datasets = ref<DatasetChoice[]>([]);
+const datasetsLoaded = ref(false);
+let datasetsRequest: Promise<void> | null = null;
+
+const datasetSelectOptions = computed(() =>
+  datasetOptions(datasets.value, localInput.value.source),
+);
+
+/** Load the dataset list once, on first use of the picker. */
+function loadDatasets(): Promise<void> {
+  if (!datasetsRequest) {
+    datasetsRequest = (async () => {
+      try {
+        const res = (await api.getDatasets({ limit: 200 })) as {
+          data?: DatasetChoice[];
+        } | null;
+        // The API layer resolves null on HTTP/network errors: treat that as
+        // a failure too, so reopening the picker retries.
+        if (!res || !Array.isArray(res.data)) {
+          throw new Error('dataset list unavailable');
+        }
+        datasets.value = res.data;
+      } catch {
+        datasets.value = [];
+        datasetsRequest = null;
+      } finally {
+        datasetsLoaded.value = true;
+      }
+    })();
+  }
+  return datasetsRequest;
+}
+
+function onDatasetPickerOpen(open: boolean) {
+  if (open) loadDatasets();
+}
+
+function onDatasetSelected(value: unknown) {
+  if (typeof value !== 'string') return;
+  localInput.value.source = value;
+  emitUpdate();
+}
+
+if (isDatasetInput.value) {
+  loadDatasets();
+}
 
 // Build component output options
 const componentOutputOptions = computed(() => {
