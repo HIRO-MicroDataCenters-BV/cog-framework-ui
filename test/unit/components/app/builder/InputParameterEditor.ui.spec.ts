@@ -123,7 +123,9 @@ describe('InputParameterEditor dataset picker', () => {
     const wrapper = mountEditor('dataset_id');
     await flushPromises();
     expect(getDatasets).toHaveBeenCalledTimes(1);
-    expect(wrapper.findAll('.select-item')).toHaveLength(0);
+    expect(
+      wrapper.find('[data-testid="dataset-picker"]').findAll('.select-item'),
+    ).toHaveLength(0);
 
     getDatasets.mockResolvedValueOnce({
       data: [{ id: 'a48aeae6', dataset_name: 'iris-training-demo' }],
