@@ -6,6 +6,8 @@ export default defineI18nConfig(() => ({
   messages: {
     en: {
       message: {
+        pipeline_run_started:
+          'The run was submitted. Open it to follow each step until it finishes.',
         no_data: 'No data available',
         loading: 'Loading...',
         success: {
@@ -107,6 +109,7 @@ export default defineI18nConfig(() => ({
         project_name: '',
       },
       title: {
+        pipeline_run_started: 'Pipeline started',
         datasets: 'Datasets',
         models: 'Models',
         'model-serving': 'Model Serving',
@@ -512,6 +515,8 @@ export default defineI18nConfig(() => ({
         back: 'Back',
         save: 'Save',
         save_and_run: 'Save & Run',
+        monitor_pipeline: 'Monitor pipeline',
+        stay_in_builder: 'Stay in builder',
         cancel: 'Cancel',
         close: 'Close',
         load_more: 'Load More',
