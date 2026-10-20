@@ -83,7 +83,8 @@ export type ComponentsPage = {
  * Fetch every page of the component catalog. Stops when `total_items` is
  * reached, when a page comes back short, or when it is empty; rows seen
  * twice (a component created between two page requests shifts the pages)
- * are kept once.
+ * are kept once. A page that fails (the API layer resolves `null` on HTTP
+ * and network errors) rejects, so the caller never shows a partial catalog.
  */
 export const fetchAllComponents = async (
   fetchPage: (page: number, limit: number) => Promise<ComponentsPage | null>,
@@ -94,7 +95,10 @@ export const fetchAllComponents = async (
   let page = 1;
   for (;;) {
     const res = await fetchPage(page, pageSize);
-    const rows = res?.data ?? [];
+    if (!res || !Array.isArray(res.data)) {
+      throw new Error(`component catalog page ${page} failed to load`);
+    }
+    const rows = res.data;
     for (const row of rows) {
       const key = String(row.id);
       if (seen.has(key)) continue;

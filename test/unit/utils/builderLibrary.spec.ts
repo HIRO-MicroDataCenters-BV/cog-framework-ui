@@ -107,6 +107,21 @@ describe('builderLibrary.fetchAllComponents', () => {
     expect(fetchPage).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects when a later page fails so the caller does not show a partial catalog', async () => {
+    const fetchPage = vi.fn(async (page: number) =>
+      page === 1
+        ? {
+            data: [component('1', 'A', 'data')],
+            pagination: { page: 1, limit: 1, total_items: 3 },
+          }
+        : null,
+    );
+    await expect(fetchAllComponents(fetchPage, 1)).rejects.toThrow(
+      'page 2 failed to load',
+    );
+    expect(fetchPage).toHaveBeenCalledTimes(2);
+  });
+
   it('drops rows repeated across pages and tolerates an empty page', async () => {
     const fetchPage = vi.fn(async (page: number) =>
       page === 1

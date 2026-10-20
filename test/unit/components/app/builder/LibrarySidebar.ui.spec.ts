@@ -102,4 +102,27 @@ describe('LibrarySidebar', () => {
     await flushPromises();
     expect(wrapper.findAll('[draggable="true"]')).toHaveLength(0);
   });
+
+  it('shows an empty library when a later page resolves null', async () => {
+    getTrainingBuilderComponents.mockImplementation(
+      async ({ page }: { page: number }) =>
+        page === 1
+          ? {
+              data: [
+                {
+                  ...base,
+                  id: 'u1',
+                  name: 'Add ten',
+                  category: 'test',
+                  creator: 'me',
+                },
+              ],
+              pagination: { page: 1, limit: 1, total_items: 2 },
+            }
+          : null,
+    );
+    const wrapper = mountSidebar();
+    await flushPromises();
+    expect(wrapper.findAll('[draggable="true"]')).toHaveLength(0);
+  });
 });

@@ -79,6 +79,7 @@ import {
   fetchAllComponents,
   getCategories,
   isPlatformComponent,
+  type ComponentsPage,
 } from '~/utils/builderLibrary';
 
 const api = useApi();
@@ -108,8 +109,14 @@ onMounted(() => {
  */
 const fetchComponents = async () => {
   try {
-    components.value = await fetchAllComponents((page, limit) =>
-      api.getTrainingBuilderComponents({ page, limit }),
+    components.value = await fetchAllComponents(
+      // The endpoint returns the generic API envelope (or null on failure);
+      // this is the one place that reads it as a component catalog page.
+      async (page, limit) =>
+        (await api.getTrainingBuilderComponents({
+          page,
+          limit,
+        })) as ComponentsPage | null,
     );
   } catch {
     // Toast is shown by the API layer; show an empty library.
