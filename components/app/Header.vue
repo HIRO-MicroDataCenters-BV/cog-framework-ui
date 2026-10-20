@@ -216,6 +216,39 @@
             </TooltipContent>
           </Tooltip>
 
+          <!-- Run started: offer to monitor it -->
+          <Dialog v-model:open="runStartedDialogOpen">
+            <DialogContent class="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{{
+                  $t('title.pipeline_run_started')
+                }}</DialogTitle>
+                <DialogDescription>
+                  {{ $t('message.pipeline_run_started') }}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter class="gap-2 sm:justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="run-started-stay"
+                  @click="runStartedDialogOpen = false"
+                >
+                  {{ $t('action.stay_in_builder') }}
+                </Button>
+                <Button
+                  size="sm"
+                  class="gap-2"
+                  data-testid="run-started-monitor"
+                  @click="monitorStartedRun"
+                >
+                  <Icon name="lucide:activity" class="size-3.5" />
+                  {{ $t('action.monitor_pipeline') }}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <!-- Save & Run confirmation dialog -->
           <Dialog v-model:open="confirmDialogOpen">
             <DialogContent
@@ -806,8 +839,33 @@ function executePipelineRun(mode: 'standard' | 'federated') {
       `[builder] save & run request (${mode}):`,
       JSON.stringify(payload, null, 2),
     );
-    api.postTrainingBuilderPipeline(payload);
+    void submitStandardRun(payload);
   }
+}
+
+/**
+ * Submit the pipeline and, once KFP accepted the run, offer to open the run
+ * page (it polls the step states until the run settles).
+ */
+async function submitStandardRun(payload: PipelineCreationPayload) {
+  const res = (await api.postTrainingBuilderPipeline(payload)) as {
+    data?: { run_id?: string | null } | null;
+  } | null;
+  const runId = res?.data?.run_id;
+  if (runId) {
+    startedRunId.value = runId;
+    runStartedDialogOpen.value = true;
+  }
+}
+
+const startedRunId = ref<string | null>(null);
+const runStartedDialogOpen = ref(false);
+
+function monitorStartedRun() {
+  const runId = startedRunId.value;
+  runStartedDialogOpen.value = false;
+  if (!runId) return;
+  navigateTo(`/pipelines/${runId}`);
 }
 </script>
 

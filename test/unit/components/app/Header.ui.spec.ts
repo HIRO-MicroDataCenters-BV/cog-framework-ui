@@ -62,3 +62,75 @@ describe('Header component', () => {
     expect(link.exists()).toBe(true);
   });
 });
+
+describe('Header run submission', () => {
+  const mountBuilderHeader = (post: ReturnType<typeof vi.fn>) => {
+    pageRef.value.section = 'pipelines_builder';
+    globalThis.useApi = () => ({
+      postTrainingBuilderPipeline: post,
+      postTrainingBuilderPipelineDataspaceFederatedRun: vi.fn(),
+    });
+    return shallowMount(Header, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          NuxtLink: true,
+          Icon: true,
+          Breadcrumb: { template: '<nav><slot /></nav>' },
+          BreadcrumbList: { template: '<ol><slot /></ol>' },
+          BreadcrumbItem: { template: '<li><slot /></li>' },
+          BreadcrumbSeparator: { template: '<span>/</span>' },
+          Input: true,
+          Button: {
+            template:
+              '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+          },
+          Dialog: {
+            props: ['open'],
+            template:
+              '<div :data-open="open ? \'1\' : \'0\'"><slot v-if="open" /></div>',
+          },
+          DialogContent: { template: '<div><slot /></div>' },
+          DialogHeader: { template: '<div><slot /></div>' },
+          DialogTitle: { template: '<h2><slot /></h2>' },
+          DialogDescription: { template: '<p><slot /></p>' },
+          DialogFooter: { template: '<div><slot /></div>' },
+        },
+      },
+    });
+  };
+
+  it('offers to monitor the run once the API returns a run id', async () => {
+    const navigate = vi.fn();
+    globalThis.navigateTo = navigate;
+    const post = vi.fn().mockResolvedValue({ data: { run_id: 'run-123' } });
+    const wrapper = mountBuilderHeader(post);
+
+    await (
+      wrapper.vm as unknown as {
+        submitStandardRun: (p: unknown) => Promise<void>;
+      }
+    ).submitStandardRun({ name: 'x' });
+    await wrapper.vm.$nextTick();
+
+    expect(post).toHaveBeenCalledWith({ name: 'x' });
+    const monitor = wrapper.find('[data-testid="run-started-monitor"]');
+    expect(monitor.exists()).toBe(true);
+    await monitor.trigger('click');
+    expect(navigate).toHaveBeenCalledWith('/pipelines/run-123');
+  });
+
+  it('stays quiet when the API returns no run id', async () => {
+    const post = vi.fn().mockResolvedValue({ data: { run_id: null } });
+    const wrapper = mountBuilderHeader(post);
+    await (
+      wrapper.vm as unknown as {
+        submitStandardRun: (p: unknown) => Promise<void>;
+      }
+    ).submitStandardRun({ name: 'y' });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="run-started-monitor"]').exists()).toBe(
+      false,
+    );
+  });
+});
