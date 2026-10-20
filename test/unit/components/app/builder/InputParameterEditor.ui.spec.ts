@@ -118,6 +118,30 @@ describe('InputParameterEditor dataset picker', () => {
     });
   });
 
+  it('retries the dataset request after a failure when the picker reopens', async () => {
+    getDatasets.mockRejectedValueOnce(new Error('boom'));
+    const wrapper = mountEditor('dataset_id');
+    await flushPromises();
+    expect(getDatasets).toHaveBeenCalledTimes(1);
+    expect(wrapper.findAll('.select-item')).toHaveLength(0);
+
+    getDatasets.mockResolvedValueOnce({
+      data: [{ id: 'a48aeae6', dataset_name: 'iris-training-demo' }],
+    });
+    wrapper
+      .find('[data-testid="dataset-picker"]')
+      .findComponent(SelectStub)
+      .vm.$emit('update:open', true);
+    await flushPromises();
+    expect(getDatasets).toHaveBeenCalledTimes(2);
+    expect(
+      wrapper
+        .find('[data-testid="dataset-picker"]')
+        .findAll('.select-item')
+        .map((i) => i.text()),
+    ).toEqual(['iris-training-demo']);
+  });
+
   it('leaves other String constants as a text field', async () => {
     const wrapper = mountEditor('model_name');
     await flushPromises();

@@ -361,6 +361,8 @@ function loadDatasets(): Promise<void> {
           []) as DatasetChoice[];
       } catch {
         datasets.value = [];
+        // Forget the failed request so reopening the picker retries.
+        datasetsRequest = null;
       } finally {
         datasetsLoaded.value = true;
       }
