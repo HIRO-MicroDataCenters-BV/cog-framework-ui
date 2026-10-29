@@ -3535,6 +3535,56 @@ export const useApi = () => {
       return request(`/training-builder-components/${component_id}`, 'DELETE');
     },
 
+    /**
+     * Per-user home page overview: run stats, recent runs, live endpoints,
+     * the caller's models and datasets, GPU use, a getting-started
+     * checklist and recommendations, in one call.
+     */
+    getOverview: async () => {
+      return request(`/overview`);
+    },
+
+    // ============================================================================
+    // TRAINING BUILDER EXAMPLE APIs
+    // ============================================================================
+
+    /**
+     * Lists the example pipelines (ready-made graphs over the platform's
+     * prebuilt components, each with a sample dataset).
+     */
+    getTrainingBuilderTemplates: async () => {
+      return request(`/training-builder-templates`);
+    },
+
+    /**
+     * Resolves one example into canvas nodes for the builder.
+     *
+     * @param {string} key - Example key, e.g. 'wine-train-and-serve'
+     * @param {string} [datasetId] - Dataset for the reader step; defaults to
+     *   the caller's registered copy of the example's sample
+     */
+    getTrainingBuilderTemplate: async (key: string, datasetId?: string) => {
+      const q = datasetId
+        ? `?${new URLSearchParams({ dataset_id: datasetId })}`
+        : '';
+      return request(
+        `/training-builder-templates/${encodeURIComponent(key)}${q}`,
+      );
+    },
+
+    /**
+     * Registers the example's sample dataset for the caller (idempotent:
+     * returns the existing copy when there is one).
+     */
+    postTrainingBuilderTemplateSampleDataset: async (key: string) => {
+      return request(
+        `/training-builder-templates/${encodeURIComponent(key)}/sample-dataset`,
+        'POST',
+        {},
+        { showToast: false },
+      );
+    },
+
     // ============================================================================
     // TRAINING BUILDER PIPELINE APIs
     // ============================================================================
