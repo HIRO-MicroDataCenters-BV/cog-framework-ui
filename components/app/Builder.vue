@@ -82,7 +82,7 @@
         </div>
         <CanvasArea
           v-if="!readonly || nodes.length > 0 || edges.length > 0"
-          :key="`canvas-${nodes.length}-${edges.length}`"
+          :key="`canvas-${exampleLoads}-${nodes.length}-${edges.length}`"
           :nodes="enrichedNodes"
           :edges="edges"
           :readonly="readonly"
@@ -309,8 +309,14 @@ watch(
 const showExamples = ref(false);
 const exampleGallery = ref<InstanceType<typeof ExampleGallery> | null>(null);
 
+// Part of the canvas key: every example load remounts the canvas, even when
+// the new graph has the same node and edge counts, so the fit request is
+// always taken by the canvas that renders it.
+const exampleLoads = ref(0);
+
 const loadExample = (template: PipelineTemplateDetail) => {
   const data = templateToBuilderData(template, getTypeColor);
+  exampleLoads.value += 1;
   // Fill the store before the page: the page.data.builder watcher only
   // hydrates an empty store, and would reset the parameters if it did.
   useState<boolean>('builder-fit-on-next-init').value = true;
