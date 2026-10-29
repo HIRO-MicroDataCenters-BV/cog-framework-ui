@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useToaster } from '~/composables/toaster';
 
 const successMock = vi.fn();
@@ -118,6 +118,43 @@ describe('useToaster — raw mode (opts.raw)', () => {
     show('success', 'operation_completed', undefined, { raw: false });
     expect(successMock).toHaveBeenCalledWith(
       'message.success.operation_completed',
+      expect.any(Object),
+    );
+  });
+});
+
+describe('useToaster — text without a translation', () => {
+  const originalUseI18n = globalThis.useI18n;
+  const known = new Set(['message.error.server_error']);
+
+  beforeEach(() => {
+    errorMock.mockReset();
+    (globalThis as { useI18n: unknown }).useI18n = () => ({
+      t: (key: string) => `translated:${key}`,
+      te: (key: string) => known.has(key),
+    });
+  });
+
+  afterEach(() => {
+    (globalThis as { useI18n: unknown }).useI18n = originalUseI18n;
+  });
+
+  it('shows API text as written instead of as message.error.<text>', () => {
+    const { show } = useToaster();
+    const apiText =
+      'Invalid kube-config file. Expected key current-context in kube-config';
+    show('error', apiText);
+    expect(errorMock).toHaveBeenCalledWith(
+      apiText,
+      expect.objectContaining({ duration: 3000 }),
+    );
+  });
+
+  it('still translates known message keys', () => {
+    const { show } = useToaster();
+    show('error', 'server_error');
+    expect(errorMock).toHaveBeenCalledWith(
+      'translated:message.error.server_error',
       expect.any(Object),
     );
   });
