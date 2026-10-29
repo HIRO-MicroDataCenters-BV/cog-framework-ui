@@ -499,8 +499,8 @@ watch(
 );
 
 // One-shot request to fit the next graph that mounts, set when a whole
-// pipeline is placed on the canvas at once (loading an example). The canvas
-// remounts when the node count changes, so this instance is the one that
+// pipeline is placed on the canvas at once (loading an example). Builder
+// remounts the canvas on every example load, so this instance is the one that
 // renders the new graph; it takes the request and clears it.
 const fitOnNextInit = useState<boolean>(
   'builder-fit-on-next-init',
