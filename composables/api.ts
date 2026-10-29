@@ -3581,7 +3581,7 @@ export const useApi = () => {
         `/training-builder-templates/${encodeURIComponent(key)}/sample-dataset`,
         'POST',
         {},
-        { showToast: false },
+        { showToast: true },
       );
     },
 
