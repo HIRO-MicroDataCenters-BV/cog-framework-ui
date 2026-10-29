@@ -1,0 +1,120 @@
+{
+  "status_code": 200,
+  "message": "Overview retrieved successfully.",
+  "data": {
+    "user_id": "admin@example.com",
+    "namespace": "admin",
+    "runs": {
+      "this_week": 38,
+      "last_week": 26,
+      "succeeded_this_week": 33,
+      "failed_this_week": 3,
+      "running": 2,
+      "success_rate": 0.9167
+    },
+    "recent_runs": [
+      {
+        "run_id": "6f1c1e9a-2b1e-4a51-9a1d-000000000001",
+        "run_name": "fraud-detector-retrain",
+        "status": "SUCCEEDED",
+        "duration": "0:04:12",
+        "start_time": "2026-10-27T11:40:00Z"
+      },
+      {
+        "run_id": "6f1c1e9a-2b1e-4a51-9a1d-000000000002",
+        "run_name": "imaging-segmentation-v4",
+        "status": "RUNNING",
+        "duration": "0:08:03",
+        "start_time": "2026-10-27T11:52:00Z"
+      },
+      {
+        "run_id": "6f1c1e9a-2b1e-4a51-9a1d-000000000003",
+        "run_name": "churn-model-weekly",
+        "status": "FAILED",
+        "duration": "0:01:47",
+        "start_time": "2026-10-27T11:00:00Z"
+      },
+      {
+        "run_id": "6f1c1e9a-2b1e-4a51-9a1d-000000000004",
+        "run_name": "Wine cultivar: train and serve",
+        "status": "SUCCEEDED",
+        "duration": "0:05:38",
+        "start_time": "2026-10-27T09:00:00Z"
+      },
+      {
+        "run_id": "6f1c1e9a-2b1e-4a51-9a1d-000000000005",
+        "run_name": "log-anomaly-daily",
+        "status": "SUCCEEDED",
+        "duration": "0:02:51",
+        "start_time": "2026-10-27T07:00:00Z"
+      }
+    ],
+    "endpoints": [
+      {
+        "isvc_name": "fraud-detector",
+        "model_name": "fraud-detector",
+        "model_version": "3",
+        "model_id": "7e036570-1e1c-4a9a-b70f-3bb032b28990",
+        "status": "ready",
+        "url": "http://fraud-detector.admin.example.com"
+      },
+      {
+        "isvc_name": "qwen25-7b-awq",
+        "model_name": "qwen2.5-7b-awq",
+        "model_version": "1",
+        "model_id": "3e7557e0-112d-4f62-8358-0faf88133ba0",
+        "status": "ready",
+        "url": "http://qwen25-7b-awq.admin.example.com"
+      }
+    ],
+    "assets": {
+      "models_total": 47,
+      "models_this_week": 6,
+      "datasets_total": 24,
+      "dataset_source_types": 5,
+      "latest_model_id": "7e036570-1e1c-4a9a-b70f-3bb032b28990",
+      "latest_model_name": "fraud-detector"
+    },
+    "gpu": {
+      "total": 8,
+      "in_use": 5,
+      "idle": 3,
+      "utilisation": 0.625
+    },
+    "getting_started": [
+      {
+        "key": "dataset",
+        "title": "Register a dataset",
+        "done": true,
+        "link": "/datasets"
+      },
+      {
+        "key": "pipeline",
+        "title": "Build and run a pipeline",
+        "done": true,
+        "link": "/pipelines/builder/new?example=wine-train-and-serve"
+      },
+      {
+        "key": "model",
+        "title": "Train and register a model",
+        "done": true,
+        "link": "/models"
+      },
+      {
+        "key": "deploy",
+        "title": "Deploy a model",
+        "done": false,
+        "link": "/model-serving"
+      }
+    ],
+    "recommendations": [
+      {
+        "kind": "warning",
+        "message": "3 pipeline runs failed this week. Latest: churn-model-weekly.",
+        "action": "Open run",
+        "link": "/pipelines/6f1c1e9a-2b1e-4a51-9a1d-000000000003"
+      }
+    ],
+    "unavailable": []
+  }
+}
