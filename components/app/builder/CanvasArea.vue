@@ -8,7 +8,7 @@
       :nodes="props.nodes"
       :edges="props.edges"
       class="w-full h-full"
-      :fit-view-on-init="props.readonly"
+      :fit-view-on-init="fitViewOnInit"
       :nodes-draggable="!props.readonly && !isLocked"
       :nodes-connectable="!props.readonly && !isLocked"
       :edges-updatable="!props.readonly && !isLocked"
@@ -497,6 +497,17 @@ watch(
   },
   { immediate: false },
 );
+
+// One-shot request to fit the next graph that mounts, set when a whole
+// pipeline is placed on the canvas at once (loading an example). The canvas
+// remounts when the node count changes, so this instance is the one that
+// renders the new graph; it takes the request and clears it.
+const fitOnNextInit = useState<boolean>(
+  'builder-fit-on-next-init',
+  () => false,
+);
+const fitViewOnInit = props.readonly || fitOnNextInit.value;
+fitOnNextInit.value = false;
 
 onNodesInitialized(() => {
   if (!props.readonly) return;
