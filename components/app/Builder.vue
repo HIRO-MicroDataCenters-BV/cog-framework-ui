@@ -52,7 +52,30 @@
     </div>
 
     <div class="flex-1 flex flex-col">
-      <div class="flex-1">
+      <div class="flex-1 relative">
+        <div
+          v-if="!readonly && nodes.length === 0"
+          class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+        >
+          <div
+            class="pointer-events-auto rounded-xl border bg-background/95 p-6 text-center shadow-sm max-w-sm"
+          >
+            <Icon
+              name="lucide:sparkles"
+              class="w-6 h-6 mx-auto text-primary"
+              aria-hidden="true"
+            />
+            <h3 class="mt-2 font-medium">
+              {{ $t('builder.examples.empty_canvas_title') }}
+            </h3>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {{ $t('builder.examples.empty_canvas_description') }}
+            </p>
+            <Button class="mt-4" size="sm" @click="showExamples = true">
+              {{ $t('builder.examples.browse') }}
+            </Button>
+          </div>
+        </div>
         <CanvasArea
           v-if="!readonly || nodes.length > 0 || edges.length > 0"
           :key="`canvas-${nodes.length}-${edges.length}`"
@@ -71,6 +94,14 @@
       </div>
     </div>
   </div>
+
+  <ExampleGallery
+    v-if="!readonly"
+    ref="exampleGallery"
+    v-model:open="showExamples"
+    :has-nodes="nodes.length > 0"
+    @load="loadExample"
+  />
 
   <DeleteConfirmationDialog
     :open="deleteConfirmation !== null"
@@ -116,6 +147,8 @@ import LibrarySidebar from './builder/LibrarySidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
 import DeleteConfirmationDialog from './builder/DeleteConfirmationDialog.vue';
+import ExampleGallery from './builder/ExampleGallery.vue';
+import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -141,8 +174,10 @@ import type {
   PipelineBuilderData,
   NodeUpdate,
 } from '~/types/canvas.types';
+import type { PipelineTemplateDetail } from '~/types/template.types';
 import { usePipelineBuilder } from '~/composables/usePipelineBuilder';
 import { useBuilderColors } from '~/composables/useBuilderColors';
+import { templateToBuilderData } from '~/utils/pipelineTemplate';
 
 const emit = defineEmits<{
   (e: 'node-click', node: VueFlowNode | null): void;
@@ -266,6 +301,40 @@ watch(
   },
 );
 
+// Example pipelines: the gallery resolves an example; this puts it on the canvas.
+const showExamples = ref(false);
+const exampleGallery = ref<InstanceType<typeof ExampleGallery> | null>(null);
+
+const loadExample = (template: PipelineTemplateDetail) => {
+  const data = templateToBuilderData(template, getTypeColor);
+  // Fill the store before the page: the page.data.builder watcher only
+  // hydrates an empty store, and would reset the parameters if it did.
+  useState<boolean>('builder-fit-on-next-init').value = true;
+  initialize(data.nodes, data.edges, data.input_path);
+  const currentBuilder = (page.value.data?.builder ||
+    {}) as Partial<PipelineBuilderData>;
+  setPage({
+    ...page.value,
+    data: {
+      ...page.value.data,
+      builder: {
+        ...currentBuilder,
+        ...JSON.parse(JSON.stringify(data)),
+        output_path: [],
+      },
+    },
+  });
+  toaster.show('success', 'builder.example_loaded', { name: template.title });
+};
+
+// /pipelines/builder/new?example=<key> loads an example straight away.
+onMounted(() => {
+  const exampleKey = useRoute().query.example;
+  if (!readonly.value && typeof exampleKey === 'string' && exampleKey) {
+    exampleGallery.value?.loadTemplate(exampleKey);
+  }
+});
+
 // Sync store back to Page for persistence/navigation
 // This is ONE-WAY: Store -> Page
 // IMPORTANT: Prevent infinite loops by checking if data actually changed
@@ -329,6 +398,12 @@ interface MenuAction {
 }
 
 const menuActions = computed<MenuAction[]>(() => [
+  {
+    key: 'examples',
+    icon: 'lucide:sparkles',
+    titleKey: 'builder.examples.title',
+    action: () => (showExamples.value = true),
+  },
   {
     key: 'jupyter',
     icon: 'lucide:file-code',
