@@ -39,6 +39,8 @@ export default defineI18nConfig(() => ({
           share_updated: 'Dataset shared successfully',
           canary_serving_created: 'Canary serving created successfully',
           builder: {
+            example_loaded:
+              'Example "{name}" loaded. Review it, then Save & Run.',
             component_renamed: 'Component "{oldName}" renamed to "{newName}"',
             component_renamed_with_updates:
               'Component "{oldName}" renamed to "{newName}" and {count} reference(s) updated',
@@ -188,6 +190,8 @@ export default defineI18nConfig(() => ({
           "You don't have permission to create datasets",
         no_create_permission_models:
           "You don't have permission to create models",
+        no_run_permission_pipelines:
+          "You don't have permission to run pipelines",
         pipelines:
           'Build ML training workflows and monitor their execution. Design pipelines visually, track active runs, resource usage, and performance metrics.',
         pipeline_experiments:
@@ -210,6 +214,25 @@ export default defineI18nConfig(() => ({
           'Send one request to every model an inference service exposes and compare the answers side by side.',
       },
       builder: {
+        examples: {
+          title: 'Example pipelines',
+          description:
+            'Ready-made end-to-end pipelines over the platform components. Each one registers a small sample dataset for you and opens on the canvas, ready to run.',
+          replaces_canvas:
+            'Loading an example replaces the components currently on the canvas.',
+          empty: 'No example pipelines are available.',
+          use: 'Use example',
+          minutes: '~{count} min',
+          deploys: 'Deploys an endpoint',
+          unavailable:
+            'The platform components this example needs are still registering. Try again in a minute.',
+          browse: 'Browse examples',
+          view_only:
+            'Your plan can open examples to look at. Running them needs the Enterprise plan.',
+          empty_canvas_title: 'Start from an example',
+          empty_canvas_description:
+            'Load a complete pipeline (data, training, evaluation and serving), or drag components from the library to build your own.',
+        },
         components: 'Components',
         properties: 'Properties',
         properties_subtitle: 'Configure selected component',
@@ -719,6 +742,7 @@ export default defineI18nConfig(() => ({
           'Pinned answers stay while you re-ask another service: serve the fine-tuned model, send the same request and compare.',
       },
       menu: {
+        overview: 'Overview',
         upload: 'Upload',
         jupyter: 'Jupyter',
         documentation: 'Documentation',

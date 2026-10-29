@@ -1,0 +1,2298 @@
+{
+  "wine-train-and-serve": {
+    "status_code": 200,
+    "message": "Example 'wine-train-and-serve' resolved.",
+    "data": {
+      "key": "wine-train-and-serve",
+      "title": "Wine cultivar: train and serve",
+      "summary": "The shortest complete loop: read a CSV, train a random forest, score it on held-out data and deploy it as a live endpoint.",
+      "tags": ["tabular", "classification", "deploy"],
+      "level": "starter",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Random forest",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "wine",
+        "dataset_name": "sample-wine",
+        "file_name": "wine.csv",
+        "kind": "tabular",
+        "description": "178 wines from three cultivars, 13 chemical measurements each; predict the `cultivar` column.",
+        "source": "Wine, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": null
+      },
+      "available": true,
+      "description": "Reads the wine sample, keeps a quarter of it aside for testing, standardises the training features and fits a random forest. The evaluator scores the model on the untouched test split (accuracy, macro F1, confusion matrix) while the serve step deploys the registered model as `example-wine-forest`. Once the run finishes, the model is under Models and the endpoint under Model Serving.",
+      "nodes": [
+        {
+          "label": "Read data",
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "component": {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Tabular dataset reader",
+            "input_path": [
+              {
+                "name": "dataset_id",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "target_column",
+                "type": "String",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Tabular dataset reader.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "00000000-0000-4000-8000-000000000001",
+              "destination": "dataset_id",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "cultivar",
+              "destination": "target_column",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Split",
+          "position": {
+            "x": 0.0,
+            "y": 150.0
+          },
+          "component": {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Train test split",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "test_fraction",
+                "type": "Float",
+                "default": "0.2"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "train",
+                "type": "Dataset"
+              },
+              {
+                "name": "test",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Train test split.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Read data.dataset",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "0.25",
+              "destination": "test_fraction",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Normalize",
+          "position": {
+            "x": -140.0,
+            "y": 300.0
+          },
+          "component": {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Dataset normalizer",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "normalized",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Dataset normalizer.yaml",
+            "category": "preprocessing",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Split.train",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Random forest",
+          "position": {
+            "x": -140.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "c535f2bb-5bcc-492e-902b-3f6baa6d197c",
+            "name": "Random forest classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "model_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "n_estimators",
+                "type": "Integer",
+                "default": "200"
+              },
+              {
+                "name": "max_depth",
+                "type": "Integer",
+                "default": "0"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Random forest classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-wine-forest",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "200",
+              "destination": "n_estimators",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "0",
+              "destination": "max_depth",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate",
+          "position": {
+            "x": 0.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "test",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://mlflow/Classifier evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Random forest.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Serve",
+          "position": {
+            "x": -280.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "b009cd63-d85d-4cfd-a6fc-2d1cb1c8f551",
+            "name": "Serve registered model",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "service_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "wait_seconds",
+                "type": "Integer",
+                "default": "600"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "service_name",
+                "type": "String"
+              },
+              {
+                "name": "service_url",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Serve registered model.yaml",
+            "category": "deployment",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Random forest.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-wine-forest",
+              "destination": "service_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "600",
+              "destination": "wait_seconds",
+              "value_source_type": "constant"
+            }
+          ]
+        }
+      ],
+      "input_path": [],
+      "pipeline": {
+        "name": "Wine cultivar: train and serve",
+        "pipeline_components": [
+          {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Read data",
+            "inputs": [
+              {
+                "source": "00000000-0000-4000-8000-000000000001",
+                "destination": "dataset_id",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "cultivar",
+                "destination": "target_column",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Split",
+            "inputs": [
+              {
+                "source": "Read data.dataset",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "0.25",
+                "destination": "test_fraction",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Normalize",
+            "inputs": [
+              {
+                "source": "Split.train",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "c535f2bb-5bcc-492e-902b-3f6baa6d197c",
+            "name": "Random forest",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-wine-forest",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "200",
+                "destination": "n_estimators",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "0",
+                "destination": "max_depth",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Evaluate",
+            "inputs": [
+              {
+                "source": "Random forest.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "b009cd63-d85d-4cfd-a6fc-2d1cb1c8f551",
+            "name": "Serve",
+            "inputs": [
+              {
+                "source": "Random forest.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-wine-forest",
+                "destination": "service_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "600",
+                "destination": "wait_seconds",
+                "value_source_type": "constant"
+              }
+            ]
+          }
+        ],
+        "input_path": [],
+        "output_path": []
+      }
+    },
+    "pagination": null
+  },
+  "thyroid-recurrence-bakeoff": {
+    "status_code": 200,
+    "message": "Example 'thyroid-recurrence-bakeoff' resolved.",
+    "data": {
+      "key": "thyroid-recurrence-bakeoff",
+      "title": "Thyroid cancer: three-model bake-off",
+      "summary": "Train logistic regression, an SVM and gradient boosting side by side on the same split and compare their test scores.",
+      "tags": ["tabular", "classification", "comparison"],
+      "level": "intermediate",
+      "estimated_minutes": 8,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Logistic regression",
+        "SVM",
+        "Gradient boosting",
+        "Evaluate logistic regression",
+        "Evaluate SVM",
+        "Evaluate gradient boosting"
+      ],
+      "serves_model": false,
+      "sample_dataset": {
+        "key": "thyroid-cancer",
+        "dataset_name": "sample-thyroid-cancer",
+        "file_name": "thyroid_cancer.csv",
+        "kind": "tabular",
+        "description": "383 differentiated thyroid cancer patients followed for at least 10 years, 16 clinical and pathological features (age plus text columns such as stage and treatment response); predict the `recurred` column (yes or no).",
+        "source": "Differentiated Thyroid Cancer Recurrence, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": null
+      },
+      "available": true,
+      "description": "Predict whether a thyroid cancer recurs. The reader one-hot encodes the text columns. One read, split and normalize feed three learners that run in parallel. Each learner gets its own evaluator on the same test split, so the run page shows the three metric sets next to each other. All three models are registered; pick the best one and serve it from Models.",
+      "nodes": [
+        {
+          "label": "Read data",
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "component": {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Tabular dataset reader",
+            "input_path": [
+              {
+                "name": "dataset_id",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "target_column",
+                "type": "String",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Tabular dataset reader.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "00000000-0000-4000-8000-000000000001",
+              "destination": "dataset_id",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "recurred",
+              "destination": "target_column",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Split",
+          "position": {
+            "x": 0.0,
+            "y": 150.0
+          },
+          "component": {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Train test split",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "test_fraction",
+                "type": "Float",
+                "default": "0.2"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "train",
+                "type": "Dataset"
+              },
+              {
+                "name": "test",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Train test split.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Read data.dataset",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "0.25",
+              "destination": "test_fraction",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Normalize",
+          "position": {
+            "x": -140.0,
+            "y": 300.0
+          },
+          "component": {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Dataset normalizer",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "normalized",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Dataset normalizer.yaml",
+            "category": "preprocessing",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Split.train",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Logistic regression",
+          "position": {
+            "x": -420.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "2bb1fe1b-9c03-4e22-8e70-3634f52ab3e7",
+            "name": "Logistic regression classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "model_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "c",
+                "type": "Float",
+                "default": "1.0"
+              },
+              {
+                "name": "max_iter",
+                "type": "Integer",
+                "default": "1000"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Logistic regression classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-thyroid-logreg",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "1.0",
+              "destination": "c",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "1000",
+              "destination": "max_iter",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "SVM",
+          "position": {
+            "x": -140.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "ccd3b057-661d-4a5c-87f9-d210a228729a",
+            "name": "SVM classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "model_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "kernel",
+                "type": "String",
+                "default": "rbf"
+              },
+              {
+                "name": "c",
+                "type": "Float",
+                "default": "1.0"
+              },
+              {
+                "name": "gamma",
+                "type": "String",
+                "default": "scale"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/SVM classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-thyroid-svm",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "rbf",
+              "destination": "kernel",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "1.0",
+              "destination": "c",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "scale",
+              "destination": "gamma",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Gradient boosting",
+          "position": {
+            "x": 140.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "1e1b9a7f-d374-46bc-acc7-5ad1770cc086",
+            "name": "Gradient boosting classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "model_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "n_estimators",
+                "type": "Integer",
+                "default": "300"
+              },
+              {
+                "name": "max_depth",
+                "type": "Integer",
+                "default": "6"
+              },
+              {
+                "name": "learning_rate",
+                "type": "Float",
+                "default": "0.1"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Gradient boosting classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-thyroid-boosting",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "300",
+              "destination": "n_estimators",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "6",
+              "destination": "max_depth",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "0.1",
+              "destination": "learning_rate",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate logistic regression",
+          "position": {
+            "x": -420.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "test",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://mlflow/Classifier evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Logistic regression.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate SVM",
+          "position": {
+            "x": -140.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "test",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://mlflow/Classifier evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "SVM.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate gradient boosting",
+          "position": {
+            "x": 140.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "test",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://mlflow/Classifier evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Gradient boosting.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        }
+      ],
+      "input_path": [],
+      "pipeline": {
+        "name": "Thyroid cancer: three-model bake-off",
+        "pipeline_components": [
+          {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Read data",
+            "inputs": [
+              {
+                "source": "00000000-0000-4000-8000-000000000001",
+                "destination": "dataset_id",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "recurred",
+                "destination": "target_column",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Split",
+            "inputs": [
+              {
+                "source": "Read data.dataset",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "0.25",
+                "destination": "test_fraction",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Normalize",
+            "inputs": [
+              {
+                "source": "Split.train",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "2bb1fe1b-9c03-4e22-8e70-3634f52ab3e7",
+            "name": "Logistic regression",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-thyroid-logreg",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "1.0",
+                "destination": "c",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "1000",
+                "destination": "max_iter",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "ccd3b057-661d-4a5c-87f9-d210a228729a",
+            "name": "SVM",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-thyroid-svm",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "rbf",
+                "destination": "kernel",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "1.0",
+                "destination": "c",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "scale",
+                "destination": "gamma",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "1e1b9a7f-d374-46bc-acc7-5ad1770cc086",
+            "name": "Gradient boosting",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-thyroid-boosting",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "300",
+                "destination": "n_estimators",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "6",
+                "destination": "max_depth",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "0.1",
+                "destination": "learning_rate",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Evaluate logistic regression",
+            "inputs": [
+              {
+                "source": "Logistic regression.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Evaluate SVM",
+            "inputs": [
+              {
+                "source": "SVM.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Evaluate gradient boosting",
+            "inputs": [
+              {
+                "source": "Gradient boosting.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          }
+        ],
+        "input_path": [],
+        "output_path": []
+      }
+    },
+    "pagination": null
+  },
+  "digits-image-classifier": {
+    "status_code": 200,
+    "message": "Example 'digits-image-classifier' resolved.",
+    "data": {
+      "key": "digits-image-classifier",
+      "title": "Handwritten digits: image classifier",
+      "summary": "Read a zip of labelled images, train a support vector classifier on their pixels, evaluate it and serve it.",
+      "tags": ["image", "classification", "deploy"],
+      "level": "intermediate",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read images",
+        "Split",
+        "Normalize",
+        "SVM",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "digits",
+        "dataset_name": "sample-digits",
+        "file_name": "digits.zip",
+        "kind": "image",
+        "description": "1,797 handwritten digits as 8x8 greyscale PNGs, one folder per digit 0-9.",
+        "source": "Optical Recognition of Handwritten Digits, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": null
+      },
+      "available": true,
+      "description": "The image reader turns a zip of one folder per class into 8x8 RGB arrays, the digits' own size. The SVM trains on the normalized, flattened pixels of the training split; the evaluator applies the same normalization to the test split before scoring. The serve step deploys the model as `example-digits-svm`. For a convolutional network, swap the SVM for the CNN image classifier component.",
+      "nodes": [
+        {
+          "label": "Read images",
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "component": {
+            "id": "adcc1c25-ebec-4cd5-a1b6-a65eaa38b5d6",
+            "name": "Image dataset reader",
+            "input_path": [
+              {
+                "name": "dataset_id",
+                "type": "String"
+              },
+              {
+                "name": "image_size",
+                "type": "Integer",
+                "default": "32",
+                "optional": true
+              },
+              {
+                "name": "max_images_per_class",
+                "type": "Integer",
+                "default": "0",
+                "optional": true
+              }
+            ],
+            "output_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://components/Image_dataset_reader.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": "Load a registered image dataset (a zip of one folder per class) into a Dataset bundle."
+          },
+          "inputs": [
+            {
+              "source": "5dfc6e7e-bb4c-4f00-b3eb-92192352f944",
+              "destination": "dataset_id",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "8",
+              "destination": "image_size",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "0",
+              "destination": "max_images_per_class",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Split",
+          "position": {
+            "x": 0.0,
+            "y": 150.0
+          },
+          "component": {
+            "id": "22b16564-2bcd-4d40-9961-d4c8fef188d2",
+            "name": "Train test split",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              },
+              {
+                "name": "test_fraction",
+                "type": "Float",
+                "default": "0.2",
+                "optional": true
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42",
+                "optional": true
+              }
+            ],
+            "output_path": [
+              {
+                "name": "train",
+                "type": "Dataset"
+              },
+              {
+                "name": "test",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://components/Train_test_split.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": "Split a Dataset into a train and a test Dataset, stratified by class."
+          },
+          "inputs": [
+            {
+              "source": "Read images.dataset",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "0.2",
+              "destination": "test_fraction",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Normalize",
+          "position": {
+            "x": -140.0,
+            "y": 300.0
+          },
+          "component": {
+            "id": "2cb19e58-2427-4bd0-8e99-524681467c42",
+            "name": "Dataset normalizer",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "normalized",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://components/Dataset_normalizer.yaml",
+            "category": "preprocessing",
+            "creator": "HIRO",
+            "description": "Standardise a Dataset: images scaled to [0, 1] then z-scored per channel, tabular features z-scored per column."
+          },
+          "inputs": [
+            {
+              "source": "Split.train",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "SVM",
+          "position": {
+            "x": -140.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "88a8b788-b2ab-4560-a0ce-629dbc2c5f8e",
+            "name": "SVM classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset"
+              },
+              {
+                "name": "model_name",
+                "type": "String"
+              },
+              {
+                "name": "kernel",
+                "type": "String",
+                "default": "rbf",
+                "optional": true
+              },
+              {
+                "name": "c",
+                "type": "Float",
+                "default": "1.0",
+                "optional": true
+              },
+              {
+                "name": "gamma",
+                "type": "String",
+                "default": "scale",
+                "optional": true
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42",
+                "optional": true
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://components/SVM_classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": "Train a scikit-learn support vector classifier on a train Dataset and register it as model_name."
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-digits-svm",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "rbf",
+              "destination": "kernel",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "1.0",
+              "destination": "c",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "scale",
+              "destination": "gamma",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate",
+          "position": {
+            "x": 0.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "beb432e4-272a-4c00-a319-0db3336571d7",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              },
+              {
+                "name": "test",
+                "type": "Dataset"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://components/Classifier_evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": "Evaluate a registered classifier on a test Dataset: accuracy, macro F1, per-class scores, confusion matrix."
+          },
+          "inputs": [
+            {
+              "source": "SVM.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Serve",
+          "position": {
+            "x": -280.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "d2dc0fd8-f894-4aca-94b7-ec0a5efb5909",
+            "name": "Serve registered model",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              },
+              {
+                "name": "service_name",
+                "type": "String"
+              },
+              {
+                "name": "wait_seconds",
+                "type": "Integer",
+                "default": "600",
+                "optional": true
+              }
+            ],
+            "output_path": [
+              {
+                "name": "service_name",
+                "type": "String"
+              },
+              {
+                "name": "service_url",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://components/Serve_registered_model.yaml",
+            "category": "deployment",
+            "creator": "HIRO",
+            "description": "Serve a registered model as an InferenceService named service_name, replacing one that already exists."
+          },
+          "inputs": [
+            {
+              "source": "SVM.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-digits-svm",
+              "destination": "service_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "600",
+              "destination": "wait_seconds",
+              "value_source_type": "constant"
+            }
+          ]
+        }
+      ],
+      "input_path": [],
+      "pipeline": {
+        "name": "Handwritten digits: image classifier",
+        "pipeline_components": [
+          {
+            "id": "adcc1c25-ebec-4cd5-a1b6-a65eaa38b5d6",
+            "name": "Read images",
+            "inputs": [
+              {
+                "source": "5dfc6e7e-bb4c-4f00-b3eb-92192352f944",
+                "destination": "dataset_id",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "8",
+                "destination": "image_size",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "0",
+                "destination": "max_images_per_class",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "22b16564-2bcd-4d40-9961-d4c8fef188d2",
+            "name": "Split",
+            "inputs": [
+              {
+                "source": "Read images.dataset",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "0.2",
+                "destination": "test_fraction",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "2cb19e58-2427-4bd0-8e99-524681467c42",
+            "name": "Normalize",
+            "inputs": [
+              {
+                "source": "Split.train",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "88a8b788-b2ab-4560-a0ce-629dbc2c5f8e",
+            "name": "SVM",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-digits-svm",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "rbf",
+                "destination": "kernel",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "1.0",
+                "destination": "c",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "scale",
+                "destination": "gamma",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "beb432e4-272a-4c00-a319-0db3336571d7",
+            "name": "Evaluate",
+            "inputs": [
+              {
+                "source": "SVM.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "d2dc0fd8-f894-4aca-94b7-ec0a5efb5909",
+            "name": "Serve",
+            "inputs": [
+              {
+                "source": "SVM.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-digits-svm",
+                "destination": "service_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "600",
+                "destination": "wait_seconds",
+                "value_source_type": "constant"
+              }
+            ]
+          }
+        ],
+        "input_path": [],
+        "output_path": []
+      }
+    },
+    "pagination": null
+  },
+  "wine-tunable-retrain": {
+    "status_code": 200,
+    "message": "Example 'wine-tunable-retrain' resolved.",
+    "data": {
+      "key": "wine-tunable-retrain",
+      "title": "Wine: parameterised retrain and redeploy",
+      "summary": "Hyperparameters and the endpoint name are pipeline parameters: change them in Manage Parameters and rerun to retrain and replace the live model.",
+      "tags": ["tabular", "parameters", "retrain", "deploy"],
+      "level": "starter",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Gradient boosting",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "wine",
+        "dataset_name": "sample-wine",
+        "file_name": "wine.csv",
+        "kind": "tabular",
+        "description": "178 wines from three cultivars, 13 chemical measurements each; predict the `cultivar` column.",
+        "source": "Wine, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": null
+      },
+      "available": true,
+      "description": "Same data path as the train-and-serve example, with gradient boosting as the learner. `n_estimators`, `learning_rate` and `service_name` are pipeline parameters rather than step constants, so every rerun can try new values without touching the graph. Serving under an existing `service_name` replaces that endpoint with the newly trained model.",
+      "nodes": [
+        {
+          "label": "Read data",
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "component": {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Tabular dataset reader",
+            "input_path": [
+              {
+                "name": "dataset_id",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "target_column",
+                "type": "String",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Tabular dataset reader.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "00000000-0000-4000-8000-000000000001",
+              "destination": "dataset_id",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "cultivar",
+              "destination": "target_column",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Split",
+          "position": {
+            "x": 0.0,
+            "y": 150.0
+          },
+          "component": {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Train test split",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "test_fraction",
+                "type": "Float",
+                "default": "0.2"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "train",
+                "type": "Dataset"
+              },
+              {
+                "name": "test",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Train test split.yaml",
+            "category": "data",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Read data.dataset",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "0.25",
+              "destination": "test_fraction",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Normalize",
+          "position": {
+            "x": -140.0,
+            "y": 300.0
+          },
+          "component": {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Dataset normalizer",
+            "input_path": [
+              {
+                "name": "dataset",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "normalized",
+                "type": "Dataset"
+              }
+            ],
+            "component_file": "s3://mlflow/Dataset normalizer.yaml",
+            "category": "preprocessing",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Split.train",
+              "destination": "dataset",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Gradient boosting",
+          "position": {
+            "x": -140.0,
+            "y": 450.0
+          },
+          "component": {
+            "id": "1e1b9a7f-d374-46bc-acc7-5ad1770cc086",
+            "name": "Gradient boosting classifier",
+            "input_path": [
+              {
+                "name": "train",
+                "type": "Dataset",
+                "default": null
+              },
+              {
+                "name": "model_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "n_estimators",
+                "type": "Integer",
+                "default": "300"
+              },
+              {
+                "name": "max_depth",
+                "type": "Integer",
+                "default": "6"
+              },
+              {
+                "name": "learning_rate",
+                "type": "Float",
+                "default": "0.1"
+              },
+              {
+                "name": "seed",
+                "type": "Integer",
+                "default": "42"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "model_ref",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Gradient boosting classifier.yaml",
+            "category": "training",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Normalize.normalized",
+              "destination": "train",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "example-wine-boosting",
+              "destination": "model_name",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "n_estimators",
+              "destination": "n_estimators",
+              "value_source_type": "pipeline_inputparam"
+            },
+            {
+              "source": "6",
+              "destination": "max_depth",
+              "value_source_type": "constant"
+            },
+            {
+              "source": "learning_rate",
+              "destination": "learning_rate",
+              "value_source_type": "pipeline_inputparam"
+            },
+            {
+              "source": "42",
+              "destination": "seed",
+              "value_source_type": "constant"
+            }
+          ]
+        },
+        {
+          "label": "Evaluate",
+          "position": {
+            "x": 0.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Classifier evaluator",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "test",
+                "type": "Dataset",
+                "default": null
+              }
+            ],
+            "output_path": [
+              {
+                "name": "metrics",
+                "type": "Metrics"
+              },
+              {
+                "name": "mlpipeline_metrics",
+                "type": "Metrics"
+              }
+            ],
+            "component_file": "s3://mlflow/Classifier evaluator.yaml",
+            "category": "evaluation",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Gradient boosting.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "Split.test",
+              "destination": "test",
+              "value_source_type": "component_output"
+            }
+          ]
+        },
+        {
+          "label": "Serve",
+          "position": {
+            "x": -280.0,
+            "y": 600.0
+          },
+          "component": {
+            "id": "b009cd63-d85d-4cfd-a6fc-2d1cb1c8f551",
+            "name": "Serve registered model",
+            "input_path": [
+              {
+                "name": "model_ref",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "service_name",
+                "type": "String",
+                "default": null
+              },
+              {
+                "name": "wait_seconds",
+                "type": "Integer",
+                "default": "600"
+              }
+            ],
+            "output_path": [
+              {
+                "name": "service_name",
+                "type": "String"
+              },
+              {
+                "name": "service_url",
+                "type": "String"
+              }
+            ],
+            "component_file": "s3://mlflow/Serve registered model.yaml",
+            "category": "deployment",
+            "creator": "HIRO",
+            "description": null
+          },
+          "inputs": [
+            {
+              "source": "Gradient boosting.model_ref",
+              "destination": "model_ref",
+              "value_source_type": "component_output"
+            },
+            {
+              "source": "service_name",
+              "destination": "service_name",
+              "value_source_type": "pipeline_inputparam"
+            },
+            {
+              "source": "600",
+              "destination": "wait_seconds",
+              "value_source_type": "constant"
+            }
+          ]
+        }
+      ],
+      "input_path": [
+        {
+          "name": "n_estimators",
+          "default": "150",
+          "description": "Boosting rounds."
+        },
+        {
+          "name": "learning_rate",
+          "default": "0.1",
+          "description": "Shrinkage applied to each round."
+        },
+        {
+          "name": "service_name",
+          "default": "example-wine-boosting",
+          "description": "Endpoint to create or replace."
+        }
+      ],
+      "pipeline": {
+        "name": "Wine: parameterised retrain and redeploy",
+        "pipeline_components": [
+          {
+            "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
+            "name": "Read data",
+            "inputs": [
+              {
+                "source": "00000000-0000-4000-8000-000000000001",
+                "destination": "dataset_id",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "cultivar",
+                "destination": "target_column",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "2315ef96-86c3-4051-8169-82fd64689881",
+            "name": "Split",
+            "inputs": [
+              {
+                "source": "Read data.dataset",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "0.25",
+                "destination": "test_fraction",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "56a4d9f3-357e-47e5-95fc-bae9fc47aea0",
+            "name": "Normalize",
+            "inputs": [
+              {
+                "source": "Split.train",
+                "destination": "dataset",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "1e1b9a7f-d374-46bc-acc7-5ad1770cc086",
+            "name": "Gradient boosting",
+            "inputs": [
+              {
+                "source": "Normalize.normalized",
+                "destination": "train",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "example-wine-boosting",
+                "destination": "model_name",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "n_estimators",
+                "destination": "n_estimators",
+                "value_source_type": "pipeline_inputparam"
+              },
+              {
+                "source": "6",
+                "destination": "max_depth",
+                "value_source_type": "constant"
+              },
+              {
+                "source": "learning_rate",
+                "destination": "learning_rate",
+                "value_source_type": "pipeline_inputparam"
+              },
+              {
+                "source": "42",
+                "destination": "seed",
+                "value_source_type": "constant"
+              }
+            ]
+          },
+          {
+            "id": "685e6350-69d4-4747-b907-c173c9b9870b",
+            "name": "Evaluate",
+            "inputs": [
+              {
+                "source": "Gradient boosting.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "Split.test",
+                "destination": "test",
+                "value_source_type": "component_output"
+              }
+            ]
+          },
+          {
+            "id": "b009cd63-d85d-4cfd-a6fc-2d1cb1c8f551",
+            "name": "Serve",
+            "inputs": [
+              {
+                "source": "Gradient boosting.model_ref",
+                "destination": "model_ref",
+                "value_source_type": "component_output"
+              },
+              {
+                "source": "service_name",
+                "destination": "service_name",
+                "value_source_type": "pipeline_inputparam"
+              },
+              {
+                "source": "600",
+                "destination": "wait_seconds",
+                "value_source_type": "constant"
+              }
+            ]
+          }
+        ],
+        "input_path": [
+          {
+            "name": "n_estimators",
+            "default": "150",
+            "description": "Boosting rounds."
+          },
+          {
+            "name": "learning_rate",
+            "default": "0.1",
+            "description": "Shrinkage applied to each round."
+          },
+          {
+            "name": "service_name",
+            "default": "example-wine-boosting",
+            "description": "Endpoint to create or replace."
+          }
+        ],
+        "output_path": []
+      }
+    },
+    "pagination": null
+  }
+}

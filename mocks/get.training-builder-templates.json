@@ -1,0 +1,118 @@
+{
+  "status_code": 200,
+  "message": "Example pipelines retrieved successfully.",
+  "data": [
+    {
+      "key": "wine-train-and-serve",
+      "title": "Wine cultivar: train and serve",
+      "summary": "The shortest complete loop: read a CSV, train a random forest, score it on held-out data and deploy it as a live endpoint.",
+      "tags": ["tabular", "classification", "deploy"],
+      "level": "starter",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Random forest",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "wine",
+        "dataset_name": "sample-wine",
+        "file_name": "wine.csv",
+        "kind": "tabular",
+        "description": "178 wines from three cultivars, 13 chemical measurements each; predict the `cultivar` column.",
+        "source": "Wine, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "available": true
+    },
+    {
+      "key": "thyroid-recurrence-bakeoff",
+      "title": "Thyroid cancer: three-model bake-off",
+      "summary": "Train logistic regression, an SVM and gradient boosting side by side on the same split and compare their test scores.",
+      "tags": ["tabular", "classification", "comparison"],
+      "level": "intermediate",
+      "estimated_minutes": 8,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Logistic regression",
+        "SVM",
+        "Gradient boosting",
+        "Evaluate logistic regression",
+        "Evaluate SVM",
+        "Evaluate gradient boosting"
+      ],
+      "serves_model": false,
+      "sample_dataset": {
+        "key": "thyroid-cancer",
+        "dataset_name": "sample-thyroid-cancer",
+        "file_name": "thyroid_cancer.csv",
+        "kind": "tabular",
+        "description": "383 differentiated thyroid cancer patients followed for at least 10 years, 16 clinical and pathological features (age plus text columns such as stage and treatment response); predict the `recurred` column (yes or no).",
+        "source": "Differentiated Thyroid Cancer Recurrence, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "available": true
+    },
+    {
+      "key": "digits-image-classifier",
+      "title": "Handwritten digits: image classifier",
+      "summary": "Read a zip of labelled images, train a support vector classifier on their pixels, evaluate it and serve it.",
+      "tags": ["image", "classification", "deploy"],
+      "level": "intermediate",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read images",
+        "Split",
+        "Normalize",
+        "SVM",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "digits",
+        "dataset_name": "sample-digits",
+        "file_name": "digits.zip",
+        "kind": "image",
+        "description": "1,797 handwritten digits as 8x8 greyscale PNGs, one folder per digit 0-9.",
+        "source": "Optical Recognition of Handwritten Digits, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "available": true
+    },
+    {
+      "key": "wine-tunable-retrain",
+      "title": "Wine: parameterised retrain and redeploy",
+      "summary": "Hyperparameters and the endpoint name are pipeline parameters: change them in Manage Parameters and rerun to retrain and replace the live model.",
+      "tags": ["tabular", "parameters", "retrain", "deploy"],
+      "level": "starter",
+      "estimated_minutes": 6,
+      "steps": [
+        "Read data",
+        "Split",
+        "Normalize",
+        "Gradient boosting",
+        "Evaluate",
+        "Serve"
+      ],
+      "serves_model": true,
+      "sample_dataset": {
+        "key": "wine",
+        "dataset_name": "sample-wine",
+        "file_name": "wine.csv",
+        "kind": "tabular",
+        "description": "178 wines from three cultivars, 13 chemical measurements each; predict the `cultivar` column.",
+        "source": "Wine, UCI Machine Learning Repository, CC BY 4.0",
+        "dataset_id": "00000000-0000-4000-8000-000000000001"
+      },
+      "available": true
+    }
+  ],
+  "pagination": null
+}
