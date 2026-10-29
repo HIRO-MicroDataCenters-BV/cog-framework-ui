@@ -1,7 +1,7 @@
 import { toast } from 'vue-sonner';
 
 export const useToaster = () => {
-  const { t } = useI18n();
+  const { t, te } = useI18n();
 
   return {
     show: (
@@ -10,7 +10,12 @@ export const useToaster = () => {
       data?: Record<string, string | number>,
       opts?: { raw?: boolean },
     ) => {
-      const msg = opts?.raw ? message : t(`message.${type}.${message}`, data);
+      const key = `message.${type}.${message}`;
+      // Callers pass either a message key or text straight from the API
+      // ("Invalid kube-config file. ..."). Text with no translation is shown
+      // as written instead of as "message.error.<text>".
+      const translated = typeof te !== 'function' || te(key);
+      const msg = opts?.raw || !translated ? message : t(key, data);
       const options = { duration: 3000, ...data };
       switch (type) {
         case 'success':
