@@ -7,6 +7,9 @@ import type { WorkgroupEnvInfo } from '~/types/api.types';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
 import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
+import templatesData from '@/mocks/get.training-builder-templates.json';
+import overviewData from '@/mocks/get.overview.json';
+import templatesDetailsData from '@/mocks/get.training-builder-templates.details.json';
 
 /**
  * Canned Playground answers so the page demos end to end in mock mode. A
@@ -950,6 +953,49 @@ export const useApiWithMock = () => {
         return Promise.resolve(trainingAlgorithmsData);
       }
       return request(`/training-jobs/algorithms`);
+    },
+    getOverview: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(overviewData);
+      }
+      return request(`/overview`);
+    },
+    getTrainingBuilderTemplates: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(templatesData);
+      }
+      return request(`/training-builder-templates`);
+    },
+    getTrainingBuilderTemplate: async (key: string, datasetId?: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(
+          (templatesDetailsData as Record<string, unknown>)[key] ?? null,
+        );
+      }
+      const q = datasetId
+        ? `?${new URLSearchParams({ dataset_id: datasetId })}`
+        : '';
+      return request(
+        `/training-builder-templates/${encodeURIComponent(key)}${q}`,
+      );
+    },
+    postTrainingBuilderTemplateSampleDataset: async (key: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const template = templatesData.data.find((t) => t.key === key);
+        return Promise.resolve(
+          template ? { data: template.sample_dataset } : null,
+        );
+      }
+      return request(
+        `/training-builder-templates/${encodeURIComponent(key)}/sample-dataset`,
+        'POST',
+        {},
+        { showToast: false },
+      );
     },
     getTrainingJobs: async (params: Record<string, unknown> = {}) => {
       if (mock.value.enabled) {
