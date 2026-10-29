@@ -480,12 +480,12 @@
     },
     "pagination": null
   },
-  "diagnosis-model-bakeoff": {
+  "thyroid-recurrence-bakeoff": {
     "status_code": 200,
-    "message": "Example 'diagnosis-model-bakeoff' resolved.",
+    "message": "Example 'thyroid-recurrence-bakeoff' resolved.",
     "data": {
-      "key": "diagnosis-model-bakeoff",
-      "title": "Diagnosis: three-model bake-off",
+      "key": "thyroid-recurrence-bakeoff",
+      "title": "Thyroid cancer: three-model bake-off",
       "summary": "Train logistic regression, an SVM and gradient boosting side by side on the same split and compare their test scores.",
       "tags": ["tabular", "classification", "comparison"],
       "level": "intermediate",
@@ -503,16 +503,16 @@
       ],
       "serves_model": false,
       "sample_dataset": {
-        "key": "breast-cancer",
-        "dataset_name": "sample-breast-cancer",
-        "file_name": "breast_cancer.csv",
+        "key": "thyroid-cancer",
+        "dataset_name": "sample-thyroid-cancer",
+        "file_name": "thyroid_cancer.csv",
         "kind": "tabular",
-        "description": "569 breast-tissue samples with 30 cell-nucleus measurements; predict the `diagnosis` column (malignant or benign).",
-        "source": "Breast Cancer Wisconsin (Diagnostic), UCI Machine Learning Repository, CC BY 4.0",
+        "description": "383 differentiated thyroid cancer patients followed for at least 10 years, 16 clinical and pathological features (age plus text columns such as stage and treatment response); predict the `recurred` column (yes or no).",
+        "source": "Differentiated Thyroid Cancer Recurrence, UCI Machine Learning Repository, CC BY 4.0",
         "dataset_id": null
       },
       "available": true,
-      "description": "One read, split and normalize feed three learners that run in parallel. Each learner gets its own evaluator on the same test split, so the run page shows the three metric sets next to each other. All three models are registered; pick the best one and serve it from Models.",
+      "description": "Predict whether a thyroid cancer recurs. The reader one-hot encodes the text columns. One read, split and normalize feed three learners that run in parallel. Each learner gets its own evaluator on the same test split, so the run page shows the three metric sets next to each other. All three models are registered; pick the best one and serve it from Models.",
       "nodes": [
         {
           "label": "Read data",
@@ -553,7 +553,7 @@
               "value_source_type": "constant"
             },
             {
-              "source": "diagnosis",
+              "source": "recurred",
               "destination": "target_column",
               "value_source_type": "constant"
             }
@@ -707,7 +707,7 @@
               "value_source_type": "component_output"
             },
             {
-              "source": "example-diagnosis-logreg",
+              "source": "example-thyroid-logreg",
               "destination": "model_name",
               "value_source_type": "constant"
             },
@@ -787,7 +787,7 @@
               "value_source_type": "component_output"
             },
             {
-              "source": "example-diagnosis-svm",
+              "source": "example-thyroid-svm",
               "destination": "model_name",
               "value_source_type": "constant"
             },
@@ -872,7 +872,7 @@
               "value_source_type": "component_output"
             },
             {
-              "source": "example-diagnosis-boosting",
+              "source": "example-thyroid-boosting",
               "destination": "model_name",
               "value_source_type": "constant"
             },
@@ -1048,7 +1048,7 @@
       ],
       "input_path": [],
       "pipeline": {
-        "name": "Diagnosis: three-model bake-off",
+        "name": "Thyroid cancer: three-model bake-off",
         "pipeline_components": [
           {
             "id": "7f83458a-bb20-4581-9733-1e4295cb6b63",
@@ -1060,7 +1060,7 @@
                 "value_source_type": "constant"
               },
               {
-                "source": "diagnosis",
+                "source": "recurred",
                 "destination": "target_column",
                 "value_source_type": "constant"
               }
@@ -1108,7 +1108,7 @@
                 "value_source_type": "component_output"
               },
               {
-                "source": "example-diagnosis-logreg",
+                "source": "example-thyroid-logreg",
                 "destination": "model_name",
                 "value_source_type": "constant"
               },
@@ -1139,7 +1139,7 @@
                 "value_source_type": "component_output"
               },
               {
-                "source": "example-diagnosis-svm",
+                "source": "example-thyroid-svm",
                 "destination": "model_name",
                 "value_source_type": "constant"
               },
@@ -1175,7 +1175,7 @@
                 "value_source_type": "component_output"
               },
               {
-                "source": "example-diagnosis-boosting",
+                "source": "example-thyroid-boosting",
                 "destination": "model_name",
                 "value_source_type": "constant"
               },
