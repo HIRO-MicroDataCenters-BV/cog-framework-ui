@@ -54,7 +54,7 @@
     <div class="flex-1 flex flex-col">
       <div class="flex-1 relative">
         <div
-          v-if="!readonly && nodes.length === 0"
+          v-if="!readonly && nodes.length === 0 && !draggingComponent"
           class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
         >
           <div
@@ -147,6 +147,7 @@ import {
   type Node as VueFlowNode,
   type Edge as VueFlowEdge,
 } from '@vue-flow/core';
+import { useEventListener } from '@vueuse/core';
 import LibrarySidebar from './builder/LibrarySidebar.vue';
 import CanvasArea from './builder/CanvasArea.vue';
 import AppPanel from './Panel.vue';
@@ -455,9 +456,20 @@ const openExternalBuilder = () => {
   });
 };
 
-const onDragStart = (component: unknown) => {
-  // Drag started
+// The empty-state card sits over the canvas centre and its button would catch
+// a drop, so the card steps aside while a component is being dragged.
+const draggingComponent = ref(false);
+
+const onDragStart = (_component: unknown) => {
+  draggingComponent.value = true;
 };
+
+useEventListener('dragend', () => {
+  draggingComponent.value = false;
+});
+useEventListener('drop', () => {
+  draggingComponent.value = false;
+});
 
 // --- Event Handlers (Using Store Actions) ---
 
