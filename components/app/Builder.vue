@@ -58,7 +58,7 @@
           class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
         >
           <div
-            class="pointer-events-auto rounded-xl border bg-background/95 p-6 text-center shadow-sm max-w-sm"
+            class="pointer-events-none rounded-xl border bg-background/95 p-6 text-center shadow-sm max-w-sm"
           >
             <Icon
               name="lucide:sparkles"
@@ -71,7 +71,11 @@
             <p class="mt-1 text-sm text-muted-foreground">
               {{ $t('builder.examples.empty_canvas_description') }}
             </p>
-            <Button class="mt-4" size="sm" @click="showExamples = true">
+            <Button
+              class="mt-4 pointer-events-auto"
+              size="sm"
+              @click="showExamples = true"
+            >
               {{ $t('builder.examples.browse') }}
             </Button>
           </div>
