@@ -69,8 +69,39 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+          <!-- Plan without pipeline:create/run: same locked button as the
+               tables' create action (`aria-disabled` keeps the tooltip
+               reachable). -->
+          <TooltipProvider v-if="runLocked" :delay-duration="200">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  type="button"
+                  size="sm"
+                  aria-disabled="true"
+                  class="h-7 gap-2 px-3 text-xs font-semibold opacity-50 cursor-not-allowed"
+                >
+                  <Icon
+                    name="lucide:play"
+                    class="size-3.5"
+                    aria-hidden="true"
+                  />
+                  <span>{{ $t('action.save_and_run') }}</span>
+                  <Icon
+                    name="lucide:lock"
+                    class="size-3.5"
+                    aria-hidden="true"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {{ $t('description.no_run_permission_pipelines') }}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <!-- Run button — fires immediately in the selected mode -->
-          <TooltipProvider :delay-duration="200">
+          <TooltipProvider v-else :delay-duration="200">
             <Tooltip>
               <TooltipTrigger as-child>
                 <span
@@ -580,7 +611,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import type { Node as BuilderNode } from '~/types/canvas.types';
 import type { PipelineCreationPayload } from '~/types/pipeline-payload.types';
 import { builderDataToPayload } from '~/utils/pipeline-payload.builder';
@@ -696,6 +727,22 @@ const validationErrors = computed(() => {
 const canSave = computed(() => {
   return validationErrors.value.length === 0;
 });
+
+// Locked only once entitlements resolved without error: unknown is not
+// denied, and the backend enforces these permissions regardless.
+const {
+  hasPermission,
+  loaded: entitlementsLoaded,
+  error: entitlementsError,
+  fetchEntitlements,
+} = useEntitlements();
+onMounted(() => fetchEntitlements());
+const runLocked = computed(
+  () =>
+    entitlementsLoaded.value &&
+    !entitlementsError.value &&
+    !(hasPermission('pipeline:create') && hasPermission('pipeline:run')),
+);
 
 // Dirty / unsaved-changes tracking
 const _lastRunSnapshot = ref('');
