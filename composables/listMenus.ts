@@ -6,6 +6,15 @@ export const uselistMenus = () => {
     return {
       main: [
         {
+          key: 'overview',
+          title: t('menu.overview'),
+          url: 'overview',
+          icon: 'lucide:house',
+          items: [],
+          isActive: false,
+          minTier: 'free' as EntitlementTier,
+        },
+        {
           key: 'dashboard',
           title: 'Dashboard',
           url: 'dashboard',
