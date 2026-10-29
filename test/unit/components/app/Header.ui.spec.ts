@@ -34,6 +34,16 @@ globalThis.useApi = () => ({
 globalThis.useRuntimeConfig = () => ({
   public: { federatedEnabled: false },
 });
+const permissions = ref<string[]>(['pipeline:create', 'pipeline:run']);
+beforeEach(() => {
+  permissions.value = ['pipeline:create', 'pipeline:run'];
+});
+globalThis.useEntitlements = () => ({
+  hasPermission: (p: string) => permissions.value.includes(p),
+  loaded: ref(true),
+  error: ref(null),
+  fetchEntitlements: vi.fn(),
+});
 
 describe('Header component', () => {
   it('maps pipeline_runs breadcrumb to /pipelines/run', () => {
@@ -118,6 +128,14 @@ describe('Header run submission', () => {
     expect(monitor.exists()).toBe(true);
     await monitor.trigger('click');
     expect(navigate).toHaveBeenCalledWith('/pipelines/run-123');
+  });
+
+  it('locks Save & Run when the plan cannot run pipelines', () => {
+    const runLocked = (wrapper: ReturnType<typeof mountBuilderHeader>) =>
+      (wrapper.vm as unknown as { runLocked: boolean }).runLocked;
+    expect(runLocked(mountBuilderHeader(vi.fn()))).toBe(false);
+    permissions.value = ['pipeline:read'];
+    expect(runLocked(mountBuilderHeader(vi.fn()))).toBe(true);
   });
 
   it('stays quiet when the API returns no run id', async () => {
