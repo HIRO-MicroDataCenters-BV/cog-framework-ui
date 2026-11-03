@@ -4,6 +4,7 @@ import {
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
 import type { WorkgroupEnvInfo } from '~/types/api.types';
+import { getApiConfig } from '~/utils/apiConfig';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
 import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
@@ -598,8 +599,7 @@ export const useApiWithMock = () => {
   }>('mock-run-mutations', () => ({ storageStateById: {}, deletedIds: [] }));
 
   // Prevent infinite recursion by directly accessing real API
-  const config = useRuntimeConfig();
-  const baseUrl = config.public.apiBase;
+  const { apiBase: baseUrl, apiRuns } = getApiConfig();
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);
   const { setPage, page } = useApp();
@@ -642,7 +642,6 @@ export const useApiWithMock = () => {
    * two absolute URLs.
    */
   const kfpFetch = async (path: string, method: string = 'GET') => {
-    const apiRuns = String(config.public.apiRuns || '').replace(/\/$/, '');
     const response = await fetch(`${apiRuns}${path}`, {
       method,
       headers: getHeaders(),

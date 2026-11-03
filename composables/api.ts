@@ -20,6 +20,7 @@ import type {
   ModelServingResponse,
   ServedCompletionRequest,
 } from '~/types/model.types';
+import { getApiConfig } from '~/utils/apiConfig';
 
 import datasetsData from '@/mocks/get.datasets.json';
 import datasetsDetailsData from '@/mocks/get.datasets.details.json';
@@ -135,8 +136,7 @@ export const useApi = () => {
     return useApiWithMock();
   }
 
-  const baseUrl = config.public.apiBase;
-  const apiRuns = config.public.apiRuns;
+  const { apiBase: baseUrl, apiRuns } = getApiConfig();
   const mockEnabled = config.public.mockEnabled;
   const accessTokenKey = 'access_token';
   const token = useLocalStorage(accessTokenKey, null);

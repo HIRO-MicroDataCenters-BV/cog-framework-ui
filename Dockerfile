@@ -95,8 +95,9 @@ ENV URL_PREFIX=$URL_PREFIX
 # Nuxt generates files in .output/public/, we copy them to nginx /uidev/ directory
 COPY --from=build /usr/src/app/.output/public /usr/share/nginx/html/uidev
 
-COPY conf/proxy.conf /etc/nginx/templates/proxy.conf.template
-COPY conf/no-proxy.conf /etc/nginx/templates/no_proxy.conf.template
+# Rendered by entrypoint.sh (envsubst of URL_PREFIX only); the runtime API base
+# is injected through <URL_PREFIX>config.js, not nginx. See entrypoint.sh.
+COPY conf/default.conf /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 

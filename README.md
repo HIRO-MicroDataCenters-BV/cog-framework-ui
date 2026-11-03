@@ -275,12 +275,28 @@ docker build \
 docker run -p 80:80 cog-framework-ui:latest
 ```
 
-**Run with environment variables:**
+**Run with a different API base (runtime override):**
 ```bash
 docker run -p 80:80 \
-  -e NUXT_PUBLIC_API_BASE=http://api.example.com \
+  -e API_BASE=/cogapi \
   cog-framework-ui:latest
 ```
+
+`NUXT_PUBLIC_API_BASE` is a **build-time** value: the image is a static bundle,
+so `-e NUXT_PUBLIC_API_BASE=...` at run time has no effect. Use `API_BASE`
+instead; it accepts a same-origin path (`/cogapi`) or an absolute `http(s)://`
+URL that the **browser** can reach (not a cluster-internal service URL), and a
+trailing slash is stripped. Invalid values are logged to stderr and ignored, and
+when `API_BASE` is unset the build-time value (`/apidev` by default) applies.
+
+**How the override works (`config.js`):** on start, `entrypoint.sh` writes
+`<URL_PREFIX>config.js` containing
+`window.__COGUI_CONFIG__ = {"apiBase":"/cogapi"};` (an empty `{}` when nothing
+is set). `index.html` loads it from `<head>` as a classic script ahead of the
+app entry, and `utils/apiConfig.ts` prefers its values over the build-time ones.
+nginx serves `config.js` and `index.html` with `Cache-Control: no-cache`, so a
+changed value is visible on the next reload. `API_RUNS` (pipeline API base) can
+be set the same way; today it must be an absolute URL.
 
 **Access the application:**
 - Open `http://localhost` in your browser
@@ -300,7 +316,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - NUXT_PUBLIC_API_BASE=/api
+      - API_BASE=/api
       - URL_PREFIX=/app/
     restart: unless-stopped
     
@@ -323,7 +339,9 @@ Configure these environment variables based on your deployment method:
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `NUXT_PUBLIC_API_BASE` | Backend API base URL | `/apidev` | Yes |
+| `NUXT_PUBLIC_API_BASE` | Backend API base URL baked into the bundle (build arg) | `/apidev` | Yes |
+| `API_BASE` | Runtime override of the API base written to `config.js` (container env; `/path` or `http(s)://...`, browser-reachable) | - | No |
+| `API_RUNS` | Runtime override of the pipeline API base (absolute URL only) | - | No |
 | `URL_PREFIX` | Application URL prefix (must include leading and trailing slash) | `/uidev/` | No |
 | `NUXT_COG_APP_VERSION` | Application version | `1.0.0` | No |
 | `NUXT_DEX_HOST` | DEX authentication host | - | If using DEX |

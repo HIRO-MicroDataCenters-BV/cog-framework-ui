@@ -314,6 +314,7 @@
 import { TreeRoot, TreeItem } from 'reka-ui';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 import type { ModelArtifactFile, ModelArtifacts } from '~/types/model.types';
+import { getApiConfig } from '~/utils/apiConfig';
 
 interface FileItem {
   id: string;
@@ -582,9 +583,8 @@ const loadPreview = async () => {
 const downloadFile = async () => {
   if (!selectedFile.value || !props.artifacts?.artifact_uri) return;
 
-  const config = useRuntimeConfig();
   const artifactUrl = `${props.artifacts.artifact_uri}/${selectedFile.value.path}`;
-  const downloadUrl = `${config.public.apiBase}/models/artifact/download?url=${encodeURIComponent(artifactUrl)}`;
+  const downloadUrl = `${getApiConfig().apiBase}/models/artifact/download?url=${encodeURIComponent(artifactUrl)}`;
 
   try {
     const response = await fetch(downloadUrl);
