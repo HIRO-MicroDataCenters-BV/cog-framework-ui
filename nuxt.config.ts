@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite';
+import { joinURL } from 'ufo';
 
 const URL_PREFIX = process.env.URL_PREFIX || '';
 
@@ -40,6 +41,20 @@ export default defineNuxtConfig({
   app: {
     baseURL: process.env.URL_PREFIX,
     buildAssetsDir: '/_nuxt/',
+    head: {
+      script: [
+        {
+          // Runtime API config written by entrypoint.sh (see utils/apiConfig.ts).
+          // A classic blocking script in <head>, so it runs before the module
+          // entry. `src` is passed to unhead verbatim (Nuxt does not prefix
+          // baseURL) and must be absolute: a relative `config.js` would resolve
+          // to `/uidev/models/<id>/config.js` on deep routes and get index.html
+          // back through nginx's try_files.
+          src: joinURL(URL_PREFIX || '/', 'config.js'),
+          tagPriority: 'critical',
+        },
+      ],
+    },
   },
   css: ['~/assets/css/tailwind.css'],
   colorMode: {

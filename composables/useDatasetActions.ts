@@ -5,6 +5,8 @@
  * based on data_source_type according to DATA_TYPE_MAPPING
  */
 
+import { getApiConfig } from '~/utils/apiConfig';
+
 // Preview configuration
 const PREVIEW_CONFIG = {
   MAX_LINES: 100,
@@ -129,8 +131,7 @@ export const useDatasetActions = () => {
    * Handle file download - fetches file and triggers download
    */
   const handleFileDownload = async (datasetId: string) => {
-    const config = useRuntimeConfig();
-    const downloadUrl = `${config.public.apiBase}/datasets/${datasetId}/file/download`;
+    const downloadUrl = `${getApiConfig().apiBase}/datasets/${datasetId}/file/download`;
 
     try {
       const response = await fetch(downloadUrl);

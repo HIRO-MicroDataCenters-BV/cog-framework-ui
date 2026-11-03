@@ -3,6 +3,7 @@ import type {
   EntitlementsResponse,
   EntitlementTier,
 } from '~/types/api.types';
+import { getApiConfig } from '~/utils/apiConfig';
 
 /**
  * Tier ladder used for access checks — a tier grants everything the tiers
@@ -65,7 +66,7 @@ export const useEntitlements = () => {
   }));
 
   const config = useRuntimeConfig();
-  const baseUrl = config.public.apiBase;
+  const baseUrl = getApiConfig().apiBase;
   const mockEnabled = config.public.mockEnabled;
   const token = useLocalStorage('access_token', null);
 
