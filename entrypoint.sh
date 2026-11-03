@@ -52,7 +52,10 @@ normalise_url() {
         return 0
     fi
     # Reject characters that would break the JSON/JS we emit or the URL itself.
-    if printf '%s' "$_value" | grep -q '["\\[:space:][:cntrl:]]'; then
+    # grep sees a newline as a record separator, not a character, so embedded
+    # line breaks are checked separately: one would end the JS string literal.
+    if [ "$(printf '%s' "$_value" | wc -l)" -ne 0 ] \
+        || printf '%s' "$_value" | grep -q '["\\[:space:][:cntrl:]]'; then
         echo "WARNING: $_name contains invalid characters; ignoring it" >&2
         return 0
     fi
