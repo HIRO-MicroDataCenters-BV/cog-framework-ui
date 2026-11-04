@@ -39,9 +39,9 @@ fi
 # reachable from the browser. Trailing slashes are stripped because the client
 # concatenates "${apiBase}/models". Anything else is reported and ignored.
 #
-# API_RUNS (KFP v2beta1 base) is plumbed the same way. Known limitation: the
-# client derives an origin from it with `new URL(apiRuns)`, so only an
-# absolute URL works there today.
+# API_RUNS (Kubeflow Pipelines v2beta1 base) is plumbed the same way and may be
+# a same-origin path (/pipeline/apis/v2beta1, the build default) or an
+# absolute http(s) URL.
 # ---------------------------------------------------------------------------
 
 # normalise_url NAME VALUE -> prints the canonical value, or nothing if invalid.

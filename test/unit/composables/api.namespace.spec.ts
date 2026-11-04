@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ref, computed } from 'vue';
 import type { WorkgroupEnvInfo } from '~/types/api.types';
 
@@ -295,5 +295,43 @@ describe('useApi namespace resolution', () => {
     await expect(
       useApi().getPipelinePodLogs({ podname: 'p', runid: 'r' }),
     ).resolves.toBeNull();
+  });
+});
+
+describe('useApi env-info origin with a relative pipeline API base', () => {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const absoluteConfig = (globalThis as any).useRuntimeConfig;
+
+  beforeEach(() => {
+    stateStore.clear();
+    fetchMock.mockReset();
+    resetWorkgroupEnvInfo();
+    (globalThis as any).useRuntimeConfig = () => ({
+      public: {
+        apiBase: '/apidev',
+        apiRuns: '/pipeline/apis/v2beta1',
+        mockEnabled: false,
+      },
+    });
+    vi.stubGlobal('window', { location: { origin: 'https://other.cluster' } });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    (globalThis as any).useRuntimeConfig = absoluteConfig;
+  });
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  it("resolves env-info against the page's own origin, not a baked host", async () => {
+    fetchMock
+      .mockResolvedValueOnce(envInfo([{ namespace: 'ns-a', role: 'owner' }]))
+      .mockResolvedValueOnce(runsPage);
+
+    await useApi().getPipelineRunsListV2();
+
+    expect(calledUrls()[0]).toBe(
+      'https://other.cluster/api/workgroup/env-info',
+    );
+    expect(runsUrl()).toMatch(/^\/pipeline\/apis\/v2beta1\/runs\?/);
   });
 });
