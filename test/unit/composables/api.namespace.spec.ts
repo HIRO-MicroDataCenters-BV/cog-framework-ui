@@ -324,7 +324,9 @@ describe('useApi env-info origin with a relative pipeline API base', () => {
 
   it("resolves env-info against the page's own origin, not a baked host", async () => {
     fetchMock
-      .mockResolvedValueOnce(envInfo([{ namespace: 'ns-a', role: 'owner' }]))
+      .mockResolvedValueOnce(
+        envInfo([{ user: 'u', namespace: 'ns-a', role: 'owner' }]),
+      )
       .mockResolvedValueOnce(runsPage);
 
     await useApi().getPipelineRunsListV2();
