@@ -295,8 +295,10 @@ when `API_BASE` is unset the build-time value (`/apidev` by default) applies.
 is set). `index.html` loads it from `<head>` as a classic script ahead of the
 app entry, and `utils/apiConfig.ts` prefers its values over the build-time ones.
 nginx serves `config.js` and `index.html` with `Cache-Control: no-cache`, so a
-changed value is visible on the next reload. `API_RUNS` (pipeline API base) can
-be set the same way; today it must be an absolute URL.
+changed value is visible on the next reload. `API_RUNS` (Kubeflow Pipelines
+v2beta1 base) can be set the same way; it defaults to the same-origin path
+`/pipeline/apis/v2beta1`, and the Central Dashboard `env-info` lookup resolves
+against the same origin.
 
 **Access the application:**
 - Open `http://localhost` in your browser
@@ -341,7 +343,7 @@ Configure these environment variables based on your deployment method:
 |----------|-------------|---------|----------|
 | `NUXT_PUBLIC_API_BASE` | Backend API base URL baked into the bundle (build arg) | `/apidev` | Yes |
 | `API_BASE` | Runtime override of the API base written to `config.js` (container env; `/path` or `http(s)://...`, browser-reachable) | - | No |
-| `API_RUNS` | Runtime override of the pipeline API base (absolute URL only) | - | No |
+| `API_RUNS` | Runtime override of the pipeline API base (same-origin path or absolute URL) | `/pipeline/apis/v2beta1` | No |
 | `URL_PREFIX` | Application URL prefix (must include leading and trailing slash) | `/uidev/` | No |
 | `NUXT_COG_APP_VERSION` | Application version | `1.0.0` | No |
 | `NUXT_DEX_HOST` | DEX authentication host | - | If using DEX |

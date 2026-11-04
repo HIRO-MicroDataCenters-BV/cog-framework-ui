@@ -148,7 +148,10 @@ export const useApi = () => {
    * Dashboard (`GET /api/workgroup/env-info`).
    *
    * The origin is derived from `apiRuns` rather than a new env var: Central
-   * Dashboard and the KFP API are served from the same host.
+   * Dashboard and the KFP API are served from the same host. `apiRuns` is
+   * normally a same-origin path (`/pipeline/apis/v2beta1`), so it is resolved
+   * against the page's own origin; an absolute URL still works and keeps its
+   * host.
    *
    * The result is cached process-wide — see {@link workgroupEnvInfoPromise}. A
    * failed lookup clears the cache so the next call retries instead of pinning
@@ -157,7 +160,11 @@ export const useApi = () => {
   const getWorkgroupEnvInfo = async (): Promise<WorkgroupEnvInfo> => {
     if (!workgroupEnvInfoPromise) {
       workgroupEnvInfoPromise = (async () => {
-        const origin = new URL(apiRuns).origin;
+        // Relative bases resolve against the page's origin; absolute ones keep
+        // their host. (No `window` outside the browser, e.g. in node specs.)
+        const pageOrigin =
+          typeof window !== 'undefined' ? window.location.origin : undefined;
+        const origin = new URL(apiRuns, pageOrigin).origin;
         const res = await fetch(`${origin}/api/workgroup/env-info`, {
           headers: getHeaders(),
         });

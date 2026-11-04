@@ -74,7 +74,9 @@ export default defineNuxtConfig({
       apiBase: URL_PREFIX,
       mockEnabled: process.env.NUXT_PUBLIC_MOCK_ENABLED === 'true',
       federatedEnabled: process.env.NUXT_PUBLIC_FEDERATED_ENABLED === 'true',
-      apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '',
+      // Same-origin path by default so one image works on any cluster; the
+      // charm can override it at container start (API_RUNS, see entrypoint.sh).
+      apiRuns: process.env.NUXT_PUBLIC_API_RUNS || '/pipeline/apis/v2beta1',
       appVersion: process.env.NUXT_COG_APP_VERSION || '1.11.27',
       flowiseHost: process.env.NUXT_PUBLIC_FLOWISE_HOST || '',
       flowiseChatflowId: process.env.NUXT_PUBLIC_FLOWISE_CHATFLOW_ID || '',
