@@ -770,9 +770,14 @@ const hasUnsavedChanges = computed(() =>
 
 // Default to federated when opened from a dataspace order link.
 // When federated feature is disabled via env var, always lock to standard.
-const pipelineRunMode = ref<'standard' | 'federated'>(
-  federatedEnabled.value && effectiveOrderId.value ? 'federated' : 'standard',
+// Shared state: the builder hides its examples (standard pipelines) while the
+// federated mode is selected.
+const pipelineRunMode = useState<'standard' | 'federated'>(
+  'builder-run-mode',
+  () => 'standard',
 );
+pipelineRunMode.value =
+  federatedEnabled.value && effectiveOrderId.value ? 'federated' : 'standard';
 const showManualOrderIdInput = computed(
   () => federatedEnabled.value && pipelineRunMode.value === 'federated',
 );

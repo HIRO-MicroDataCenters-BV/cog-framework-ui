@@ -54,7 +54,12 @@
     <div class="flex-1 flex flex-col">
       <div class="flex-1 relative">
         <div
-          v-if="!readonly && nodes.length === 0 && !draggingComponent"
+          v-if="
+            !readonly &&
+            nodes.length === 0 &&
+            !draggingComponent &&
+            !federatedMode
+          "
           class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
         >
           <div
@@ -119,7 +124,9 @@
     :open="showCycleWarning"
     @update:open="(v) => (showCycleWarning = v)"
   >
-    <AlertDialogContent class="border-destructive/40">
+    <!-- z-[60]: above the properties sheet, which can be open when a sheet
+         edit closes a cycle; under it, OK is unreachable and the page locks. -->
+    <AlertDialogContent class="border-destructive/40 z-[60]">
       <AlertDialogHeader>
         <AlertDialogTitle class="text-destructive">
           Invalid connection
@@ -308,6 +315,16 @@ watch(
 
 // Example pipelines: the gallery resolves an example; this puts it on the canvas.
 const showExamples = ref(false);
+// The examples are standard pipelines: none of them runs federated, so their
+// entry points are hidden while the header's run mode is federated.
+const runMode = useState<'standard' | 'federated'>(
+  'builder-run-mode',
+  () => 'standard',
+);
+const federatedMode = computed(() => runMode.value === 'federated');
+watch(federatedMode, (federated) => {
+  if (federated) showExamples.value = false;
+});
 const exampleGallery = ref<InstanceType<typeof ExampleGallery> | null>(null);
 
 // Part of the canvas key: every example load remounts the canvas, even when
@@ -341,7 +358,12 @@ const loadExample = (template: PipelineTemplateDetail) => {
 // /pipelines/builder/new?example=<key> loads an example straight away.
 onMounted(() => {
   const exampleKey = useRoute().query.example;
-  if (!readonly.value && typeof exampleKey === 'string' && exampleKey) {
+  if (
+    !readonly.value &&
+    !federatedMode.value &&
+    typeof exampleKey === 'string' &&
+    exampleKey
+  ) {
     exampleGallery.value?.loadTemplate(exampleKey);
   }
 });
@@ -409,12 +431,16 @@ interface MenuAction {
 }
 
 const menuActions = computed<MenuAction[]>(() => [
-  {
-    key: 'examples',
-    icon: 'lucide:sparkles',
-    titleKey: 'builder.examples.title',
-    action: () => (showExamples.value = true),
-  },
+  ...(federatedMode.value
+    ? []
+    : [
+        {
+          key: 'examples',
+          icon: 'lucide:sparkles',
+          titleKey: 'builder.examples.title',
+          action: () => (showExamples.value = true),
+        },
+      ]),
   {
     key: 'jupyter',
     icon: 'lucide:file-code',
@@ -489,6 +515,14 @@ const onConnect = (edge: VueFlowEdge) => {
   const targetHandle = edge.targetHandle || '';
   const sourceHandle = edge.sourceHandle || '';
 
+  // Refuse a cycle before touching the target's inputs: a rejected edge must
+  // not leave its mapping behind, or every later edit of that component
+  // would try to add the cycle again.
+  if (!addEdge(edge as Edge)) {
+    showCycleWarning.value = true;
+    return;
+  }
+
   // Keep component sheet in sync: when a canvas edge is created,
   // update the target component input relationship immediately.
   if (
@@ -521,11 +555,6 @@ const onConnect = (edge: VueFlowEdge) => {
         inputs: nextInputs,
       },
     });
-  }
-
-  const wasAdded = addEdge(edge as Edge);
-  if (!wasAdded) {
-    showCycleWarning.value = true;
   }
 };
 
@@ -636,6 +665,7 @@ const syncEdgesFromComponentInputs = (
   });
 
   // Add missing edges for sheet mappings.
+  const rejected = new Set<string>();
   desiredByDestination.forEach((desired, destination) => {
     const existingEdge = edges.value.find(
       (e) =>
@@ -661,11 +691,19 @@ const syncEdgesFromComponentInputs = (
       targetHandle: destination,
     } as Edge;
     applyEdgeVisualStyle(newEdge, desired.sourceNodeId, desired.outputName);
-    const wasAdded = addEdge(newEdge);
-    if (!wasAdded) {
-      showCycleWarning.value = true;
-    }
+    if (!addEdge(newEdge)) rejected.add(destination);
   });
+
+  // A mapping that would close a cycle is dropped, not kept without its edge.
+  if (rejected.size) {
+    updateNodeData(targetNodeId, {
+      component: {
+        ...targetNode.data.component,
+        inputs: inputs.filter((input) => !rejected.has(input.destination)),
+      },
+    });
+    showCycleWarning.value = true;
+  }
 };
 
 const syncOutputRenameReferences = (
