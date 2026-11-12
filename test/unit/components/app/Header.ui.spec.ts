@@ -27,6 +27,7 @@ globalThis.useBuilderEvents = () => ({
   openManageParameters: vi.fn(),
 });
 globalThis.useRoute = () => ({ query: {} });
+globalThis.useState = <T>(_key: string, init: () => T) => ref(init());
 globalThis.useApi = () => ({
   postTrainingBuilderPipeline: vi.fn(),
   postTrainingBuilderPipelineDataspaceFederatedRun: vi.fn(),
