@@ -103,5 +103,11 @@ describe('QuotaUsageCard', () => {
     const [cpu] = wrapper.findAll('[data-testid="quota-fill"]');
     expect(cpu.attributes('style')).toContain('width: 100%');
     expect(cpu.classes()).toContain('bg-red-500');
+    // The bar is clamped for drawing; the text keeps the real percentage.
+    const [cpuText] = wrapper.findAll('[data-testid="quota-text"]');
+    expect(cpuText.attributes('title')).toBe('4.1 of 4 (103%)');
+    expect(
+      wrapper.find('[role="progressbar"]').attributes('aria-valuetext'),
+    ).toBe('4.1 of 4 (103%)');
   });
 });

@@ -29,6 +29,22 @@ const usedText = computed(() =>
 const hardText = computed(() =>
   formatQuotaValue(props.row.resource, props.row.hard_value),
 );
+/** Text colour follows the bar: calm, amber from 80%, red at the cap. */
+const textClass = computed(() => {
+  if (percent.value >= 100) return 'text-red-600 dark:text-red-400 font-medium';
+  if (percent.value >= 80) return 'text-amber-600 dark:text-amber-400';
+  return 'text-muted-foreground';
+});
+/** Unclamped percentage for text: usage above a lowered cap reads 200%. */
+const rawPercent = computed(() =>
+  // toFixed first so 1.025 * 100 (102.49999…) still rounds to 103.
+  props.row.ratio == null
+    ? 0
+    : Math.round(Number((props.row.ratio * 100).toFixed(4))),
+);
+const valueText = computed(
+  () => `${usedText.value} of ${hardText.value} (${rawPercent.value}%)`,
+);
 </script>
 
 <template>
@@ -41,10 +57,9 @@ const hardText = computed(() =>
       <span v-if="!compact" class="font-medium">{{ label }}</span>
       <span
         v-if="capped"
-        class="tabular-nums text-muted-foreground truncate"
-        :class="{
-          'text-red-600 dark:text-red-400 font-medium': percent >= 100,
-        }"
+        class="tabular-nums truncate"
+        :class="textClass"
+        :title="valueText"
         data-testid="quota-text"
       >
         {{ usedText }} / {{ hardText }}
@@ -60,6 +75,7 @@ const hardText = computed(() =>
       :aria-valuenow="percent"
       aria-valuemin="0"
       aria-valuemax="100"
+      :aria-valuetext="valueText"
       :aria-label="label"
     >
       <div

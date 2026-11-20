@@ -11,10 +11,10 @@
  */
 import { h } from 'vue';
 import type { TableRowType } from '@/types/row.types';
-import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
 import QuotaBar from '~/components/app/QuotaBar.vue';
 import QuotaEditDialog from '~/components/app/dialog/QuotaEditDialog.vue';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
@@ -47,6 +47,9 @@ setPage({
   section: 'users',
   description: t('description.users'),
 });
+
+/** Nuxt's auto-registered icon component, for use inside cell renderers. */
+const Icon = resolveComponent('Icon');
 
 const tableRef = ref();
 const editOpen = ref(false);
@@ -119,89 +122,227 @@ const confirmClear = async () => {
   }
 };
 
+const RESOURCE_ICONS: Record<QuotaResourceName, string> = {
+  cpu: 'lucide:cpu',
+  memory: 'lucide:memory-stick',
+  gpu: 'lucide:zap',
+};
+
 const resourceCell = (resource: QuotaResourceName) => {
   return ({ row }: { row: TableRowType }) => {
     const item = row.original as UserRow;
+    const icon = h(Icon, {
+      name: RESOURCE_ICONS[resource],
+      class: 'size-4 shrink-0 text-muted-foreground mt-0.5',
+      'aria-hidden': 'true',
+    });
+    if (!item.hasProfile)
+      return h('span', { class: 'text-muted-foreground/60' }, '–');
     if (!item.quota) {
-      return h(
-        'span',
-        { class: 'text-xs text-muted-foreground' },
-        item.hasProfile ? t('status.no_quota') : '–',
-      );
+      return h('div', { class: 'flex items-center gap-2' }, [
+        icon,
+        h(
+          'span',
+          { class: 'text-xs text-muted-foreground' },
+          t('status.no_quota'),
+        ),
+      ]);
     }
     const usage = item.quota.resources.find((r) => r.resource === resource);
     if (!usage) return '–';
-    return h(QuotaBar, { row: usage, compact: true, class: 'min-w-[120px]' });
+    return h('div', { class: 'flex items-start gap-2' }, [
+      icon,
+      h(QuotaBar, { row: usage, compact: true, class: 'min-w-0 flex-1' }),
+    ]);
   };
 };
+
+/** A small icon-only button with an accessible name and a native tooltip. */
+const iconButton = (
+  opts: {
+    icon: string;
+    label: string;
+    testid: string;
+    disabled?: boolean;
+    title?: string;
+    variant?: 'ghost' | 'outline' | 'destructive';
+  },
+  onClick: () => void,
+) =>
+  h(
+    Button,
+    {
+      variant: opts.variant ?? 'ghost',
+      size: 'icon',
+      class: 'size-8',
+      disabled: opts.disabled,
+      title: opts.title ?? opts.label,
+      'aria-label': opts.label,
+      'data-testid': opts.testid,
+      onClick,
+    },
+    () => h(Icon, { name: opts.icon, class: 'size-4' }),
+  );
 
 const columns = [
   {
     id: 'email',
-    size: 260,
+    size: 240,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
-      const sub = !item.hasAccount
-        ? t('hint.quota_profile_only')
-        : !item.hasProfile
-          ? t('hint.quota_no_profile')
-          : item.department || '';
-      return h('div', { class: 'flex flex-col min-w-0' }, [
+      // Status as a short badge with the full explanation on hover, instead
+      // of a sentence that truncates in the column.
+      // Badge forwards only its declared props, so the explanation lives on
+      // a native wrapper that the browser can show as a tooltip.
+      const statusBadge = (
+        variant: 'outline' | 'secondary',
+        text: string,
+        explanation: string,
+      ) =>
         h(
           'span',
-          { class: 'truncate font-medium', title: item.email },
-          item.email,
-        ),
-        sub
-          ? h('span', { class: 'text-xs text-muted-foreground truncate' }, sub)
-          : null,
+          {
+            class: 'inline-flex cursor-help',
+            title: explanation,
+            'data-testid': 'workspace-status',
+          },
+          [h(Badge, { variant, class: 'font-normal' }, () => text)],
+        );
+      const badge = !item.hasAccount
+        ? statusBadge(
+            'outline',
+            t('status.external_identity'),
+            t('hint.quota_profile_only'),
+          )
+        : !item.hasProfile
+          ? statusBadge(
+              'secondary',
+              t('status.no_workspace'),
+              t('hint.quota_no_profile'),
+            )
+          : null;
+      const sub = item.department || '';
+      const avatar = h(
+        'span',
+        {
+          class:
+            'flex size-8 shrink-0 items-center justify-center rounded-full ' +
+            (item.hasProfile
+              ? 'bg-primary/10 text-primary'
+              : 'bg-muted text-muted-foreground'),
+          'aria-hidden': 'true',
+        },
+        [
+          h(Icon, {
+            name: item.hasProfile ? 'lucide:user-round' : 'lucide:user-round-x',
+            class: 'size-4',
+          }),
+        ],
+      );
+      return h('div', { class: 'flex items-center gap-3 min-w-0' }, [
+        avatar,
+        h('div', { class: 'flex flex-col min-w-0 gap-0.5' }, [
+          h(
+            'span',
+            { class: 'truncate font-medium', title: item.email },
+            item.email,
+          ),
+          // Second line: department and/or the workspace status, so the
+          // email itself never has to make room for a badge.
+          sub || badge
+            ? h('div', { class: 'flex items-center gap-2 min-w-0' }, [
+                sub
+                  ? h(
+                      'span',
+                      { class: 'text-xs text-muted-foreground truncate' },
+                      sub,
+                    )
+                  : null,
+                badge,
+              ])
+            : null,
+        ]),
       ]);
     },
   },
   {
     id: 'namespace',
-    size: 150,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
-      return item.namespace
-        ? h('span', { class: 'font-mono text-xs' }, item.namespace)
-        : h('span', { class: 'text-muted-foreground' }, '–');
+      if (!item.namespace)
+        return h('span', { class: 'text-muted-foreground/60' }, '–');
+      return h('div', { class: 'flex items-center gap-2 min-w-0' }, [
+        h(Icon, {
+          name: 'lucide:folder-tree',
+          class: 'size-4 shrink-0 text-muted-foreground',
+          'aria-hidden': 'true',
+        }),
+        h('span', { class: 'font-mono text-xs truncate' }, item.namespace),
+      ]);
     },
   },
   { id: 'quota_cpu', size: 170, cell: resourceCell('cpu') },
   { id: 'quota_memory', size: 190, cell: resourceCell('memory') },
   { id: 'quota_gpu', size: 140, cell: resourceCell('gpu') },
   {
-    id: 'actions',
-    size: 70,
+    // Quota actions sit directly in the row: setting a quota is the
+    // page's main job, so it is one click, not a menu away.
+    id: 'quota_actions',
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
-      const items = [
-        {
-          key: 'edit_quota',
-          label: t('action.edit_quota'),
-          icon: 'lucide:gauge',
-          disabled: !item.hasProfile,
-          action: () => openEdit(item),
-        },
-      ];
-      if (item.quota?.enabled) {
-        items.push({
-          key: 'clear_quota',
-          label: t('action.clear_quota'),
-          icon: 'lucide:eraser',
-          disabled: false,
-          action: () => {
-            clearRow.value = item;
+      if (!item.hasProfile) {
+        // A disabled Button swallows hover (pointer-events-none), so the
+        // explanation goes on a plain, hoverable status label instead.
+        // The user cell already says "No workspace"; here a quiet dash with
+        // the same explanation on hover is enough.
+        return h(
+          'span',
+          {
+            class: 'text-muted-foreground/60 cursor-help',
+            title: t('hint.quota_no_profile'),
+            'data-testid': 'quota-unavailable',
           },
-        });
+          '–',
+        );
       }
-      return h(DropdownAction, {
-        items,
-        id: item.email,
-        title: item.email,
-        menuTitle: t('column.actions'),
-      });
+      const setButton = h(
+        Button,
+        {
+          // Filled when it is the row's natural next step (a workspace
+          // without a quota); outline when changing an existing one or when
+          // nothing can be done yet.
+          variant: item.quota?.enabled ? 'outline' : 'default',
+          size: 'sm',
+          class: 'h-8',
+          title: t('action.edit_quota'),
+          'data-testid': 'set-quota',
+          onClick: () => openEdit(item),
+        },
+        () => [
+          h(Icon, { name: 'lucide:gauge', class: 'size-4 mr-1.5' }),
+          item.quota?.enabled
+            ? t('action.change_quota')
+            : t('action.edit_quota'),
+        ],
+      );
+      const children = [setButton];
+      if (item.quota?.enabled) {
+        children.push(
+          iconButton(
+            {
+              icon: 'lucide:eraser',
+              label: t('action.clear_quota'),
+              testid: 'clear-quota',
+            },
+            () => {
+              clearRow.value = item;
+            },
+          ),
+        );
+      }
+      return h('div', { class: 'flex items-center gap-1' }, children);
     },
   },
 ];

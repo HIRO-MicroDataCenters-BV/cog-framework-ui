@@ -107,46 +107,6 @@ const apiMocks = vi.hoisted(() => ({
 }));
 vi.mock('@/composables/api', () => ({ useApi: () => apiMocks }));
 
-// Row actions render through `h(DropdownAction)`; swap the module so each
-// item becomes a plain button.
-vi.mock('@/components/app/menu/Actions.vue', async () => {
-  const { defineComponent, h } = await import('vue');
-  return {
-    default: defineComponent({
-      name: 'DropdownAction',
-      props: {
-        items: { type: Array, default: () => [] },
-        id: [String, Number],
-        title: String,
-        menuTitle: String,
-      },
-      render() {
-        return h(
-          'div',
-          { 'data-testid': 'actions', 'data-id': this.id },
-          (
-            this.items as Array<{
-              key: string;
-              disabled?: boolean;
-              action: () => void;
-            }>
-          ).map((it) =>
-            h(
-              'button',
-              {
-                'data-action': it.key,
-                disabled: it.disabled,
-                onClick: () => it.action(),
-              },
-              it.key,
-            ),
-          ),
-        );
-      },
-    }),
-  };
-});
-
 // A table that calls the data source once and renders every column's cell.
 // Like the real AppTable it keeps its rows when the source answers null.
 const lastDataSourceResult: { value: unknown } = { value: undefined };
@@ -224,6 +184,16 @@ const passthrough = (name: string) =>
 
 beforeAll(() => {
   vi.stubGlobal('definePageMeta', () => undefined);
+  // Icons are a Nuxt auto-registered component resolved at runtime.
+  vi.stubGlobal('resolveComponent', (name: string) =>
+    defineComponent({
+      name,
+      props: { name: { type: String, default: '' } },
+      setup(props) {
+        return () => h('i', { 'data-icon': props.name });
+      },
+    }),
+  );
   vi.stubGlobal('useApp', () => ({
     setPage: vi.fn(),
     page: ref({ isLoading: false }),
@@ -273,9 +243,13 @@ describe('Users page', () => {
     expect(emails[0]).toContain('alice@example.com');
     expect(emails[0]).toContain('R&D');
     expect(emails[1]).toContain('bob@example.com');
-    expect(emails[1]).toContain('hint.quota_no_profile');
+    expect(emails[1]).toContain('status.no_workspace');
+    // The explanation is a native tooltip on a wrapper (Badge drops attrs).
+    expect(
+      rows[1].find('[data-testid="workspace-status"]').attributes('title'),
+    ).toBe('hint.quota_no_profile');
     expect(emails[2]).toContain('carol@external.org');
-    expect(emails[2]).toContain('hint.quota_profile_only');
+    expect(emails[2]).toContain('status.external_identity');
 
     expect(rows[0].find('[data-col="namespace"]').text()).toBe('alice');
     expect(rows[0].find('[data-col="quota_cpu"]').text()).toContain('1 / 4');
@@ -293,17 +267,28 @@ describe('Users page', () => {
     const wrapper = mountPage();
     await flushPromises();
     const rows = wrapper.findAll('tr');
-    const edit = (i: number) =>
-      rows[i].find('button[data-action="edit_quota"]');
-    expect((edit(1).element as HTMLButtonElement).disabled).toBe(true);
+    // The quota action is a direct button in the row, not a menu entry.
+    const edit = (i: number) => rows[i].find('[data-testid="set-quota"]');
+    // No workspace: a hoverable explanation instead of a disabled button.
+    expect(edit(1).exists()).toBe(false);
+    expect(
+      rows[1].find('[data-testid="quota-unavailable"]').attributes('title'),
+    ).toBe('hint.quota_no_profile');
     expect((edit(0).element as HTMLButtonElement).disabled).toBe(false);
+    expect(edit(0).text()).toContain('action.change_quota');
+    expect(edit(2).text()).toContain('action.edit_quota');
     // Clear is only offered when a quota is set.
-    expect(rows[0].find('button[data-action="clear_quota"]').exists()).toBe(
-      true,
-    );
-    expect(rows[2].find('button[data-action="clear_quota"]').exists()).toBe(
-      false,
-    );
+    expect(rows[0].find('[data-testid="clear-quota"]').exists()).toBe(true);
+    expect(rows[2].find('[data-testid="clear-quota"]').exists()).toBe(false);
+    // Resource cells and the user cell carry icons.
+    expect(
+      rows[0].find('[data-col="quota_cpu"] [data-icon="lucide:cpu"]').exists(),
+    ).toBe(true);
+    expect(
+      rows[1]
+        .find('[data-col="email"] [data-icon="lucide:user-round-x"]')
+        .exists(),
+    ).toBe(true);
 
     await edit(0).trigger('click');
     await flushPromises();
@@ -349,7 +334,7 @@ describe('Users page', () => {
     await flushPromises();
     await wrapper
       .findAll('tr')[0]
-      .find('button[data-action="clear_quota"]')
+      .find('[data-testid="clear-quota"]')
       .trigger('click');
     await flushPromises();
     expect(wrapper.text()).toContain('title.clear_quota');
