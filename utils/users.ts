@@ -66,3 +66,15 @@ export const mergeUsersAndQuotas = (
   }
   return [...byEmail.values()].sort((a, b) => a.email.localeCompare(b.email));
 };
+
+/** Rows whose email, username, department or namespace contain ``search``. */
+export const filterRows = (rows: UserRow[], search: string): UserRow[] => {
+  const needle = search.trim().toLowerCase();
+  if (!needle) return rows;
+  return rows.filter((row) =>
+    [row.email, row.username, row.department ?? '', row.namespace ?? '']
+      .join(' ')
+      .toLowerCase()
+      .includes(needle),
+  );
+};

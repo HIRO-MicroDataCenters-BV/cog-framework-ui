@@ -94,17 +94,16 @@ export const toMemoryQuantity = (value: number, unit: MemoryUnit): string =>
   `${trim(value, 3)}${unit}`;
 
 /**
- * Bytes → the number and unit the edit form should show: whole GiB stay GiB,
- * anything smaller or fractional below 1 GiB is shown in MiB.
+ * Bytes → the number and unit the edit form should show, exactly: whole GiB
+ * stay GiB, anything else that is a whole number of MiB is shown in MiB, and
+ * only a value that is neither falls back to a rounded GiB figure.
  */
 export const memoryToUnit = (
   bytes: number,
 ): { value: number; unit: MemoryUnit } => {
-  if (bytes >= GIB && Number.isInteger(bytes / GIB))
-    return { value: bytes / GIB, unit: 'Gi' };
-  if (bytes >= GIB)
-    return { value: Number((bytes / GIB).toFixed(2)), unit: 'Gi' };
-  return { value: Math.round(bytes / MIB), unit: 'Mi' };
+  if (Number.isInteger(bytes / GIB)) return { value: bytes / GIB, unit: 'Gi' };
+  if (Number.isInteger(bytes / MIB)) return { value: bytes / MIB, unit: 'Mi' };
+  return { value: Number((bytes / GIB).toFixed(2)), unit: 'Gi' };
 };
 
 /** Percentage of the cap in use, clamped to 0-100 for drawing the bar. */

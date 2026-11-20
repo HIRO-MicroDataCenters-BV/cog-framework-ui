@@ -148,6 +148,9 @@ vi.mock('@/components/app/menu/Actions.vue', async () => {
 });
 
 // A table that calls the data source once and renders every column's cell.
+// Like the real AppTable it keeps its rows when the source answers null.
+const lastDataSourceResult: { value: unknown } = { value: undefined };
+const dataSourceParams: { value: Record<string, unknown> } = { value: {} };
 const AppTableStub = defineComponent({
   name: 'AppTable',
   props: {
@@ -157,8 +160,13 @@ const AppTableStub = defineComponent({
   setup(props, { expose }) {
     const rows = ref<unknown[]>([]);
     const fetchData = async () => {
-      const result = await props.dataSource({});
-      rows.value = result?.data ?? [];
+      const result = await props.dataSource({
+        page: 1,
+        limit: 15,
+        ...dataSourceParams.value,
+      });
+      lastDataSourceResult.value = result;
+      if (result?.data) rows.value = result.data;
     };
     expose({ fetchData });
     void fetchData();
@@ -226,6 +234,8 @@ beforeEach(() => {
   apiMocks.getUsers.mockReset().mockResolvedValue(USERS);
   apiMocks.getQuotas.mockReset().mockResolvedValue(QUOTAS);
   apiMocks.deleteQuota.mockReset().mockResolvedValue({ data: {} });
+  dataSourceParams.value = {};
+  lastDataSourceResult.value = undefined;
 });
 
 const mountPage = () =>
@@ -301,6 +311,37 @@ describe('Users page', () => {
     expect(dialog.attributes('data-open')).toBe('1');
     expect(dialog.attributes('data-user')).toBe('alice@example.com');
     expect(dialog.attributes('data-namespace')).toBe('alice');
+  });
+
+  it('reports a failed read instead of mislabelling rows', async () => {
+    apiMocks.getQuotas.mockResolvedValue(null);
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(lastDataSourceResult.value).toBeNull();
+    expect(wrapper.findAll('tr')).toHaveLength(0);
+  });
+
+  it('pages and searches the merged rows', async () => {
+    dataSourceParams.value = { limit: 2, page: 2 };
+    const wrapper = mountPage();
+    await flushPromises();
+    const result = lastDataSourceResult.value as {
+      data: unknown[];
+      pagination: { total_items: number; page: number; limit: number };
+    };
+    expect(result.pagination).toEqual({ total_items: 3, page: 2, limit: 2 });
+    expect(result.data).toHaveLength(1);
+    expect(wrapper.find('[data-col="email"]').text()).toContain(
+      'carol@external.org',
+    );
+
+    dataSourceParams.value = { page: 1, email: 'bob' };
+    const searched = mountPage();
+    await flushPromises();
+    expect(searched.findAll('tr')).toHaveLength(1);
+    expect(searched.find('[data-col="email"]').text()).toContain(
+      'bob@example.com',
+    );
   });
 
   it('clears a quota after confirmation and refreshes', async () => {

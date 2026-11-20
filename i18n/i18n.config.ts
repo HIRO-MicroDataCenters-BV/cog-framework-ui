@@ -301,6 +301,7 @@ export default defineI18nConfig(() => ({
         quota_gpu: 'GPUs',
         cores: 'cores',
         gpus_short: 'GPUs',
+        memory_unit: 'Memory unit',
         constant: 'Constant',
         component_output: 'Component Output',
         component_input: 'Component Input',

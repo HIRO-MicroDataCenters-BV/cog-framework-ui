@@ -47,8 +47,11 @@ describe('quota quantities', () => {
 
   it('prefills the memory unit from bytes', () => {
     expect(memoryToUnit(16 * GIB)).toEqual({ value: 16, unit: 'Gi' });
-    expect(memoryToUnit(1.5 * GIB)).toEqual({ value: 1.5, unit: 'Gi' });
+    // Exact MiB are shown as MiB rather than as a rounded GiB figure.
+    expect(memoryToUnit(1.5 * GIB)).toEqual({ value: 1536, unit: 'Mi' });
+    expect(memoryToUnit(1500 * 1024 ** 2)).toEqual({ value: 1500, unit: 'Mi' });
     expect(memoryToUnit(512 * 1024 ** 2)).toEqual({ value: 512, unit: 'Mi' });
+    expect(memoryToUnit(1.5 * 1024 ** 2 + 1)).toEqual({ value: 0, unit: 'Gi' });
   });
 
   it('clamps the bar and steps its colour at 80% and 100%', () => {

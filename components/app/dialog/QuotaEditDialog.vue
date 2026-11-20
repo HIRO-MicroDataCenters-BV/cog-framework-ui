@@ -54,12 +54,38 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const { putQuota } = useApi();
 
+/**
+ * Field values are kept as strings: the inputs hand back strings, and an
+ * emptied field must read as "no value" rather than as zero.
+ */
 const form = ref({
-  cpu: { capped: true, cores: 4 },
-  memory: { capped: true, value: 16, unit: 'Gi' as MemoryUnit },
-  gpu: { capped: false, count: 0 },
+  cpu: { capped: true, cores: '4' },
+  memory: { capped: true, value: '16', unit: 'Gi' as MemoryUnit },
+  gpu: { capped: false, count: '0' },
 });
 const submitting = ref(false);
+
+/**
+ * The quantities the quota currently holds and how they were prefilled.
+ * A field the admin did not touch is sent back as the original quantity,
+ * not as its display rounding, so saving an unrelated cap cannot silently
+ * shrink this one (e.g. 1500Mi shown as 1.46 GiB).
+ */
+const original = ref<{
+  cpu: string | null;
+  memory: string | null;
+  gpu: string | null;
+}>({
+  cpu: null,
+  memory: null,
+  gpu: null,
+});
+const prefilled = ref({
+  cpu: '',
+  memory: '',
+  memoryUnit: 'Gi' as MemoryUnit,
+  gpu: '',
+});
 
 /** Fill the form from the current quota; sensible defaults when none. */
 const prefill = () => {
@@ -69,23 +95,41 @@ const prefill = () => {
   const cpu = rows.get('cpu');
   const memory = rows.get('memory');
   const gpu = rows.get('gpu');
+  const memoryShown =
+    memory?.hard_value != null
+      ? memoryToUnit(memory.hard_value)
+      : { value: 16, unit: 'Gi' as MemoryUnit };
   form.value = {
     cpu: {
       capped: cpu?.hard != null,
-      cores: cpu?.hard_value ?? 4,
+      cores: String(cpu?.hard_value ?? 4),
     },
     memory: {
       capped: memory?.hard != null,
-      ...(memory?.hard_value != null
-        ? memoryToUnit(memory.hard_value)
-        : { value: 16, unit: 'Gi' as MemoryUnit }),
+      value: String(memoryShown.value),
+      unit: memoryShown.unit,
     },
     gpu: {
       capped: gpu?.hard != null,
-      count: gpu?.hard_value ?? 0,
+      count: String(gpu?.hard_value ?? 0),
     },
   };
+  original.value = {
+    cpu: cpu?.hard ?? null,
+    memory: memory?.hard ?? null,
+    gpu: gpu?.hard ?? null,
+  };
+  prefilled.value = {
+    cpu: form.value.cpu.cores,
+    memory: form.value.memory.value,
+    memoryUnit: form.value.memory.unit,
+    gpu: form.value.gpu.count,
+  };
 };
+
+/** Numeric value of a field, NaN when it is empty. */
+const num = (value: string | number): number =>
+  String(value).trim() === '' ? NaN : Number(value);
 
 watch(
   () => props.open,
@@ -96,16 +140,16 @@ watch(
 );
 
 const cpuValid = computed(
-  () => !form.value.cpu.capped || Number(form.value.cpu.cores) > 0,
+  () => !form.value.cpu.capped || num(form.value.cpu.cores) > 0,
 );
 const memoryValid = computed(
-  () => !form.value.memory.capped || Number(form.value.memory.value) > 0,
+  () => !form.value.memory.capped || num(form.value.memory.value) > 0,
 );
 const gpuValid = computed(
   () =>
     !form.value.gpu.capped ||
-    (Number.isInteger(Number(form.value.gpu.count)) &&
-      Number(form.value.gpu.count) >= 0),
+    (Number.isInteger(num(form.value.gpu.count)) &&
+      num(form.value.gpu.count) >= 0),
 );
 const anyCapped = computed(
   () =>
@@ -127,14 +171,21 @@ const blockingReason = computed(() => {
 
 const buildBody = (): QuotaUpdateRequest => {
   const body: QuotaUpdateRequest = {};
-  if (form.value.cpu.capped)
-    body.cpu = toCpuQuantity(Number(form.value.cpu.cores));
-  if (form.value.memory.capped)
-    body.memory = toMemoryQuantity(
-      Number(form.value.memory.value),
-      form.value.memory.unit,
-    );
-  if (form.value.gpu.capped) body.gpu = Number(form.value.gpu.count);
+  const { cpu, memory, gpu } = form.value;
+  if (cpu.capped) {
+    const untouched = cpu.cores === prefilled.value.cpu && original.value.cpu;
+    body.cpu = untouched ? original.value.cpu : toCpuQuantity(num(cpu.cores));
+  }
+  if (memory.capped) {
+    const untouched =
+      memory.value === prefilled.value.memory &&
+      memory.unit === prefilled.value.memoryUnit &&
+      original.value.memory;
+    body.memory = untouched
+      ? original.value.memory
+      : toMemoryQuantity(num(memory.value), memory.unit);
+  }
+  if (gpu.capped) body.gpu = num(gpu.count);
   return body;
 };
 
@@ -187,6 +238,7 @@ const handleOpenChange = (value: boolean) => {
               id="quota-cpu"
               v-model="form.cpu.cores"
               type="number"
+              :aria-label="`${t('label.quota_cpu')} (${t('label.cores')})`"
               min="0.5"
               step="0.5"
               class="w-28 text-right"
@@ -216,6 +268,7 @@ const handleOpenChange = (value: boolean) => {
               id="quota-memory"
               v-model="form.memory.value"
               type="number"
+              :aria-label="`${t('label.quota_memory')} (${form.memory.unit}B)`"
               min="1"
               step="1"
               class="w-28 text-right"
@@ -223,7 +276,11 @@ const handleOpenChange = (value: boolean) => {
               data-testid="quota-memory-input"
             />
             <Select v-model="form.memory.unit" :disabled="!form.memory.capped">
-              <SelectTrigger class="w-[4.5rem]" data-testid="quota-memory-unit">
+              <SelectTrigger
+                class="w-[4.5rem]"
+                data-testid="quota-memory-unit"
+                :aria-label="t('label.memory_unit')"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -249,6 +306,7 @@ const handleOpenChange = (value: boolean) => {
               id="quota-gpu"
               v-model="form.gpu.count"
               type="number"
+              :aria-label="t('label.quota_gpu')"
               min="0"
               step="1"
               class="w-28 text-right"

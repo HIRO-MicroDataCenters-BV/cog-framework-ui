@@ -108,6 +108,7 @@ const openLogs = (job: TrainingJob) => {
 const handleDelete = async (job: TrainingJob) => {
   await deleteTrainingJob(job.id);
   refresh();
+  void refreshQuota();
 };
 
 /**

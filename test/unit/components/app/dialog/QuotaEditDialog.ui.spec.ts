@@ -164,6 +164,82 @@ describe('QuotaEditDialog', () => {
     );
   });
 
+  it('does not read an emptied GPU field as zero', async () => {
+    const wrapper = mountDialog();
+    await wrapper.find('[data-testid="quota-gpu-switch"]').setValue(true);
+    await wrapper.find('[data-testid="quota-gpu-input"]').setValue('');
+    const save = wrapper.find('[data-testid="quota-save"]');
+    expect((save.element as HTMLButtonElement).disabled).toBe(true);
+    expect(wrapper.find('[data-testid="quota-blocking-reason"]').text()).toBe(
+      'hint.quota_gpu_integer',
+    );
+    // An explicit zero is allowed: it forbids GPUs.
+    await wrapper.find('[data-testid="quota-gpu-input"]').setValue('0');
+    expect((save.element as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('keeps an untouched cap at its original quantity', async () => {
+    // 1500Mi has no exact GiB form; an untouched field must not be re-sent
+    // as a rounded display value.
+    const current: QuotaStatus = {
+      ...CURRENT,
+      resources: [
+        {
+          resource: 'cpu',
+          hard: '4000m',
+          used: '1',
+          hard_value: 4,
+          used_value: 1,
+          ratio: 0.25,
+        },
+        {
+          resource: 'memory',
+          hard: '1500Mi',
+          used: '100Mi',
+          hard_value: 1500 * 1024 ** 2,
+          used_value: 100 * 1024 ** 2,
+          ratio: 0.07,
+        },
+        {
+          resource: 'gpu',
+          hard: null,
+          used: null,
+          hard_value: null,
+          used_value: null,
+          ratio: null,
+        },
+      ],
+    };
+    putQuota.mockResolvedValue({ data: current });
+    const wrapper = mountDialog(current);
+    expect(
+      (
+        wrapper.find('[data-testid="quota-memory-input"]')
+          .element as HTMLInputElement
+      ).value,
+    ).toBe('1500');
+    await wrapper.find('[data-testid="quota-cpu-input"]').setValue('6');
+    await wrapper.find('[data-testid="quota-save"]').trigger('click');
+    await flushPromises();
+    expect(putQuota).toHaveBeenCalledWith('alice@example.com', {
+      cpu: '6',
+      memory: '1500Mi',
+    });
+  });
+
+  it('labels every numeric input for assistive technology', () => {
+    const wrapper = mountDialog();
+    for (const id of [
+      'quota-cpu-input',
+      'quota-memory-input',
+      'quota-gpu-input',
+    ]) {
+      expect(
+        wrapper.find(`[data-testid="${id}"]`).attributes('aria-label'),
+      ).toBeTruthy();
+    }
+  });
+
   it('stays open when the request fails', async () => {
     putQuota.mockResolvedValue(null);
     const wrapper = mountDialog();

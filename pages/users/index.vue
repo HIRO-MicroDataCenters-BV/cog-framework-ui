@@ -15,9 +15,9 @@ import DropdownAction from '@/components/app/menu/Actions.vue';
 import { useApi } from '@/composables/api';
 import QuotaBar from '~/components/app/QuotaBar.vue';
 import QuotaEditDialog from '~/components/app/dialog/QuotaEditDialog.vue';
+import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -31,6 +31,7 @@ import type {
   QuotaStatus,
 } from '~/types/api.types';
 import {
+  filterRows,
   mergeUsersAndQuotas,
   usersFromPayload,
   type UserRow,
@@ -53,18 +54,40 @@ const editRow = ref<UserRow | null>(null);
 const clearRow = ref<UserRow | null>(null);
 const clearing = ref(false);
 
-const listRows = async () => {
+/** Table parameters that are not a search term. */
+const CONTROL_PARAMS = new Set([
+  'page',
+  'limit',
+  'sort_by',
+  'sort_order',
+  'silent',
+]);
+
+const listRows = async (params: Record<string, unknown> = {}) => {
   const [usersResponse, quotasResponse] = await Promise.all([
     getUsers(),
     getQuotas(),
   ]);
-  const users = usersFromPayload(usersResponse?.data);
-  const quotas = ((quotasResponse?.data as QuotaListData | undefined)?.items ??
+  // request() answers null on failure. Half a picture would mislabel every
+  // row (no Profile / no account), so a failed read is reported as such and
+  // AppTable keeps the rows it already shows.
+  if (!usersResponse || !quotasResponse) return null;
+  const users = usersFromPayload(usersResponse.data);
+  const quotas = ((quotasResponse.data as QuotaListData | undefined)?.items ??
     []) as QuotaStatus[];
-  const rows = mergeUsersAndQuotas(users, quotas);
+  const search = String(
+    Object.entries(params).find(
+      ([key, value]) => !CONTROL_PARAMS.has(key) && typeof value === 'string',
+    )?.[1] ?? '',
+  )
+    .trim()
+    .toLowerCase();
+  const page = Math.max(1, Number(params.page) || 1);
+  const limit = Math.max(1, Number(params.limit) || 15);
+  const rows = filterRows(mergeUsersAndQuotas(users, quotas), search);
   return {
-    data: rows,
-    pagination: { total_items: rows.length, page: 1, limit: rows.length || 1 },
+    data: rows.slice((page - 1) * limit, page * limit),
+    pagination: { total_items: rows.length, page, limit },
   };
 };
 
@@ -77,6 +100,12 @@ const openEdit = (row: UserRow) => {
   editOpen.value = true;
 };
 
+/**
+ * The confirm button is a plain Button, not AlertDialogAction: the latter
+ * closes the dialog from its own click handler, which would clear
+ * ``clearRow`` before this runs (see components/app/menu/Actions.vue). The
+ * dialog is closed here once the request has settled.
+ */
 const confirmClear = async () => {
   const row = clearRow.value;
   if (!row || clearing.value) return;
@@ -200,7 +229,9 @@ const columns = [
 
     <AlertDialog
       :open="clearRow !== null"
-      @update:open="(value: boolean) => !value && (clearRow = null)"
+      @update:open="
+        (value: boolean) => !value && !clearing && (clearRow = null)
+      "
     >
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -213,13 +244,13 @@ const columns = [
           <AlertDialogCancel :disabled="clearing">
             {{ t('action.cancel') }}
           </AlertDialogCancel>
-          <AlertDialogAction
+          <Button
             :disabled="clearing"
             data-testid="confirm-clear-quota"
-            @click.prevent="confirmClear"
+            @click="confirmClear"
           >
             {{ t('action.clear_quota') }}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
