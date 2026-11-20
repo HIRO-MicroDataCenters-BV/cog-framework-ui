@@ -243,9 +243,9 @@ describe('Users page', () => {
     expect(emails[0]).toContain('alice@example.com');
     expect(emails[0]).toContain('R&D');
     expect(emails[1]).toContain('bob@example.com');
-    expect(emails[1]).toContain('hint.quota_no_profile');
+    expect(emails[1]).toContain('status.no_workspace');
     expect(emails[2]).toContain('carol@external.org');
-    expect(emails[2]).toContain('hint.quota_profile_only');
+    expect(emails[2]).toContain('status.external_identity');
 
     expect(rows[0].find('[data-col="namespace"]').text()).toBe('alice');
     expect(rows[0].find('[data-col="quota_cpu"]').text()).toContain('1 / 4');
@@ -265,7 +265,11 @@ describe('Users page', () => {
     const rows = wrapper.findAll('tr');
     // The quota action is a direct button in the row, not a menu entry.
     const edit = (i: number) => rows[i].find('[data-testid="set-quota"]');
-    expect((edit(1).element as HTMLButtonElement).disabled).toBe(true);
+    // No workspace: a hoverable explanation instead of a disabled button.
+    expect(edit(1).exists()).toBe(false);
+    expect(
+      rows[1].find('[data-testid="quota-unavailable"]').attributes('title'),
+    ).toBe('hint.quota_no_profile');
     expect((edit(0).element as HTMLButtonElement).disabled).toBe(false);
     expect(edit(0).text()).toContain('action.change_quota');
     expect(edit(2).text()).toContain('action.edit_quota');

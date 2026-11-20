@@ -302,6 +302,8 @@ export default defineI18nConfig(() => ({
         cores: 'cores',
         gpus_short: 'GPUs',
         memory_unit: 'Memory unit',
+        unlimited: 'Unlimited',
+        current_cap: 'Current: {value}',
         constant: 'Constant',
         component_output: 'Component Output',
         component_input: 'Component Input',
@@ -873,6 +875,8 @@ export default defineI18nConfig(() => ({
       },
       status: {
         no_quota: 'No quota',
+        no_workspace: 'No workspace',
+        external_identity: 'External identity',
         completed: 'Completed',
         running: 'Running',
         failed: 'Failed',

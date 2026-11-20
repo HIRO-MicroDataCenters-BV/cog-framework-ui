@@ -32,6 +32,7 @@ import { Spinner } from '~/components/ui/spinner';
 import { useApi } from '@/composables/api';
 import type { QuotaStatus, QuotaUpdateRequest } from '~/types/api.types';
 import {
+  formatQuotaValue,
   memoryToUnit,
   toCpuQuantity,
   toMemoryQuantity,
@@ -64,6 +65,13 @@ const form = ref({
   gpu: { capped: false, count: '0' },
 });
 const submitting = ref(false);
+
+/** The three resources in display order, with their icons. */
+const resources = [
+  { key: 'cpu', icon: 'lucide:cpu' },
+  { key: 'memory', icon: 'lucide:memory-stick' },
+  { key: 'gpu', icon: 'lucide:zap' },
+] as const;
 
 /**
  * The quantities the quota currently holds and how they were prefilled.
@@ -130,6 +138,21 @@ const prefill = () => {
 /** Numeric value of a field, NaN when it is empty. */
 const num = (value: string | number): number =>
   String(value).trim() === '' ? NaN : Number(value);
+
+/** "Current: 4 cores" / "Current: Unlimited" caption under each resource. */
+const currentCaption = (resource: 'cpu' | 'memory' | 'gpu'): string => {
+  const row = props.current?.resources.find((r) => r.resource === resource);
+  const value =
+    row?.hard == null
+      ? t('label.unlimited')
+      : formatQuotaValue(resource, row.hard_value) +
+        (resource === 'cpu'
+          ? ` ${t('label.cores')}`
+          : resource === 'gpu'
+            ? ` ${t('label.gpus_short')}`
+            : '');
+  return t('label.current_cap', { value });
+};
 
 watch(
   () => props.open,
@@ -213,123 +236,144 @@ const handleOpenChange = (value: boolean) => {
 
 <template>
   <Dialog :open="open" @update:open="handleOpenChange">
-    <DialogContent class="sm:max-w-[520px]">
+    <DialogContent class="sm:max-w-[560px]">
       <DialogHeader>
-        <DialogTitle>{{ t('title.edit_quota') }}</DialogTitle>
+        <DialogTitle class="flex items-center gap-2">
+          <Icon name="lucide:gauge" class="size-5 text-primary" />
+          {{ t('title.edit_quota') }}
+        </DialogTitle>
         <DialogDescription>
           {{ t('description.quota_dialog', { name: userId }) }}
           <span class="font-mono">{{ namespace }}</span>
         </DialogDescription>
       </DialogHeader>
 
-      <div class="space-y-5 py-2">
-        <!-- CPU -->
-        <div class="grid grid-cols-[1fr_auto] items-center gap-3">
-          <div class="flex items-center gap-3">
-            <Switch
-              id="quota-cpu-capped"
-              v-model="form.cpu.capped"
-              data-testid="quota-cpu-switch"
-            />
-            <Label for="quota-cpu-capped">{{ t('label.quota_cpu') }}</Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Input
-              id="quota-cpu"
-              v-model="form.cpu.cores"
-              type="number"
-              :aria-label="`${t('label.quota_cpu')} (${t('label.cores')})`"
-              min="0.5"
-              step="0.5"
-              class="w-28 text-right"
-              :disabled="!form.cpu.capped"
-              data-testid="quota-cpu-input"
-            />
-            <span class="text-sm text-muted-foreground w-10">
-              {{ t('label.cores') }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Memory -->
-        <div class="grid grid-cols-[1fr_auto] items-center gap-3">
-          <div class="flex items-center gap-3">
-            <Switch
-              id="quota-memory-capped"
-              v-model="form.memory.capped"
-              data-testid="quota-memory-switch"
-            />
-            <Label for="quota-memory-capped">
-              {{ t('label.quota_memory') }}
-            </Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Input
-              id="quota-memory"
-              v-model="form.memory.value"
-              type="number"
-              :aria-label="`${t('label.quota_memory')} (${form.memory.unit}B)`"
-              min="0"
-              step="any"
-              class="w-28 text-right"
-              :disabled="!form.memory.capped"
-              data-testid="quota-memory-input"
-            />
-            <Select v-model="form.memory.unit" :disabled="!form.memory.capped">
-              <SelectTrigger
-                class="w-[4.5rem]"
-                data-testid="quota-memory-unit"
-                :aria-label="t('label.memory_unit')"
+      <div class="space-y-3 py-2">
+        <!-- One block per resource: switch, icon, label and current value on
+             the left, the value input on the right; dimmed when uncapped. -->
+        <div
+          v-for="res in resources"
+          :key="res.key"
+          class="rounded-lg border p-3 transition-colors"
+          :class="
+            form[res.key].capped
+              ? 'border-border bg-card'
+              : 'border-border/60 bg-muted/30'
+          "
+          :data-testid="`quota-${res.key}-row`"
+        >
+          <div class="grid grid-cols-[1fr_auto] items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <Switch
+                :id="`quota-${res.key}-capped`"
+                v-model="form[res.key].capped"
+                :data-testid="`quota-${res.key}-switch`"
+              />
+              <span
+                class="flex size-8 shrink-0 items-center justify-center rounded-md"
+                :class="
+                  form[res.key].capped
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground'
+                "
+                aria-hidden="true"
               >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Gi">GiB</SelectItem>
-                <SelectItem value="Mi">MiB</SelectItem>
-              </SelectContent>
-            </Select>
+                <Icon :name="res.icon" class="size-4" />
+              </span>
+              <div class="flex flex-col min-w-0">
+                <Label :for="`quota-${res.key}-capped`" class="cursor-pointer">
+                  {{ t(`label.quota_${res.key}`) }}
+                </Label>
+                <span class="text-xs text-muted-foreground truncate">
+                  {{ currentCaption(res.key) }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="res.key === 'cpu'" class="flex items-center gap-2">
+              <Input
+                id="quota-cpu"
+                v-model="form.cpu.cores"
+                type="number"
+                :aria-label="`${t('label.quota_cpu')} (${t('label.cores')})`"
+                min="0.5"
+                step="0.5"
+                class="w-28 text-right"
+                :disabled="!form.cpu.capped"
+                data-testid="quota-cpu-input"
+              />
+              <span class="text-sm text-muted-foreground w-10">
+                {{ t('label.cores') }}
+              </span>
+            </div>
+
+            <div
+              v-else-if="res.key === 'memory'"
+              class="flex items-center gap-2"
+            >
+              <Input
+                id="quota-memory"
+                v-model="form.memory.value"
+                type="number"
+                :aria-label="`${t('label.quota_memory')} (${form.memory.unit}B)`"
+                min="0"
+                step="any"
+                class="w-28 text-right"
+                :disabled="!form.memory.capped"
+                data-testid="quota-memory-input"
+              />
+              <Select
+                v-model="form.memory.unit"
+                :disabled="!form.memory.capped"
+              >
+                <SelectTrigger
+                  class="w-[4.5rem]"
+                  data-testid="quota-memory-unit"
+                  :aria-label="t('label.memory_unit')"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Gi">GiB</SelectItem>
+                  <SelectItem value="Mi">MiB</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div v-else class="flex items-center gap-2">
+              <Input
+                id="quota-gpu"
+                v-model="form.gpu.count"
+                type="number"
+                :aria-label="t('label.quota_gpu')"
+                min="0"
+                step="1"
+                class="w-28 text-right"
+                :disabled="!form.gpu.capped"
+                data-testid="quota-gpu-input"
+              />
+              <span class="text-sm text-muted-foreground w-10">
+                {{ t('label.gpus_short') }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- GPU -->
-        <div class="grid grid-cols-[1fr_auto] items-center gap-3">
-          <div class="flex items-center gap-3">
-            <Switch
-              id="quota-gpu-capped"
-              v-model="form.gpu.capped"
-              data-testid="quota-gpu-switch"
-            />
-            <Label for="quota-gpu-capped">{{ t('label.quota_gpu') }}</Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Input
-              id="quota-gpu"
-              v-model="form.gpu.count"
-              type="number"
-              :aria-label="t('label.quota_gpu')"
-              min="0"
-              step="1"
-              class="w-28 text-right"
-              :disabled="!form.gpu.capped"
-              data-testid="quota-gpu-input"
-            />
-            <span class="text-sm text-muted-foreground w-10">
-              {{ t('label.gpus_short') }}
-            </span>
-          </div>
-        </div>
-
-        <p class="text-xs text-muted-foreground">
-          {{ t('hint.quota_uncapped_means_unlimited') }}
+        <p
+          class="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
+        >
+          <Icon name="lucide:info" class="size-3.5 shrink-0 mt-0.5" />
+          <span>{{ t('hint.quota_uncapped_means_unlimited') }}</span>
         </p>
       </div>
 
       <DialogFooter class="flex items-center gap-3">
         <span
           v-if="blockingReason"
-          class="text-xs text-muted-foreground mr-auto"
+          class="inline-flex items-center gap-1.5 text-xs text-muted-foreground mr-auto"
           data-testid="quota-blocking-reason"
         >
+          <Icon name="lucide:circle-alert" class="size-3.5 shrink-0" />
           {{ blockingReason }}
         </span>
         <Button
@@ -345,6 +389,7 @@ const handleOpenChange = (value: boolean) => {
           @click="handleSubmit"
         >
           <Spinner v-if="submitting" class="size-4 mr-2" />
+          <Icon v-else name="lucide:check" class="size-4 mr-2" />
           {{ t('action.save') }}
         </Button>
       </DialogFooter>

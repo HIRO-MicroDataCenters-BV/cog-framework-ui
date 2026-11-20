@@ -14,6 +14,7 @@ import type { TableRowType } from '@/types/row.types';
 import { useApi } from '@/composables/api';
 import QuotaBar from '~/components/app/QuotaBar.vue';
 import QuotaEditDialog from '~/components/app/dialog/QuotaEditDialog.vue';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
@@ -135,13 +136,15 @@ const resourceCell = (resource: QuotaResourceName) => {
       class: 'size-4 shrink-0 text-muted-foreground mt-0.5',
       'aria-hidden': 'true',
     });
+    if (!item.hasProfile)
+      return h('span', { class: 'text-muted-foreground/60' }, '–');
     if (!item.quota) {
       return h('div', { class: 'flex items-center gap-2' }, [
         icon,
         h(
           'span',
           { class: 'text-xs text-muted-foreground' },
-          item.hasProfile ? t('status.no_quota') : '–',
+          t('status.no_quota'),
         ),
       ]);
     }
@@ -184,14 +187,33 @@ const iconButton = (
 const columns = [
   {
     id: 'email',
-    size: 280,
+    size: 240,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
-      const sub = !item.hasAccount
-        ? t('hint.quota_profile_only')
+      // Status as a short badge with the full explanation on hover, instead
+      // of a sentence that truncates in the column.
+      const badge = !item.hasAccount
+        ? h(
+            Badge,
+            {
+              variant: 'outline',
+              class: 'font-normal cursor-help',
+              title: t('hint.quota_profile_only'),
+            },
+            () => t('status.external_identity'),
+          )
         : !item.hasProfile
-          ? t('hint.quota_no_profile')
-          : item.department || '';
+          ? h(
+              Badge,
+              {
+                variant: 'secondary',
+                class: 'font-normal cursor-help',
+                title: t('hint.quota_no_profile'),
+              },
+              () => t('status.no_workspace'),
+            )
+          : null;
+      const sub = item.department || '';
       const avatar = h(
         'span',
         {
@@ -211,18 +233,25 @@ const columns = [
       );
       return h('div', { class: 'flex items-center gap-3 min-w-0' }, [
         avatar,
-        h('div', { class: 'flex flex-col min-w-0' }, [
+        h('div', { class: 'flex flex-col min-w-0 gap-0.5' }, [
           h(
             'span',
             { class: 'truncate font-medium', title: item.email },
             item.email,
           ),
-          sub
-            ? h(
-                'span',
-                { class: 'text-xs text-muted-foreground truncate' },
-                sub,
-              )
+          // Second line: department and/or the workspace status, so the
+          // email itself never has to make room for a badge.
+          sub || badge
+            ? h('div', { class: 'flex items-center gap-2 min-w-0' }, [
+                sub
+                  ? h(
+                      'span',
+                      { class: 'text-xs text-muted-foreground truncate' },
+                      sub,
+                    )
+                  : null,
+                badge,
+              ])
             : null,
         ]),
       ]);
@@ -230,45 +259,56 @@ const columns = [
   },
   {
     id: 'namespace',
-    size: 160,
+    size: 140,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
+      if (!item.namespace)
+        return h('span', { class: 'text-muted-foreground/60' }, '–');
       return h('div', { class: 'flex items-center gap-2 min-w-0' }, [
         h(Icon, {
-          name: item.namespace ? 'lucide:folder-tree' : 'lucide:folder-x',
+          name: 'lucide:folder-tree',
           class: 'size-4 shrink-0 text-muted-foreground',
           'aria-hidden': 'true',
         }),
-        item.namespace
-          ? h('span', { class: 'font-mono text-xs truncate' }, item.namespace)
-          : h('span', { class: 'text-muted-foreground' }, '–'),
+        h('span', { class: 'font-mono text-xs truncate' }, item.namespace),
       ]);
     },
   },
-  { id: 'quota_cpu', size: 180, cell: resourceCell('cpu') },
-  { id: 'quota_memory', size: 200, cell: resourceCell('memory') },
-  { id: 'quota_gpu', size: 150, cell: resourceCell('gpu') },
+  { id: 'quota_cpu', size: 170, cell: resourceCell('cpu') },
+  { id: 'quota_memory', size: 190, cell: resourceCell('memory') },
+  { id: 'quota_gpu', size: 140, cell: resourceCell('gpu') },
   {
     // Quota actions sit directly in the row: setting a quota is the
     // page's main job, so it is one click, not a menu away.
     id: 'quota_actions',
-    size: 240,
+    size: 200,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
+      if (!item.hasProfile) {
+        // A disabled Button swallows hover (pointer-events-none), so the
+        // explanation goes on a plain, hoverable status label instead.
+        // The user cell already says "No workspace"; here a quiet dash with
+        // the same explanation on hover is enough.
+        return h(
+          'span',
+          {
+            class: 'text-muted-foreground/60 cursor-help',
+            title: t('hint.quota_no_profile'),
+            'data-testid': 'quota-unavailable',
+          },
+          '–',
+        );
+      }
       const setButton = h(
         Button,
         {
           // Filled when it is the row's natural next step (a workspace
           // without a quota); outline when changing an existing one or when
           // nothing can be done yet.
-          variant:
-            item.hasProfile && !item.quota?.enabled ? 'default' : 'outline',
+          variant: item.quota?.enabled ? 'outline' : 'default',
           size: 'sm',
           class: 'h-8',
-          disabled: !item.hasProfile,
-          title: item.hasProfile
-            ? t('action.edit_quota')
-            : t('hint.quota_no_profile'),
+          title: t('action.edit_quota'),
           'data-testid': 'set-quota',
           onClick: () => openEdit(item),
         },
