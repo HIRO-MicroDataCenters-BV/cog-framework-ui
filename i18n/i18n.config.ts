@@ -540,6 +540,7 @@ export default defineI18nConfig(() => ({
       },
       action: {
         edit_quota: 'Set quota',
+        change_quota: 'Change quota',
         clear_quota: 'Clear quota',
         upload: 'Upload',
         run: 'Run',
@@ -826,6 +827,7 @@ export default defineI18nConfig(() => ({
         quota_cpu: 'CPU',
         quota_memory: 'Memory',
         quota_gpu: 'GPUs',
+        quota_actions: 'Quota',
         experiment_id: 'Experiment ID',
         experiment_name: 'Name',
         last_runs: 'Last 5 runs',
