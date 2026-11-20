@@ -8,6 +8,7 @@ import DropdownAction from '~/components/app/menu/Actions.vue';
 import ModelServingEditDialog from '~/components/app/dialog/ModelServingEdit.vue';
 import ModelServingCanaryDialog from '~/components/app/dialog/ModelServingCanaryDialog.vue';
 import ServeModelDialog from '~/components/app/dialog/ServeModelDialog.vue';
+import QuotaUsageCard from '~/components/app/QuotaUsageCard.vue';
 import AppTable from '~/components/app/Table.vue';
 import AppPagination from '~/components/app/table/Pagination.vue';
 import { Badge } from '~/components/ui/badge';
@@ -43,6 +44,9 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { getModelsServing, deleteModelServing } = useApi();
+// The caller's resource quota, shown above the list: a serving over the cap
+// is accepted by the API and then rejected at pod admission.
+const { quota, fetchMyQuota, refresh: refreshQuota } = useQuota();
 const toaster = useToaster();
 const { setPage, page } = useApp();
 const menu = uselistMenus();
@@ -177,6 +181,7 @@ async function confirmDeleteServing() {
     deleteConfirmOpen.value = false;
     deleteConfirmServing.value = null;
     await fetchList();
+    void refreshQuota();
   } catch (e) {
     console.error(e);
     toaster.show('error', 'operation_failed');
@@ -571,15 +576,18 @@ function closeServeDialog() {
 
 function onServeCreated() {
   fetchList();
+  void refreshQuota();
 }
 
 onMounted(() => {
   fetchList();
+  void fetchMyQuota();
 });
 </script>
 
 <template>
   <div class="flex flex-col h-full">
+    <QuotaUsageCard :status="quota" class="mx-4 mt-4" />
     <!-- Table view: AppTable with its own header -->
     <AppTable
       v-if="viewMode === 'table'"

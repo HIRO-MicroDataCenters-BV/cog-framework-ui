@@ -1,0 +1,73 @@
+<script setup lang="ts">
+/**
+ * One resource of a quota: a thin usage bar with `used / cap` beside it.
+ *
+ * Draws nothing meaningful without a cap (`hard === null`): the parent
+ * decides whether to show such rows at all. Colour steps at 80% and 100%.
+ */
+import type { QuotaResourceUsage } from '~/types/api.types';
+import { formatQuotaValue, quotaBarClass, quotaPercent } from '~/utils/quota';
+
+const props = withDefaults(
+  defineProps<{
+    row: QuotaResourceUsage;
+    /** Hide the label; used inside table cells where the column says it. */
+    compact?: boolean;
+  }>(),
+  { compact: false },
+);
+
+const { t } = useI18n();
+
+const label = computed(() => t(`label.quota_${props.row.resource}`));
+const capped = computed(() => props.row.hard !== null);
+const percent = computed(() => quotaPercent(props.row.ratio));
+const barClass = computed(() => quotaBarClass(props.row.ratio));
+const usedText = computed(() =>
+  formatQuotaValue(props.row.resource, props.row.used_value),
+);
+const hardText = computed(() =>
+  formatQuotaValue(props.row.resource, props.row.hard_value),
+);
+</script>
+
+<template>
+  <div
+    class="flex flex-col gap-1 min-w-0"
+    :data-resource="row.resource"
+    :data-percent="percent"
+  >
+    <div class="flex items-baseline justify-between gap-2 text-xs">
+      <span v-if="!compact" class="font-medium">{{ label }}</span>
+      <span
+        v-if="capped"
+        class="tabular-nums text-muted-foreground truncate"
+        :class="{
+          'text-red-600 dark:text-red-400 font-medium': percent >= 100,
+        }"
+        data-testid="quota-text"
+      >
+        {{ usedText }} / {{ hardText }}
+      </span>
+      <span v-else class="text-muted-foreground" data-testid="quota-text">
+        {{ t('status.no_quota') }}
+      </span>
+    </div>
+    <div
+      v-if="capped"
+      class="h-1.5 w-full rounded-full overflow-hidden bg-muted dark:bg-zinc-700"
+      role="progressbar"
+      :aria-valuenow="percent"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-label="label"
+    >
+      <div
+        class="h-full transition-all duration-300"
+        :class="barClass"
+        :style="{ width: `${percent}%` }"
+        data-testid="quota-fill"
+      />
+    </div>
+  </div>
+</template>

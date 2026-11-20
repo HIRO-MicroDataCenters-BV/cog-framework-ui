@@ -142,6 +142,22 @@ describe('ServeModelDialog', () => {
     expect(options).toEqual({ successMessage: 'model_serving_created' });
   });
 
+  it('keeps the dialog open when the create fails', async () => {
+    // request() resolves null on any failure (toast already shown); the
+    // dialog must not emit created/close on top of that.
+    postModelServing.mockResolvedValue(null);
+    const wrapper = mountDialog();
+    const inputs = wrapper.findAll('input');
+    await inputs[1].setValue('550e8400-e29b-41d4-a716-446655440002');
+
+    await findButton(wrapper, 'Serve')!.trigger('click');
+    await flushPromises();
+
+    expect(postModelServing).toHaveBeenCalledTimes(1);
+    expect(wrapper.emitted('created')).toBeUndefined();
+    expect(wrapper.emitted('close')).toBeUndefined();
+  });
+
   it('classical includes isvc_name only when filled', async () => {
     const wrapper = mountDialog();
     const inputs = wrapper.findAll('input');

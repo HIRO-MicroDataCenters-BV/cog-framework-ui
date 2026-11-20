@@ -12,6 +12,7 @@
  */
 import { ref } from 'vue';
 import FineTuneCreate from '~/components/app/dialog/FineTuneCreate.vue';
+import QuotaUsageCard from '~/components/app/QuotaUsageCard.vue';
 import UpgradePanel from '~/components/app/UpgradePanel.vue';
 import EntitlementsUnavailable from '~/components/app/EntitlementsUnavailable.vue';
 import {
@@ -44,6 +45,9 @@ const retryEntitlements = async () => {
   }
 };
 const hasFineTune = computed(() => meetsTier('enterprise'));
+// The caller's resource quota: a fine-tune run over the cap is accepted and
+// then rejected at pod admission, so the headroom is shown up front.
+const { quota, fetchMyQuota, refresh: refreshQuota } = useQuota();
 
 const upgradeFeatures = [
   {
@@ -66,6 +70,7 @@ const upgradeFeatures = [
 
 onMounted(() => {
   fetchEntitlements();
+  void fetchMyQuota();
 });
 
 setPage({
@@ -82,6 +87,7 @@ const handleCreated = (payload: {
   model_id: string;
   run_id?: string | null;
 }) => {
+  void refreshQuota();
   if (payload.run_id) {
     router.push('/pipelines/run');
   }
@@ -102,6 +108,8 @@ const handleCreated = (payload: {
         {{ t('action.add_fine_tune') }}
       </Button>
     </div>
+
+    <QuotaUsageCard v-if="hasFineTune" :status="quota" class="mx-6 mt-4" />
 
     <div
       v-if="!entitlementsLoaded"

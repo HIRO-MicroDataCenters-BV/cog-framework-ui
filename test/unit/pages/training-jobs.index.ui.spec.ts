@@ -108,6 +108,13 @@ beforeAll(() => {
     setPage: vi.fn(),
     page: ref({ isLoading: false }),
   }));
+  // The page shows the caller's resource quota above the list; no quota in
+  // these tests, so the card renders nothing.
+  vi.stubGlobal('useQuota', () => ({
+    quota: ref(null),
+    fetchMyQuota: vi.fn().mockResolvedValue(undefined),
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }));
   vi.stubGlobal('resolveComponent', (name: string) =>
     defineComponent({
       name,

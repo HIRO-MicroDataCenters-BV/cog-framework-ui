@@ -3,7 +3,7 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
-import type { WorkgroupEnvInfo } from '~/types/api.types';
+import type { QuotaUpdateRequest, WorkgroupEnvInfo } from '~/types/api.types';
 import { getApiConfig } from '~/utils/apiConfig';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
@@ -1877,6 +1877,96 @@ export const useApiWithMock = () => {
         return Promise.resolve(json.default ?? json);
       }
       return request(`/users`);
+    },
+
+    getMyQuota: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const json = await import('~/mocks/get.quotas.me.json');
+        return Promise.resolve(json.default ?? json);
+      }
+      return request(`/quotas/me`, 'GET', undefined, { showToast: false });
+    },
+    getQuotas: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const json = await import('~/mocks/get.quotas.json');
+        return Promise.resolve(json.default ?? json);
+      }
+      return request(`/quotas`);
+    },
+    putQuota: async (userId: string, body: QuotaUpdateRequest) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const json = await import('~/mocks/get.quotas.me.json');
+        const base = (json.default ?? json) as {
+          data: Record<string, unknown>;
+        };
+        // Echo the request so the admin page shows what was just saved.
+        const toRow = (
+          resource: string,
+          hard: string | number | null | undefined,
+        ) => ({
+          resource,
+          hard: hard == null ? null : String(hard),
+          used: null,
+          hard_value: null,
+          used_value: null,
+          ratio: null,
+        });
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Quota updated successfully.',
+          data: {
+            ...base.data,
+            user_id: userId,
+            enabled: true,
+            synced: false,
+            resources: [
+              toRow('cpu', body.cpu),
+              toRow('memory', body.memory),
+              toRow('gpu', body.gpu),
+            ],
+          },
+        });
+      }
+      return request(`/quotas/${encodeURIComponent(userId)}`, 'PUT', body, {
+        successMessage: 'quota_updated',
+      });
+    },
+    deleteQuota: async (userId: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const json = await import('~/mocks/get.quotas.me.json');
+        const base = (json.default ?? json) as {
+          data: Record<string, unknown>;
+        };
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Quota cleared successfully.',
+          data: {
+            ...base.data,
+            user_id: userId,
+            enabled: false,
+            synced: false,
+            limit_range: null,
+            resources: ['cpu', 'memory', 'gpu'].map((resource) => ({
+              resource,
+              hard: null,
+              used: null,
+              hard_value: null,
+              used_value: null,
+              ratio: null,
+            })),
+          },
+        });
+      }
+      return request(
+        `/quotas/${encodeURIComponent(userId)}`,
+        'DELETE',
+        undefined,
+        { successMessage: 'quota_cleared' },
+      );
     },
 
     getPipelineRunsListV2Dashboard: async (params = {}) => {

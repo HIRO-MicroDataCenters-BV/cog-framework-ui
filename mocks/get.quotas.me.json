@@ -1,0 +1,42 @@
+{
+  "status_code": 200,
+  "message": "Quota retrieved successfully.",
+  "data": {
+    "user_id": "admin@hiro.com",
+    "namespace": "admin",
+    "enabled": true,
+    "synced": true,
+    "resources": [
+      {
+        "resource": "cpu",
+        "hard": "8",
+        "used": "5260m",
+        "hard_value": 8.0,
+        "used_value": 5.26,
+        "ratio": 0.6575
+      },
+      {
+        "resource": "memory",
+        "hard": "32Gi",
+        "used": "29982Mi",
+        "hard_value": 34359738368,
+        "used_value": 31438454784,
+        "ratio": 0.915
+      },
+      {
+        "resource": "gpu",
+        "hard": "2",
+        "used": "1",
+        "hard_value": 2.0,
+        "used_value": 1.0,
+        "ratio": 0.5
+      }
+    ],
+    "limit_range": {
+      "name": "cog-default-limits",
+      "default_request_cpu": "100m",
+      "default_request_memory": "256Mi"
+    },
+    "quota_name": "kf-resource-quota"
+  }
+}
