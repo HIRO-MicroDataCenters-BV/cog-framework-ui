@@ -19,7 +19,10 @@ const BINARY_SUFFIXES: Record<string, number> = {
   Pi: 1024 ** 5,
   Ei: 1024 ** 6,
 };
+// Kubernetes spells the decimal kilo as lowercase `k`; `K` is tolerated when
+// reading because nothing is gained by failing to display an odd value.
 const DECIMAL_SUFFIXES: Record<string, number> = {
+  k: 1e3,
   K: 1e3,
   M: 1e6,
   G: 1e9,

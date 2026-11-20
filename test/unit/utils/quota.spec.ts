@@ -22,6 +22,7 @@ describe('quota quantities', () => {
     expect(parseMemoryQuantity('16Gi')).toBe(16 * GIB);
     expect(parseMemoryQuantity('512Mi')).toBe(512 * 1024 ** 2);
     expect(parseMemoryQuantity('1G')).toBe(1e9);
+    expect(parseMemoryQuantity('4k')).toBe(4e3);
     expect(parseMemoryQuantity('abc')).toBeNaN();
   });
 
