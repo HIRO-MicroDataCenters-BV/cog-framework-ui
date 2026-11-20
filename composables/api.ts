@@ -11,6 +11,7 @@ import type {
   ModelRecommendParams,
   PipelineComponentParams,
   PodParams,
+  QuotaUpdateRequest,
   WorkgroupEnvInfo,
   TrainingJobCreateParams,
   TrainingJobQueryParams,
@@ -3729,6 +3730,44 @@ export const useApi = () => {
      */
     getUsers: async () => {
       return request(`/users`);
+    },
+
+    /* ------------------------------------------------------------------ */
+    /* Resource quotas                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * The caller's resource quota and current usage (`GET /quotas/me`).
+     *
+     * Silent on failure: a user who owns no Kubeflow Profile gets a 404 and
+     * simply has no quota card, which is not worth a toast.
+     */
+    getMyQuota: async () => {
+      return request(`/quotas/me`, 'GET', undefined, { showToast: false });
+    },
+    /** Every user's quota and usage (`GET /quotas`). Admin only. */
+    getQuotas: async () => {
+      return request(`/quotas`);
+    },
+    /**
+     * Set a user's quota (`PUT /quotas/{user}`). Admin only.
+     *
+     * The body replaces the whole quota: a resource left out has no cap
+     * afterwards. The user id is an email, hence the encoding.
+     */
+    putQuota: async (userId: string, body: QuotaUpdateRequest) => {
+      return request(`/quotas/${encodeURIComponent(userId)}`, 'PUT', body, {
+        successMessage: 'quota_updated',
+      });
+    },
+    /** Remove a user's quota (`DELETE /quotas/{user}`). Admin only. */
+    deleteQuota: async (userId: string) => {
+      return request(
+        `/quotas/${encodeURIComponent(userId)}`,
+        'DELETE',
+        undefined,
+        { successMessage: 'quota_cleared' },
+      );
     },
     /**
      * Creates a new user

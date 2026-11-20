@@ -8,6 +8,7 @@
  * each in-flight job's state from the cluster on every list read, so the
  * poll is what keeps the table current.
  */
+import { onMounted } from 'vue';
 import { useIntervalFn } from '@vueuse/core';
 import type { TableRowType } from '@/types/row.types';
 import DropdownAction from '@/components/app/menu/Actions.vue';
@@ -15,6 +16,7 @@ import { useApi } from '@/composables/api';
 import CopyPaste from '~/components/app/CopyPaste.vue';
 import TrainingJobCreate from '~/components/app/dialog/TrainingJobCreate.vue';
 import TrainingJobLogsSheet from '~/components/app/TrainingJobLogsSheet.vue';
+import QuotaUsageCard from '~/components/app/QuotaUsageCard.vue';
 import { Button } from '~/components/ui/button';
 import { shortenUuid } from '~/utils';
 import {
@@ -28,6 +30,12 @@ const dayjs = useDayjs();
 const router = useRouter();
 const { getTrainingJobs, deleteTrainingJob } = useApi();
 const { setPage } = useApp();
+// The caller's resource quota: shown above the list because a job over the
+// cap is rejected at pod admission, after the create call has succeeded.
+const { quota, fetchMyQuota, refresh: refreshQuota } = useQuota();
+onMounted(() => {
+  void fetchMyQuota();
+});
 
 setPage({
   section: 'training-jobs',
@@ -89,6 +97,7 @@ const refresh = () => {
 
 const handleCreated = () => {
   refresh();
+  void refreshQuota();
 };
 
 const openLogs = (job: TrainingJob) => {
@@ -279,6 +288,7 @@ const columns = [
 
 <template>
   <div class="flex flex-col h-full">
+    <QuotaUsageCard :status="quota" class="mx-4 mt-4" />
     <AppTable
       ref="tableRef"
       :columns="columns"

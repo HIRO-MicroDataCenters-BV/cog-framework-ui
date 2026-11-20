@@ -1199,9 +1199,12 @@ const submit = async () => {
   try {
     const payload =
       mode.value === 'classical' ? buildClassicalPayload() : buildLlmPayload();
-    await postModelServing(payload, {
+    const response = await postModelServing(payload, {
       successMessage: 'model_serving_created',
     });
+    // request() resolves null on any failure (the toast is already shown),
+    // so a failed create must keep the form open instead of closing it.
+    if (!response) return;
     emit('created');
     emit('close');
   } catch (err) {

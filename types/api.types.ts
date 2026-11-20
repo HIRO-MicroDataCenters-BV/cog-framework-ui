@@ -462,3 +462,75 @@ export interface TrainingJobQueryParams {
   page?: number;
   [key: string]: unknown;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Resource quotas                                                            */
+/* -------------------------------------------------------------------------- */
+
+/** The three resources a quota caps, in the order the API lists them. */
+export type QuotaResourceName = 'cpu' | 'memory' | 'gpu';
+
+/** One resource's cap and current usage, as reported by the ResourceQuota. */
+export interface QuotaResourceUsage {
+  resource: QuotaResourceName;
+  /** The cap as a Kubernetes quantity (`"4"`, `"16Gi"`), `null` = no cap */
+  hard: string | null;
+  /** Currently requested in the namespace, same unit as `hard` */
+  used: string | null;
+  /** The cap in cores, bytes or GPU count */
+  hard_value: number | null;
+  /** Usage in cores, bytes or GPU count */
+  used_value: number | null;
+  /** `used / hard`; may exceed 1 when pods predate a lowered quota */
+  ratio: number | null;
+}
+
+/** Default requests given to containers that set none (the LimitRange). */
+export interface LimitRangeDefaults {
+  name: string;
+  default_request_cpu: string | null;
+  default_request_memory: string | null;
+}
+
+/** A user's quota and usage (`GET /quotas/me`, items of `GET /quotas`). */
+export interface QuotaStatus {
+  /** Owner of the Kubeflow Profile; `null` when unknown */
+  user_id: string | null;
+  namespace: string;
+  /** A quota is set in the Profile */
+  enabled: boolean;
+  /** The ResourceQuota exists and matches the Profile; briefly false after a change */
+  synced: boolean;
+  /** Always cpu, memory and gpu, in that order */
+  resources: QuotaResourceUsage[];
+  limit_range: LimitRangeDefaults | null;
+  quota_name: string;
+}
+
+/** `GET /quotas` payload */
+export interface QuotaListData {
+  items: QuotaStatus[];
+  total_count: number;
+}
+
+/**
+ * `PUT /quotas/{user}` body. Each field replaces the stored cap for that
+ * resource; an omitted or `null` field means *no cap*. At least one is
+ * required.
+ */
+export interface QuotaUpdateRequest {
+  /** CPU quantity, e.g. `"4"` or `"500m"` */
+  cpu?: string | null;
+  /** Memory quantity, e.g. `"16Gi"` */
+  memory?: string | null;
+  /** GPU count; `0` forbids GPUs */
+  gpu?: number | null;
+}
+
+/** One entry of `GET /users` (`data.passwords[]`). */
+export interface UserListItem {
+  email: string;
+  username?: string;
+  user_id?: string;
+  department?: string | null;
+}

@@ -11,6 +11,8 @@ export default defineI18nConfig(() => ({
         no_data: 'No data available',
         loading: 'Loading...',
         success: {
+          quota_updated: 'Quota updated',
+          quota_cleared: 'Quota cleared',
           dataset_added: 'Dataset {name} successfully added',
           model_added: 'Model successfully added',
           component_uploaded: 'Component successfully uploaded',
@@ -111,6 +113,10 @@ export default defineI18nConfig(() => ({
         project_name: '',
       },
       title: {
+        users: 'Users',
+        resource_quota: 'Resource quota',
+        edit_quota: 'Set resource quota',
+        clear_quota: 'Clear resource quota?',
         pipeline_run_started: 'Pipeline started',
         datasets: 'Datasets',
         models: 'Models',
@@ -182,6 +188,12 @@ export default defineI18nConfig(() => ({
           'Configure and register a new dataset source for your project.',
       },
       description: {
+        users:
+          'Platform users with their namespace, resource quota and current usage.',
+        quota_dialog:
+          'Caps on what {name} may request in total. Enforced by the cluster in namespace',
+        clear_quota:
+          'The quota of {name} is removed and their workloads are no longer capped.',
         ask_admin_for_access: 'Ask your workspace administrator for access.',
         no_read_permission_datasets:
           "You don't have permission to view datasets",
@@ -284,6 +296,11 @@ export default defineI18nConfig(() => ({
         },
       },
       label: {
+        quota_cpu: 'CPU',
+        quota_memory: 'Memory',
+        quota_gpu: 'GPUs',
+        cores: 'cores',
+        gpus_short: 'GPUs',
         constant: 'Constant',
         component_output: 'Component Output',
         component_input: 'Component Input',
@@ -521,6 +538,8 @@ export default defineI18nConfig(() => ({
         light: 'Light',
       },
       action: {
+        edit_quota: 'Set quota',
+        clear_quota: 'Clear quota',
         upload: 'Upload',
         run: 'Run',
         add_pipelines: 'New Pipeline',
@@ -659,6 +678,18 @@ export default defineI18nConfig(() => ({
         },
       },
       hint: {
+        quota_not_synced: 'Applying…',
+        quota_pod_rejection:
+          'At the cap: new workloads will not start until something finishes.',
+        quota_no_profile:
+          'No namespace yet: the user has not signed in to the platform.',
+        quota_profile_only: 'Namespace owner without a platform account.',
+        quota_at_least_one:
+          'Cap at least one resource, or clear the quota instead.',
+        quota_positive_values: 'Caps must be greater than zero.',
+        quota_gpu_integer: 'GPUs must be a whole number (0 forbids GPUs).',
+        quota_uncapped_means_unlimited:
+          'A resource that is not capped is unlimited. Usage counts everything in the namespace, including the platform sidecars.',
         no_results: 'No results found',
         no_results_description: 'Try adjusting your search or filters',
         of: 'of',
@@ -742,6 +773,7 @@ export default defineI18nConfig(() => ({
           'Pinned answers stay while you re-ask another service: serve the fine-tuned model, send the same request and compare.',
       },
       menu: {
+        users: 'Users',
         overview: 'Overview',
         upload: 'Upload',
         jupyter: 'Jupyter',
@@ -788,6 +820,11 @@ export default defineI18nConfig(() => ({
         outputs: 'Outputs',
       },
       column: {
+        email: 'User',
+        namespace: 'Namespace',
+        quota_cpu: 'CPU',
+        quota_memory: 'Memory',
+        quota_gpu: 'GPUs',
         experiment_id: 'Experiment ID',
         experiment_name: 'Name',
         last_runs: 'Last 5 runs',
@@ -832,6 +869,7 @@ export default defineI18nConfig(() => ({
         finished_at: 'Finished',
       },
       status: {
+        no_quota: 'No quota',
         completed: 'Completed',
         running: 'Running',
         failed: 'Failed',

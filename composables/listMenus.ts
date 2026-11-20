@@ -25,6 +25,16 @@ export const uselistMenus = () => {
           minTier: 'admin' as EntitlementTier,
         },
         {
+          key: 'users',
+          title: t('menu.users'),
+          url: 'users',
+          icon: 'lucide:users',
+          items: [],
+          isActive: false,
+          // Admin only: user list and per-user resource quotas.
+          minTier: 'admin' as EntitlementTier,
+        },
+        {
           key: 'datasets',
           title: t('menu.datasets'),
           url: 'datasets',
