@@ -152,7 +152,7 @@ const resourceCell = (resource: QuotaResourceName) => {
     if (!usage) return '–';
     return h('div', { class: 'flex items-start gap-2' }, [
       icon,
-      h(QuotaBar, { row: usage, compact: true, class: 'min-w-[120px] flex-1' }),
+      h(QuotaBar, { row: usage, compact: true, class: 'min-w-0 flex-1' }),
     ]);
   };
 };
@@ -192,25 +192,33 @@ const columns = [
       const item = row.original as UserRow;
       // Status as a short badge with the full explanation on hover, instead
       // of a sentence that truncates in the column.
+      // Badge forwards only its declared props, so the explanation lives on
+      // a native wrapper that the browser can show as a tooltip.
+      const statusBadge = (
+        variant: 'outline' | 'secondary',
+        text: string,
+        explanation: string,
+      ) =>
+        h(
+          'span',
+          {
+            class: 'inline-flex cursor-help',
+            title: explanation,
+            'data-testid': 'workspace-status',
+          },
+          [h(Badge, { variant, class: 'font-normal' }, () => text)],
+        );
       const badge = !item.hasAccount
-        ? h(
-            Badge,
-            {
-              variant: 'outline',
-              class: 'font-normal cursor-help',
-              title: t('hint.quota_profile_only'),
-            },
-            () => t('status.external_identity'),
+        ? statusBadge(
+            'outline',
+            t('status.external_identity'),
+            t('hint.quota_profile_only'),
           )
         : !item.hasProfile
-          ? h(
-              Badge,
-              {
-                variant: 'secondary',
-                class: 'font-normal cursor-help',
-                title: t('hint.quota_no_profile'),
-              },
-              () => t('status.no_workspace'),
+          ? statusBadge(
+              'secondary',
+              t('status.no_workspace'),
+              t('hint.quota_no_profile'),
             )
           : null;
       const sub = item.department || '';

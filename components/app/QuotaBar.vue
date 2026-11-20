@@ -35,8 +35,12 @@ const textClass = computed(() => {
   if (percent.value >= 80) return 'text-amber-600 dark:text-amber-400';
   return 'text-muted-foreground';
 });
+/** Unclamped percentage for text: usage above a lowered cap reads 200%. */
+const rawPercent = computed(() =>
+  props.row.ratio == null ? 0 : Math.round(props.row.ratio * 100),
+);
 const valueText = computed(
-  () => `${usedText.value} of ${hardText.value} (${percent.value}%)`,
+  () => `${usedText.value} of ${hardText.value} (${rawPercent.value}%)`,
 );
 </script>
 

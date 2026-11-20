@@ -244,6 +244,10 @@ describe('Users page', () => {
     expect(emails[0]).toContain('R&D');
     expect(emails[1]).toContain('bob@example.com');
     expect(emails[1]).toContain('status.no_workspace');
+    // The explanation is a native tooltip on a wrapper (Badge drops attrs).
+    expect(
+      rows[1].find('[data-testid="workspace-status"]').attributes('title'),
+    ).toBe('hint.quota_no_profile');
     expect(emails[2]).toContain('carol@external.org');
     expect(emails[2]).toContain('status.external_identity');
 
