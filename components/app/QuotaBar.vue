@@ -37,7 +37,10 @@ const textClass = computed(() => {
 });
 /** Unclamped percentage for text: usage above a lowered cap reads 200%. */
 const rawPercent = computed(() =>
-  props.row.ratio == null ? 0 : Math.round(props.row.ratio * 100),
+  // toFixed first so 1.025 * 100 (102.49999…) still rounds to 103.
+  props.row.ratio == null
+    ? 0
+    : Math.round(Number((props.row.ratio * 100).toFixed(4))),
 );
 const valueText = computed(
   () => `${usedText.value} of ${hardText.value} (${rawPercent.value}%)`,
