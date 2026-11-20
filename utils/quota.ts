@@ -89,9 +89,20 @@ export const toCpuQuantity = (cores: number): string =>
 
 export type MemoryUnit = 'Gi' | 'Mi';
 
+/**
+ * A number as a plain decimal string, never in exponential notation and
+ * with the precision the caller entered (`0.0625` stays `0.0625`, `1e-7`
+ * becomes `0.0000001`).
+ */
+export const toPlainDecimal = (value: number): string => {
+  const text = String(value);
+  if (!text.includes('e')) return text;
+  return value.toFixed(20).replace(/\.?0+$/, '');
+};
+
 /** Number + unit → memory quantity for the API: (16, 'Gi') → `"16Gi"`. */
 export const toMemoryQuantity = (value: number, unit: MemoryUnit): string =>
-  `${trim(value, 3)}${unit}`;
+  `${toPlainDecimal(value)}${unit}`;
 
 /**
  * Bytes → the number and unit the edit form should show: whole GiB stay

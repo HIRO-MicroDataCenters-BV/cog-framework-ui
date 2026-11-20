@@ -10,6 +10,7 @@ import {
   quotaPercent,
   toCpuQuantity,
   toMemoryQuantity,
+  toPlainDecimal,
 } from '~/utils/quota';
 
 const GIB = 1024 ** 3;
@@ -43,6 +44,11 @@ describe('quota quantities', () => {
     expect(toCpuQuantity(2.25)).toBe('2250m');
     expect(toMemoryQuantity(16, 'Gi')).toBe('16Gi');
     expect(toMemoryQuantity(512, 'Mi')).toBe('512Mi');
+    // Entered precision is kept, and never serialised in exponent form.
+    expect(toMemoryQuantity(0.0625, 'Gi')).toBe('0.0625Gi');
+    expect(toMemoryQuantity(0.0001, 'Gi')).toBe('0.0001Gi');
+    expect(toMemoryQuantity(1e-7, 'Gi')).toBe('0.0000001Gi');
+    expect(toPlainDecimal(1.5)).toBe('1.5');
   });
 
   it('prefills the memory unit from bytes', () => {
