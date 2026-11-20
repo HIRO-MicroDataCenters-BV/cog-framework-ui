@@ -3,7 +3,7 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
-import type { WorkgroupEnvInfo } from '~/types/api.types';
+import type { QuotaUpdateRequest, WorkgroupEnvInfo } from '~/types/api.types';
 import { getApiConfig } from '~/utils/apiConfig';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
@@ -1895,7 +1895,7 @@ export const useApiWithMock = () => {
       }
       return request(`/quotas`);
     },
-    putQuota: async (userId: string, body: Record<string, unknown>) => {
+    putQuota: async (userId: string, body: QuotaUpdateRequest) => {
       if (mock.value.enabled) {
         await mockDelay();
         const json = await import('~/mocks/get.quotas.me.json');
@@ -1923,9 +1923,9 @@ export const useApiWithMock = () => {
             enabled: true,
             synced: false,
             resources: [
-              toRow('cpu', body.cpu as string | null | undefined),
-              toRow('memory', body.memory as string | null | undefined),
-              toRow('gpu', body.gpu as number | null | undefined),
+              toRow('cpu', body.cpu),
+              toRow('memory', body.memory),
+              toRow('gpu', body.gpu),
             ],
           },
         });

@@ -94,16 +94,15 @@ export const toMemoryQuantity = (value: number, unit: MemoryUnit): string =>
   `${trim(value, 3)}${unit}`;
 
 /**
- * Bytes → the number and unit the edit form should show, exactly: whole GiB
- * stay GiB, anything else that is a whole number of MiB is shown in MiB, and
- * only a value that is neither falls back to a rounded GiB figure.
+ * Bytes → the number and unit the edit form should show: whole GiB stay
+ * GiB, everything else is shown in MiB, keeping fractions (to three
+ * decimals) so a positive cap never prefills as zero.
  */
 export const memoryToUnit = (
   bytes: number,
 ): { value: number; unit: MemoryUnit } => {
   if (Number.isInteger(bytes / GIB)) return { value: bytes / GIB, unit: 'Gi' };
-  if (Number.isInteger(bytes / MIB)) return { value: bytes / MIB, unit: 'Mi' };
-  return { value: Number((bytes / GIB).toFixed(2)), unit: 'Gi' };
+  return { value: Number((bytes / MIB).toFixed(3)), unit: 'Mi' };
 };
 
 /** Percentage of the cap in use, clamped to 0-100 for drawing the bar. */

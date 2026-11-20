@@ -51,7 +51,9 @@ describe('quota quantities', () => {
     expect(memoryToUnit(1.5 * GIB)).toEqual({ value: 1536, unit: 'Mi' });
     expect(memoryToUnit(1500 * 1024 ** 2)).toEqual({ value: 1500, unit: 'Mi' });
     expect(memoryToUnit(512 * 1024 ** 2)).toEqual({ value: 512, unit: 'Mi' });
-    expect(memoryToUnit(1.5 * 1024 ** 2 + 1)).toEqual({ value: 0, unit: 'Gi' });
+    // A cap that is not a whole number of MiB keeps its fraction instead of
+    // collapsing to zero.
+    expect(memoryToUnit(1572865)).toEqual({ value: 1.5, unit: 'Mi' });
   });
 
   it('clamps the bar and steps its colour at 80% and 100%', () => {
