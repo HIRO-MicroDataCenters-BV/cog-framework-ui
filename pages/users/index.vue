@@ -252,7 +252,7 @@ const columns = [
     // Quota actions sit directly in the row: setting a quota is the
     // page's main job, so it is one click, not a menu away.
     id: 'quota_actions',
-    size: 200,
+    size: 240,
     cell: ({ row }: { row: TableRowType }) => {
       const item = row.original as UserRow;
       const setButton = h(
