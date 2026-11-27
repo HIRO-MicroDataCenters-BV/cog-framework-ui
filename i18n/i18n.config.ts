@@ -219,7 +219,7 @@ export default defineI18nConfig(() => ({
         training_jobs:
           'Train a model from the algorithm catalog on one of your datasets. Jobs run as Kubeflow training jobs; the result is registered under Models.',
         federated_analyses:
-          'Run a platform analysis across the participants of a dataspace order: pick the analysis, follow the run and read its results.',
+          'Run a platform analysis across the participants of a dataspace order. The data stays with each participant; only the results come back.',
         training_job_dialog:
           'Pick an algorithm and a dataset, name the output model and adjust the hyperparameters.',
         training_jobs_empty:

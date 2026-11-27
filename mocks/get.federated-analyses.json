@@ -5,7 +5,7 @@
     {
       "id": "gwas",
       "title": "Federated GWAS",
-      "description": "Genome-wide association study across institutions, computed with secure multi-party computation between one party per institution. The parties run on this platform and each fetches its institution's data product. Produces a Manhattan plot and an association table.",
+      "description": "Genome-wide association study across institutions using secure multi-party computation: no institution's genotype or phenotype data leaves its site. Produces a Manhattan plot and an association table.",
       "min_parties": 2,
       "requires_cohort_sizes": true,
       "default_preset": "ultra_fast",
