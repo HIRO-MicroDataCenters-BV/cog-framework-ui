@@ -131,6 +131,10 @@ const loadAnalyses = async () => {
   }
 };
 
+/** A cohort size the backend accepts: a whole number of at least one. */
+const isCohortSize = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value > 0;
+
 const formProblem = computed(() => {
   const picked = analysis.value;
   if (!picked) return 'Choose an analysis.';
@@ -142,8 +146,11 @@ const formProblem = computed(() => {
   if (rows.some((p) => !p.institution.trim() || !p.data_url.trim())) {
     return 'Every participant needs a name and a data location.';
   }
-  if (picked.requires_cohort_sizes && rows.some((p) => !p.num_individuals)) {
-    return 'Enter the number of individuals for every participant.';
+  if (
+    picked.requires_cohort_sizes &&
+    rows.some((p) => !isCohortSize(p.num_individuals))
+  ) {
+    return 'Enter the number of individuals (a whole number, 1 or more) for every participant.';
   }
   return '';
 });
@@ -158,14 +165,16 @@ const startRun = async () => {
     body.order_id = orderId.value;
     body.num_individuals = Object.fromEntries(
       orderParties.value
-        .filter((p) => p.num_individuals)
-        .map((p) => [p.institution, Number(p.num_individuals)]),
+        .filter((p) => isCohortSize(p.num_individuals))
+        .map((p) => [p.institution, p.num_individuals as number]),
     );
   } else {
     body.parties = manualParties.value.map((p) => ({
       institution: p.institution.trim(),
       data_url: p.data_url.trim(),
-      num_individuals: Number(p.num_individuals),
+      num_individuals: isCohortSize(p.num_individuals)
+        ? p.num_individuals
+        : undefined,
     }));
   }
   submitting.value = true;
