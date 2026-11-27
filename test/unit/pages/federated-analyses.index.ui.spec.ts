@@ -447,4 +447,24 @@ describe('federated analyses page', () => {
     expect(revoke).toHaveBeenCalledWith('blob:plot-2');
     revoke.mockRestore();
   });
+
+  it('releases a plot preview that arrives after the page was left', async () => {
+    const revoke = vi
+      .spyOn(window.URL, 'revokeObjectURL')
+      .mockImplementation(() => {});
+    let releaseSlowPreview: (value: unknown) => void = () => {};
+    apiMocks.getArtifactPreview.mockImplementationOnce(
+      () => new Promise((resolve) => (releaseSlowPreview = resolve)),
+    );
+    const wrapper = await mountPage();
+    await wrapper.find('[data-testid="open-run"]').trigger('click');
+    await flushPromises();
+
+    wrapper.unmount();
+    releaseSlowPreview({ data: { type: 'image', url: 'blob:late' } });
+    await flushPromises();
+
+    expect(revoke).toHaveBeenCalledWith('blob:late');
+    revoke.mockRestore();
+  });
 });

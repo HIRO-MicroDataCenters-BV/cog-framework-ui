@@ -238,7 +238,6 @@ const releasePreview = (url?: string | null) => {
   if (url?.startsWith('blob:')) window.URL.revokeObjectURL(url);
 };
 watch(plotUrl, (_current, previous) => releasePreview(previous));
-onBeforeUnmount(() => releasePreview(plotUrl.value));
 const table = ref<{ headers: string[]; rows: string[][] } | null>(null);
 // Artifacts never change once logged: each is fetched until it has loaded.
 const loadedArtifacts = ref(new Set<string>());
@@ -306,6 +305,14 @@ const closeRun = () => {
   openedRun.value = null;
   plotUrl.value = '';
 };
+
+// Leaving the page closes the run first, so a preview still loading is
+// discarded (and released) when it arrives, then releases the shown one.
+onBeforeUnmount(() => {
+  const shown = plotUrl.value;
+  closeRun();
+  releasePreview(shown);
+});
 
 const downloadTable = () => {
   if (!table.value || !openedRun.value) return;

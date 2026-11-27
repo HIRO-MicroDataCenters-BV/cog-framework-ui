@@ -34,7 +34,11 @@ import modelsData from '@/mocks/get.models.json';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
 import federatedAnalysesData from '@/mocks/get.federated-analyses.json';
-import federatedAnalysisRunsData from '@/mocks/get.federated-analyses.runs.json';
+import {
+  addMockFederatedAnalysisRun,
+  findMockFederatedAnalysisRun,
+  listMockFederatedAnalysisRuns,
+} from '~/utils/federatedAnalysisMocks';
 import modelsStatsData from '@/mocks/get.models-stats.json';
 import datasetsStatsData from '@/mocks/get.datasets-stats.json';
 import modelsDetailsData from '@/mocks/get.models.details.json';
@@ -4324,7 +4328,11 @@ export const useApi = () => {
     /** The caller's federated analysis runs, newest first. */
     getFederatedAnalysisRuns: async () => {
       if (mockEnabled) {
-        return Promise.resolve(federatedAnalysisRunsData);
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Federated analysis runs',
+          data: listMockFederatedAnalysisRuns(),
+        });
       }
       return request(`/federated-analyses/runs`, 'GET', undefined, {
         showToast: false,
@@ -4334,10 +4342,12 @@ export const useApi = () => {
     /** One run with the state of each of its steps. */
     getFederatedAnalysisRun: async (runId: string) => {
       if (mockEnabled) {
-        return Promise.resolve({
-          ...federatedAnalysisRunsData,
-          data: federatedAnalysisRunsData.data[0],
-        });
+        const run = findMockFederatedAnalysisRun(runId);
+        return Promise.resolve(
+          run
+            ? { status_code: 200, message: 'Federated analysis run', data: run }
+            : null,
+        );
       }
       return request(`/federated-analyses/runs/${runId}`, 'GET', undefined, {
         showToast: false,
@@ -4353,7 +4363,8 @@ export const useApi = () => {
           data: {
             run_id: runId,
             analysis_id: 'gwas',
-            ready: true,
+            // Only the finished demo run has results to show.
+            ready: findMockFederatedAnalysisRun(runId)?.status === 'Succeeded',
             tracking_run_id: 'mock-tracking-run',
             metrics: { num_significant_snps: 0, max_neg_log10_p: 3.2 },
             params: {
@@ -4381,11 +4392,7 @@ export const useApi = () => {
         return Promise.resolve({
           status_code: 201,
           message: `'${data.name}' launched successfully.`,
-          data: {
-            ...federatedAnalysisRunsData.data[0],
-            name: data.name,
-            status: 'Running',
-          },
+          data: addMockFederatedAnalysisRun(analysisId, data.name),
         });
       }
       return request(
