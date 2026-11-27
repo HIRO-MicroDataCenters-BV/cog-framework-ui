@@ -53,7 +53,9 @@ type PartyRow = {
   num_individuals: number | null;
 };
 
-const orderId = ref(String(route.query.order_id ?? '').trim());
+// Read off the route so a query-only navigation (another order, or none)
+// switches the participants too.
+const orderId = computed(() => String(route.query.order_id ?? '').trim());
 const orderParties = ref<PartyRow[]>([]);
 const orderError = ref('');
 const orderLoading = ref(false);
@@ -68,12 +70,15 @@ const parties = computed(() =>
 );
 
 const loadOrder = async () => {
+  const requested = orderId.value;
   orderError.value = '';
   orderParties.value = [];
-  if (!usingOrder.value) return;
-  orderLoading.value = true;
+  orderLoading.value = requested !== '';
+  if (!requested) return;
   try {
-    const res = await getFederatedAnalysisOrder(orderId.value);
+    const res = await getFederatedAnalysisOrder(requested);
+    // The order in the URL changed while this one was loading.
+    if (orderId.value !== requested) return;
     const found = (res?.data?.parties ?? []) as FederatedAnalysisParty[];
     orderParties.value = found.map((p) => ({
       institution: p.institution,
@@ -83,9 +88,11 @@ const loadOrder = async () => {
     if (!found.length)
       orderError.value = 'No participants found for this order.';
   } finally {
-    orderLoading.value = false;
+    if (orderId.value === requested) orderLoading.value = false;
   }
 };
+
+watch(orderId, () => void loadOrder());
 
 const addManualParty = () =>
   manualParties.value.push({
