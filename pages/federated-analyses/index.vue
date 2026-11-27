@@ -14,6 +14,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useIntervalFn } from '@vueuse/core';
 import { useApi } from '@/composables/api';
 import { Button } from '~/components/ui/button';
+import { isRunStateInFlight } from '~/utils/runStates';
 import type {
   FederatedAnalysis,
   FederatedAnalysisArtifact,
@@ -194,10 +195,15 @@ const startRun = async () => {
 const runs = ref<FederatedAnalysisRun[]>([]);
 const runsLoaded = ref(false);
 
+/** Settled states of an analysis run or step beyond the shared run states. */
+const EXTRA_TERMINAL_STATES = new Set(['ERROR', 'TERMINATED', 'OMITTED']);
+
 const isActive = (status?: string | null) =>
-  !['succeeded', 'failed', 'error', 'skipped', 'terminated'].includes(
-    String(status ?? '').toLowerCase(),
-  );
+  isRunStateInFlight(status) &&
+  !EXTRA_TERMINAL_STATES.has(String(status ?? '').toUpperCase());
+
+const isSucceeded = (status?: string | null) =>
+  String(status ?? '').toUpperCase() === 'SUCCEEDED';
 
 const statusClass = (status?: string | null) => {
   const key = String(status ?? '').toLowerCase();
