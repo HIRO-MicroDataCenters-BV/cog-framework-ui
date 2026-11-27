@@ -14,7 +14,7 @@ import {
   beforeAll,
   beforeEach,
 } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { enableAutoUnmount, mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h, reactive, ref } from 'vue';
 
 import FederatedAnalysesPage from '~/pages/federated-analyses/index.vue';
@@ -91,26 +91,15 @@ const stubs = {
 
 // Pages share the reactive route above, so each one is unmounted after its
 // test: a page left mounted would react to the next test's order id.
-const mounted: Array<{ unmount: () => void }> = [];
+enableAutoUnmount(afterEach);
 
 const mountPage = async () => {
   const wrapper = mount(FederatedAnalysesPage, {
     global: { stubs, mocks: { $t: (k: string) => k } },
   });
-  mounted.push(wrapper);
   await flushPromises();
   return wrapper;
 };
-
-afterEach(() => {
-  for (const wrapper of mounted.splice(0)) {
-    try {
-      wrapper.unmount();
-    } catch {
-      // Already unmounted by the test itself.
-    }
-  }
-});
 
 beforeEach(() => {
   vi.clearAllMocks();
