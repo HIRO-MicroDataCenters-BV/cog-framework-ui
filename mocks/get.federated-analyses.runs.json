@@ -1,0 +1,23 @@
+{
+  "status_code": 200,
+  "message": "Federated analysis runs",
+  "data": [
+    {
+      "run_id": "92c86cfa-b651-4857-992f-51c323eb0f45",
+      "run_name": "fedanalysis-gwas-demo",
+      "analysis_id": "gwas",
+      "name": "demo",
+      "status": "Succeeded",
+      "duration": "0:09:41",
+      "start_time": "2026-11-27T10:27:50",
+      "steps": [
+        { "id": "s1", "name": "create-party-services", "status": "Succeeded" },
+        { "id": "s2", "name": "generate-shared-keys", "status": "Succeeded" },
+        { "id": "s3", "name": "run-hospital-party", "status": "Succeeded" },
+        { "id": "s4", "name": "run-hospital-party-2", "status": "Succeeded" },
+        { "id": "s5", "name": "run-hospital-party-3", "status": "Succeeded" },
+        { "id": "s6", "name": "create-manhattan-plot", "status": "Succeeded" }
+      ]
+    }
+  ]
+}

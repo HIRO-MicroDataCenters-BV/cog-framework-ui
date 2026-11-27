@@ -534,3 +534,96 @@ export interface UserListItem {
   user_id?: string;
   department?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Federated analyses (`/cogapi/federated-analyses`)
+// ---------------------------------------------------------------------------
+
+/** A data-holding participant of a federated analysis. */
+export interface FederatedAnalysisParty {
+  institution: string;
+  data_url: string;
+  num_individuals?: number | null;
+}
+
+export interface FederatedAnalysisPreset {
+  id: string;
+  title: string;
+  description: string;
+  params: Record<string, unknown>;
+}
+
+export interface FederatedAnalysisParam {
+  name: string;
+  type: string;
+  default?: unknown;
+}
+
+/** One entry of the analysis catalog (`GET /federated-analyses`). */
+export interface FederatedAnalysis {
+  id: string;
+  title: string;
+  description: string;
+  min_parties: number;
+  requires_cohort_sizes: boolean;
+  default_preset?: string | null;
+  presets: FederatedAnalysisPreset[];
+  /** Overridable run parameters; empty when the deployment only offers presets. */
+  params: FederatedAnalysisParam[];
+}
+
+/** Participants and data products of a dataspace order. */
+export interface FederatedAnalysisOrder {
+  order_id: string;
+  parties: FederatedAnalysisParty[];
+}
+
+/** Body of `POST /federated-analyses/{analysis_id}/runs`. */
+export interface FederatedAnalysisRunCreateParams {
+  name: string;
+  /** Dataspace order naming the parties; exclusive with `parties`. */
+  order_id?: string;
+  /** Explicit parties (debug input); exclusive with `order_id`. */
+  parties?: FederatedAnalysisParty[];
+  /** Cohort size per institution, for parties from an order. */
+  num_individuals?: Record<string, number>;
+  preset?: string;
+  params?: Record<string, unknown>;
+}
+
+export interface FederatedAnalysisStep {
+  id?: string | null;
+  name?: string | null;
+  status?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+}
+
+export interface FederatedAnalysisRun {
+  run_id: string;
+  run_name?: string | null;
+  analysis_id: string;
+  name: string;
+  status?: string | null;
+  duration?: string | null;
+  start_time?: string | null;
+  steps?: FederatedAnalysisStep[];
+}
+
+export interface FederatedAnalysisArtifact {
+  name: string;
+  path: string;
+  /** Artifact location, usable with the artifact preview call. */
+  url: string;
+}
+
+/** What an analysis logged for a run (`ready` false until it has). */
+export interface FederatedAnalysisResult {
+  run_id: string;
+  analysis_id: string;
+  ready: boolean;
+  tracking_run_id?: string | null;
+  metrics: Record<string, number>;
+  params: Record<string, string>;
+  artifacts: FederatedAnalysisArtifact[];
+}

@@ -32,6 +32,7 @@ export default defineI18nConfig(() => ({
           fine_tune_created: 'Fine-tune run started successfully',
           fine_tune_validated: 'Fine-tune validated; run not submitted',
           training_job_created: 'Training job created',
+          federated_analysis_started: 'Federated analysis started',
           training_job_deleted: 'Training job deleted',
           download_completed: 'Download completed successfully',
           data_saved: 'Data saved successfully',
@@ -150,6 +151,7 @@ export default defineI18nConfig(() => ({
         training_jobs: 'Training Jobs',
         // AppTable renders `title.${page.section}`; the section is hyphenated.
         'training-jobs': 'Training Jobs',
+        'federated-analyses': 'Federated Analyses',
         training_job_create: 'New training job',
         training_job_logs: 'Training job logs',
         training_job_actions: 'Training Job Actions',
@@ -216,6 +218,8 @@ export default defineI18nConfig(() => ({
           'Train an ntkmirror controller over a JSONL dataset; the result is registered as an exact NTK controller or exported as a LoRA adapter and appears in the model-serving adapter picker once the run completes.',
         training_jobs:
           'Train a model from the algorithm catalog on one of your datasets. Jobs run as Kubeflow training jobs; the result is registered under Models.',
+        federated_analyses:
+          'Run a platform analysis across the participants of a dataspace order. The data stays with each participant; only the results come back.',
         training_job_dialog:
           'Pick an algorithm and a dataset, name the output model and adjust the hyperparameters.',
         training_jobs_empty:
@@ -798,6 +802,8 @@ export default defineI18nConfig(() => ({
         'fine-tune': 'Fine-tune',
         training_jobs: 'Training Jobs',
         'training-jobs': 'Training Jobs',
+        federated_analyses: 'Federated Analyses',
+        'federated-analyses': 'Federated Analyses',
         // Section key and menu key coincide ('playground' has no hyphen), so
         // one entry serves both the sidebar title and the breadcrumb.
         playground: 'Playground',

@@ -1,0 +1,38 @@
+{
+  "status_code": 200,
+  "message": "Federated analyses",
+  "data": [
+    {
+      "id": "gwas",
+      "title": "Federated GWAS",
+      "description": "Genome-wide association study across institutions using secure multi-party computation: no institution's genotype or phenotype data leaves its site. Produces a Manhattan plot and an association table.",
+      "min_parties": 2,
+      "requires_cohort_sizes": true,
+      "default_preset": "ultra_fast",
+      "presets": [
+        {
+          "id": "ultra_fast",
+          "title": "Ultra fast",
+          "description": "First 1000 SNPs, QC only, no PCA. Fastest validation run.",
+          "params": {
+            "test_snp_limit": 1000,
+            "skip_pca": true,
+            "num_threads": 1
+          }
+        },
+        {
+          "id": "quick",
+          "title": "Quick",
+          "description": "First 10000 SNPs with QC and a light PCA.",
+          "params": { "test_snp_limit": 10000, "skip_pca": false, "num_pcs": 2 }
+        }
+      ],
+      "params": [
+        { "name": "test_snp_limit", "type": "int", "default": 0 },
+        { "name": "use_logistic", "type": "bool", "default": false },
+        { "name": "num_pcs", "type": "int", "default": 5 },
+        { "name": "maf_lb", "type": "float", "default": 0.1 }
+      ]
+    }
+  ]
+}
