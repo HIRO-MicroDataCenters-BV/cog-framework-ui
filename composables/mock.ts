@@ -3,11 +3,21 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
-import type { QuotaUpdateRequest, WorkgroupEnvInfo } from '~/types/api.types';
+import type {
+  FederatedAnalysisRunCreateParams,
+  QuotaUpdateRequest,
+  WorkgroupEnvInfo,
+} from '~/types/api.types';
 import { getApiConfig } from '~/utils/apiConfig';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
 import trainingAlgorithmsData from '@/mocks/get.training-jobs.algorithms.json';
+import federatedAnalysesData from '@/mocks/get.federated-analyses.json';
+import {
+  addMockFederatedAnalysisRun,
+  findMockFederatedAnalysisRun,
+  listMockFederatedAnalysisRuns,
+} from '~/utils/federatedAnalysisMocks';
 import templatesData from '@/mocks/get.training-builder-templates.json';
 import overviewData from '@/mocks/get.overview.json';
 import templatesDetailsData from '@/mocks/get.training-builder-templates.details.json';
@@ -1119,6 +1129,133 @@ export const useApiWithMock = () => {
           ? 'fine_tune_created'
           : 'fine_tune_validated',
       });
+    },
+
+    // -----------------------------------------------------------------
+    // Federated analyses (`/cogapi/federated-analyses`): platform-owned
+    // analyses that run across the participants of a dataspace order.
+    // -----------------------------------------------------------------
+
+    /** The analysis catalog with presets and parameters. */
+    getFederatedAnalyses: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve(federatedAnalysesData);
+      }
+      return request(`/federated-analyses`, 'GET', undefined, {
+        showToast: false,
+      });
+    },
+
+    /** Participants and data products of a dataspace order. */
+    getFederatedAnalysisOrder: async (orderId: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Order parties',
+          data: {
+            order_id: orderId,
+            parties: [
+              {
+                institution: 'HUS',
+                data_url: 'https://ds-connector.hus.example/b.tar/chunk',
+                num_individuals: null,
+              },
+              {
+                institution: 'KI',
+                data_url: 'https://ds-connector.ki.example/a.tar/chunk',
+                num_individuals: null,
+              },
+            ],
+          },
+        });
+      }
+      return request(
+        `/federated-analyses/orders/${encodeURIComponent(orderId)}`,
+      );
+    },
+
+    /** The caller's federated analysis runs, newest first. */
+    getFederatedAnalysisRuns: async () => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Federated analysis runs',
+          data: listMockFederatedAnalysisRuns(),
+        });
+      }
+      return request(`/federated-analyses/runs`, 'GET', undefined, {
+        showToast: false,
+      });
+    },
+
+    /** One run with the state of each of its steps. */
+    getFederatedAnalysisRun: async (runId: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        const run = findMockFederatedAnalysisRun(runId);
+        return Promise.resolve(
+          run
+            ? { status_code: 200, message: 'Federated analysis run', data: run }
+            : null,
+        );
+      }
+      return request(`/federated-analyses/runs/${runId}`, 'GET', undefined, {
+        showToast: false,
+      });
+    },
+
+    /** Metrics and result artifacts the analysis logged for a run. */
+    getFederatedAnalysisResult: async (runId: string) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 200,
+          message: 'Federated analysis result',
+          data: {
+            run_id: runId,
+            analysis_id: 'gwas',
+            // Only the finished demo run has results to show.
+            ready: findMockFederatedAnalysisRun(runId)?.status === 'Succeeded',
+            tracking_run_id: 'mock-tracking-run',
+            metrics: { num_significant_snps: 0, max_neg_log10_p: 3.2 },
+            params: {
+              num_snps: '521',
+              title: 'Federated GWAS - 3 Institutions',
+            },
+            artifacts: [],
+          },
+        });
+      }
+      return request(
+        `/federated-analyses/runs/${runId}/result`,
+        'GET',
+        undefined,
+        { showToast: false },
+      );
+    },
+
+    /** Starts an analysis on the parties of an order (or explicit parties). */
+    startFederatedAnalysisRun: async (
+      analysisId: string,
+      data: FederatedAnalysisRunCreateParams,
+    ) => {
+      if (mock.value.enabled) {
+        await mockDelay();
+        return Promise.resolve({
+          status_code: 201,
+          message: `'${data.name}' launched successfully.`,
+          data: addMockFederatedAnalysisRun(analysisId, data.name),
+        });
+      }
+      return request(
+        `/federated-analyses/${encodeURIComponent(analysisId)}/runs`,
+        'POST',
+        data,
+        { successMessage: 'federated_analysis_started' },
+      );
     },
 
     recommendFineTune: async (data: {

@@ -2,6 +2,9 @@ import type { EntitlementTier } from '~/types/api.types';
 
 export const uselistMenus = () => {
   const { t } = useI18n();
+  // Federated analyses start from a dataspace order, so the entry follows the
+  // same switch as the Builder's federated run mode.
+  const federatedEnabled = useRuntimeConfig().public.federatedEnabled === true;
   return useState('listMenus', () => {
     return {
       main: [
@@ -84,6 +87,20 @@ export const uselistMenus = () => {
           // browse, pipeline:run to launch); no separate feature tier.
           minTier: 'free' as EntitlementTier,
         },
+        ...(federatedEnabled
+          ? [
+              {
+                key: 'federated-analyses',
+                title: t('menu.federated_analyses'),
+                url: 'federated-analyses',
+                icon: 'lucide:network',
+                items: [],
+                isActive: false,
+                // Same server-side gate as pipelines (pipeline:read / run).
+                minTier: 'free' as EntitlementTier,
+              },
+            ]
+          : []),
         {
           key: 'playground',
           title: t('menu.playground'),
