@@ -3,7 +3,11 @@ import {
   apiResponseSchema,
 } from '~/schemas/response.schema';
 import type { ServedCompletionRequest } from '~/types/model.types';
-import type { QuotaUpdateRequest, WorkgroupEnvInfo } from '~/types/api.types';
+import type {
+  FederatedAnalysisRunCreateParams,
+  QuotaUpdateRequest,
+  WorkgroupEnvInfo,
+} from '~/types/api.types';
 import { getApiConfig } from '~/utils/apiConfig';
 import trainingJobsData from '@/mocks/get.training-jobs.json';
 import datasetsDetailsFileData from '@/mocks/get.datasets.details.file.json';
@@ -1225,7 +1229,7 @@ export const useApiWithMock = () => {
     /** Starts an analysis on the parties of an order (or explicit parties). */
     startFederatedAnalysisRun: async (
       analysisId: string,
-      data: { name: string } & Record<string, unknown>,
+      data: FederatedAnalysisRunCreateParams,
     ) => {
       if (mock.value.enabled) {
         await mockDelay();
