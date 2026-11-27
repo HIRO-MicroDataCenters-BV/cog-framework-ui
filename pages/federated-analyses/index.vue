@@ -233,25 +233,37 @@ const openedRun = ref<FederatedAnalysisRun | null>(null);
 const result = ref<FederatedAnalysisResult | null>(null);
 const plotUrl = ref('');
 const table = ref<{ headers: string[]; rows: string[][] } | null>(null);
-const loadedArtifacts = ref('');
+// Artifacts never change once logged: each is fetched until it has loaded.
+const loadedArtifacts = ref(new Set<string>());
+const artifactsMissing = computed(() =>
+  (result.value?.artifacts ?? []).some(
+    (a) => !loadedArtifacts.value.has(a.url),
+  ),
+);
 
 const analysisTitle = (id: string) =>
   analyses.value.find((a) => a.id === id)?.title ?? id;
 
-const loadArtifacts = async (artifacts: FederatedAnalysisArtifact[]) => {
-  // Artifacts never change once logged: fetch each set only once.
-  const key = artifacts.map((a) => a.url).join('|');
-  if (key === loadedArtifacts.value) return;
-  loadedArtifacts.value = key;
+const loadArtifacts = async (
+  runId: string,
+  artifacts: FederatedAnalysisArtifact[],
+) => {
   for (const artifact of artifacts) {
+    if (loadedArtifacts.value.has(artifact.url)) continue;
     const res = await getArtifactPreview(artifact.url);
+    // Another run was opened while this preview was loading.
+    if (openedRun.value?.run_id !== runId) return;
     const data = res?.data as
       | { type: string; url?: string; headers?: string[]; rows?: string[][] }
+      | null
       | undefined;
-    if (data?.type === 'image' && data.url) plotUrl.value = data.url;
-    if (data?.type === 'csv' && data.headers && data.rows) {
+    // A failed preview stays unloaded so the next refresh tries it again.
+    if (!data) continue;
+    if (data.type === 'image' && data.url) plotUrl.value = data.url;
+    if (data.type === 'csv' && data.headers && data.rows) {
       table.value = { headers: data.headers, rows: data.rows };
     }
+    loadedArtifacts.value.add(artifact.url);
   }
 };
 
@@ -267,7 +279,7 @@ const refreshOpenedRun = async () => {
   if (runRes?.data) openedRun.value = runRes.data as FederatedAnalysisRun;
   if (resultRes?.data) {
     result.value = resultRes.data as FederatedAnalysisResult;
-    await loadArtifacts(result.value.artifacts ?? []);
+    await loadArtifacts(current.run_id, result.value.artifacts ?? []);
   }
 };
 
@@ -276,7 +288,7 @@ const openRun = async (run: FederatedAnalysisRun) => {
   result.value = null;
   plotUrl.value = '';
   table.value = null;
-  loadedArtifacts.value = '';
+  loadedArtifacts.value = new Set();
   await refreshOpenedRun();
 };
 
@@ -634,6 +646,17 @@ onMounted(() => {
           class="mb-4 w-full rounded-md border bg-white"
           data-testid="manhattan-plot"
         />
+
+        <p
+          v-if="artifactsMissing"
+          class="mb-4 flex items-center gap-3 text-sm text-muted-foreground"
+          data-testid="artifacts-missing"
+        >
+          Some results could not be loaded.
+          <Button variant="outline" size="sm" @click="refreshOpenedRun">
+            Try again
+          </Button>
+        </p>
 
         <div v-if="table" data-testid="association-table">
           <div class="mb-2 flex items-center gap-3">
