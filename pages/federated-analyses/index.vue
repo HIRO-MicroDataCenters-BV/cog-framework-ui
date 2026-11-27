@@ -10,7 +10,7 @@
  * Without an order the page still lists earlier runs; hospitals can be
  * entered by hand as a debug input when the backend allows it.
  */
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useIntervalFn } from '@vueuse/core';
 import { useApi } from '@/composables/api';
 import { Button } from '~/components/ui/button';
@@ -232,6 +232,13 @@ const loadRuns = async () => {
 const openedRun = ref<FederatedAnalysisRun | null>(null);
 const result = ref<FederatedAnalysisResult | null>(null);
 const plotUrl = ref('');
+
+/** Image previews are blob URLs: release each one once it is not shown. */
+const releasePreview = (url?: string | null) => {
+  if (url?.startsWith('blob:')) window.URL.revokeObjectURL(url);
+};
+watch(plotUrl, (_current, previous) => releasePreview(previous));
+onBeforeUnmount(() => releasePreview(plotUrl.value));
 const table = ref<{ headers: string[]; rows: string[][] } | null>(null);
 // Artifacts never change once logged: each is fetched until it has loaded.
 const loadedArtifacts = ref(new Set<string>());
@@ -251,12 +258,15 @@ const loadArtifacts = async (
   for (const artifact of artifacts) {
     if (loadedArtifacts.value.has(artifact.url)) continue;
     const res = await getArtifactPreview(artifact.url);
-    // Another run was opened while this preview was loading.
-    if (openedRun.value?.run_id !== runId) return;
     const data = res?.data as
       | { type: string; url?: string; headers?: string[]; rows?: string[][] }
       | null
       | undefined;
+    // Another run was opened while this preview was loading.
+    if (openedRun.value?.run_id !== runId) {
+      if (data?.type === 'image') releasePreview(data.url);
+      return;
+    }
     // A failed preview stays unloaded so the next refresh tries it again.
     if (!data) continue;
     if (data.type === 'image' && data.url) plotUrl.value = data.url;
@@ -294,6 +304,7 @@ const openRun = async (run: FederatedAnalysisRun) => {
 
 const closeRun = () => {
   openedRun.value = null;
+  plotUrl.value = '';
 };
 
 const downloadTable = () => {
@@ -313,7 +324,8 @@ const downloadTable = () => {
 
 // --------------------------------------------------------------- polling
 // A finished run is only worth re-reading while its results may still be
-// on their way: it succeeded but they are not readable yet. A failed or
+// on their way: it succeeded but they are not readable yet (not logged, or
+// the read failed). A failed or
 // cancelled run without results will never get any.
 const needsPolling = computed(() => {
   if (runs.value.some((r) => isActive(r.status))) return true;
@@ -321,7 +333,7 @@ const needsPolling = computed(() => {
   if (!opened) return false;
   return (
     isActive(opened.status) ||
-    (isSucceeded(opened.status) && result.value?.ready === false)
+    (isSucceeded(opened.status) && !result.value?.ready)
   );
 });
 

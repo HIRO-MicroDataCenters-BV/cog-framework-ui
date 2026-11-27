@@ -411,4 +411,40 @@ describe('federated analyses page', () => {
     );
     expect(wrapper.find('[data-testid="manhattan-plot"]').exists()).toBe(false);
   });
+
+  it('keeps polling a succeeded run whose result could not be read', async () => {
+    apiMocks.getFederatedAnalysisResult.mockResolvedValue(null);
+    const wrapper = await mountPage();
+    expect(intervalMocks.resume).not.toHaveBeenCalled();
+
+    await wrapper.find('[data-testid="open-run"]').trigger('click');
+    await flushPromises();
+
+    expect(intervalMocks.resume).toHaveBeenCalled();
+    expect(wrapper.find('[data-testid="result-pending"]').exists()).toBe(true);
+  });
+
+  it('releases plot previews it no longer shows', async () => {
+    const revoke = vi
+      .spyOn(window.URL, 'revokeObjectURL')
+      .mockImplementation(() => {});
+    const wrapper = await mountPage();
+    await wrapper.find('[data-testid="open-run"]').trigger('click');
+    await flushPromises();
+    expect(revoke).not.toHaveBeenCalled();
+
+    // Reopening fetches a fresh preview and drops the old one.
+    apiMocks.getArtifactPreview.mockImplementation(async (url: string) =>
+      url.endsWith('.png')
+        ? { data: { type: 'image', url: 'blob:plot-2' } }
+        : { data: { type: 'csv', headers: ['chr'], rows: [['1']] } },
+    );
+    await wrapper.find('[data-testid="open-run"]').trigger('click');
+    await flushPromises();
+    expect(revoke).toHaveBeenCalledWith('blob:plot');
+
+    wrapper.unmount();
+    expect(revoke).toHaveBeenCalledWith('blob:plot-2');
+    revoke.mockRestore();
+  });
 });
