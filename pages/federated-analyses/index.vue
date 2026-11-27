@@ -312,12 +312,18 @@ const downloadTable = () => {
 };
 
 // --------------------------------------------------------------- polling
-const needsPolling = computed(
-  () =>
-    runs.value.some((r) => isActive(r.status)) ||
-    (openedRun.value !== null &&
-      (isActive(openedRun.value.status) || result.value?.ready === false)),
-);
+// A finished run is only worth re-reading while its results may still be
+// on their way: it succeeded but they are not readable yet. A failed or
+// cancelled run without results will never get any.
+const needsPolling = computed(() => {
+  if (runs.value.some((r) => isActive(r.status))) return true;
+  const opened = openedRun.value;
+  if (!opened) return false;
+  return (
+    isActive(opened.status) ||
+    (isSucceeded(opened.status) && result.value?.ready === false)
+  );
+});
 
 const { pause: pausePolling, resume: resumePolling } = useIntervalFn(
   () => {
@@ -622,7 +628,7 @@ onMounted(() => {
         data-testid="result-pending"
       >
         {{
-          isActive(openedRun.status)
+          isActive(openedRun.status) || isSucceeded(openedRun.status)
             ? 'Results appear here when the analysis finishes.'
             : 'This run did not log any results.'
         }}
