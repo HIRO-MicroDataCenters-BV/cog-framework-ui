@@ -467,4 +467,29 @@ describe('federated analyses page', () => {
     expect(revoke).toHaveBeenCalledWith('blob:late');
     revoke.mockRestore();
   });
+
+  it('tells a failed order lookup apart from an empty order', async () => {
+    route.query = { order_id: 'order-1' };
+    apiMocks.getFederatedAnalysisOrder.mockResolvedValueOnce(null);
+    const wrapper = await mountPage();
+
+    const error = wrapper.find('[data-testid="order-error"]');
+    expect(error.text()).toContain('could not be loaded');
+    expect(error.text()).not.toContain('No participants');
+
+    await error.find('button').trigger('click');
+    await flushPromises();
+    expect(wrapper.find('[data-testid="order-parties"]').text()).toContain(
+      'HUS',
+    );
+
+    apiMocks.getFederatedAnalysisOrder.mockResolvedValueOnce({
+      data: { order_id: 'order-1', parties: [] },
+    });
+    route.query = { order_id: 'order-empty' };
+    await flushPromises();
+    const empty = wrapper.find('[data-testid="order-error"]');
+    expect(empty.text()).toContain('No participants found');
+    expect(empty.find('button').exists()).toBe(false);
+  });
 });

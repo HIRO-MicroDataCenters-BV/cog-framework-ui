@@ -60,6 +60,7 @@ const orderId = computed(() => String(route.query.order_id ?? '').trim());
 const orderParties = ref<PartyRow[]>([]);
 const orderError = ref('');
 const orderLoading = ref(false);
+const orderFailed = ref(false);
 
 const manualParties = ref<PartyRow[]>([
   { institution: '', data_url: '', num_individuals: null },
@@ -73,6 +74,7 @@ const parties = computed(() =>
 const loadOrder = async () => {
   const requested = orderId.value;
   orderError.value = '';
+  orderFailed.value = false;
   orderParties.value = [];
   orderLoading.value = requested !== '';
   if (!requested) return;
@@ -80,7 +82,13 @@ const loadOrder = async () => {
     const res = await getFederatedAnalysisOrder(requested);
     // The order in the URL changed while this one was loading.
     if (orderId.value !== requested) return;
-    const found = (res?.data?.parties ?? []) as FederatedAnalysisParty[];
+    // A failed request is not an empty order: say so and offer a retry.
+    if (!res?.data || !Array.isArray(res.data.parties)) {
+      orderError.value = 'The participants of this order could not be loaded.';
+      orderFailed.value = true;
+      return;
+    }
+    const found = res.data.parties as FederatedAnalysisParty[];
     orderParties.value = found.map((p) => ({
       institution: p.institution,
       data_url: p.data_url,
@@ -382,8 +390,20 @@ onMounted(() => {
         <p v-if="orderLoading" class="text-sm text-muted-foreground">
           Loading participants…
         </p>
-        <p v-else-if="orderError" class="text-sm text-red-600">
+        <p
+          v-else-if="orderError"
+          class="flex items-center gap-3 text-sm text-red-600"
+          data-testid="order-error"
+        >
           {{ orderError }}
+          <Button
+            v-if="orderFailed"
+            variant="outline"
+            size="sm"
+            @click="loadOrder"
+          >
+            Try again
+          </Button>
         </p>
         <table v-else class="w-full text-sm" data-testid="order-parties">
           <thead class="text-left text-muted-foreground">
