@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, reactive, ref } from 'vue';
 
 import FederatedAnalysesPage from '~/pages/federated-analyses/index.vue';
 
@@ -60,10 +60,11 @@ vi.mock('@vueuse/core', () => ({
   useIntervalFn: () => intervalMocks,
 }));
 
-const routeQuery = ref<Record<string, string>>({});
+// Reactive like the real route, so query-only navigation can be simulated.
+const route = reactive<{ query: Record<string, string> }>({ query: {} });
 
 beforeAll(() => {
-  vi.stubGlobal('useRoute', () => ({ query: routeQuery.value }));
+  vi.stubGlobal('useRoute', () => route);
   vi.stubGlobal('useApp', () => ({
     setPage: vi.fn(),
     page: ref({ isLoading: false }),
@@ -90,7 +91,7 @@ const mountPage = async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  routeQuery.value = {};
+  route.query = {};
   apiMocks.getFederatedAnalyses.mockResolvedValue({ data: ANALYSES });
   apiMocks.getFederatedAnalysisRuns.mockResolvedValue({ data: [RUN] });
   apiMocks.getFederatedAnalysisOrder.mockResolvedValue({
@@ -161,7 +162,7 @@ describe('federated analyses page', () => {
   });
 
   it('runs the analysis on an order with the entered cohort sizes', async () => {
-    routeQuery.value = { order_id: 'order-1' };
+    route.query = { order_id: 'order-1' };
     const wrapper = await mountPage();
 
     expect(apiMocks.getFederatedAnalysisOrder).toHaveBeenCalledWith('order-1');
@@ -270,5 +271,144 @@ describe('federated analyses page', () => {
       'when the analysis finishes',
     );
     expect(apiMocks.getArtifactPreview).not.toHaveBeenCalled();
+  });
+
+  it('follows the order in the URL when it changes', async () => {
+    route.query = { order_id: 'order-1' };
+    const wrapper = await mountPage();
+    expect(wrapper.find('[data-testid="order-id"]').text()).toBe('order-1');
+
+    apiMocks.getFederatedAnalysisOrder.mockResolvedValue({
+      data: {
+        order_id: 'order-2',
+        parties: [
+          { institution: 'UVA', data_url: 'https://uva/c', num_individuals: 5 },
+        ],
+      },
+    });
+    route.query = { order_id: 'order-2' };
+    await flushPromises();
+
+    expect(apiMocks.getFederatedAnalysisOrder).toHaveBeenLastCalledWith(
+      'order-2',
+    );
+    const parties = wrapper.find('[data-testid="order-parties"]').text();
+    expect(parties).toContain('UVA');
+    expect(parties).not.toContain('HUS');
+
+    route.query = {};
+    await flushPromises();
+    expect(wrapper.find('[data-testid="order-parties"]').exists()).toBe(false);
+    expect(wrapper.findAll('[data-testid="manual-party"]')).toHaveLength(2);
+  });
+
+  it.each([-1, 1.5, 0])('refuses a cohort size of %s', async (size) => {
+    route.query = { order_id: 'order-1' };
+    const wrapper = await mountPage();
+    await wrapper.find('[data-testid="run-name"]').setValue('gwas-demo');
+    const sizes = wrapper.findAll('[data-testid="order-parties"] input');
+    await sizes[0].setValue(800);
+    await sizes[1].setValue(size);
+
+    const start = wrapper.find('[data-testid="start-run"]');
+    expect(start.attributes('disabled')).toBeDefined();
+    await start.trigger('click');
+    expect(apiMocks.startFederatedAnalysisRun).not.toHaveBeenCalled();
+  });
+
+  it.each(['Canceled', 'CANCELLED', 'Failed'])(
+    'does not poll a %s run that has no results',
+    async (status) => {
+      apiMocks.getFederatedAnalysisRuns.mockResolvedValue({
+        data: [{ ...RUN, status }],
+      });
+      apiMocks.getFederatedAnalysisRun.mockResolvedValue({
+        data: { ...RUN, status, steps: [] },
+      });
+      apiMocks.getFederatedAnalysisResult.mockResolvedValue({
+        data: {
+          run_id: 'run-1',
+          analysis_id: 'gwas',
+          ready: false,
+          metrics: {},
+          params: {},
+          artifacts: [],
+        },
+      });
+      const wrapper = await mountPage();
+      await wrapper.find('[data-testid="open-run"]').trigger('click');
+      await flushPromises();
+
+      expect(intervalMocks.resume).not.toHaveBeenCalled();
+      expect(wrapper.find('[data-testid="result-pending"]').text()).toContain(
+        'did not log any results',
+      );
+    },
+  );
+
+  it('retries a result preview that failed to load', async () => {
+    apiMocks.getArtifactPreview.mockResolvedValueOnce({ data: null });
+    const wrapper = await mountPage();
+    await wrapper.find('[data-testid="open-run"]').trigger('click');
+    await flushPromises();
+
+    // The plot failed, the table loaded.
+    expect(wrapper.find('[data-testid="manhattan-plot"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="association-table"]').exists()).toBe(
+      true,
+    );
+    const missing = wrapper.find('[data-testid="artifacts-missing"]');
+    expect(missing.exists()).toBe(true);
+
+    await missing.find('button').trigger('click');
+    await flushPromises();
+
+    expect(
+      wrapper.find('[data-testid="manhattan-plot"]').attributes('src'),
+    ).toBe('blob:plot');
+    expect(wrapper.find('[data-testid="artifacts-missing"]').exists()).toBe(
+      false,
+    );
+    // The table was not fetched a second time.
+    expect(apiMocks.getArtifactPreview).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not show a previous run's preview on the run opened after it", async () => {
+    const other = { ...RUN, run_id: 'run-2', name: 'second' };
+    apiMocks.getFederatedAnalysisRuns.mockResolvedValue({ data: [RUN, other] });
+    let releaseSlowPreview: (value: unknown) => void = () => {};
+    apiMocks.getArtifactPreview.mockImplementationOnce(
+      () => new Promise((resolve) => (releaseSlowPreview = resolve)),
+    );
+    const wrapper = await mountPage();
+    const buttons = wrapper.findAll('[data-testid="open-run"]');
+
+    await buttons[0].trigger('click');
+    await flushPromises();
+
+    // Open the second run (no artifacts) while the first preview still loads.
+    apiMocks.getFederatedAnalysisRun.mockResolvedValue({
+      data: { ...other, steps: [] },
+    });
+    apiMocks.getFederatedAnalysisResult.mockResolvedValue({
+      data: {
+        run_id: 'run-2',
+        analysis_id: 'gwas',
+        ready: true,
+        metrics: {},
+        params: {},
+        artifacts: [],
+      },
+    });
+    await buttons[1].trigger('click');
+    await flushPromises();
+
+    releaseSlowPreview({ data: { type: 'image', url: 'blob:first-run' } });
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="run-result"]').text()).toContain(
+      'second',
+    );
+    expect(wrapper.find('[data-testid="manhattan-plot"]').exists()).toBe(false);
   });
 });
